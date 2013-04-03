@@ -24,7 +24,7 @@ export DEBIAN_FRONTEND=noninteractive
 
 chroot "$dir" apt-get update
 
-chroot "$dir" apt-get install -y --force-yes openssh-server parted linux-image-amd64 net-tools isc-dhcp-client grub-pc rsync
+chroot "$dir" apt-get install -y --force-yes openssh-server parted linux-image-amd64 net-tools isc-dhcp-client grub-pc rsync ipmitool
 
 chroot "$dir" apt-get clean
 

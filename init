@@ -44,7 +44,10 @@ echo "" > /proc/sys/kernel/hotplug
 ( /sbin/udevadm trigger --action=add --subsystem-match=block; \
   /sbin/udevadm trigger --action=add --subsystem-nomatch=block; ) &
 
-# 
+################################################################################
+# Hardware detection starts here
+################################################################################
+
 echo "Detecting PCI devices"
 
 for d in $(cut -f2 /proc/bus/pci/devices ); do
@@ -55,6 +58,24 @@ for d in $(cut -f2 /proc/bus/pci/devices ); do
 	done
     done
 done
+
+echo "Detecting IPMI"
+
+modprobe ipmi_smb
+modprobe ipmi_si
+modprobe ipmi_devintf
+
+if [ -f /dev/ipmi0 -o -f /dev/ipmi/0 -o -f /dev/ipmidev/0 ]; then
+    ipmitool -I open lan print > /tmp/ipmi.info
+    ipmimac=$(grep 'MAC Address' /tmp/ipmi.info|sed -e 's/.*: //')
+    # Provision IPMI here if needed
+    # for example set password and network card in dhcp mode:
+    #ipmitool -I open lan set 6 password <your password here>
+    #ipmitool -I open lan set 7 password <your password here>
+    #ipmitool -I open lan ipsrc dhcp
+else
+    echo "No IPMI BMC detected"
+fi
 
 echo "Starting networking"
 IFS=:
@@ -90,34 +111,40 @@ while [ $count -gt 0 -a ! -b $DEV ]; do
     echo -n .
 done
 
-parted -s $DEV mklabel msdos
-parted -s $DEV mkpart primary ext2 0% 100%
-
-DEV=/dev/sda1
-
-echo -n "Waiting for $DEV to come up."
-count=20
-while [ $count -gt 0 -a ! -b $DEV ]; do
-    sleep 1
-    count=$(($count - 1))
-    echo -n .
-done
 if [ -b $DEV ]; then
     echo done
+
+    parted -s $DEV mklabel msdos
+    parted -s $DEV mkpart primary ext2 0% 100%
     
-    mkfs.ext4 $DEV
-    mkdir /d
-    mount $DEV /d
-    echo -n "Copying filesystem..."
-    rsync -a 10.0.3.1::install/base/ /d/
-    echo done
-    mount -obind /dev /d/dev
-    chroot /d /bin/bash -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"
-    if chroot /d /bin/bash -c "/usr/sbin/grub-install /dev/sda"; then
-	umount /d/dev
-	umount /d
-	sync
-	poweroff -f
+    DEV=/dev/sda1
+    
+    echo -n "Waiting for $DEV to come up."
+    count=20
+    while [ $count -gt 0 -a ! -b $DEV ]; do
+        sleep 1
+        count=$(($count - 1))
+        echo -n .
+    done
+    if [ -b $DEV ]; then
+        echo done
+        
+        mkfs.ext4 $DEV
+        mkdir /d
+        mount $DEV /d
+        echo -n "Copying filesystem..."
+        rsync -a 10.0.3.1::install/base/ /d/
+        echo done
+        mount -obind /dev /d/dev
+        chroot /d /bin/bash -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"
+        if chroot /d /bin/bash -c "/usr/sbin/grub-install /dev/sda"; then
+    	umount /d/dev
+    	umount /d
+    	sync
+    	#poweroff -f
+        fi
+    else
+        echo failed
     fi
 else
     echo failed

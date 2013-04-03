@@ -1,0 +1,126 @@
+#!/bin/bash
+
+[ -d /dev ] || mkdir -m 0755 /dev
+[ -d /root ] || mkdir -m 0700 /root
+[ -d /sys ] || mkdir /sys
+[ -d /proc ] || mkdir /proc
+[ -d /tmp ] || mkdir /tmp
+mkdir -p /var/lock
+mount -t sysfs -o nodev,noexec,nosuid sysfs /sys
+mount -t proc -o nodev,noexec,nosuid proc /proc
+# Some things don't work properly without /etc/mtab.
+ln -sf /proc/mounts /etc/mtab
+
+grep -q '\<quiet\>' /proc/cmdline || echo "Loading, please wait..."
+
+# Note that this only becomes /dev on the real filesystem if udev's scripts
+# are used; which they will be, but it's worth pointing out
+if ! mount -t devtmpfs -o mode=0755 udev /dev; then
+	echo "W: devtmpfs not available, falling back to tmpfs for /dev"
+	mount -t tmpfs -o mode=0755 udev /dev
+	[ -e /dev/console ] || mknod -m 0600 /dev/console c 5 1
+	[ -e /dev/null ] || mknod /dev/null c 1 3
+fi
+mkdir /dev/pts
+mount -t devpts -o noexec,nosuid,gid=5,mode=0620 devpts /dev/pts || true
+mount -t tmpfs -o "nosuid,size=20%,mode=0755" tmpfs /run
+mkdir /run/initramfs
+# compatibility symlink for the pre-oneiric locations
+ln -s /run/initramfs /dev/.initramfs
+
+if [ -x /etc/init.d/rsyslog ]; then
+    /etc/init.d/rsyslog start
+fi
+
+# It's all over netlink now
+echo "" > /proc/sys/kernel/hotplug
+	
+# Start the udev daemon to process events
+/sbin/udevd --daemon --resolve-names=never
+
+# Iterate sysfs and fire off everything; if we include a rule for it then
+# it'll get handled; otherwise it'll get handled later when we do this again
+# in the main boot sequence.
+( /sbin/udevadm trigger --action=add --subsystem-match=block; \
+  /sbin/udevadm trigger --action=add --subsystem-nomatch=block; ) &
+
+# 
+echo "Detecting PCI devices"
+
+for d in $(cut -f2 /proc/bus/pci/devices ); do
+    echo $d| sed 's/\(....\)/\1 /'|while read vendor device; do
+	grep "pci:v0000${vendor}d0000${device}" /lib/modules/$(uname -r)/modules.alias|while read a n module; do
+	    echo -n "Loding $module..."
+	    modprobe $module && echo done || echo error
+	done
+    done
+done
+
+echo "Starting networking"
+IFS=:
+export IFS
+grep : /proc/net/dev | sed 's/ *//' | while read iface rem; do
+    iface=$(echo $iface)
+    if [ $iface = lo ]; then
+	continue
+    fi
+
+    echo -n "Waiting for $iface to come up."
+    dhclient $iface
+    count=30
+    while [ $count -gt 0 ] && ! ifconfig $iface|grep -q 'inet addr'; do
+	sleep 1
+	count=$(($count - 1))
+	echo -n .
+    done
+    if ifconfig $iface|grep -q 'inet addr'; then
+	echo done
+    else
+	echo failed
+    fi
+done
+IFS=
+
+DEV=/dev/sda
+echo -n "Waiting for $DEV to come up."
+count=20
+while [ $count -gt 0 -a ! -b $DEV ]; do
+    sleep 1
+    count=$(($count - 1))
+    echo -n .
+done
+
+parted -s $DEV mklabel msdos
+parted -s $DEV mkpart primary ext2 0% 100%
+
+DEV=/dev/sda1
+
+echo -n "Waiting for $DEV to come up."
+count=20
+while [ $count -gt 0 -a ! -b $DEV ]; do
+    sleep 1
+    count=$(($count - 1))
+    echo -n .
+done
+if [ -b $DEV ]; then
+    echo done
+    
+    mkfs.ext4 $DEV
+    mkdir /d
+    mount $DEV /d
+    echo -n "Copying filesystem..."
+    rsync -a 10.0.3.1::install/base/ /d/
+    echo done
+    mount -obind /dev /d/dev
+    chroot /d /bin/bash -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"
+    if chroot /d /bin/bash -c "/usr/sbin/grub-install /dev/sda"; then
+	umount /d/dev
+	umount /d
+	sync
+	poweroff -f
+    fi
+else
+    echo failed
+fi
+
+exec /bin/bash

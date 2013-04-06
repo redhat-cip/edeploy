@@ -45,6 +45,11 @@ echo "" > /proc/sys/kernel/hotplug
   /sbin/udevadm trigger --action=add --subsystem-nomatch=block; ) &
 
 ################################################################################
+# Use the system tag to find the role
+################################################################################
+serial="$(dmidecode -s system-serial-number)"
+
+################################################################################
 # Hardware detection starts here
 ################################################################################
 
@@ -102,6 +107,18 @@ grep : /proc/net/dev | sed 's/ *//' | while read iface rem; do
 done
 IFS=
 
+################################################################################
+# TODO: we need an exchange with the server to get these settings from the
+# system serial number in the future.
+################################################################################
+ROLE=base
+VERS=D7-F.1.0.0
+SERV=10.0.3.1
+
+################################################################################
+# TODO: we need an exchange with the server to get the partition scheme from the
+# system serial number in the future. And generate an fstab at the end.
+################################################################################
 DEV=/dev/sda
 echo -n "Waiting for $DEV to come up."
 count=20
@@ -133,7 +150,7 @@ if [ -b $DEV ]; then
         mkdir /d
         mount $DEV /d
         echo -n "Copying filesystem..."
-        rsync -a 10.0.3.1::install/base/ /d/
+        rsync -a ${SERV}::install/${VERS}/${ROLE}/ /d/
         echo done
         mount -obind /dev /d/dev
         chroot /d /bin/bash -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"

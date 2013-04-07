@@ -3,3 +3,4 @@ pxe
 *.done
 initrd.pxe
 disk
+*~

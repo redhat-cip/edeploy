@@ -1,0 +1,27 @@
+#!/bin/bash
+
+src="$1"
+dir="$2"
+
+if [ -z "$2" -o ! -d "$1" ]; then
+   echo "Usage: $0 <base directory> <target directory name>" 1>&2
+   exit 1
+fi
+
+set -x
+
+rsync -av ${src}/ ${dir}/
+
+echo openstack > ${dir}/etc/hostname
+
+cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
+deb http://33.apt-proxy.gplhost.com/debian grizzly main
+deb http://33.apt-proxy.gplhost.com/debian grizzly-backports main
+EOF
+
+export DEBIAN_FRONTEND=noninteractive
+
+wget -O- -q http://33.apt-proxy.gplhost.com/debian/repository_key.asc | chroot ${dir} apt-key add -
+chroot ${dir} apt-get update
+chroot ${dir} apt-get dist-upgrade -y --force-yes
+chroot ${dir} apt-get install -y --force-yes puppet-common openssh-server mcollective-client

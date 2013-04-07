@@ -1,5 +1,31 @@
 #!/bin/bash
 
+function configure_network() {
+    d="$1"
+    
+    > $d/etc/network/interfaces
+    
+    IFS=:
+    export IFS
+    grep : /proc/net/dev | sed 's/ *//' | while read iface rem; do
+	iface=$(echo $iface)
+	if [ $iface = lo ]; then
+	cat >> $d/etc/network/interfaces <<EOF
+auto lo
+iface lo inet loopback
+
+EOF
+	    continue
+	else
+	cat >> $d/etc/network/interfaces <<EOF
+allow-hotplug $iface
+iface $iface inet dhcp
+
+EOF
+	fi
+    done
+}
+
 [ -d /dev ] || mkdir -m 0755 /dev
 [ -d /root ] || mkdir -m 0700 /root
 [ -d /sys ] || mkdir /sys
@@ -111,7 +137,7 @@ IFS=
 # TODO: we need an exchange with the server to get these settings from the
 # system serial number in the future.
 ################################################################################
-ROLE=base
+ROLE=openstack
 VERS=D7-F.1.0.0
 SERV=10.0.3.1
 
@@ -155,10 +181,11 @@ if [ -b $DEV ]; then
         mount -obind /dev /d/dev
         chroot /d /bin/bash -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"
         if chroot /d /bin/bash -c "/usr/sbin/grub-install /dev/sda"; then
+	configure_network /d
     	umount /d/dev
     	umount /d
     	sync
-    	#poweroff -f
+    	poweroff -f
         fi
     else
         echo failed

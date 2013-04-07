@@ -18,13 +18,19 @@ if [ ! -d "$dir" ]; then
 APT::Install-Recommends "0" ;
 APT::Install-Suggests "0" ; 
 EOF
+    
+    cat > ${dir}/etc/apt/sources.list.d/updates.list <<EOF
+deb http://security.debian.org/ wheezy/updates main
+deb http://ftp.debian.org/debian/ wheezy-updates main
+EOF
+
 fi
 
 export DEBIAN_FRONTEND=noninteractive
 
 chroot "$dir" apt-get update
 
-chroot "$dir" apt-get install -y --force-yes openssh-server parted linux-image-amd64 net-tools isc-dhcp-client grub-pc rsync ipmitool
+chroot "$dir" apt-get install -y --force-yes openssh-server parted linux-image-amd64 net-tools isc-dhcp-client grub-pc rsync ipmitool ifupdown lshw
 
 chroot "$dir" apt-get clean
 

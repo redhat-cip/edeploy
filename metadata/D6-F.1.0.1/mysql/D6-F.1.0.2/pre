@@ -1,0 +1,5 @@
+#!/bin/bash
+
+export DEBIAN_FRONTEND=noninteractive
+
+/var/lib/dpkg/info/linux-image-2.6.32-5-amd64.preinst upgrade 2.6.32-48

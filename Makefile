@@ -10,26 +10,26 @@ IMG=initrd.pxe
 INST=$(TOP)/install/$(VERS)
 META=$(TOP)/metadata/$(VERS)
 
-all: $(INST)/$(IMG) mysql.done
+all: $(INST)/$(IMG) $(INST)/mysql.done
 
-$(INST)/$(IMG): base.done init
+$(INST)/$(IMG): $(INST)/base.done init
 	./pxe.install $(INST)/base $(INST)/pxe $(IMG)
 
-base.done: base.install policy-rc.d edeploy
+$(INST)/base.done: base.install policy-rc.d edeploy
 	./base.install $(INST)/base $(DIST)
-	cp policy-rc.d edeploy $(INST)/base/usr/sbin/
-	touch base.done
+	cp -p policy-rc.d edeploy $(INST)/base/usr/sbin/
+	touch $(INST)/base.done
 
-openstack.done: openstack.install base.done
+$(INST)/openstack.done: openstack.install $(INST)/base.done
 	./openstack.install $(INST)/base $(INST)/openstack
-	touch openstack.done
+	touch $(INST)/openstack.done
 
-mysql.done: mysql.install base.done
+$(INST)/mysql.done: mysql.install $(INST)/base.done
 	./mysql.install $(INST)/base $(INST)/mysql
-	touch mysql.done
+	touch $(INST)/mysql.done
 
 dist:
-	tar zcvf ../edeploy.tgz Makefile init README.rst *.install
+	tar zcvf ../edeploy.tgz Makefile init README.rst *.install edeploy update-scenario.sh
 
 clean:
-	-rm -rf *~ *.done
+	-rm -f *~ $(INST)/*.done

@@ -1,0 +1,39 @@
+#!/bin/bash
+
+ROLE="$1"
+FROM="$2"
+TO="$3"
+DEST="$4"
+
+ORIG=$(cd $(dirname $0); pwd)
+FDIR=${DEST}/install/${FROM}/${ROLE}
+TDIR=${DEST}/install/${TO}/${ROLE}
+
+if [ $# != 4 ]; then
+    echo "Usage: $0 <role> <base version> <new version> <top dir>" 1>&2
+    exit 1
+fi
+
+if [ ! -d "$FDIR" ]; then
+    echo "Source directory $FDIR deson't exist" 1>&2
+    exit 1
+fi
+
+export DEBIAN_FRONTEND=noninteractive
+
+set -x
+
+if [ ! -d ${TDIR} ]; then
+    mkdir -p ${TDIR}
+
+    rsync -a --delete ${FDIR}/ ${TDIR}/
+fi
+
+mount -obind /dev ${TDIR}/dev
+chroot ${TDIR} apt-get update
+chroot ${TDIR} apt-get dist-upgrade -y
+chroot ${TDIR} apt-get clean
+cp -p ${ORIG}/policy-rc.d ${ORIG}/edeploy ${TDIR}/usr/sbin/
+umount ${TDIR}/dev
+echo -e "VERS=${TO}\nROLE=${ROLE}\n" > ${TDIR}/var/lib/edeploy/conf
+chroot ${TDIR} dpkg -l > ${TDIR}/../${ROLE}.dpkg

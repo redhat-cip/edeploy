@@ -10,4 +10,6 @@ rsync -a --delete --exclude disk /var/lib/debootstrap/install/D6-F.1.0.0/ /var/l
 make VERS=D6-F.1.0.1 DIST=squeeze clean
 make VERS=D6-F.1.0.1 DIST=squeeze
 
+./upgrade-from mysql D6-F.1.0.1 D6-F.1.0.2 /var/lib/debootstrap
+
 rsync -a metadata /var/lib/debootstrap/

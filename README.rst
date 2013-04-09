@@ -58,5 +58,8 @@ To test the update procedure under kvm::
 Log into the root account and then launch the following command to
 update to the new version of mysql::
 
- edeploy
+ edeploy D6-F.1.0.1
 
+And then you can test the kernel update process::
+
+ edeploy D6-F.1.0.2

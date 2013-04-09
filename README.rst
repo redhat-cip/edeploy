@@ -30,12 +30,33 @@ like this in the /etc/rsyncd.conf::
  gid = root
  
  [install]
-         path = /var/lib/debootstap
-         comment = exported filesystems area
+         path = /var/lib/debootstrap/install
+         comment = eDeploy install trees
+ 
+ [metadata]
+         path = /var/lib/debootstrap/metadata
+         comment = eDeploy metadata
+  uid = root
+  gid = root
 
-To test the procedure under kvm::
+To test the install procedure under kvm::
 
  make
+ cd /var/lib/debootstrap/install/D7-F.1.0.0
  qemu-img create disk 10G
  kvm -initrd initrd.pxe -kernel base/boot/vmlinuz-3.2.0-4-amd64 -hda disk
  kvm -hda disk
+
+To test the update procedure under kvm::
+
+ ./update-scenario.sh
+ cd /var/lib/debootstrap/install/D6-F.1.0.0
+ qemu-img create disk 10G
+ kvm -initrd initrd.pxe -kernel base/boot/vmlinuz-3.2.0-4-amd64 -hda disk
+ kvm -hda disk
+
+Log into the root account and then launch the following command to
+update to the new version of mysql::
+
+ edeploy
+

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+export DEBIAN_FRONTEND=noninteractive
+
+/var/lib/dpkg/info/mysql-server-5.1.preinst upgrade 5.1.49-3

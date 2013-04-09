@@ -1,0 +1,30 @@
+#!/bin/bash
+
+CUR=D6-F.1.0.0
+VERS=D6-F.1.0.1
+SERV=10.0.3.1
+ROLE=mysql
+
+set -e
+set -x
+
+mkdir -p /var/lib/edeploy
+
+rsync -a ${SERV}::metadata/${CUR}/${ROLE}/${VERS}/ /var/lib/edeploy/${VERS}/
+
+cd /var/lib/edeploy/${VERS}/
+
+if [ -x pre ]; then
+    ./pre
+fi
+
+rsync -av --delete --exclude-from=exclude ${SERV}::install/${VERS}/${ROLE}/ / > /var/lib/edeploy/rsync_${CUR}_${VERS}.out
+
+if [ -x post ]; then
+    ./post
+fi
+
+echo -e "\nVersion ${VERS}\n" > /etc/motd
+echo "VERS=${VERS}" > /var/lib/edeploy/conf
+
+echo "Upgraded to $VERS"

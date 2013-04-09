@@ -1,9 +1,10 @@
 #!/bin/bash
 
 dir="$1"
+dist="$2"
 
-if [ -z "$1" ]; then
-   echo "Usage: $0 <directory name>" 1>&2
+if [ -z "$1" -o -z "$dist" ]; then
+   echo "Usage: $0 <directory name> <distro name>" 1>&2
    exit 1
 fi
 
@@ -12,25 +13,27 @@ set -x
 if [ ! -d "$dir" ]; then
     mkdir -p "$dir"
 
-    debootstrap --variant=minbase wheezy "$dir"
+    debootstrap --variant=minbase $dist "$dir"
+fi
 
-    cat >> "$dir/etc/apt/apt.conf" <<EOF
+cat >> "$dir/etc/apt/apt.conf" <<EOF
 APT::Install-Recommends "0" ;
 APT::Install-Suggests "0" ; 
 EOF
-    
-    cat > ${dir}/etc/apt/sources.list.d/updates.list <<EOF
-deb http://security.debian.org/ wheezy/updates main
-deb http://ftp.debian.org/debian/ wheezy-updates main
-EOF
 
+# hack to not have updates in D6-F.1.0.0
+if [ $dir != /var/lib/debootstrap/install/D6-F.1.0.0/base ]; then
+    cat > ${dir}/etc/apt/sources.list.d/updates.list <<EOF
+deb http://security.debian.org/ $dist/updates main
+deb http://ftp.debian.org/debian/ ${dist}-updates main
+EOF
 fi
 
 export DEBIAN_FRONTEND=noninteractive
 
 chroot "$dir" apt-get update
 
-chroot "$dir" apt-get install -y --force-yes openssh-server parted linux-image-amd64 net-tools isc-dhcp-client grub-pc rsync ipmitool ifupdown lshw
+chroot "$dir" apt-get install -y --force-yes openssh-server parted linux-image-amd64 net-tools isc-dhcp-client grub-pc rsync ipmitool ifupdown lshw klogd sysklogd netbase console-tools console-data
 
 chroot "$dir" apt-get clean
 

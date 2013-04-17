@@ -33,7 +33,7 @@ export DEBIAN_FRONTEND=noninteractive
 
 chroot "$dir" apt-get update
 
-chroot "$dir" apt-get install -y --force-yes openssh-server parted linux-image-amd64 net-tools isc-dhcp-client grub-pc rsync ipmitool ifupdown lshw klogd sysklogd netbase console-tools console-data
+chroot "$dir" apt-get install -y --force-yes openssh-server parted linux-image-amd64 net-tools isc-dhcp-client grub-pc rsync ipmitool ifupdown lshw klogd sysklogd netbase console-tools console-data dmidecode
 
 chroot "$dir" apt-get clean
 

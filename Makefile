@@ -12,20 +12,20 @@ META=$(TOP)/metadata/$(VERS)
 
 all: $(INST)/$(IMG) $(INST)/mysql.done
 
-$(INST)/$(IMG): $(INST)/base.done init
-	./pxe.install $(INST)/base $(INST)/pxe $(IMG)
+$(INST)/$(IMG): $(INST)/base.done init pxe.install
+	./pxe.install $(INST)/base $(INST)/pxe $(IMG) $(VERS)
 
 $(INST)/base.done: base.install policy-rc.d edeploy
-	./base.install $(INST)/base $(DIST)
+	./base.install $(INST)/base $(DIST) $(VERS)
 	cp -p policy-rc.d edeploy $(INST)/base/usr/sbin/
 	touch $(INST)/base.done
 
 $(INST)/openstack.done: openstack.install $(INST)/base.done
-	./openstack.install $(INST)/base $(INST)/openstack
+	./openstack.install $(INST)/base $(INST)/openstack $(VERS)
 	touch $(INST)/openstack.done
 
 $(INST)/mysql.done: mysql.install $(INST)/base.done
-	./mysql.install $(INST)/base $(INST)/mysql
+	./mysql.install $(INST)/base $(INST)/mysql $(VERS)
 	touch $(INST)/mysql.done
 
 dist:

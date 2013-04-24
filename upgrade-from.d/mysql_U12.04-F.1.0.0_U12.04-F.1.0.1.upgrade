@@ -1,0 +1,16 @@
+#!/bin/bash
+
+BASEDIR=$(dirname $0)
+ROLE="$1"
+FROM="$2"
+TO="$3"
+TDIR="$4"
+
+SCRIPT=$BASEDIR/base_${FROM}_${TO}.upgrade
+
+set -x
+
+if [ -x $SCRIPT ]; then
+    $SCRIPT "$@"
+fi
+

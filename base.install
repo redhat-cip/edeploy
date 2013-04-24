@@ -2,13 +2,16 @@
 
 dir="$1"
 dist="$2"
+version="$3"
+ROLE=base
 
-if [ -z "$1" -o -z "$dist" ]; then
+if [ -z "$1" -o -z "$dist" -o -z "$version" ]; then
    echo "Usage: $0 <directory name> <distro name>" 1>&2
    exit 1
 fi
 
-set -x
+set -e				# abort on failure
+set -x				# print commands
 
 if [ ! -d "$dir" ]; then
     mkdir -p "$dir"
@@ -21,20 +24,53 @@ APT::Install-Recommends "0" ;
 APT::Install-Suggests "0" ; 
 EOF
 
+cleanup() {
+    umount ${dir}/dev
+}
+
+trap cleanup 0
+
+mount -obind /dev ${dir}/dev
+
+case $dist in
+    precise)
+	PACKAGES="linux-image-virtual"
+	;;
+    wheezy|squeeze)
 # hack to not have updates in D6-F.1.0.0
-if [ $dir != /var/lib/debootstrap/install/D6-F.1.0.0/base ]; then
-    cat > ${dir}/etc/apt/sources.list.d/updates.list <<EOF
+	if [ $dir != /var/lib/debootstrap/install/D6-F.1.0.0/base ]; then
+	    cat > ${dir}/etc/apt/sources.list.d/updates.list <<EOF
 deb http://security.debian.org/ $dist/updates main
 deb http://ftp.debian.org/debian/ ${dist}-updates main
 EOF
-fi
+	fi
+	PACKAGES="linux-image-amd64 ipmitool klogd sysklogd"
+	;;
+    *)
+	echo "unsupported distribution: $dist" 2>&1
+	exit 1
+	;;
+esac
 
 export DEBIAN_FRONTEND=noninteractive
 
 chroot "$dir" apt-get update
 
-chroot "$dir" apt-get install -y --force-yes openssh-server parted linux-image-amd64 net-tools isc-dhcp-client grub-pc rsync ipmitool ifupdown lshw klogd sysklogd netbase console-tools console-data dmidecode
+chroot "$dir" apt-get install -y --force-yes openssh-server parted $PACKAGES net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase net-tools dmidecode bash
+
+if [ $dist = precise ]; then
+    sed -i 's/#GRUB_TERMINAL=console/GRUB_TERMINAL=console/' ${dir}/etc/default/grub
+    sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT=/' ${dir}/etc/default/grub
+fi
+
+# let the key be generated on first boot
+rm -f "$dir"/etc/ssh/*key*
 
 chroot "$dir" apt-get clean
 
 echo -e "root\nroot"|chroot "$dir" passwd
+
+mkdir -p "$dir/var/lib/edeploy"
+
+echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
+echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

@@ -3,9 +3,10 @@
 SRC="$1"
 DST="$2"
 IMG="$3"
+VERS="$4"
 
-if [ ! -d "$SRC" -o -z "$DST" -o -z "$IMG" ]; then
-   echo "Usage: $0 <source dir> <dest dir> <initrd to generate>" 1>&2
+if [ ! -d "$SRC" -o -z "$DST" -o -z "$IMG" -o -z "$VERS" ]; then
+   echo "Usage: $0 <source dir> <dest dir> <initrd to generate> <version>" 1>&2
    exit 1
 fi
 
@@ -14,5 +15,6 @@ set -x
 rsync -au --delete-excluded --delete --exclude /boot/ --exclude 'vmlinuz*' --exclude 'initrd*' --exclude usr/share/man --exclude usr/share/doc --exclude usr/share/info --exclude var/lib/dpkg --exclude 'var/cache/apt/archives/*.deb' --exclude usr/share/zoneinfo --exclude usr/share/locale ${SRC}/ ${DST}
 
 cp -p init ${DST}/
+sed -i "s/VERS=.*/VERS=${VERS}/" ${DST}/init
 
 cd ${DST}; find . | cpio --quiet -R 0:0 -o -H newc | gzip -v > ../${IMG}

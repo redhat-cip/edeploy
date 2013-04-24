@@ -18,6 +18,7 @@ EOF
 	    continue
 	else
 	cat >> $d/etc/network/interfaces <<EOF
+auto $iface
 allow-hotplug $iface
 iface $iface inet dhcp
 
@@ -180,7 +181,7 @@ if [ -b $DEV ]; then
         mkdir /d
         mount $DEV /d
         echo -n "Copying filesystem..."
-        rsync -a ${SERV}::install/${VERS}/${ROLE}/ /d/
+        rsync -av ${SERV}::install/${VERS}/${ROLE}/ /d/
         echo done
         mount -obind /dev /d/dev
         chroot /d /bin/bash -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"

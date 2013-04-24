@@ -2,9 +2,11 @@
 
 src="$1"
 dir="$2"
+version="$3"
+ROLE=mysql
 
-if [ -z "$2" -o ! -d "$1" ]; then
-   echo "Usage: $0 <base directory> <target directory name>" 1>&2
+if [ -z "$2" -o ! -d "$1" -o -z "$version" ]; then
+   echo "Usage: $0 <base directory> <target directory name> <version>" 1>&2
    exit 1
 fi
 
@@ -22,3 +24,6 @@ chroot ${dir} debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_pas
 chroot ${dir} apt-get update
 chroot ${dir} apt-get install -y --force-yes puppet-common openssh-server mysql-server
 chroot ${dir} apt-get clean
+
+echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
+echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

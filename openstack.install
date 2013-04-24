@@ -2,6 +2,8 @@
 
 src="$1"
 dir="$2"
+version="$3"
+ROLE=openstack
 
 if [ -z "$2" -o ! -d "$1" ]; then
    echo "Usage: $0 <base directory> <target directory name>" 1>&2
@@ -25,3 +27,6 @@ wget -O- -q http://33.apt-proxy.gplhost.com/debian/repository_key.asc | chroot $
 chroot ${dir} apt-get update
 chroot ${dir} apt-get dist-upgrade -y --force-yes
 chroot ${dir} apt-get install -y --force-yes puppet-common openssh-server mcollective-client
+
+echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
+echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

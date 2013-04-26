@@ -40,7 +40,7 @@ mount -obind /dev ${TDIR}/dev
 chroot ${TDIR} apt-get update
 strace -e trace=process -f -o ${ORIG}/upgrade.out.$$ chroot ${TDIR} apt-get dist-upgrade -y
 chroot ${TDIR} apt-get clean
-cp -p ${ORIG}/policy-rc.d ${ORIG}/edeploy ${TDIR}/usr/sbin/
+cp -p ${ORIG}/edeploy ${TDIR}/usr/sbin/
 echo -e "VERS=${TO}\nROLE=${ROLE}\n" > ${TDIR}/var/lib/edeploy/conf
 chroot ${TDIR} dpkg -l > ${TDIR}/../${ROLE}.dpkg
 

@@ -5,6 +5,8 @@ dist="$2"
 version="$3"
 ROLE=base
 
+ORIG=$(cd $(dirname $0); pwd)
+
 if [ -z "$1" -o -z "$dist" -o -z "$version" ]; then
    echo "Usage: $0 <directory name> <distro name>" 1>&2
    exit 1
@@ -17,7 +19,13 @@ if [ ! -d "$dir" ]; then
     mkdir -p "$dir"
 
     debootstrap --variant=minbase $dist "$dir"
+    
+    # workaround no signature downloaded
+    rm -f "$dir"/var/lib/apt/lists/*[es]
+    chroot "$dir" apt-get update
 fi
+
+cp -p ${ORIG}/policy-rc.d ${dir}/usr/sbin/
 
 cat >> "$dir/etc/apt/apt.conf" <<EOF
 APT::Install-Recommends "0" ;
@@ -44,7 +52,7 @@ deb http://security.debian.org/ $dist/updates main
 deb http://ftp.debian.org/debian/ ${dist}-updates main
 EOF
 	fi
-	PACKAGES="linux-image-amd64 ipmitool klogd sysklogd"
+	PACKAGES="linux-image-amd64 ipmitool"
 	;;
     *)
 	echo "unsupported distribution: $dist" 2>&1

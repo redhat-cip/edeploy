@@ -1,0 +1,41 @@
+#!/bin/bash
+
+src="$1"
+dir="$2"
+version="$3"
+ROLE=ceph
+
+if [ -z "$2" -o ! -d "$1" -o -z "$version" ]; then
+   echo "Usage: $0 <base directory> <target directory name> <version>" 1>&2
+   exit 1
+fi
+
+set -e
+set -x
+
+test -d ${dir} || rsync -av ${src}/ ${dir}/
+
+echo $ROLE > ${dir}/etc/hostname
+
+export DEBIAN_FRONTEND=noninteractive
+
+chroot ${dir} apt-get update
+chroot ${dir} apt-get install -y --force-yes git puppet-common wget lsb-release
+chroot ${dir} apt-get clean
+
+git archive --format=tar --remote=ssh://remote_server/remote_repository master | tar -xf -
+
+chroot ${dir} bash -c "cd /etc/puppet/modules; test -d ceph || /usr/bin/git clone git://github.com/enovance/puppet-ceph.git ceph"
+test -d ${dir}/etc/puppet/modules/apt || chroot ${dir} puppet module install puppetlabs/apt
+test -d ${dir}/etc/puppet/modules/concat || chroot ${dir} puppet module install ripienaar/concat
+
+cat > ${dir}/etc/puppet/manifests/install.manifest <<EOF
+include ceph::apt::ceph
+include ceph::package
+EOF
+
+wget -q 'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc' -O- | chroot ${dir} apt-key add -
+chroot ${dir} puppet apply /etc/puppet/manifests/install.manifest
+
+echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
+echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

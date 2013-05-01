@@ -1,9 +1,6 @@
 #!/bin/bash
 
-VERS=D6-F.1.0.0
 TARGET="$1"
-SERV=10.0.3.1
-ROLE=mysql
 
 . /var/lib/edeploy/conf
 
@@ -35,7 +32,7 @@ if [ -x post ]; then
 fi
 
 echo -e "\nVersion ${TARGET}\n" > /etc/motd
-echo -e "VERS=${TARGET}\nROLE=${ROLE}\n" > /var/lib/edeploy/conf
+echo -e "VERS=${TARGET}\nROLE=${ROLE}\nSERV=${SERV}\n" > /var/lib/edeploy/conf
 
 echo "Upgraded to $TARGET"
 

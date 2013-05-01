@@ -142,30 +142,30 @@ IFS=
 # TODO: we need an exchange with the server to get these settings from the
 # system serial number in the future.
 ################################################################################
-ROLE=mysql
-VERS=D6-F.1.0.0
 SERV=10.0.3.1
+eval $(cat /proc/cmdline | tr ' ' "\n"|grep "^SERV=")
+eval $(curl -s -o- http://${SERV}/edeploy/install)
 
 ################################################################################
 # TODO: we need an exchange with the server to get the partition scheme from the
 # system serial number in the future. And generate an fstab at the end.
 ################################################################################
-DEV=/dev/sda
-echo -n "Waiting for $DEV to come up."
+DISK=/dev/vda
+echo -n "Waiting for $DISK to come up."
 count=20
-while [ $count -gt 0 -a ! -b $DEV ]; do
+while [ $count -gt 0 -a ! -b $DISK ]; do
     sleep 1
     count=$(($count - 1))
     echo -n .
 done
 
-if [ -b $DEV ]; then
+if [ -b $DISK ]; then
     echo done
 
-    parted -s $DEV mklabel msdos
-    parted -s $DEV mkpart primary ext2 0% 100%
+    parted -s $DISK mklabel msdos
+    parted -s $DISK mkpart primary ext2 0% 100%
     
-    DEV=/dev/sda1
+    DEV=${DISK}1
     
     echo -n "Waiting for $DEV to come up."
     count=20
@@ -182,10 +182,11 @@ if [ -b $DEV ]; then
         mount $DEV /d
         echo -n "Copying filesystem..."
         rsync -av ${SERV}::install/${VERS}/${ROLE}/ /d/
+	echo "SERV=${SERV}" >> /d/var/lib/edeploy/conf
         echo done
         mount -obind /dev /d/dev
         chroot /d /bin/bash -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"
-        if chroot /d /bin/bash -c "/usr/sbin/grub-install /dev/sda"; then
+        if chroot /d /bin/bash -c "/usr/sbin/grub-install ${DISK}"; then
 	    configure_network /d
     	    umount /d/dev
     	    umount /d

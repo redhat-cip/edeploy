@@ -45,13 +45,6 @@ case $dist in
 	PACKAGES="linux-image-virtual"
 	;;
     wheezy|squeeze)
-# hack to not have updates in D6-F.1.0.0
-	if [ $dir != /var/lib/debootstrap/install/D6-F.1.0.0/base ]; then
-	    cat > ${dir}/etc/apt/sources.list.d/updates.list <<EOF
-deb http://security.debian.org/ $dist/updates main
-deb http://ftp.debian.org/debian/ ${dist}-updates main
-EOF
-	fi
 	PACKAGES="linux-image-amd64 ipmitool"
 	;;
     *)
@@ -76,9 +69,40 @@ rm -f "$dir"/etc/ssh/*key*
 
 chroot "$dir" apt-get clean
 
+rm -f ${dir}/var/tmp/* ${dir}/tmp/*
+
 echo -e "root\nroot"|chroot "$dir" passwd
 
 mkdir -p "$dir/var/lib/edeploy"
 
 echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
 echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf
+
+[ -f ${dir}/etc/rc.local.REAL ] || cp -p ${dir}/etc/rc.local ${dir}/etc/rc.local.REAL
+
+cat > ${dir}/etc/rc.local <<EOF
+#!/bin/bash
+
+set -e
+
+mv /etc/rc.local.REAL /etc/rc.local
+
+touch /var/log/first-boot.d.log
+chmod 0600 /var/log/first-boot.d.log
+
+echo -n "Running first boot scripts..."
+run-parts /etc/first-boot.d >> /var/log/first-boot.d.log 2>&1
+echo done
+
+exit 0
+EOF
+
+mkdir -p ${dir}/etc/first-boot.d
+
+cat > ${dir}/etc/first-boot.d/01-ssh <<EOF
+#!/bin/bash
+
+dpkg-reconfigure openssh-server
+EOF
+
+chmod 755 ${dir}/etc/rc.local ${dir}/etc/first-boot.d/01-ssh

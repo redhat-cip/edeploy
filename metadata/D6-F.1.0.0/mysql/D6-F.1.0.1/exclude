@@ -5,6 +5,7 @@
 /etc/network/interfaces
 /etc/network/run
 /etc/nologin
+/etc/rc.local
 /etc/resolv.conf
 /etc/ssh/ssh_host_dsa_key
 /etc/ssh/ssh_host_dsa_key.pub
@@ -18,6 +19,7 @@
 /proc
 /run
 /sys
+/tmp
 /var/lib/dhcp
 /var/lib/edeploy
 /var/lib/mysql

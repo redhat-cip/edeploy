@@ -10,8 +10,8 @@ export DEBIAN_FRONTEND=noninteractive
 set -x
 
 cat > ${TDIR}/etc/apt/sources.list.d/updates.list <<EOF
-deb http://archive.ubuntu.com/ubuntu/ precise-security main 
-deb http://archive.ubuntu.com/ubuntu/ precise-updates main 
+deb http://security.debian.org/ wheezy/updates main
+deb http://ftp.debian.org/debian/ wheezy-updates main
 EOF
 
 chroot ${TDIR} apt-get update

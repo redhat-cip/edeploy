@@ -18,7 +18,7 @@ set -x				# print commands
 if [ ! -d "$dir" ]; then
     mkdir -p "$dir"
 
-    debootstrap --variant=minbase $dist "$dir"
+    debootstrap --arch $ARCH --variant=minbase $dist "$dir"
     
     # workaround no signature downloaded
     rm -f "$dir"/var/lib/apt/lists/*[es]

@@ -6,6 +6,7 @@ DIST=wheezy
 SRC=base
 DST=pxe
 IMG=initrd.pxe
+ARCH=amd64
 
 INST=$(TOP)/install/$(VERS)
 META=$(TOP)/metadata/$(VERS)
@@ -16,7 +17,7 @@ pxe $(INST)/$(IMG): $(INST)/base.done init pxe.install detect.py hpacucli.py mat
 	./pxe.install $(INST)/base $(INST)/pxe $(IMG) $(VERS)
 
 base $(INST)/base.done: base.install policy-rc.d edeploy
-	./base.install $(INST)/base $(DIST) $(VERS)
+	ARCH=$(ARCH) ./base.install $(INST)/base $(DIST) $(VERS)
 	cp -p policy-rc.d edeploy $(INST)/base/usr/sbin/
 	touch $(INST)/base.done
 

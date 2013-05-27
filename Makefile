@@ -2,6 +2,7 @@ SDIR=/root/edeploy
 TOP=/var/lib/debootstrap
 VERS=D7-F.1.0.0
 DIST=wheezy
+MIRROR=ftp://ftp.free.fr/mirrors/ftp.debian.org/
 
 SRC=base
 DST=pxe
@@ -17,7 +18,7 @@ pxe $(INST)/$(IMG): $(INST)/base.done init pxe.install detect.py hpacucli.py mat
 	./pxe.install $(INST)/base $(INST)/pxe $(IMG) $(VERS)
 
 base $(INST)/base.done: base.install policy-rc.d edeploy
-	ARCH=$(ARCH) ./base.install $(INST)/base $(DIST) $(VERS)
+	ARCH=$(ARCH) ./base.install $(INST)/base $(DIST) $(VERS) $(MIRROR)
 	cp -p policy-rc.d edeploy $(INST)/base/usr/sbin/
 	touch $(INST)/base.done
 

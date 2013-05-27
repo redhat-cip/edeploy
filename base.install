@@ -3,6 +3,7 @@
 dir="$1"
 dist="$2"
 version="$3"
+mirror="$4"
 ROLE=base
 
 ORIG=$(cd $(dirname $0); pwd)
@@ -18,7 +19,7 @@ set -x				# print commands
 if [ ! -d "$dir" ]; then
     mkdir -p "$dir"
 
-    debootstrap --arch $ARCH --variant=minbase $dist "$dir"
+    debootstrap --arch $ARCH --variant=minbase $dist "$dir" "$mirror"
     
     # workaround no signature downloaded
     rm -f "$dir"/var/lib/apt/lists/*[es]

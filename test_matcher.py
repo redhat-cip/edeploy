@@ -84,7 +84,27 @@ class TestMatcher(unittest.TestCase):
                           'disk4': '1I:1:2',
                           'disk5': '1I:1:3',
                           'disk6': '1I:1:4',
-                          'disk7': '2I:1:5'
+                          'disk7': '2I:1:5',
                           'disk8': '2I:1:6',
                           }
                          )
+
+    def test_already_bound(self):
+        lines = [
+            ('disk', '1I:1:2', 'size', '100GB'),
+            ('disk', '1I:1:1', 'size', '1000GB'),
+            ('disk', '1I:1:1', 'control', 'hpa'),
+            ('disk', '1I:1:2', 'control', 'hpa'),
+            ]
+        specs = [
+            ('disk', '$disk1', 'control', 'hpa'),
+            ('disk', '$disk1', 'size', '100GB'),
+            ('disk', '$disk2', 'size', '1000GB'),
+            ]
+        arr = {}
+        self.assert_(matcher.match_all(lines, specs, arr))
+        self.assertEqual(arr,
+                         {'disk1': '1I:1:2',
+                          'disk2': '1I:1:1',
+                          })
+

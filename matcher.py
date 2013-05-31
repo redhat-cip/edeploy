@@ -21,6 +21,9 @@ def match_line(line, specs, arr):
         spec = specs[sidx]
         for idx in range(4):
             if spec[idx][0] == '$':
+                if spec[idx][1:] in arr:
+                    if arr[spec[idx][1:]] != line[idx]:
+                        break
                 varidx = idx
             elif line[idx] != spec[idx]:
                 break

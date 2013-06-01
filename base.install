@@ -57,8 +57,21 @@ export DEBIAN_FRONTEND=noninteractive
 
 chroot "$dir" apt-get update
 
-chroot "$dir" apt-get install -y --force-yes openssh-server parted $PACKAGES net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase net-tools dmidecode bash curl
+chroot "$dir" apt-get install -y --force-yes openssh-server parted $PACKAGES net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase net-tools dmidecode bash curl hdparm sdparm
 
+# Inject HP RAID CLI tool
+if [ ! -r hpacucli-9.40-12.0.x86_64.rpm ]; then
+    wget http://downloads.linux.hp.com/SDR/downloads/ServicePackforProLiant/2013.02.0/hp/swpackages/hpacucli-9.40-12.0.x86_64.rpm
+fi
+if [ ! -r hpacucli_9.40-13_amd64.deb  ]; then
+    alien hpacucli-9.40-12.0.x86_64.rpm
+fi
+cp hpacucli_9.40-13_amd64.deb "$dir"/tmp/hpacucli.deb
+chroot "$dir" apt-get -y install lib32gcc1 lib32stdc++6 python-pexpect
+chroot "$dir" dpkg -i /tmp/hpacucli.deb
+rm "$dir"/tmp/hpacucli.deb
+
+# Ubuntu specific
 if [ $dist = precise ]; then
     sed -i 's/#GRUB_TERMINAL=console/GRUB_TERMINAL=console/' ${dir}/etc/default/grub
     sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT=/' ${dir}/etc/default/grub
@@ -102,6 +115,7 @@ mkdir -p ${dir}/etc/first-boot.d
 cat > ${dir}/etc/first-boot.d/01-ssh <<EOF
 #!/bin/bash
 
+export DEBIAN_FRONTEND=noninteractive
 dpkg-reconfigure openssh-server
 EOF
 

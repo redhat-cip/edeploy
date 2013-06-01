@@ -4,3 +4,4 @@ pxe
 initrd.pxe
 disk
 *~
+*.pyc

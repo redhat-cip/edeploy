@@ -1,0 +1,6 @@
+# -*- python -*-
+
+[
+    ('disk', '$disk', 'size', '$size'),
+    ('disk', '$disk2', 'size', '$size2'),
+]

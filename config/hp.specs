@@ -1,0 +1,20 @@
+# -*- python -*-
+
+[
+    ('disk', '$disk1', 'size', '100'),
+    ('disk', '$disk1', 'slot', '$slot1'),
+    ('disk', '$disk2', 'size', '100'),
+    ('disk', '$disk2', 'slot', '$slot2'),
+    ('disk', '$disk3', 'size', '1000'),
+    ('disk', '$disk3', 'slot', '$slot3'),
+    ('disk', '$disk4', 'size', '1000'),
+    ('disk', '$disk4', 'slot', '$slot4'),
+    ('disk', '$disk5', 'size', '1000'),
+    ('disk', '$disk5', 'slot', '$slot5'),
+    ('disk', '$disk6', 'size', '1000'),
+    ('disk', '$disk6', 'slot', '$slot6'),
+    ('disk', '$disk7', 'size', '1000'),
+    ('disk', '$disk7', 'slot', '$slot7'),
+    ('disk', '$disk8', 'size', '1000'),
+    ('disk', '$disk8', 'slot', '$slot8'),
+]

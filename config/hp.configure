@@ -1,0 +1,29 @@
+
+# -*- python -*-
+
+import hpacucli
+
+cli = hpacucli.Cli(debug=True)
+cli.launch()
+
+disk1 = var['disk1']
+disk2 = var['disk2']
+slot = 'slot=' + var['slot1']
+
+print '# Removing disks'
+cli.ctrl_delete(slot)
+
+print '# Creating SSD array'
+disk = cli.ctrl_create_ld(slot, (disk1, disk2), raid='1')
+print "# -> %s" % disk
+print
+
+for idx in range(3, 9):
+    disk_name = 'disk%d' % idx
+    slot_name = 'slot=' + var['slot%d' % idx]
+    print '# Creating disk%d (%s)' % (idx, var[disk_name])
+    var[disk_name] = cli.ctrl_create_ld(slot_name, (var[disk_name],), raid='0')
+    print "# -> %s" % var[disk_name]
+    print
+
+set_role('ceph', 'D7-F.1.0.0', disk)

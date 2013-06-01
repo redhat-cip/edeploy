@@ -1,5 +1,74 @@
 #!/bin/bash
 
+################################################################################
+# extracted from /var/lib/dpkg/info/openssh-server.postinst
+################################################################################
+get_config_option() {
+	option="$1"
+
+	[ -f /etc/ssh/sshd_config ] || return
+
+	# TODO: actually only one '=' allowed after option
+	perl -lne 's/\s+/ /g; print if s/^\s*'"$option"'[[:space:]=]+//i' \
+	   /etc/ssh/sshd_config
+}
+
+host_keys_required() {
+	hostkeys="$(get_config_option HostKey)"
+	if [ "$hostkeys" ]; then
+		echo "$hostkeys"
+	else
+		# No HostKey directives at all, so the server picks some
+		# defaults depending on the setting of Protocol.
+		protocol="$(get_config_option Protocol)"
+		[ "$protocol" ] || protocol=1,2
+		if echo "$protocol" | grep 1 >/dev/null; then
+			echo /etc/ssh/ssh_host_key
+		fi
+		if echo "$protocol" | grep 2 >/dev/null; then
+			echo /etc/ssh/ssh_host_rsa_key
+			echo /etc/ssh/ssh_host_dsa_key
+			echo /etc/ssh/ssh_host_ecdsa_key
+		fi
+	fi
+}
+
+create_key() {
+	msg="$1"
+	shift
+	hostkeys="$1"
+	shift
+	file="$1"
+	shift
+
+	if echo "$hostkeys" | grep -x "$file" >/dev/null && \
+	   [ ! -f "$file" ] ; then
+		echo -n $msg
+		ssh-keygen -q -f "$file" -N '' "$@"
+		echo
+		if which restorecon >/dev/null 2>&1; then
+			restorecon "$file.pub"
+		fi
+	fi
+}
+
+
+create_keys() {
+	hostkeys="$(host_keys_required)"
+
+	create_key "Creating SSH1 key; this may take some time ..." \
+		"$hostkeys" /etc/ssh/ssh_host_key -t rsa1
+
+	create_key "Creating SSH2 RSA key; this may take some time ..." \
+		"$hostkeys" /etc/ssh/ssh_host_rsa_key -t rsa
+	create_key "Creating SSH2 DSA key; this may take some time ..." \
+		"$hostkeys" /etc/ssh/ssh_host_dsa_key -t dsa
+	create_key "Creating SSH2 ECDSA key; this may take some time ..." \
+		"$hostkeys" /etc/ssh/ssh_host_ecdsa_key -t ecdsa
+}
+
+################################################################################
+
 function configure_network() {
     d="$1"
     
@@ -114,6 +183,12 @@ else
 fi
 
 echo "Starting networking"
+
+if true; then
+    create_keys
+    /etc/init.d/ssh start
+fi
+
 IFS=:
 export IFS
 grep : /proc/net/dev | sed 's/ *//' | while read iface rem; do
@@ -139,65 +214,48 @@ done
 IFS=
 
 ################################################################################
+# DEBUG MODE
+################################################################################
+if true; then
+    echo create_keys
+    echo /etc/init.d/ssh start
+fi
+
+################################################################################
 # TODO: we need an exchange with the server to get these settings from the
 # system serial number in the future.
 ################################################################################
 SERV=10.0.3.1
-eval $(cat /proc/cmdline | tr ' ' "\n"|grep "^SERV=")
-eval $(curl -s -o- http://${SERV}/edeploy/install)
+RSERV=$SERV
+eval $(cat /proc/cmdline | tr ' ' "\n"|grep "^R?SERV=")
 
-################################################################################
-# TODO: we need an exchange with the server to get the partition scheme from the
-# system serial number in the future. And generate an fstab at the end.
-################################################################################
-DISK=/dev/vda
-echo -n "Waiting for $DISK to come up."
-count=20
-while [ $count -gt 0 -a ! -b $DISK ]; do
-    sleep 1
-    count=$(($count - 1))
-    echo -n .
-done
+cd /
+./detect.py > /tmp/hw.py
+curl -s -o/configure -F file=@/tmp/hw.py http://${SERV}/cgi-bin/upload.py
+chmod +x configure
 
-if [ -b $DISK ]; then
-    echo done
+if ./configure; then
 
-    parted -s $DISK mklabel msdos
-    parted -s $DISK mkpart primary ext2 0% 100%
-    
-    DEV=${DISK}1
-    
-    echo -n "Waiting for $DEV to come up."
-    count=20
-    while [ $count -gt 0 -a ! -b $DEV ]; do
-        sleep 1
-        count=$(($count - 1))
-        echo -n .
-    done
-    if [ -b $DEV ]; then
-        echo done
-        
-        mkfs.ext4 $DEV
-        mkdir /d
-        mount $DEV /d
-        echo -n "Copying filesystem..."
-        rsync -av ${SERV}::install/${VERS}/${ROLE}/ /d/
-	echo "SERV=${SERV}" >> /d/var/lib/edeploy/conf
-        echo done
-        mount -obind /dev /d/dev
-        chroot /d /bin/bash -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"
-        if chroot /d /bin/bash -c "/usr/sbin/grub-install ${DISK}"; then
+    . /role
+
+    if [ -n "$ROLE" -a -n "$VERS" ]; then
+	rsync -a ${RSERV}::install/${VERS}/${ROLE}/ /d/
+	echo "SERV=${RSERV}" >> /d/var/lib/edeploy/conf
+	echo done
+	mount -obind /dev /d/dev
+	chroot /d /bin/bash -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"
+	if chroot /d /bin/bash -c "/usr/sbin/grub-install ${DISK}"; then
 	    configure_network /d
-    	    umount /d/dev
-    	    umount /d
-    	    sync
-    	    poweroff -f
-        fi
+	    umount /d/dev
+	    umount /d
+	    sync
+	    reboot -f
+	else
+	    echo failed
+	fi
     else
-        echo failed
+	echo "No role or version defined..."
     fi
-else
-    echo failed
 fi
 
 exec /bin/bash

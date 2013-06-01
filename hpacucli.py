@@ -10,7 +10,9 @@
 about disks, RAID arrays or controllers or to configure them.
 '''
 
+import os
 import re
+import sys
 import pexpect
 
 
@@ -129,13 +131,18 @@ interact with it to configure or gather information.'''
     def launch(self):
         '''Launch an hpacucli from /sur/sbin. Must be called before
 any other method.'''
-        self.process = pexpect.spawn('/usr/sbin/hpacucli')
-        self.process.expect(PROMPT_REGEXP)
+        if os.path.exists('/usr/sbin/hpacucli'):
+            self.process = pexpect.spawn('/usr/sbin/hpacucli')
+            self.process.expect(PROMPT_REGEXP)
+            return True
+        else:
+            return False
 
     def _sendline(self, line):
         '''Internal method to send a command to the hpacucli, wait for
 the prompt and return the output string.'''
-        print line
+        if self.debug:
+            print line
         self.process.sendline(line)
         self.process.expect(PROMPT_REGEXP)
         ret = self.process.before[len(line):]

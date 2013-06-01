@@ -5,28 +5,23 @@ import matcher
 class TestMatcher(unittest.TestCase):
     
     def test_equal(self):
-        line = ('system', 'board', 'serial', 'CZJ31402CD')
-        specs = [('system', 'board', 'serial', 'CZJ31402CD'),
-                 ]
+        lines = [('system', 'board', 'serial', 'CZJ31402CD')]
+        spec = ('system', 'board', 'serial', 'CZJ31402CD')
         arr = {}
-        self.assert_(matcher.match_line(line, specs, arr))
-        self.assertEqual(specs, [])
+        self.assert_(matcher.match_spec(spec, lines, arr))
 
     def test_not_equal(self):
-        line = ('system', 'board', 'serial', 'CZJ31402CD')
-        specs = [('system', 'board', 'serial', 'CZJ31402CE'),
-                 ]
+        lines = [('system', 'board', 'serial', 'CZJ31402CD')]
+        spec = ('system', 'board', 'serial', 'CZJ31402CE')
         arr = {}
-        self.assert_(not matcher.match_line(line, specs, arr))
+        self.assert_(not matcher.match_spec(spec, lines, arr))
 
     def test_var(self):
-        line = ('disk', '1I:1:1', 'size', '1000GB')
-        specs = [('disk', '$disk8', 'size', '1000GB'),
-                 ]
+        lines = [('disk', '1I:1:1', 'size', '1000GB')]
+        spec = ('disk', '$disk8', 'size', '1000GB')
         arr = {}
-        self.assert_(matcher.match_line(line, specs, arr))
+        self.assert_(matcher.match_spec(spec, lines, arr))
         self.assertEqual(arr, {'disk8': '1I:1:1'})
-        self.assertEqual(specs, [])
 
     def test_vars(self):
         lines = [
@@ -55,16 +50,6 @@ class TestMatcher(unittest.TestCase):
             ('disk', '2I:1:8', 'size', '100GB'),
             ('disk', '2I:1:8', 'type', 'SSDSATA'),
             ('disk', '2I:1:8', 'control', 'hpa'),
-            ('net', 'eth0', 'mac', '2c:76:8a:5a:e4:10'),
-            ('net', 'eth0', 'type', '1Gb'),
-            ('net', 'eth1', 'mac', '2c:76:8a:5a:e4:11'),
-            ('net', 'eth1', 'type', '1Gb'),
-            ('net', 'eth2', 'mac', 'b4:b5:2f:63:d4:2c'),
-            ('net', 'eth2', 'type', '1Gb'),
-            ('net', 'eth2', 'ipv4', '10.142.18.195'),
-            ('net', 'eth3', 'mac', 'b4:b5:2f:63:d4:2d'),
-            ('net', 'eth3', 'type', '1Gb'),
-            ('net', 'eth3', 'ipv4', '10.66.6.218'),
             ]
         specs = [('system', 'board', 'serial', 'CZJ31402CD'),
                  ('disk', '$disk1', 'size', '100GB'),
@@ -97,8 +82,8 @@ class TestMatcher(unittest.TestCase):
             ('disk', '1I:1:2', 'control', 'hpa'),
             ]
         specs = [
-            ('disk', '$disk1', 'control', 'hpa'),
             ('disk', '$disk1', 'size', '100GB'),
+            ('disk', '$disk1', 'control', 'hpa'),
             ('disk', '$disk2', 'size', '1000GB'),
             ]
         arr = {}
@@ -108,3 +93,34 @@ class TestMatcher(unittest.TestCase):
                           'disk2': '1I:1:1',
                           })
 
+    def test_order(self):
+        specs = [
+            ('disk', '$disk1', 'size', '100'),
+            ('disk', '$disk1', 'slot', '$slot1'),
+            ('disk', '$disk2', 'size', '1000'),
+            ('disk', '$disk2', 'slot', '$slot2'),
+            ]
+        lines = [
+            ('disk', '1I:1:1', 'size', '1000'),
+            ('disk', '1I:1:1', 'control', 'hpa'),
+            ('disk', '1I:1:1', 'slot', '2'),
+            ('disk', '2I:1:8', 'size', '100'),
+            ('disk', '2I:1:8', 'control', 'hpa'),
+            ('disk', '2I:1:8', 'slot', '2'),
+            ]
+        arr = {}
+        self.assert_(matcher.match_all(lines, specs, arr))
+
+    def test_2vars(self):
+        specs = [
+            ('disk', '$disk', 'size', '$size'),
+            ]
+        lines = [
+            ('disk', 'vda', 'size', '8'),
+            ]
+        arr = {}
+        self.assert_(matcher.match_all(lines, specs, arr))
+        self.assertEqual(arr,
+                         {'size': '8',
+                          'disk': 'vda',
+                          })

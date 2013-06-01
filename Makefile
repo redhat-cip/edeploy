@@ -12,7 +12,7 @@ META=$(TOP)/metadata/$(VERS)
 
 all: $(INST)/$(IMG) $(INST)/mysql.done
 
-pxe $(INST)/$(IMG): $(INST)/base.done init pxe.install
+pxe $(INST)/$(IMG): $(INST)/base.done init pxe.install detect.py hpacucli.py matcher.py diskinfo.py
 	./pxe.install $(INST)/base $(INST)/pxe $(IMG) $(VERS)
 
 base $(INST)/base.done: base.install policy-rc.d edeploy
@@ -33,7 +33,7 @@ ceph $(INST)/ceph.done: ceph.install $(INST)/base.done
 	touch $(INST)/ceph.done
 
 dist:
-	tar zcvf ../edeploy.tgz Makefile init README.rst *.install edeploy update-scenario.sh
+	tar zcvf ../edeploy.tgz Makefile init README.rst *.install edeploy update-scenario.sh *.py
 
 clean:
 	-rm -f *~ $(INST)/*.done

@@ -1,5 +1,12 @@
 #!/bin/bash
 
+exec 1>&3
+exec 2>&4
+
+set -x
+
+exec > /log 2>&1
+
 ################################################################################
 # extracted from /var/lib/dpkg/info/openssh-server.postinst
 ################################################################################
@@ -199,7 +206,7 @@ grep : /proc/net/dev | sed 's/ *//' | while read iface rem; do
 
     echo -n "Waiting for $iface to come up."
     dhclient $iface
-    count=30
+    count=10
     while [ $count -gt 0 ] && ! ifconfig $iface|grep -q 'inet addr'; do
 	sleep 1
 	count=$(($count - 1))
@@ -214,20 +221,12 @@ done
 IFS=
 
 ################################################################################
-# DEBUG MODE
-################################################################################
-if true; then
-    echo create_keys
-    echo /etc/init.d/ssh start
-fi
-
-################################################################################
 # TODO: we need an exchange with the server to get these settings from the
 # system serial number in the future.
 ################################################################################
 SERV=10.0.3.1
 RSERV=$SERV
-eval $(cat /proc/cmdline | tr ' ' "\n"|grep "^R?SERV=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^R?SERV=")
 
 cd /
 ./detect.py > /tmp/hw.py
@@ -248,6 +247,11 @@ if ./configure; then
 	rm /d/etc/fstab.ext /d/etc/fstab.new
 	mount -obind /dev /d/dev
 	chroot /d /bin/bash -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"
+	
+	if [ -d /d/var/log ]; then
+	    cp /log /d/var/log/install.log
+	fi
+	
 	if chroot /d /bin/bash -c "/usr/sbin/grub-install ${DISK}"; then
 	    configure_network /d
 	    umount /d/dev
@@ -260,6 +264,14 @@ if ./configure; then
     else
 	echo "No role or version defined..."
     fi
+else
+    echo "Problem during configuration of disks"
+    if [ -d /d/var/log ]; then
+	cp /log /d/var/log/install.log
+    fi
 fi
+
+exec 3>&1
+exec 4>&2
 
 exec /bin/bash

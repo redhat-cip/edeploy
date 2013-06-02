@@ -239,15 +239,19 @@ if ./configure; then
     . /role
 
     if [ -n "$ROLE" -a -n "$VERS" ]; then
+	echo -n "Copying files from ${RSERV}::install/${VERS}/${ROLE}..."
 	rsync -a ${RSERV}::install/${VERS}/${ROLE}/ /d/
 	echo "SERV=${RSERV}" >> /d/var/lib/edeploy/conf
 	echo done
+	cat /d/etc/fstab /d/etc/fstab.ext > /d/etc/fstab.new
+	cp /d/etc/fstab.new /d/etc/fstab
+	rm /d/etc/fstab.ext /d/etc/fstab.new
 	mount -obind /dev /d/dev
 	chroot /d /bin/bash -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"
 	if chroot /d /bin/bash -c "/usr/sbin/grub-install ${DISK}"; then
 	    configure_network /d
 	    umount /d/dev
-	    umount /d
+	    umount -a
 	    sync
 	    reboot -f
 	else

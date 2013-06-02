@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
+import commands
 import pprint
 import sys
+import xml.etree.ElementTree as ET
 
 import diskinfo
 import hpacucli
@@ -44,9 +46,30 @@ def detect_disks(l):
     for name in [name for name, size in sizes.items() if size > 0]:
         l.append(('disk', name, 'size', str(sizes[name])))
 
-l = []
-
-detect_hpa(l)
-detect_disks(l)
-
-pprint.pprint(l)
+def detect_system(l):
+    status, output = commands.getstatusoutput('lshw -xml')
+    if status == 0:
+        xml = ET.fromstring(output)
+        e = xml.findall("./node/serial")
+        if len(e) >= 1:
+            l.append(('system', 'board', 'serial', e[0].text))
+        for e in xml.findall(".//node[@class='network']"):
+            name = e.find('logicalname')
+            if name is not None:
+                serial = e.find('serial')
+                if serial is not None:
+                    l.append(('network', name.text, 'serial', serial.text))
+                size = e.find('size')
+                if size is not None:
+                    l.append(('network', name.text, 'size', size.text))
+                ip = e.find("configuration/setting[@id='ip']")
+                if ip is not None:
+                    l.append(('network', name.text, 'ipv4', ip.attrib['value']))
+if __name__ == "__main__":
+    l = []
+    
+    detect_hpa(l)
+    detect_disks(l)
+    detect_system(l)
+    
+    pprint.pprint(l)

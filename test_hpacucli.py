@@ -344,3 +344,5 @@ CTRL_LD_SHOW_RESULT2 = {
     'Fault Tolerance': '0',
     'Size': '931.5 GB'}
 
+if __name__ == "__main__":
+    unittest.main()

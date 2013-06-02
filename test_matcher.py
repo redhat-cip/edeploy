@@ -124,3 +124,6 @@ class TestMatcher(unittest.TestCase):
                          {'size': '8',
                           'disk': 'vda',
                           })
+
+if __name__ == "__main__":
+    unittest.main()

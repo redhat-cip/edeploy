@@ -196,6 +196,10 @@ if true; then
     /etc/init.d/ssh start
 fi
 
+# Let's wait 15 seconds to get a DHCP answer
+# Default is very very long....
+sed -i "s/^\#timeout.*/timeout 15/g" /etc/dhcp/dhclient.conf
+
 IFS=:
 export IFS
 grep : /proc/net/dev | sed 's/ *//' | while read iface rem; do

@@ -26,7 +26,7 @@ run('parted --script %s align-check optimal 1' % disk)
 run('parted --script %s align-check optimal 2' % disk)
 print "Creating LVM"
 run('pvcreate -f -y --dataalignment 512k %s%d' % (disk, 2))
-run('vgcreate -f -y --dataalignment 512k rootfs %s%d' (%disk, 2))
+run('vgcreate -f -y --dataalignment 512k rootfs %s%d' % (disk, 2))
 run('lvcreate rootfs -n slash -L 20G')
 run('lvcreate rootfs -n var -L 20G')
 run('lvcreate rootfs -n home -L 2G')

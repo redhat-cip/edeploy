@@ -34,9 +34,6 @@ set -x				# print commands
 if [ ! -d "$dir" ]; then
     mkdir -p "$dir"
 
-    # Insuring PATH does have /bin & /sbin as chroot needs it
-    export PATH=/bin:/sbin:$PATH
-
     debootstrap --arch $ARCH --variant=minbase $dist "$dir" "$mirror"
     
     # workaround no signature downloaded

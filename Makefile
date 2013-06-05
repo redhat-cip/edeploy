@@ -8,6 +8,7 @@ SRC=base
 DST=pxe
 IMG=initrd.pxe
 ARCH=amd64
+export PATH := /sbin:/bin::$(PATH)
 
 INST=$(TOP)/install/$(VERS)
 META=$(TOP)/metadata/$(VERS)

@@ -8,10 +8,25 @@ ROLE=base
 
 ORIG=$(cd $(dirname $0); pwd)
 
+fatal_error() {
+	echo $1;
+	exit 1
+}
+
+check_binary() {
+	which $1 || fatal_error "$1 is missing"
+}
+
 if [ -z "$1" -o -z "$dist" -o -z "$version" ]; then
    echo "Usage: $0 <directory name> <distro name>" 1>&2
    exit 1
 fi
+
+check_binary alien
+check_binary wget
+check_binary debootstrap
+check_binary chroot
+check_binary sed
 
 set -e				# abort on failure
 set -x				# print commands

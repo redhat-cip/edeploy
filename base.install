@@ -22,6 +22,7 @@ if [ -z "$1" -o -z "$dist" -o -z "$version" ]; then
    exit 1
 fi
 
+check_binary dh_testdir
 check_binary alien
 check_binary wget
 check_binary debootstrap

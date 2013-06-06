@@ -40,3 +40,6 @@ dist:
 
 clean:
 	-rm -f *~ $(INST)/*.done
+
+distclean: clean
+	-rm -rf $(INST)/*

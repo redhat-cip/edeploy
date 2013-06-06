@@ -1,0 +1,185 @@
+#!/bin/bash
+
+SRC="$1"
+IMG="$2"
+VER="$3"
+INST="$4"
+SERV="$5"
+FLASH_IMAGE="$2-$3.img"
+FLASH_SIZE=128 #in Megabytes
+LOOPBACK_BOOT=NONE
+BOOT_MOUNT_POINT=/tmp/$2-$3.tmp
+
+if [ ! -d "$SRC" ]; then
+   echo "Usage: $0 <source dir> <img> <version> <initrd_path> <ip_serv>" 1>&2
+   exit 1
+fi
+
+step() {
+	echo "################################################################"
+	echo "$@ ($PROG_NAME)"
+	echo "################################################################"
+}
+
+fatal_error() {
+        echo $1;
+        exit 1
+}
+
+check_binary() {
+        which $1 || fatal_error "$1 is missing"
+}
+
+get_fdisk_parameter() {
+	FLASH_SIZE=$1 #in MB
+	BYTE_SIZE="512"
+	FLASH_SECTORS=32
+	FLASH_HEADS=64
+	ONE_CYLINDER=$(( $FLASH_HEADS * $FLASH_SECTORS * $BYTE_SIZE ))
+	FLASH_CYNLINDERS=$(( $FLASH_SIZE * 1024 * 1024 / $ONE_CYLINDER ))
+	FLASH_SECTORS_COUNT=$(( $FLASH_SIZE * 1024 *1024 / $BYTE_SIZE ))
+	echo "-C $FLASH_CYNLINDERS -S $FLASH_SECTORS -H $FLASH_HEADS"
+}
+
+prepare_flash_image() {
+	step "Prepare flash image"
+	if [ ! -e $FLASH_IMAGE ]; then
+
+		echo "Zeroification in progess"
+		dd if=/dev/zero of=$FLASH_IMAGE bs=1M count=$FLASH_SIZE 
+		sync
+
+		echo "Partionning in progress"
+		#Let's mount the flash image in loopback
+		# first partition is for /boot
+		# next one is for /var/lib/config
+		# next one is for /var/lib/persistent
+		# the rest is for /var/lib/session
+		sfdisk -uM --force $(get_fdisk_parameter $FLASH_SIZE) $FLASH_IMAGE << EOF
+,,L,*
+EOF
+	fi
+}
+
+
+losetupsizeopt() {
+	OPTION="-s"
+	# On older version of losetup, we shall use --sizelimit option
+	losetup -h 2>&1 | grep -q '\-\-sizelimit' && OPTION="--sizelimit"
+	echo "$OPTION"
+}
+
+loop_offset(){
+	FLASH_IMAGE=$1
+	PARTITION=$2
+	PART_OFFSET=$(sfdisk -l $FLASH_IMAGE -uS 2>/dev/null | grep "img${PARTITION}" | tr -d '*' |  awk '{print $2}' | tr -d '+')
+	PART_OFFSET_BYTES=$(( $PART_OFFSET * 512 ))
+	echo $PART_OFFSET_BYTES
+}
+
+loop_size(){
+	FLASH_IMAGE=$1
+	PARTITION=$2
+	PART_SIZE=$(sfdisk -l $FLASH_IMAGE -uM  2>/dev/null | grep "img${PARTITION}" | tr -d '*' | awk '{print $5}' | tr -d '+' )
+	PART_SIZE_MB=$(( $PART_SIZE * 1024 ));
+	echo $PART_SIZE_MB
+}
+
+prepare_flash_fs() {
+	step "Prepare flash fs"
+
+	#Let's search the next loopback device
+	LOOPBACK_BOOT=$(losetup -f)
+	losetup -o $(loop_offset $FLASH_IMAGE 1) $(losetupsizeopt) $(loop_size $FLASH_IMAGE 1) $LOOPBACK_BOOT $FLASH_IMAGE
+
+	echo "Formatting /boot"
+	mkfs.ext2 -F -L boot $LOOPBACK_BOOT
+	tune2fs -i 0 -c 0 $LOOPBACK_BOOT
+
+	sync
+}
+
+free_loopbacks() {
+	step "Free loopback"
+
+        #Let's clean the loopback devices
+	if [ "$LOOPBACK_BOOT" != "NONE" ]; then
+	        losetup -d $LOOPBACK_BOOT
+	fi
+}
+
+mount_flash_fs() {
+	step "Mount flash fs"
+
+        mkdir -p $BOOT_MOUNT_POINT
+        mount $LOOPBACK_BOOT $BOOT_MOUNT_POINT
+
+	if [ ! `grep $BOOT_MOUNT_POINT /proc/mounts | wc -l` ]; then
+		die "Flash Sytem isn't mounted !"
+	fi
+}
+
+copy_os_to_flash() {
+	step "Copy OS to flash"
+
+	cp -f ${SRC}/boot/vmlinuz* $BOOT_MOUNT_POINT/vmlinuz
+	cp -f ${INST}/initrd.pxe $BOOT_MOUNT_POINT
+}
+
+setup_bootloader() {
+
+	KERNEL_OPTIONS="quiet panic=-1 oops=panic consoleblank=0"
+	mkdir $1/extlinux
+
+cat << EOF >> $1/extlinux/extlinux.conf
+TOTALTIMEOUT 10
+PROMPT 0
+DEFAULT FLASH
+
+LABEL FLASH
+        KERNEL /vmlinuz
+        INITRD /initrd.pxe
+        APPEND $KERNEL_OPTIONS SERV=$SERV
+
+EOF
+}
+
+umount_flash_fs() {
+	step "Umount flash fs"
+
+	umount $BOOT_MOUNT_POINT
+}
+
+install_bootloader() {
+	step "Install bootloader"
+	mkdir -p $BOOT_MOUNT_POINT/extlinux
+        extlinux/extlinux --install $BOOT_MOUNT_POINT/extlinux
+
+	umount_flash_fs
+
+        #Installing mbr
+        dd if=extlinux/mbr.bin of=$FLASH_IMAGE conv=notrunc
+}
+
+check_binary losetup
+check_binary sfdisk
+check_binary mkfs.ext2
+check_binary tune2fs
+
+prepare_flash_image
+prepare_flash_fs
+
+mount_flash_fs
+copy_os_to_flash
+
+setup_bootloader $BOOT_MOUNT_POINT
+install_bootloader
+
+free_loopbacks
+
+#rsync -au --delete-excluded --delete --exclude /boot/ --exclude 'vmlinuz*' --exclude 'initrd*' --exclude usr/share/man --exclude usr/share/doc --exclude usr/share/info --exclude var/lib/dpkg --exclude 'var/cache/apt/archives/*.deb' --exclude usr/share/zoneinfo --exclude usr/share/locale ${SRC}/ ${DST}
+
+#cp -p init detect.py hpacucli.py matcher.py diskinfo.py ${DST}/
+#sed -i "s/VERS=.*/VERS=${VERS}/" ${DST}/init
+
+#cd ${DST}; find . | cpio --quiet -R 0:0 -o -H newc | gzip -v > ../${IMG}

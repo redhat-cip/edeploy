@@ -7,6 +7,20 @@ set -x
 
 exec > /log 2>&1
 
+step() {
+        echo "################################################################" | tee -a /log > /dev/console
+        echo "$@" | tee -a /log > /dev/console
+        echo "################################################################" | tee -a /log > /dev/console
+}
+
+log() {
+	echo "$@" | tee -a /log > /dev/console
+}
+
+log_n() {
+	echo -n "$@" | tee -a /log > /dev/console
+}
+
 ################################################################################
 # extracted from /var/lib/dpkg/info/openssh-server.postinst
 ################################################################################
@@ -103,23 +117,26 @@ EOF
     done
 }
 
+step "Create directories"
 [ -d /dev ] || mkdir -m 0755 /dev
 [ -d /root ] || mkdir -m 0700 /root
 [ -d /sys ] || mkdir /sys
 [ -d /proc ] || mkdir /proc
 [ -d /tmp ] || mkdir /tmp
 mkdir -p /var/lock
+
+step "Mounting virtual fs"
 mount -t sysfs -o nodev,noexec,nosuid sysfs /sys
 mount -t proc -o nodev,noexec,nosuid proc /proc
 # Some things don't work properly without /etc/mtab.
 ln -sf /proc/mounts /etc/mtab
 
-grep -q '\<quiet\>' /proc/cmdline || echo "Loading, please wait..."
+grep -q '\<quiet\>' /proc/cmdline || log "Loading, please wait..."
 
 # Note that this only becomes /dev on the real filesystem if udev's scripts
 # are used; which they will be, but it's worth pointing out
 if ! mount -t devtmpfs -o mode=0755 udev /dev; then
-	echo "W: devtmpfs not available, falling back to tmpfs for /dev"
+	log "W: devtmpfs not available, falling back to tmpfs for /dev"
 	mount -t tmpfs -o mode=0755 udev /dev
 	[ -e /dev/console ] || mknod -m 0600 /dev/console c 5 1
 	[ -e /dev/null ] || mknod /dev/null c 1 3
@@ -131,6 +148,7 @@ mkdir /run/initramfs
 # compatibility symlink for the pre-oneiric locations
 ln -s /run/initramfs /dev/.initramfs
 
+step "Starting services"
 if [ -x /etc/init.d/sysklogd ]; then
     /etc/init.d/sysklogd start
 fi
@@ -141,7 +159,8 @@ fi
 
 # It's all over netlink now
 echo "" > /proc/sys/kernel/hotplug
-	
+
+step "Start Udev"	
 # Start the udev daemon to process events
 /sbin/udevd --daemon --resolve-names=never
 
@@ -160,18 +179,18 @@ serial="$(dmidecode -s system-serial-number)"
 # Hardware detection starts here
 ################################################################################
 
-echo "Detecting PCI devices"
+step "Detecting PCI devices"
 
 for d in $(cut -f2 /proc/bus/pci/devices ); do
     echo $d| sed 's/\(....\)/\1 /'|while read vendor device; do
 	grep "pci:v0000${vendor}d0000${device}" /lib/modules/$(uname -r)/modules.alias|while read a n module; do
-	    echo -n "Loding $module..."
-	    modprobe $module && echo done || echo error
+	    log_n "Loading $module "
+	    modprobe $module && log "done" || log "error"
 	done
     done
 done
 
-echo "Detecting IPMI"
+step "Detecting IPMI"
 
 modprobe ipmi_smb
 modprobe ipmi_si
@@ -186,10 +205,10 @@ if [ -f /dev/ipmi0 -o -f /dev/ipmi/0 -o -f /dev/ipmidev/0 ]; then
     #ipmitool -I open lan set 7 password <your password here>
     #ipmitool -I open lan ipsrc dhcp
 else
-    echo "No IPMI BMC detected"
+    log "No IPMI BMC detected"
 fi
 
-echo "Starting networking"
+step "Starting networking"
 
 if true; then
     create_keys
@@ -214,12 +233,12 @@ grep : /proc/net/dev | sed 's/ *//' | while read iface rem; do
     while [ $count -gt 0 ] && ! ifconfig $iface|grep -q 'inet addr'; do
 	sleep 1
 	count=$(($count - 1))
-	echo -n .
+	log_n .
     done
     if ifconfig $iface|grep -q 'inet addr'; then
-	echo done
+	log "done"
     else
-	echo failed
+	log failed
     fi
 done
 IFS=
@@ -242,10 +261,10 @@ if ./configure; then
     . /role
 
     if [ -n "$ROLE" -a -n "$VERS" ]; then
-	echo -n "Copying files from ${RSERV}::install/${VERS}/${ROLE}..."
+	log "Copying files from ${RSERV}::install/${VERS}/${ROLE}..."
 	rsync -a ${RSERV}::install/${VERS}/${ROLE}/ /d/
 	echo "SERV=${RSERV}" >> /d/var/lib/edeploy/conf
-	echo done
+	log "done"
 	cat /d/etc/fstab /d/etc/fstab.ext > /d/etc/fstab.new
 	cp /d/etc/fstab.new /d/etc/fstab
 	rm /d/etc/fstab.ext /d/etc/fstab.new
@@ -263,13 +282,13 @@ if ./configure; then
 	    sync
 	    reboot -f
 	else
-	    echo failed
+	    log failed
 	fi
     else
-	echo "No role or version defined..."
+	log "No role or version defined..."
     fi
 else
-    echo "Problem during configuration of disks"
+    log "Problem during configuration of disks"
     if [ -d /d/var/log ]; then
 	cp /log /d/var/log/install.log
     fi

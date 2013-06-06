@@ -25,7 +25,7 @@ run('parted --script %s set 2 lvm on' % disk)
 run('parted --script %s align-check optimal 1' % disk)
 run('parted --script %s align-check optimal 2' % disk)
 print "Creating LVM"
-run('pvcreate -f -y --dataalignment 512k %s%d' % (disk, 2))
+run('pvcreate -ff -y --dataalignment 512k %s%d' % (disk, 2))
 run('vgcreate -f -y --dataalignment 512k rootfs %s%d' % (disk, 2))
 run('lvcreate rootfs -n slash -L 20G')
 run('lvcreate rootfs -n var -L 20G')
@@ -37,7 +37,7 @@ run('mkfs.ext4 -L slash -m 0 -O extent -E stride=32,stripe_width=32 /dev/mapper/
 run('mkfs.ext4 -L var -m 0 -O extent -E stride=32,stripe_width=32 /dev/mapper/rootfs-var')
 run('mkfs.ext4 -L home -m 0 -O extent -E stride=32,stripe_width=32 /dev/mapper/rootfs-home')
 run('mkfs.ext4 -L root -m 0 -O extent -E stride=32,stripe_width=32 /dev/mapper/rootfs-root')
-run('mkswap /dev/mapper/rootfs-swap')
+run('mkswap -f /dev/mapper/rootfs-swap')
 print
 
 for idx in range(3, 9):

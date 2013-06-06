@@ -221,13 +221,25 @@ sed -i "s/^\#timeout.*/timeout 15/g" /etc/dhcp/dhclient.conf
 
 IFS=:
 export IFS
-grep : /proc/net/dev | sed 's/ *//' | while read iface rem; do
-    iface=$(echo $iface)
-    if [ $iface = lo ]; then
-	continue
-    fi
+#Only consider interface that have a Link ok
+#grep : /proc/net/dev | sed 's/ *//' | while read iface rem; do
+log "Waiting a few seconds to catch network link"
+sleep 5
+IFACES=$(mii-tool | grep "link ok"  | cut -d ":" -f1)
+if [ -z "$IFACES" ]; then
+	log "No link detected, switching to iterative discovery"
+	IFACES=$(grep ':' /proc/net/dev | sed 's/ *//' | cut -d ':' -f 1)
+fi
 
-    echo -n "Waiting for $iface to come up."
+IFACES_NAME=$(echo $IFACES | tr '\n' ',')
+log "Valid Network Interfaces are : $IFACES_NAME"
+echo $IFACES | while read iface rem; do
+     iface=$(echo $iface)
+     if [ $iface = lo ]; then
+       continue
+     fi
+
+    log_n "Waiting for $iface to come up."
     dhclient $iface
     count=10
     while [ $count -gt 0 ] && ! ifconfig $iface|grep -q 'inet addr'; do
@@ -241,6 +253,9 @@ grep : /proc/net/dev | sed 's/ *//' | while read iface rem; do
 	log failed
     fi
 done
+
+ip a > /dev/console
+
 IFS=
 
 ################################################################################

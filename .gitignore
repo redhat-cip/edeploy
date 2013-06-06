@@ -1,7 +1,7 @@
 base
 pxe
 *.done
-initrd.pxe
+initrd.pxe*
 disk
 *~
 *.pyc

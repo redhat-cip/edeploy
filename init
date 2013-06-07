@@ -294,8 +294,10 @@ IFS=
 # TODO: we need an exchange with the server to get these settings from the
 # system serial number in the future.
 ################################################################################
+# This is the default value for both SERV & RSERV
 SERV=10.0.3.1
 RSERV=$SERV
+# Unless you override one or the other via the cmdline
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^R?SERV=")
 
 cd /

@@ -223,7 +223,7 @@ export IFS
 FOUND_DHCP=NONE
 MAX_RUN=3
 RUN=0
-while [ "$FOUND_DHCP" = "NONE"]; do
+while [ "$FOUND_DHCP" = "NONE" ]; do
 	#Only consider interface that have a Link ok
 	#grep : /proc/net/dev | sed 's/ *//' | while read iface rem; do
 	log "Waiting a few seconds to catch network link"

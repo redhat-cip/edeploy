@@ -303,7 +303,7 @@ cd /
 curl -s -o/configure -F file=@/tmp/hw.py http://${SERV}/cgi-bin/upload.py
 chmod +x configure
 
-mkdir -p /chroot/etc
+mkdir -p /chroot
 
 if ./configure; then
 

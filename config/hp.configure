@@ -33,6 +33,7 @@ print "Creating FS"
 run('mkfs.ext4 -L slash -m 0 -O extent -E stride=32,stripe_width=32 /dev/mapper/rootfs-slash')
 run('mkswap -f /dev/mapper/rootfs-swap')
 run('mount LABEL=slash /chroot')
+run('mkdir /chroot/etc')
 print
 
 for idx in range(3, 9):

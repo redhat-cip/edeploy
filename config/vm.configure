@@ -4,15 +4,15 @@
 disk1 = '/dev/' + var['disk']
 disk2 = '/dev/' + var['disk2']
 
-for disk, path in ((disk1, '/d'), (disk2, '/d/var')):
+for disk, path in ((disk1, '/chroot'), (disk2, '/chroot/var')):
     run('parted -s %s mklabel msdos' % disk)
     run('parted -s %s mkpart primary ext2 0%% 100%%' % disk)
     run('mkfs.ext4 %s1' % disk)
     run('mkdir -p %s; mount %s1 %s' % (path, disk, path))
 
-run('mkdir -p /d/etc')
+run('mkdir -p /chroot/etc')
 
-fstab = open('/d/etc/fstab.ext', 'a')
+fstab = open('/chroot/etc/fstab.ext', 'a')
 fstab.write('%s1 /var ext4 defaults 0 2\n' % disk2)
 
 set_role('mysql', 'D7-F.1.0.0', disk1)

@@ -220,12 +220,20 @@ sed -i "s/^\#timeout.*/timeout 15/g" /etc/dhcp/dhclient.conf
 
 IFS=:
 export IFS
-FOUND_DHCP=NONE
 MAX_RUN=3
 RUN=0
-while [ "$FOUND_DHCP" = "NONE" ]; do
+while true; do
+	log "Enabling Ethernet Links"
+	pushd /sys/class/net >/dev/null
+		for device in *; do
+			if [ "$device" = "lo" ]; then
+				continue
+			fi
+			ip link set dev $device up
+		done
+	popd > /dev/null
+
 	#Only consider interface that have a Link ok
-	#grep : /proc/net/dev | sed 's/ *//' | while read iface rem; do
 	log "Waiting a few seconds to catch network link"
 	sleep 5
 	IFACES=$(mii-tool | grep "link ok"  | cut -d ":" -f1)
@@ -251,13 +259,18 @@ while [ "$FOUND_DHCP" = "NONE" ]; do
 		log_n .
 	    done
 	    if ifconfig $iface|grep -q 'inet addr'; then
-		FOUND_DHCP="YES"
 		log "done"
-		break
 	    else
 		log failed
 	    fi
 	done
+
+	IP_SET=$(ip a  | grep -iw "inet" | grep -v "127.0.0.1" | wc -l)
+	if [ "$IP_SET" -gt 0 ]; then
+		echo "Found $IP_SET interfaces properly configured"
+		# We found at least once DHCP server so we can continue the install procedure
+		break;
+	fi
 
 	RUN=$(( $RUN + 1 ))
 	if [ "$RUN" != "$MAX_RUN" ]; then
@@ -274,11 +287,6 @@ while [ "$FOUND_DHCP" = "NONE" ]; do
 
 done
 ip a > /dev/console
-
-if [ "$FOUND_DHCP" = "NONE" ]; then
-	sleep 10
-	echo b > /proc/sysrq-trigger
-fi
 
 IFS=
 

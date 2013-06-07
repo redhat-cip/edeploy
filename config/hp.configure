@@ -19,8 +19,9 @@ disk = cli.ctrl_create_ld(slot, (disk1, disk2), raid='1')
 print "# -> %s" % disk
 print "Creating Partitions"
 run('parted -a optimal --script %s mktable gpt' % disk)
-run('parted -a optimal --script %s mkpart primary ext4 0 256' % disk)
+run('parted -a optimal --script %s mkpart primary ext2 0 256' % disk)
 run('parted --script %s set 1 boot on' % disk)
+run('parted --script %s set 1 bios_grub on' % disk)
 run('parted -a optimal --script %s mkpart primary 257 100%%' % disk)
 run('parted --script %s set 2 lvm on' % disk)
 run('parted --script %s align-check optimal 1' % disk)
@@ -31,10 +32,12 @@ run('vgcreate -f -y --dataalignment 512k rootfs %s%d' % (disk, 2))
 run('lvcreate rootfs -n slash -L 40G')
 run('lvcreate rootfs -n swap -L 2G')
 print "Creating FS"
+run('mkfs.ext4 -L boot -m 0 %s%d' % (disk,1))
 run('mkfs.ext4 -L slash -m 0 -O extent -E stride=32,stripe_width=32 /dev/mapper/rootfs-slash')
 run('mkswap -f /dev/mapper/rootfs-swap')
 run('mount LABEL=slash /chroot')
-run('mkdir /chroot/etc')
+run('mkdir /chroot/etc /chroot/boot')
+run('mount LABEL=boot /chroot/boot')
 print
 
 for idx in range(3, 9):

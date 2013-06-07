@@ -320,6 +320,8 @@ if ./configure; then
 	cp /chroot/etc/fstab.new /chroot/etc/fstab
 	rm /chroot/etc/fstab.ext /chroot/etc/fstab.new
 	mount -obind /dev /chroot/dev
+	mount -obind /proc /chroot/proc
+	mount -obind /sys /chroot/sys
 	chroot /chroot /bin/bash -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"
 	
 	if [ -d /chroot/var/log ]; then
@@ -328,10 +330,12 @@ if ./configure; then
 	
 	if chroot /chroot /bin/bash -c "/usr/sbin/grub-install ${DISK}"; then
 	    configure_network /chroot
+	    umount /chroot/sys
 	    umount /chroot/dev
+	    umount /chroot/proc
 	    umount -a
 	    sync
-	    reboot -f
+#	    reboot -f
 	else
 	    log failed
 	fi

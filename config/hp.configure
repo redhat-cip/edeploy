@@ -27,22 +27,12 @@ run('parted --script %s align-check optimal 2' % disk)
 print "Creating LVM"
 run('pvcreate -ff -y --dataalignment 512k %s%d' % (disk, 2))
 run('vgcreate -f -y --dataalignment 512k rootfs %s%d' % (disk, 2))
-run('lvcreate rootfs -n slash -L 20G')
-run('lvcreate rootfs -n var -L 20G')
-run('lvcreate rootfs -n home -L 2G')
-run('lvcreate rootfs -n root -L 10G')
+run('lvcreate rootfs -n slash -L 40G')
 run('lvcreate rootfs -n swap -L 2G')
 print "Creating FS"
 run('mkfs.ext4 -L slash -m 0 -O extent -E stride=32,stripe_width=32 /dev/mapper/rootfs-slash')
-run('mkfs.ext4 -L var -m 0 -O extent -E stride=32,stripe_width=32 /dev/mapper/rootfs-var')
-run('mkfs.ext4 -L home -m 0 -O extent -E stride=32,stripe_width=32 /dev/mapper/rootfs-home')
-run('mkfs.ext4 -L root -m 0 -O extent -E stride=32,stripe_width=32 /dev/mapper/rootfs-root')
 run('mkswap -f /dev/mapper/rootfs-swap')
 run('mount LABEL=slash /chroot')
-run('mkdir -p /chroot/var /chroot/home /chroot/root')
-run('mount LABEL=var /chroot/var')
-run('mount LABEL=home /chroot/home')
-run('mount LABEL=root /chroot/root')
 print
 
 for idx in range(3, 9):
@@ -57,7 +47,7 @@ for idx in range(3, 9):
     run('mkfs.xfs -f -L osd%d %s1' % (idx - 3, var[disk_name]))
     run('mkdir -p /chroot/var/lib/ceph/osd/ceph-%d' % (idx - 3))
     run('mount -orw,noatime,inode64 LABEL=osd%d /chroot/var/lib/ceph/osd/ceph-%d' % (idx - 3, idx - 3))
-    run('lvcreate rootfs -n journal-osd%d -L 4G' % (idx - 3) )
+    run('lvcreate rootfs -n journal-osd%d -L 8G' % (idx - 3) )
 
 fstab = open('/chroot/etc/fstab.ext', 'a')
 

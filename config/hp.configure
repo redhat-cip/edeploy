@@ -54,10 +54,10 @@ for idx in range(3, 9):
     print
     run('parted -a optimal --script %s mktable gpt' % var[disk_name])
     run('parted -a optimal --script %s mkpart primary ext2 0%% 100%%' % var[disk_name])
-    run('mkfs.xfs -L osd%d %s1' % (idx - 3, var[disk_name]))
-    run('mkdir -p /chroot/var/lib/ceph/osd/ceph-%d' % idx - 3)
-    run('mount -orw,noatime,inode64 LABEL=osd%d /chroot/var/lib/ceph/osd/ceph-%d' % idx - 3)
-    run('lvcreate rootfs -n journal-osd%d -L 4G' % idx - 3 )
+    run('mkfs.xfs -f -L osd%d %s1' % (idx - 3, var[disk_name]))
+    run('mkdir -p /chroot/var/lib/ceph/osd/ceph-%d' % (idx - 3))
+    run('mount -orw,noatime,inode64 LABEL=osd%d /chroot/var/lib/ceph/osd/ceph-%d' % (idx - 3, idx - 3))
+    run('lvcreate rootfs -n journal-osd%d -L 4G' % (idx - 3) )
 
 fstab = open('/chroot/etc/fstab.ext', 'a')
 

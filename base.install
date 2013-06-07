@@ -84,7 +84,7 @@ if [ ! -r hpacucli_9.40-13_amd64.deb  ]; then
     alien hpacucli-9.40-12.0.x86_64.rpm
 fi
 cp hpacucli_9.40-13_amd64.deb "$dir"/tmp/hpacucli.deb
-chroot "$dir" apt-get -y install lib32gcc1 lib32stdc++6 python-pexpect lvm2 vim-tiny htop
+chroot "$dir" apt-get -y install lib32gcc1 lib32stdc++6 python-pexpect lvm2 vim-tiny htop xfsprogs
 chroot "$dir" dpkg -i /tmp/hpacucli.deb
 rm "$dir"/tmp/hpacucli.deb
 

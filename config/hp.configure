@@ -38,6 +38,11 @@ run('mkfs.ext4 -L var -m 0 -O extent -E stride=32,stripe_width=32 /dev/mapper/ro
 run('mkfs.ext4 -L home -m 0 -O extent -E stride=32,stripe_width=32 /dev/mapper/rootfs-home')
 run('mkfs.ext4 -L root -m 0 -O extent -E stride=32,stripe_width=32 /dev/mapper/rootfs-root')
 run('mkswap -f /dev/mapper/rootfs-swap')
+run('mount LABEL=slash /chroot')
+run('mkdir -p /chroot/var /chroot/home /chroot/root')
+run('mount LABEL=var /chroot/var')
+run('mount LABEL=home /chroot/home')
+run('mount LABEL=root /chroot/root')
 print
 
 for idx in range(3, 9):
@@ -47,5 +52,26 @@ for idx in range(3, 9):
     var[disk_name] = cli.ctrl_create_ld(slot_name, (var[disk_name],), raid='0')
     print "# -> %s" % var[disk_name]
     print
+    run('parted -a optimal --script %s mktable gpt' % var[disk_name])
+    run('parted -a optimal --script %s mkpart primary ext2 0%% 100%%' % var[disk_name])
+    run('mkfs.xfs -L osd%d %s1' % (idx - 3, var[disk_name]))
+    run('mkdir -p /chroot/var/lib/ceph/osd/ceph-%d' % idx - 3)
+    run('mount -orw,noatime,inode64 LABEL=osd%d /chroot/var/lib/ceph/osd/ceph-%d' % idx - 3)
+    run('lvcreate rootfs -n journal-osd%d -L 4G' % idx - 3 )
+
+fstab = open('/chroot/etc/fstab.ext', 'a')
+
+fstab.write('''
+LABEL=swap none swap sw 0 0
+LABEL=root /root ext4 defaults 0 2
+LABEL=var /var ext4 defaults 0 2
+LABEL=home /home ext4 defaults 0 2
+LABEL=osd0 /var/lib/ceph/osd/ceph-0 xfs rw,noatime,inode64 0 2
+LABEL=osd1 /var/lib/ceph/osd/ceph-1 xfs rw,noatime,inode64 0 2
+LABEL=osd2 /var/lib/ceph/osd/ceph-2 xfs rw,noatime,inode64 0 2
+LABEL=osd3 /var/lib/ceph/osd/ceph-3 xfs rw,noatime,inode64 0 2
+LABEL=osd4 /var/lib/ceph/osd/ceph-4 xfs rw,noatime,inode64 0 2
+LABEL=osd5 /var/lib/ceph/osd/ceph-5 xfs rw,noatime,inode64 0 2
+''')
 
 set_role('ceph', 'D7-F.1.0.0', disk)

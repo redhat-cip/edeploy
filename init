@@ -222,40 +222,65 @@ sed -i "s/^\#timeout.*/timeout 15/g" /etc/dhcp/dhclient.conf
 
 IFS=:
 export IFS
-#Only consider interface that have a Link ok
-#grep : /proc/net/dev | sed 's/ *//' | while read iface rem; do
-log "Waiting a few seconds to catch network link"
-sleep 5
-IFACES=$(mii-tool | grep "link ok"  | cut -d ":" -f1)
-if [ -z "$IFACES" ]; then
-	log "No link detected, switching to iterative discovery"
-	IFACES=$(grep ':' /proc/net/dev | sed 's/ *//' | cut -d ':' -f 1)
-fi
+FOUND_DHCP=NONE
+MAX_RUN=3
+RUN=0
+while [ "$FOUND_DHCP" = "NONE"]; do
+	#Only consider interface that have a Link ok
+	#grep : /proc/net/dev | sed 's/ *//' | while read iface rem; do
+	log "Waiting a few seconds to catch network link"
+	sleep 5
+	IFACES=$(mii-tool | grep "link ok"  | cut -d ":" -f1)
+	if [ -z "$IFACES" ]; then
+		log "No link detected, switching to iterative discovery"
+		IFACES=$(grep ':' /proc/net/dev | sed 's/ *//' | cut -d ':' -f 1)
+	fi
 
-IFACES_NAME=$(echo $IFACES | tr '\n' ',')
-log "Valid Network Interfaces are : $IFACES_NAME"
-echo $IFACES | while read iface rem; do
-     iface=$(echo $iface)
-     if [ $iface = lo ]; then
-       continue
-     fi
+	IFACES_NAME=$(echo $IFACES | tr '\n' ',')
+	log "Valid Network Interfaces are : $IFACES_NAME"
+	echo $IFACES | while read iface rem; do
+	     iface=$(echo $iface)
+	     if [ $iface = lo ]; then
+	       continue
+	     fi
 
-    log_n "Waiting for $iface to come up."
-    dhclient $iface
-    count=10
-    while [ $count -gt 0 ] && ! ifconfig $iface|grep -q 'inet addr'; do
-	sleep 1
-	count=$(($count - 1))
-	log_n .
-    done
-    if ifconfig $iface|grep -q 'inet addr'; then
-	log "done"
-    else
-	log failed
-    fi
+	    log_n "Waiting for $iface to come up."
+	    dhclient $iface
+	    count=10
+	    while [ $count -gt 0 ] && ! ifconfig $iface|grep -q 'inet addr'; do
+		sleep 1
+		count=$(($count - 1))
+		log_n .
+	    done
+	    if ifconfig $iface|grep -q 'inet addr'; then
+		FOUND_DHCP="YES"
+		log "done"
+		break
+	    else
+		log failed
+	    fi
+	done
+
+	RUN=$(( $RUN + 1 ))
+	if [ "$RUN" != "$MAX_RUN" ]; then
+		log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+		log "!! NO DHCP FOUND ! Waiting 10 seconds before trying again ($RUN / $MAX_RUN) !!"
+		log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	else
+		log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+		log "!! NO DHCP FOUND after $RUN tries. Rebooting in 10 seconds !!"
+		log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+		sleep 10
+		echo b > /proc/sysrq-trigger
+	fi
+
 done
-
 ip a > /dev/console
+
+if [ "$FOUND_DHCP" = "NONE" ]; then
+	sleep 10
+	echo b > /proc/sysrq-trigger
+fi
 
 IFS=
 

@@ -6,10 +6,14 @@ import cgi
 import cgitb
 import pprint
 import sys
+import ConfigParser
 
 import matcher
 
-DIR = '/root/edeploy/config/'
+config = ConfigParser.ConfigParser()
+config.read('/etc/edeploy.conf')
+
+DIR = config.get('SERVER', 'CONFIGDIR') + '/'
 
 cgitb.enable()
 
@@ -21,19 +25,25 @@ form = cgi.FieldStorage()
 fileitem = form["file"]
 l = eval(fileitem.file.read(-1))
 
-names = ('hp', 'vm')
+state_filename = DIR + 'state'
+names = eval(open(state_filename).read(-1))
 
-for name in names:
-    specs = eval(open(DIR + name + '.specs', 'r').read(-1))
-    var = {}
-    if matcher.match_all(l, specs, var):
-        break
+idx = 0
+for name, times in names:
+    if times == '*' or times > 0:
+        specs = eval(open(DIR + name + '.specs', 'r').read(-1))
+        var = {}
+        if matcher.match_all(l, specs, var):
+            break
+    idx += 1
 else:
     sys.stderr.write('Unable to match requirements\n')
     sys.stderr.write('Specs: %s\n' % repr(specs))
     sys.stderr.write('Lines: %s\n' % repr(l))
     sys.exit(1)
 
+if times != '*':
+    names[idx] = (name, times - 1)
 
 cfg = open(DIR + name + '.configure').read(-1)
 
@@ -57,3 +67,5 @@ var = ''')
 pprint.pprint(var)
 
 sys.stdout.write(cfg)
+
+pprint.pprint(names, stream=open(state_filename, 'w'))

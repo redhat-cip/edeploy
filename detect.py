@@ -65,6 +65,11 @@ def detect_system(l):
                 ip = e.find("configuration/setting[@id='ip']")
                 if ip is not None:
                     l.append(('network', name.text, 'ipv4', ip.attrib['value']))
+    
+    status, output = commands.getstatusoutput('nproc')
+    if status == 0:
+        l.append(('system', 'cpu', 'number', output))
+
 if __name__ == "__main__":
     l = []
     

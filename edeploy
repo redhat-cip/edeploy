@@ -22,7 +22,7 @@ if [ -x pre ]; then
     ./pre
 fi
 
-rsync -av --delete --exclude-from=exclude ${SERV}::install/${TARGET}/${ROLE}/ / > /var/lib/edeploy/rsync_${VERS}_${TARGET}.out
+rsync -av --delete-after --exclude-from=exclude ${SERV}::install/${TARGET}/${ROLE}/ / > /var/lib/edeploy/rsync_${VERS}_${TARGET}.out
 
 set +e
 

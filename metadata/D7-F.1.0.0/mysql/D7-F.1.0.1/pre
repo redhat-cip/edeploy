@@ -1,0 +1,5 @@
+#!/bin/bash
+
+export DEBIAN_FRONTEND=noninteractive
+
+/var/lib/dpkg/info/mysql-server-5.5.preinst upgrade 5.5.30+dfsg-1.1

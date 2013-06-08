@@ -15,4 +15,4 @@ deb http://ftp.debian.org/debian/ wheezy-updates main
 EOF
 
 chroot ${TDIR} apt-get update
-chroot ${TDIR} apt-get upgrade -y
+chroot ${TDIR} apt-get dist-upgrade -y

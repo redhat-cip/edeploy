@@ -6,11 +6,14 @@ FROM="$2"
 TO="$3"
 TDIR="$4"
 
-SCRIPT=$BASEDIR/base_${FROM}_${TO}.upgrade
+export DEBIAN_FRONTEND=noninteractive
 
 set -x
 
-if [ -x $SCRIPT ]; then
-    $SCRIPT "$@"
-fi
+cat > ${TDIR}/etc/apt/sources.list.d/updates.list <<EOF
+deb http://security.debian.org/ wheezy/updates main
+deb http://ftp.debian.org/debian/ wheezy-updates main
+EOF
 
+chroot ${TDIR} apt-get update
+chroot ${TDIR} apt-get install -y mysql-server-5.5

@@ -125,7 +125,7 @@ class TestMatcher(unittest.TestCase):
                           'disk': 'vda',
                           })
 
-    def test_multiple(self):
+    def test_multiple_vars(self):
         specs = [
             ('disk', 'vda', 'size', '8'),
             ('disk', 'vdb', 'size', '16'),
@@ -141,6 +141,16 @@ class TestMatcher(unittest.TestCase):
         arr = {}
         self.assert_(not matcher.match_all(lines, specs, arr))
         self.assert_(matcher.match_all(lines, specs2, arr), lines)
+
+    def test_multiple(self):
+        spec = ('disk', '$disk', 'size', '8')
+        lines = [
+            ('disk', 'vda', 'size', '8'),
+            ('disk', 'vdb', 'size', '8'),
+            ]
+        arr = {}
+        self.assert_(matcher.match_multiple(lines, spec, arr))
+        self.assertEqual(arr['disk'], ['vda', 'vdb'])
 
 if __name__ == "__main__":
     unittest.main()

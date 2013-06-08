@@ -6,6 +6,9 @@ exec 2>&4
 exec > /log 2>&1
 
 tail -f /log > /dev/console &
+
+#set -x				# show commands
+
 step() {
         echo "################################################################"
         echo "$@"
@@ -116,6 +119,9 @@ EOF
     done
 }
 
+DEBUG=
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^DEBUG=")
+
 step "Create directories"
 [ -d /dev ] || mkdir -m 0755 /dev
 [ -d /root ] || mkdir -m 0700 /root
@@ -209,7 +215,7 @@ fi
 
 step "Starting networking"
 
-if true; then
+if [ "$DEBUG" = 1 ]; then
     create_keys
     /etc/init.d/ssh start
 fi
@@ -233,7 +239,7 @@ while true; do
 		done
 	popd > /dev/null
 
-	#Only consider interface that have a Link ok
+	# Only consider interface that have a Link ok
 	log "Waiting a few seconds to catch network link"
 	sleep 5
 	IFACES=$(mii-tool | grep "link ok"  | cut -d ":" -f1)
@@ -267,75 +273,92 @@ while true; do
 
 	IP_SET=$(ip a  | grep -iw "inet" | grep -v "127.0.0.1" | wc -l)
 	if [ "$IP_SET" -gt 0 ]; then
-		echo "Found $IP_SET interfaces properly configured"
-		# We found at least once DHCP server so we can continue the install procedure
-		break;
+	    echo "Found $IP_SET interfaces properly configured"
+	    # We found at least once DHCP server so we can continue
+	    # the install procedure
+	    break
 	fi
 
 	RUN=$(( $RUN + 1 ))
+	sleep 10
 	if [ "$RUN" != "$MAX_RUN" ]; then
-		log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-		log "!! NO DHCP FOUND ! Waiting 10 seconds before trying again ($RUN / $MAX_RUN) !!"
-		log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	    log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	    log "!! NO DHCP FOUND ! Waiting 10 seconds before trying again. !!"
+	    log "!! ($RUN / $MAX_RUN)                                       !!"
+	    log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	else
-		log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-		log "!! NO DHCP FOUND after $RUN tries. Rebooting in 10 seconds !!"
-		log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-		sleep 10
-		echo b > /proc/sysrq-trigger
+	    log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	    log "!! NO DHCP FOUND after $RUN tries. Rebooting in 10 seconds !!"
+	    log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	    if [ "$DEBUG" != 1 ]; then
+		reboot -f
+	    fi
 	fi
-
 done
-ip a > /dev/console
-
 IFS=
 
-################################################################################
-# TODO: we need an exchange with the server to get these settings from the
-# system serial number in the future.
-################################################################################
+ip a
+
 # This is the default value for both SERV & RSERV
 SERV=10.0.3.1
 RSERV=$SERV
 # Unless you override one or the other via the cmdline
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^R?SERV=")
 
+################################################################################
+step "Detecting hardware"
+
 cd /
 ./detect.py > /tmp/hw.py
+
+################################################################################
+# Send the detected hardware to the server and receive a configuration script
+# if there is a match on the server else stop.
+################################################################################
+
+step "Configuring system"
+
 curl -s -o/configure -F file=@/tmp/hw.py http://${SERV}/cgi-bin/upload.py
-chmod +x configure
+chmod +x configure 2> /dev/null
 
-mkdir -p /chroot
+d=/chroot
 
-if ./configure; then
+mkdir -p $d
+
+if [ ! -x /configure ]; then
+    log "No match on the server"
+
+elif /configure; then
 
     . /role
 
     if [ -n "$ROLE" -a -n "$VERS" ]; then
-	log "Copying files from ${RSERV}::install/${VERS}/${ROLE}..."
-	rsync -a ${RSERV}::install/${VERS}/${ROLE}/ /chroot/
-	echo "SERV=${RSERV}" >> /chroot/var/lib/edeploy/conf
+	log_n "Copying files from ${RSERV}::install/${VERS}/${ROLE}..."
+	rsync -a ${RSERV}::install/${VERS}/${ROLE}/ $d/
+	echo "SERV=${RSERV}" >> $d/var/lib/edeploy/conf
 	log "done"
-	cat /chroot/etc/fstab /chroot/etc/fstab.ext > /chroot/etc/fstab.new
-	cp /chroot/etc/fstab.new /chroot/etc/fstab
-	rm /chroot/etc/fstab.ext /chroot/etc/fstab.new
-	mount -obind /dev /chroot/dev
-	mount -obind /proc /chroot/proc
-	mount -obind /sys /chroot/sys
-	chroot /chroot /bin/bash -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"
+	cat $d/etc/fstab $d/etc/fstab.ext > $d/etc/fstab.new
+	cp $d/etc/fstab.new $d/etc/fstab
+	rm $d/etc/fstab.ext $d/etc/fstab.new
+	mount -obind /dev $d/dev
+	mount -obind /proc $d/proc
+	mount -obind /sys $d/sys
+	chroot $d /bin/bash -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"
 	
-	if [ -d /chroot/var/log ]; then
-	    cp /log /chroot/var/log/install.log
+	if [ -d $d/var/log ]; then
+	    cp /log $d/var/log/install.log
 	fi
 	
-	if chroot /chroot /bin/bash -c "/usr/sbin/grub-install ${DISK}"; then
-	    configure_network /chroot
-	    umount /chroot/sys
-	    umount /chroot/dev
-	    umount /chroot/proc
+	if chroot $d /bin/bash -c "/usr/sbin/grub-install ${DISK}"; then
+	    configure_network $d
+	    umount $d/sys
+	    umount $d/dev
+	    umount $d/proc
 	    umount -a
 	    sync
-#	    reboot -f
+	    if [ "$DEBUG" != 1 ]; then
+		reboot -f
+	    fi
 	else
 	    log failed
 	fi
@@ -344,12 +367,18 @@ if ./configure; then
     fi
 else
     log "Problem during configuration of disks"
-    if [ -d /chroot/var/log ]; then
-	cp /log /chroot/var/log/install.log
+    if [ -d $d/var/log ]; then
+	cp /log $d/var/log/install.log
     fi
 fi
 
 exec 3>&1
 exec 4>&2
 
-exec /bin/bash
+if [ "$DEBUG" = 1 ]; then
+    exec /bin/bash -i
+else
+    echo "Shutting down the system in 10 sec"
+    sleep 10
+    poweroff -f
+fi

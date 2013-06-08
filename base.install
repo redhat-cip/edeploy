@@ -70,11 +70,16 @@ case $dist in
 	;;
 esac
 
+mkdir -p "${dir}"/etc/default/grub.d
+echo 'exit 0' > "${dir}"/etc/default/grub.d/edeploy.cfg
+
 export DEBIAN_FRONTEND=noninteractive
 
 chroot "$dir" apt-get update
 
 chroot "$dir" apt-get install -y --force-yes openssh-server parted $PACKAGES net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase net-tools dmidecode bash curl hdparm xfsprogs
+
+rm -f "${dir}"/etc/default/grub.d/edeploy.cfg
 
 # Inject HP RAID CLI tool
 if [ ! -r hpacucli-9.40-12.0.x86_64.rpm ]; then

@@ -42,11 +42,16 @@ chroot ${TDIR} apt-get update
 cp -p ${ORIG}/edeploy ${TDIR}/usr/sbin/
 echo -e "VERS=${TO}\nROLE=${ROLE}\n" > ${TDIR}/var/lib/edeploy/conf
 
+mkdir -p ${TDIR}/etc/default/grub.d
+echo 'exit 0' > ${TDIR}/etc/default/grub.d/edeploy.cfg
+
 script="$BASE".d/${ROLE}_${FROM}_${TO}.upgrade
 
 if [ -x "$script" ]; then
     "$script" $ROLE $FROM $TO $TDIR
 fi
+
+rm -f ${TDIR}/etc/default/grub.d/edeploy.cfg
 
 chroot ${TDIR} apt-get clean
 chroot ${TDIR} dpkg -l > ${TDIR}/../${ROLE}.dpkg

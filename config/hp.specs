@@ -17,4 +17,5 @@
     ('disk', '$disk7', 'slot', '$slot7'),
     ('disk', '$disk8', 'size', '1000'),
     ('disk', '$disk8', 'slot', '$slot8'),
+    ('system', 'cpu', 'number', "$nbcpu"),
 ]

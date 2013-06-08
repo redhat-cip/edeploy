@@ -47,10 +47,9 @@ for idx in range(3, 9):
     var[disk_name] = cli.ctrl_create_ld(slot_name, (var[disk_name],), raid='0')
     print "# -> %s" % var[disk_name]
     print
-    nbcpu = subprocess.Popen(["nproc", ""], stdout=PIPE).communicate()[0]
     run('parted -a optimal --script %s mktable gpt' % var[disk_name])
     run('parted -a optimal --script %s mkpart primary ext2 0%% 100%%' % var[disk_name])
-    run('mkfs.xfs -f -d agcount=%d -l size=1024m -n size=64k -L osd%d %s1' % (nbcpu, idx - 3, var[disk_name]))
+    run('mkfs.xfs -f -d agcount=%d -l size=1024m -n size=64k -L osd%d %s1' % (var['nbcpu'], idx - 3, var[disk_name]))
     run('mkdir -p /chroot/var/lib/ceph/osd/ceph-%d' % (idx - 3))
     run('mount -orw,noatime,inode64 LABEL=osd%d /chroot/var/lib/ceph/osd/ceph-%d' % (idx - 3, idx - 3))
     run('lvcreate rootfs -n journal-osd%d -L 8G' % (idx - 3) )

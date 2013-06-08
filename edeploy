@@ -1,44 +1,110 @@
 #!/bin/bash
 
-TARGET="$1"
+progname="$0"
 
-. /var/lib/edeploy/conf
-
-if [ -z "$TARGET" ]; then
-    echo "Usage: $0 <target version>" 2>&1
-    exit 1
+if [ -r /var/lib/edeploy/conf ]; then
+    . /var/lib/edeploy/conf
 fi
 
-set -e
-set -x
+function upgrade() {
 
-mkdir -p /var/lib/edeploy
+    TARGET="$1"
+    
+    if [ -z "$TARGET" -o -z "$VERS" -o -z "$ROLE" -o -z "$SERV" ]; then
+	echo "Usage: $progname upgrade <target version>" 1>&2
+	echo "/var/lib/edeploy/conf must contain SERV, VERS and ROLE" 1>&2
+	exit 1
+    fi
 
-rsync -a ${SERV}::metadata/${VERS}/${ROLE}/${TARGET}/ /var/lib/edeploy/${TARGET}/
+    set -e
+    set -x
 
-cd /var/lib/edeploy/${TARGET}/
+    mkdir -p /var/lib/edeploy
 
-if [ -x pre ]; then
-    ./pre
-fi
+    rsync -a ${SERV}::metadata/${VERS}/${ROLE}/${TARGET}/ /var/lib/edeploy/${TARGET}/
+    
+    cd /var/lib/edeploy/${TARGET}/
+    
+    if [ -x pre ]; then
+	./pre
+    fi
+    
+    rsync -av --delete-after --exclude-from=exclude ${SERV}::install/${TARGET}/${ROLE}/ / > /var/lib/edeploy/rsync_${VERS}_${TARGET}.out
+    
+    set +e
+    
+    if [ -x post ]; then
+	./post
+	RET=$?
+    fi
+    
+    echo -e "\nVersion ${TARGET}\n" > /etc/motd
+    echo -e "VERS=${TARGET}\nROLE=${ROLE}\nSERV=${SERV}\n" > /var/lib/edeploy/conf
+    
+    echo "Upgraded to $TARGET"
+    
+    if [ $RET = 100 ]; then
+	echo "Reboot requested by the upgrade process..."
+	sync
+	sleep 2
+	reboot
+    fi
+}
 
-rsync -av --delete-after --exclude-from=exclude ${SERV}::install/${TARGET}/${ROLE}/ / > /var/lib/edeploy/rsync_${VERS}_${TARGET}.out
+function list() {
+    if [ -z "$VERS" -o -z "$ROLE" -o -z "$SERV" ]; then
+	echo "/var/lib/edeploy/conf must contain SERV, VERS and ROLE" 1>&2
+	exit 1
+    fi
 
-set +e
+    rsync ${SERV}::metadata/${VERS}/${ROLE}/ 2> /dev/null
+}
 
-if [ -x post ]; then
-    ./post
-    RET=$?
-fi
+function verify() {
+    if [ -z "$VERS" -o -z "$ROLE" -o -z "$SERV" ]; then
+	echo "/var/lib/edeploy/conf must contain SERV, VERS and ROLE" 1>&2
+	exit 1
+    fi
 
-echo -e "\nVersion ${TARGET}\n" > /etc/motd
-echo -e "VERS=${TARGET}\nROLE=${ROLE}\nSERV=${SERV}\n" > /var/lib/edeploy/conf
+    if [ -r /var/lib/edeploy/$VERS/exclude ]; then
+	EXCLUDE=--exclude-from=/var/lib/edeploy/$VERS/exclude
+    else
+	EXCLUDE=" --exclude /proc --exclude /dev --exclude /sys --exclude /var/log --exclude /tmp --exclude /run --exclude /var/tmp"
+    fi
+    
+    rsync --dry-run -av --delete-after $EXCLUDE ${SERV}::install/${VERS}/${ROLE}/ /
+}
 
-echo "Upgraded to $TARGET"
+function help() {
+    usage
+    cat <<EOF
 
-if [ $RET = 100 ]; then
-    echo "Reboot requested by the upgrade process..."
-    sync
-    sleep 2
-    reboot
-fi
+    upgrade: launch the upgrade process to version <target version>.
+
+    list: list the available target versions on the server.
+
+    verify: verify the modified files regarding the version on the server.
+
+    help: display this help message.
+
+EOF
+}
+
+function usage() {
+    echo "Usage: $progname (upgrade <target version>|list|verify|help)"
+}
+
+command="$1"
+
+case "$command" in
+    upgrade|list|help|verify)
+	;;
+    *)
+	usage 1>&2
+	exit 1
+	;;
+esac
+
+shift
+
+"$command" "$@"

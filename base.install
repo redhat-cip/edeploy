@@ -3,7 +3,7 @@
 dir="$1"
 dist="$2"
 version="$3"
-mirror="$4"
+
 ROLE=base
 
 ORIG=$(cd $(dirname $0); pwd)
@@ -14,7 +14,7 @@ fatal_error() {
 }
 
 check_binary() {
-	which $1 || fatal_error "$1 is missing"
+	type -p $1 || fatal_error "$1 is missing"
 }
 
 if [ -z "$1" -o -z "$dist" -o -z "$version" ]; then
@@ -35,7 +35,7 @@ set -x				# print commands
 if [ ! -d "$dir" ]; then
     mkdir -p "$dir"
 
-    debootstrap --arch $ARCH --variant=minbase $dist "$dir" "$mirror"
+    debootstrap --arch ${ARCH:=amd64} --variant=minbase $dist "$dir"
     
     # workaround no signature downloaded
     rm -f "$dir"/var/lib/apt/lists/*[es]
@@ -62,7 +62,7 @@ case $dist in
 	PACKAGES="linux-image-virtual"
 	;;
     wheezy|squeeze)
-	PACKAGES="linux-image-amd64 ipmitool"
+	PACKAGES="linux-image-amd64 ipmitool sdparm htop"
 	;;
     *)
 	echo "unsupported distribution: $dist" 2>&1
@@ -74,7 +74,7 @@ export DEBIAN_FRONTEND=noninteractive
 
 chroot "$dir" apt-get update
 
-chroot "$dir" apt-get install -y --force-yes openssh-server parted $PACKAGES net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase net-tools dmidecode bash curl hdparm sdparm
+chroot "$dir" apt-get install -y --force-yes openssh-server parted $PACKAGES net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase net-tools dmidecode bash curl hdparm xfsprogs
 
 # Inject HP RAID CLI tool
 if [ ! -r hpacucli-9.40-12.0.x86_64.rpm ]; then
@@ -84,7 +84,7 @@ if [ ! -r hpacucli_9.40-13_amd64.deb  ]; then
     alien hpacucli-9.40-12.0.x86_64.rpm
 fi
 cp hpacucli_9.40-13_amd64.deb "$dir"/tmp/hpacucli.deb
-chroot "$dir" apt-get -y install lib32gcc1 lib32stdc++6 python-pexpect lvm2 vim-tiny htop xfsprogs
+chroot "$dir" apt-get -y install lib32gcc1 lib32stdc++6 python-pexpect lvm2 vim-tiny
 chroot "$dir" dpkg -i /tmp/hpacucli.deb
 rm "$dir"/tmp/hpacucli.deb
 

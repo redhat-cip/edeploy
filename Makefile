@@ -2,7 +2,6 @@ SDIR=/root/edeploy
 TOP=/var/lib/debootstrap
 VERS=D7-F.1.0.0
 DIST=wheezy
-MIRROR=ftp://ftp.free.fr/mirrors/ftp.debian.org/
 
 SRC=base
 DST=pxe
@@ -23,7 +22,7 @@ img: pxe
 	./img.install $(INST)/base $(IMG) $(VERS) $(INST) $(SERV)
 
 base $(INST)/base.done: base.install policy-rc.d edeploy
-	ARCH=$(ARCH) ./base.install $(INST)/base $(DIST) $(VERS) $(MIRROR)
+	ARCH=$(ARCH) ./base.install $(INST)/base $(DIST) $(VERS)
 	cp -p policy-rc.d edeploy $(INST)/base/usr/sbin/
 	touch $(INST)/base.done
 

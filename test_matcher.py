@@ -125,5 +125,22 @@ class TestMatcher(unittest.TestCase):
                           'disk': 'vda',
                           })
 
+    def test_multiple(self):
+        specs = [
+            ('disk', 'vda', 'size', '8'),
+            ('disk', 'vdb', 'size', '16'),
+            ]
+        specs2 = [
+            ('disk', 'vda', 'size', '8'),
+            ('disk', 'vdb', 'size', '8'),
+            ]
+        lines = [
+            ('disk', 'vda', 'size', '8'),
+            ('disk', 'vdb', 'size', '8'),
+            ]
+        arr = {}
+        self.assert_(not matcher.match_all(lines, specs, arr))
+        self.assert_(matcher.match_all(lines, specs2, arr), lines)
+
 if __name__ == "__main__":
     unittest.main()

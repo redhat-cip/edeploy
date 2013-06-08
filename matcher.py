@@ -38,6 +38,10 @@ def match_spec(spec, lines, arr):
 
 def match_all(lines, specs, arr):
     'Match all lines according to a spec and store variables in <var>.'
+    # Work on a copy of lines to avoid changing the real lines because
+    # match_spec removes the matched line to not match it again on next
+    # calls.
+    lines = list(lines)
     for spec in specs:
         if not match_spec(spec, lines, arr):
             return(False)

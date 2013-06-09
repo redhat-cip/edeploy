@@ -8,6 +8,15 @@
 
 '''Functions to match according to a requirement specification.'''
 
+import re
+try:
+    import ipaddr
+    _HAS_IPADDR = True
+except ImportError:
+    _HAS_IPADDR = False
+
+_FUNC_REGEXP = re.compile('^(.*)\((.*)\)')
+
 
 def _adder(array, index, value):
     'Auxiliary function to add a value to an array.'
@@ -22,6 +31,33 @@ def _appender(array, index, value):
         array[index] = [value, ]
 
 
+def _gt(left, right):
+    'Helper for match_spec.'
+    return int(left) > int(right)
+
+
+def _ge(left, right):
+    'Helper for match_spec.'
+    return int(left) >= int(right)
+
+
+def _lt(left, right):
+    'Helper for match_spec.'
+    return int(left) < int(right)
+
+
+def _le(left, right):
+    'Helper for match_spec.'
+    return int(left) <= int(right)
+
+
+def _network(left, right):
+    'Helper for match_spec.'
+    if _HAS_IPADDR:
+        return ipaddr.IPv4Address(left) in ipaddr.IPv4Network(right)
+    else:
+        return False
+
 def match_spec(spec, lines, arr, adder=_adder):
     'Match a line according to a spec and store variables in <var>.'
     # match a line without variable
@@ -34,11 +70,21 @@ def match_spec(spec, lines, arr, adder=_adder):
         line = lines[lidx]
         varidx = []
         for idx in range(4):
+            # Match a variable
             if spec[idx][0] == '$':
                 if adder == _adder and spec[idx][1:] in arr:
                     if arr[spec[idx][1:]] != line[idx]:
                         break
                 varidx.append(idx)
+            # Match a function
+            elif spec[idx][-1] == ')':
+                res = _FUNC_REGEXP.search(spec[idx])
+                if res:
+                    func_name = '_' + res.group(1)
+                    if not (func_name in globals() and
+                            globals()[func_name](line[idx], res.group(2))):
+                        break
+            # Match the full string
             elif line[idx] != spec[idx]:
                 break
         else:

@@ -152,5 +152,51 @@ class TestMatcher(unittest.TestCase):
         self.assert_(matcher.match_multiple(lines, spec, arr))
         self.assertEqual(arr['disk'], ['vda', 'vdb'])
 
+    def test_gt(self):
+        specs = [('disk', '$disk', 'size', 'gt(10)')]
+        lines = [
+            ('disk', 'vda', 'size', '20'),
+            ]
+        arr = {}
+        self.assert_(matcher.match_all(lines, specs, arr))
+        self.assertEqual(arr['disk'], 'vda')
+
+    def test_ge(self):
+        specs = [('disk', '$disk', 'size', 'ge(10)')]
+        lines = [
+            ('disk', 'vda', 'size', '10'),
+            ]
+        arr = {}
+        self.assert_(matcher.match_all(lines, specs, arr))
+        self.assertEqual(arr['disk'], 'vda')
+
+    def test_lt(self):
+        specs = [('disk', '$disk', 'size', 'lt(30)')]
+        lines = [
+            ('disk', 'vda', 'size', '20'),
+            ]
+        arr = {}
+        self.assert_(matcher.match_all(lines, specs, arr))
+        self.assertEqual(arr['disk'], 'vda')
+
+    def test_le(self):
+        specs = [('disk', '$disk', 'size', 'le(20)')]
+        lines = [
+            ('disk', 'vda', 'size', '20'),
+            ]
+        arr = {}
+        self.assert_(matcher.match_all(lines, specs, arr))
+        self.assertEqual(arr['disk'], 'vda')
+
+    def test_network(self):
+        specs = [('network', '$eth', 'ipv4', 'network(192.168.2.0/24)')]
+        lines = [
+            ('network', 'eth0', 'ipv4', '192.168.2.2'),
+            ]
+        arr = {}
+        if matcher._HAS_IPADDR:
+            self.assert_(matcher.match_all(lines, specs, arr))
+            self.assertEqual(arr['eth'], 'eth0')
+
 if __name__ == "__main__":
     unittest.main()

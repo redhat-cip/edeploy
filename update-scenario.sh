@@ -2,14 +2,9 @@
 
 set -x
 
-make VERS=D6-F.1.0.0 DIST=squeeze clean
-make VERS=D6-F.1.0.0 DIST=squeeze
+make
+./upgrade-from mysql D7-F.1.0.0 D7-F.1.0.1 /var/lib/debootstrap
+./upgrade-from mysql D7-F.1.0.1 D7-F.1.0.2 /var/lib/debootstrap
 
-rsync -a --delete --exclude disk /var/lib/debootstrap/install/D6-F.1.0.0/ /var/lib/debootstrap/install/D6-F.1.0.1/
-
-make VERS=D6-F.1.0.1 DIST=squeeze clean
-make VERS=D6-F.1.0.1 DIST=squeeze
-
-./upgrade-from mysql D6-F.1.0.1 D6-F.1.0.2 /var/lib/debootstrap
-
-rsync -a metadata /var/lib/debootstrap/
+make DIST=precise VERS=U12.04-F.1.0.0
+./upgrade-from mysql U12.04-F.1.0.0 U12.04-F.1.0.1 /var/lib/debootstrap

@@ -37,13 +37,32 @@ for name, times in names:
             break
     idx += 1
 else:
-    sys.stderr.write('Unable to match requirements\n')
-    sys.stderr.write('Specs: %s\n' % repr(specs))
-    sys.stderr.write('Lines: %s\n' % repr(l))
+    sys.stderr.write('eDeploy: Unable to match requirements\n')
+    sys.stderr.write('eDeploy: Specs: %s\n' % repr(specs))
+    sys.stderr.write('eDeploy: Lines: %s\n' % repr(l))
     sys.exit(1)
 
 if times != '*':
     names[idx] = (name, times - 1)
+
+# Handle CMDB settings if present
+cmdb_filename = DIR + name + '.cmdb'
+try:
+    cmdb = eval(open(cmdb_filename).read(-1))
+    idx = 0
+    for entry in cmdb:
+        if not 'used' in entry:
+            var.update(entry)
+            var['used'] = 1
+            cmdb[idx] = var
+            pprint.pprint(cmdb, stream=open(cmdb_filename, 'w'))
+            break
+        idx += 1
+    else:
+        sys.stderr.write("eDeploy: No more entry in the CMDB, aborting.\n")
+        sys.exit(1)
+except IOError:
+    cmdb = None
 
 cfg = open(DIR + name + '.configure').read(-1)
 

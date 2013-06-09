@@ -9,4 +9,13 @@ for disk, path in ((disk1, '/chroot'), ):
     run('mkfs.ext4 %s1' % disk)
     run('mkdir -p %s; mount %s1 %s' % (path, disk, path))
 
+open('/interfaces', 'w').write('''
+auto lo
+iface lo inet loopback
+
+auto %(eth)s
+allow-hotplug %(eth)s
+iface %(eth)s inet dhcp
+''' % var)
+
 set_role('mysql', 'D7-F.1.0.0', disk1)

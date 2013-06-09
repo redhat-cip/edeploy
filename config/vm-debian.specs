@@ -1,5 +1,6 @@
 # -*- python -*-
 
 [
-    ('disk', '$disk', 'size', '$disk'),
+    ('disk', '$disk', 'size', 'gt(4)'),
+    ('network', '$eth', 'ipv4', 'network(192.168.122.0/24)'),
 ]

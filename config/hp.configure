@@ -54,7 +54,7 @@ for idx in range(3, 9):
     run('mount -orw,noatime,inode64 LABEL=osd%d /chroot/var/lib/ceph/osd/ceph-%d' % (idx - 3, idx - 3))
     run('lvcreate rootfs -n journal-osd%d -L 8G' % (idx - 3) )
 
-fstab = open('/chroot/etc/fstab.ext', 'a')
+fstab = open('/fstab', 'a')
 
 fstab.write('''
 LABEL=swap none swap sw 0 0

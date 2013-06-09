@@ -108,33 +108,6 @@ create_keys() {
 
 ################################################################################
 
-function configure_network() {
-    d="$1"
-    
-    > $d/etc/network/interfaces
-    
-    IFS=:
-    export IFS
-    grep : /proc/net/dev | sed 's/ *//' | while read iface rem; do
-	iface=$(echo $iface)
-	if [ $iface = lo ]; then
-	cat >> $d/etc/network/interfaces <<EOF
-auto lo
-iface lo inet loopback
-
-EOF
-	    continue
-	else
-	cat >> $d/etc/network/interfaces <<EOF
-auto $iface
-allow-hotplug $iface
-iface $iface inet dhcp
-
-EOF
-	fi
-    done
-}
-
 step "Create directories"
 [ -d /dev ] || mkdir -m 0755 /dev
 [ -d /root ] || mkdir -m 0700 /root
@@ -350,9 +323,12 @@ elif /configure; then
 	rsync -a ${RSERV}::install/${VERS}/${ROLE}/ $d/
 	echo "SERV=${RSERV}" >> $d/var/lib/edeploy/conf
 	log "done"
-	cat $d/etc/fstab $d/etc/fstab.ext > $d/etc/fstab.new
-	cp $d/etc/fstab.new $d/etc/fstab
-	rm $d/etc/fstab.ext $d/etc/fstab.new
+	if [ -r /fstab ]; then
+	    cp /fstab $d/etc/fstab
+	fi
+	if [ -r /interfaces ]; then
+	    cp /interfaces $d/etc/network/interfaces
+	fi
 	mount -obind /dev $d/dev
 	mount -obind /proc $d/proc
 	mount -obind /sys $d/sys
@@ -363,7 +339,6 @@ elif /configure; then
 	fi
 	
 	if chroot $d /bin/bash -c "/usr/sbin/grub-install ${DISK}"; then
-	    configure_network $d
 	    umount $d/sys
 	    umount $d/dev
 	    umount $d/proc

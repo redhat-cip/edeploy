@@ -15,4 +15,4 @@ run('mkdir -p /chroot/etc')
 fstab = open('/chroot/etc/fstab.ext', 'a')
 fstab.write('%s1 /var ext4 defaults 0 2\n' % disk2)
 
-set_role('mysql', 'D7-F.1.0.0', disk1)
+set_role('mysql', 'U12.04-F.1.0.0', disk1)

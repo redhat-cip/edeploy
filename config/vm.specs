@@ -1,6 +1,7 @@
 # -*- python -*-
 
 [
+    ('system', 'cpu', 'number', '$nbcpu'),
     ('disk', '$disk', 'size', '$size'),
     ('disk', '$disk2', 'size', '$size2'),
 ]

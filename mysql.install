@@ -3,7 +3,10 @@
 src="$1"
 dir="$2"
 version="$3"
+
 ROLE=mysql
+
+ORIG=$(cd $(dirname $0); pwd)
 
 if [ -z "$2" -o ! -d "$1" -o -z "$version" ]; then
    echo "Usage: $0 <base directory> <target directory name> <version>" 1>&2
@@ -11,6 +14,7 @@ if [ -z "$2" -o ! -d "$1" -o -z "$version" ]; then
 fi
 
 set -x
+set -e
 
 rsync -av ${src}/ ${dir}/
 
@@ -27,3 +31,5 @@ chroot ${dir} apt-get clean
 
 echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
 echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf
+
+cat ${ORIG}/mysql.exclude >> "$dir/var/lib/edeploy/${version}/exclude"

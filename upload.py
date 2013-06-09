@@ -4,11 +4,30 @@
 
 import cgi
 import cgitb
+import errno
+import os
 import pprint
 import sys
+import time
 import ConfigParser
 
 import matcher
+
+def lock(filename):
+    while True:
+        try:
+            fd = os.open(filename, os.O_CREAT|os.O_EXCL|os.O_RDWR)
+            break;
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise 
+            time.sleep(1)
+    return fd
+
+def unlock(fd, filename):
+    if fd:
+        os.close(fd)
+        os.unlink(filename)
 
 config = ConfigParser.ConfigParser()
 config.read('/etc/edeploy.conf')
@@ -24,6 +43,9 @@ form = cgi.FieldStorage()
 
 fileitem = form["file"]
 l = eval(fileitem.file.read(-1))
+
+lock_filename = config.get('SERVER', 'LOCKFILE')
+lockfd = lock(lock_filename)
 
 state_filename = DIR + 'state'
 names = eval(open(state_filename).read(-1))
@@ -88,3 +110,5 @@ pprint.pprint(var)
 sys.stdout.write(cfg)
 
 pprint.pprint(names, stream=open(state_filename, 'w'))
+
+unlock(lockfd, lock_filename)

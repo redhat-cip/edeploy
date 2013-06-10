@@ -11,8 +11,12 @@ disk1 = var['disk1']
 disk2 = var['disk2']
 slot = 'slot=' + var['slot1']
 
-print '# Removing disks'
-cli.ctrl_delete(slot)
+try:
+    print '# Removing disks'
+    cli.ctrl_delete(slot)
+except:
+    print 'Failed to delete array, maybe none already existing'
+    print 'We can continue to see if we can create everything else'
 
 print '# Creating SSD array'
 disk = cli.ctrl_create_ld(slot, (disk1, disk2), raid='1')

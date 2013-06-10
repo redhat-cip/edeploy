@@ -18,7 +18,7 @@ def lock(filename):
         try:
             fd = os.open(filename, os.O_CREAT|os.O_EXCL|os.O_RDWR)
             break;
-        except OSError as e:
+        except OSError, e:
             if e.errno != errno.EEXIST:
                 raise 
             time.sleep(1)

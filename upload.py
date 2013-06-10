@@ -44,6 +44,55 @@ def unlock(lock_fd, filename):
         os.unlink(filename)
 
 
+def is_included(dict1, dict2):
+    'Test if dict1 is included in dict2.'
+    for key, value in dict1.items():
+        try:
+            if dict2[key] != value:
+                return False
+        except KeyError:
+            return False
+    return True
+
+
+def update_cmdb(name, cfg_dir, var):
+    '''Handle CMDB settings if present. CMDB is updated with var.
+var is also augmented with the cmdb entry found.'''
+    cmdb_filename = cfg_dir + name + '.cmdb'
+
+    def update_entry(entry, cmdb, idx):
+        'Update var using a cmdb entry and save the full cmdb on disk.'
+        var.update(entry)
+        var['used'] = 1
+        cmdb[idx] = var
+        pprint.pprint(cmdb, stream=open(cmdb_filename, 'w'))
+
+    try:
+        cmdb = eval(open(cmdb_filename).read(-1))
+        # First pass to lookup if the var is already in the database
+        # and if this is the case, reuse the entry.
+        idx = 0
+        for entry in cmdb:
+            if is_included(var, entry):
+                update_entry(entry, cmdb, idx)
+                break
+            idx += 1
+        else:
+            # Second pass, find a not used entry.
+            idx = 0
+            for entry in cmdb:
+                if not 'used' in entry:
+                    update_entry(entry, cmdb, idx)
+                    break
+                idx += 1
+            else:
+                sys.stderr.write("eDeploy: No more entry in the CMDB,"
+                                 " aborting.\n")
+                sys.exit(1)
+    except IOError:
+        pass
+
+
 def main():
     '''CGI entry point.'''
 
@@ -87,24 +136,7 @@ def main():
     if times != '*':
         names[idx] = (name, times - 1)
 
-    # Handle CMDB settings if present
-    cmdb_filename = cfg_dir + name + '.cmdb'
-    try:
-        cmdb = eval(open(cmdb_filename).read(-1))
-        idx = 0
-        for entry in cmdb:
-            if not 'used' in entry:
-                var.update(entry)
-                var['used'] = 1
-                cmdb[idx] = var
-                pprint.pprint(cmdb, stream=open(cmdb_filename, 'w'))
-                break
-            idx += 1
-        else:
-            sys.stderr.write("eDeploy: No more entry in the CMDB, aborting.\n")
-            sys.exit(1)
-    except IOError:
-        cmdb = None
+    update_cmdb(name, cfg_dir, var)
 
     cfg = open(cfg_dir + name + '.configure').read(-1)
 

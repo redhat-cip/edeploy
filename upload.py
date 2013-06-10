@@ -6,6 +6,9 @@ It receives on its file form a file containing a Python dictionnary
 with the hardware detected on the remote host. In return, it sends
 a Python configuration script corresponding to the matched config.
 
+If nothing matches, nothing is returned. So the system can abort
+its configuration.
+
 On the to be configured host, it is usally called like that:
 
 $ curl -i -F name=test -F file=@/tmp/hw.lst http://localhost/cgi-bin/upload.py
@@ -30,7 +33,7 @@ the lock.'''
         try:
             lock_fd = os.open(filename, os.O_CREAT | os.O_EXCL | os.O_RDWR)
             break
-        except OSError as xcpt:
+        except OSError, xcpt:
             if xcpt.errno != errno.EEXIST:
                 raise
             time.sleep(1)

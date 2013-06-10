@@ -1,7 +1,17 @@
 #!/usr/bin/env python
 
-#curl -i -F name=test -F file=@/tmp/hw.lst http://localhost/cgi-bin/upload.py
+'''CGI script part of the eDeploy system.
 
+It receives on its file form a file containing a Python dictionnary
+with the hardware detected on the remote host. In return, it sends
+a Python configuration script corresponding to the matched config.
+
+On the to be configured host, it is usally called like that:
+
+$ curl -i -F name=test -F file=@/tmp/hw.lst http://localhost/cgi-bin/upload.py
+'''
+
+import ConfigParser
 import cgi
 import cgitb
 import errno
@@ -9,86 +19,96 @@ import os
 import pprint
 import sys
 import time
-import ConfigParser
 
 import matcher
 
+
 def lock(filename):
+    '''Lock a file and return a file descriptor. Need to call unlock to release
+the lock.'''
     while True:
         try:
-            fd = os.open(filename, os.O_CREAT|os.O_EXCL|os.O_RDWR)
-            break;
-        except OSError as e:
-            if e.errno != errno.EEXIST:
-                raise 
+            lock_fd = os.open(filename, os.O_CREAT | os.O_EXCL | os.O_RDWR)
+            break
+        except OSError as xcpt:
+            if xcpt.errno != errno.EEXIST:
+                raise
             time.sleep(1)
-    return fd
+    return lock_fd
 
-def unlock(fd, filename):
-    if fd:
-        os.close(fd)
+
+def unlock(lock_fd, filename):
+    '''Called after the lock function to release a lock.'''
+    if lock_fd:
+        os.close(lock_fd)
         os.unlink(filename)
 
-config = ConfigParser.ConfigParser()
-config.read('/etc/edeploy.conf')
 
-DIR = config.get('SERVER', 'CONFIGDIR') + '/'
+def main():
+    '''CGI entry point.'''
 
-cgitb.enable()
+    config = ConfigParser.ConfigParser()
+    config.read('/etc/edeploy.conf')
 
-print "Content-Type: text/x-python"     # HTML is following
-print                                   # blank line, end of headers
+    cfg_dir = config.get('SERVER', 'CONFIGDIR') + '/'
 
-form = cgi.FieldStorage()
+    cgitb.enable()
 
-fileitem = form["file"]
-l = eval(fileitem.file.read(-1))
+    print "Content-Type: text/x-python"     # HTML is following
+    print                                   # blank line, end of headers
 
-lock_filename = config.get('SERVER', 'LOCKFILE')
-lockfd = lock(lock_filename)
+    form = cgi.FieldStorage()
 
-state_filename = DIR + 'state'
-names = eval(open(state_filename).read(-1))
+    fileitem = form["file"]
+    hw_items = eval(fileitem.file.read(-1))
 
-idx = 0
-for name, times in names:
-    if times == '*' or times > 0:
-        specs = eval(open(DIR + name + '.specs', 'r').read(-1))
-        var = {}
-        if matcher.match_all(l, specs, var):
-            break
-    idx += 1
-else:
-    sys.stderr.write('eDeploy: Unable to match requirements\n')
-    sys.stderr.write('eDeploy: Specs: %s\n' % repr(specs))
-    sys.stderr.write('eDeploy: Lines: %s\n' % repr(l))
-    sys.exit(1)
+    lock_filename = config.get('SERVER', 'LOCKFILE')
+    lockfd = lock(lock_filename)
 
-if times != '*':
-    names[idx] = (name, times - 1)
+    state_filename = cfg_dir + 'state'
+    names = eval(open(state_filename).read(-1))
 
-# Handle CMDB settings if present
-cmdb_filename = DIR + name + '.cmdb'
-try:
-    cmdb = eval(open(cmdb_filename).read(-1))
     idx = 0
-    for entry in cmdb:
-        if not 'used' in entry:
-            var.update(entry)
-            var['used'] = 1
-            cmdb[idx] = var
-            pprint.pprint(cmdb, stream=open(cmdb_filename, 'w'))
-            break
+    times = '*'
+    name = None
+    for name, times in names:
+        if times == '*' or times > 0:
+            specs = eval(open(cfg_dir + name + '.specs', 'r').read(-1))
+            var = {}
+            if matcher.match_all(hw_items, specs, var):
+                break
         idx += 1
     else:
-        sys.stderr.write("eDeploy: No more entry in the CMDB, aborting.\n")
+        sys.stderr.write('eDeploy: Unable to match requirements\n')
+        sys.stderr.write('eDeploy: Specs: %s\n' % repr(specs))
+        sys.stderr.write('eDeploy: Lines: %s\n' % repr(hw_items))
         sys.exit(1)
-except IOError:
-    cmdb = None
 
-cfg = open(DIR + name + '.configure').read(-1)
+    if times != '*':
+        names[idx] = (name, times - 1)
 
-sys.stdout.write('''#!/usr/bin/env python
+    # Handle CMDB settings if present
+    cmdb_filename = cfg_dir + name + '.cmdb'
+    try:
+        cmdb = eval(open(cmdb_filename).read(-1))
+        idx = 0
+        for entry in cmdb:
+            if not 'used' in entry:
+                var.update(entry)
+                var['used'] = 1
+                cmdb[idx] = var
+                pprint.pprint(cmdb, stream=open(cmdb_filename, 'w'))
+                break
+            idx += 1
+        else:
+            sys.stderr.write("eDeploy: No more entry in the CMDB, aborting.\n")
+            sys.exit(1)
+    except IOError:
+        cmdb = None
+
+    cfg = open(cfg_dir + name + '.configure').read(-1)
+
+    sys.stdout.write('''#!/usr/bin/env python
 
 import sys
 import commands
@@ -101,14 +121,19 @@ def run(cmd):
         sys.exit(status)
 
 def set_role(role, version, disk):
-    open('/role', 'w').write("ROLE=%s\\nVERS=%s\\nDISK=%s\\n" % (role, version, disk))
+    open('/role', 'w').write("ROLE=%s\\nVERS=%s\\nDISK=%s\\n" % (role,
+                                                                 version,
+                                                                 disk))
 
 var = ''')
 
-pprint.pprint(var)
+    pprint.pprint(var)
 
-sys.stdout.write(cfg)
+    sys.stdout.write(cfg)
 
-pprint.pprint(names, stream=open(state_filename, 'w'))
+    pprint.pprint(names, stream=open(state_filename, 'w'))
 
-unlock(lockfd, lock_filename)
+    unlock(lockfd, lock_filename)
+
+if __name__ == "__main__":
+    main()

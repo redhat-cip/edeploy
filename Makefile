@@ -38,6 +38,10 @@ ceph $(INST)/ceph.done: ceph.install $(INST)/base.done
 	./ceph.install $(INST)/base $(INST)/ceph $(VERS)
 	touch $(INST)/ceph.done
 
+test: $(INST)/$(IMG)
+	cd tests/tftpboot/; ln -sf $(INST)/base/boot/vmlinuz* vmlinuz; ln -sf $(INST)/initrd.pxe initrd;
+	cd tests; ./run_kvm.sh $(TOP)
+
 dist:
 	tar zcvf ../edeploy.tgz Makefile init README.rst *.install edeploy update-scenario.sh *.py
 

@@ -1,0 +1,8 @@
+cgi-bin
+edeploy.conf
+edeploy.lock
+kvm_storage.img
+rsync-kvm.conf
+*~
+tftpboot/vmlinuz
+tftpboot/initrd

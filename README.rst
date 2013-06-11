@@ -38,8 +38,16 @@ Configure the PXE boot like that::
  LABEL local
  	LOCALBOOT 0
 
+The ``DEBUG`` variable if set to ``1`` on the kernel command line, it
+enables more debugging, the start of an ssh server on the configured
+system and the launch of an interactive shell at the end of the
+installation.
+ 
 CGI script
 ++++++++++
+
+The address and port of the http server are defined on the kernel
+command line in the ``SERV`` and ``HTTP_PORT`` variables.
 
 On the web server, you need to setup the ``upload.py`` CGI
 script. This CGI script is a python script which needs the
@@ -162,10 +170,11 @@ and stores it in the regular form.
 Rsync server
 ++++++++++++
 
-Right now the address of the rsync server is hardcoded in the init
-file. Change the adress before testing. The rsync server must be
-started as root right now and configured to serve an install target
-like this in the /etc/rsyncd.conf::
+The address and port of the rsync server are defined on the kernel
+command line in the ``RSERV`` and ``RSERV_PORT`` variables. Change the
+address before testing. The rsync server must be started as root right
+now and configured to serve an install target like this in the
+/etc/rsyncd.conf::
 
  uid = root
  gid = root

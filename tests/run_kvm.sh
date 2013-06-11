@@ -57,7 +57,8 @@ start_httpd() {
 }
 
 stop_httpd() {
-	kill -9 $HTTP_PID
+	kill -9 $HTTP_PID &>/dev/null
+}
 
 stop_rsyncd() {
 	kill -9 $RSYNC_PID &>/dev/null

@@ -5,7 +5,7 @@ eDeploy is a work in progress to experiment with a new way to
 provision/update systems (physical or virtual) using trees of files
 instead of packages or VM images.
 
-Installation is done in 4 steps simulating a PXE boot:
+Installation is done using these steps:
 
 - detect PCI hardware and setup network.
 - send the detected hardware config to the server
@@ -204,10 +204,53 @@ To build and test the install procedure under kvm::
  kvm -hda disk
 
 Log into the root account and then launch the following command to
-update to the new version of mysql::
+display available update version::
+
+ edeploy list
+
+To update to the new version of mysql::
 
  edeploy upgrade D7-F.1.0.1
 
 And then you can test the kernel update process::
 
  edeploy upgrade D7-F.1.0.2
+
+You can also verify what has been changed from the initial install or
+upgrade by running::
+
+ edeploy verify
+
+Update process
+++++++++++++++
+
+The different trees must be available under the ``[install]`` rsync
+server setting like that::
+
+ <version>/<role>/
+
+For example::
+
+ D7-F.1.0.0/mysql/
+
+To allow updates from on version of a profile to another version,
+special files must be available under the ``[metadata]`` rsync server
+setting like that::
+
+ <from version>/<role>/<to version>/
+
+For example to allow an update from ``D7-F.1.0.0`` to ``D7-F.1.0.1``
+for the ``mysql`` role, you must have this::
+
+ D7-F.1.0.0/mysql/D7-F.1.0.1/
+
+This directory must contain an ``exclude`` file which defines the list
+of files to exclude from the synchonization. These files are the
+changing files like data or generated files. You can use ``edeploy
+verify`` to help defining these files.
+
+This directory could also contain 2 scripts ``pre`` and ``post`` which
+will be run if present before synchronizing the files to stop services
+and after the synchro for example to restart stopped services. The
+``post`` script can report that a reboot is needed by exiting with a
+return code of 100.

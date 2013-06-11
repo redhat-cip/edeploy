@@ -208,11 +208,11 @@ if [ -f /dev/ipmi0 -o -f /dev/ipmi/0 -o -f /dev/ipmidev/0 ]; then
 
   # if the IPMI is set to factory settings (DHCP), we reconfigure it.
   ipmitool lan print ${CHANNEL} | grep -sq DHCP
-  if [[ $? -eq 0 ]] ;then
+  if [ $? -eq 0 ] ;then
     ipmitool lan set ${CHANNEL} ipsrc static
-    ipmitool lan set ${CHANNEL} ipaddr <ip> 2>&1 >> /dev/null
-    ipmitool lan set ${CHANNEL} netmask <masq> 2>&1 >> /dev/null
-    ipmitool lan set ${CHANNEL} defgw ipaddr <ip> 2>&1 >> /dev/null
+    #ipmitool lan set ${CHANNEL} ipaddr <ip> 2>&1 >> /dev/null
+    #ipmitool lan set ${CHANNEL} netmask <masq> 2>&1 >> /dev/null
+    #ipmitool lan set ${CHANNEL} defgw ipaddr <ip> 2>&1 >> /dev/null
     ipmitool lan set ${CHANNEL} arp respond on 2>&1 >> /dev/null
     # Do we need some VLAN? Here's an example
     #  ipmitool lan set ${CHANNEL} vlan id 2>&1 >> /dev/null

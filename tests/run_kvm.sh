@@ -6,6 +6,7 @@ HTTP_PORT=9000
 INST=$1
 SSH_PORT=2222
 PYTHON_PID=0
+RSYNC_PID=0
 
 detect_kvm() {
 	VM=$(which kvm 2>/dev/null)
@@ -35,7 +36,7 @@ start_rsyncd() {
 	cat > rsync-kvm.conf << EOF
 use chroot = no
 syslog facility = local5
-pid file = /var/run/rsyncd.pid
+pid file = rsyncd-edeploy.pid
 
 [install]
 	uid=root
@@ -46,6 +47,7 @@ EOF
 
 	# Rsync shall die with the current test
 	rsync --daemon --config rsync-kvm.conf --port 1515 --no-detach & 
+	RSYNC_PID=$!
 }
 
 start_httpd() {
@@ -56,6 +58,10 @@ start_httpd() {
 
 stop_httpd() {
 	kill -9 $HTTP_PID
+
+stop_rsyncd() {
+	kill -9 $RSYNC_PID &>/dev/null
+	rm -f rsyncd-edeploy.pid &>/dev/null
 }
 
 create_edeploy_conf() {
@@ -80,3 +86,4 @@ detect_kvm
 prepare_disk
 run_kvm
 stop_httpd
+stop_rsyncd

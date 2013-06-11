@@ -19,12 +19,6 @@ save_log() {
     fi
 }
 
-eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^DEBUG=")
-
-if [ "$DEBUG" = 1 ]; then
-    set -x			# show commands
-fi
-
 step() {
     echo "################################################################"
     echo "$@"
@@ -121,6 +115,12 @@ mount -t sysfs -o nodev,noexec,nosuid sysfs /sys
 mount -t proc -o nodev,noexec,nosuid proc /proc
 # Some things don't work properly without /etc/mtab.
 ln -sf /proc/mounts /etc/mtab
+
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^DEBUG=")
+
+if [ "$DEBUG" = 1 ]; then
+    set -x			# show commands
+fi
 
 grep -q '\<quiet\>' /proc/cmdline || log "Loading, please wait..."
 

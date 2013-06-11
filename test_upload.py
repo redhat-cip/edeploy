@@ -18,20 +18,17 @@ class TestUpload(unittest.TestCase):
         b = {'a': 1, 'b': 2, 'c': 3}
         self.assert_(upload.is_included(a, b))
 
-    def test_generate(self):
-        model = {'a': '192.168.1.1',
-                 'ip': '192.168.1.10-12'}
-        self.assertEqual(upload.generate(model), 
-                         [{'a': '192.168.1.1', 'ip': '192.168.1.10'},
-                          {'a': '192.168.1.1', 'ip': '192.168.1.11'},
-                          {'a': '192.168.1.1', 'ip': '192.168.1.12'}])
-
-    def test_generate_ip(self):
+    def test_generate_ips(self):
         model = '192.168.1.10-12'
-        self.assertEqual(list(upload._generate_ip(model)),
+        self.assertEqual(list(upload._generate_values(model)),
                          ['192.168.1.10',
                           '192.168.1.11',
                           '192.168.1.12'])
+
+    def test_generate_names(self):
+        model = 'host10-12'
+        self.assertEqual(list(upload._generate_values(model)),
+                         ['host10', 'host11', 'host12'])
 
     def test_generate_range(self):
         self.assertEqual(list(upload._generate_range('10-12')),
@@ -40,6 +37,16 @@ class TestUpload(unittest.TestCase):
     def test_generate_range_colon(self):
         self.assertEqual(list(upload._generate_range('1-3:10-12')),
                          ['1', '2', '3', '10', '11', '12'])
+
+    def test_generate(self):
+        model = {'gw': '192.168.1.1',
+                 'ip': '192.168.1.10-12',
+                 'hostname': 'host10-12'}
+        self.assertEqual(
+            upload.generate(model), 
+            [{'gw': '192.168.1.1', 'ip': '192.168.1.10', 'hostname': 'host10'},
+             {'gw': '192.168.1.1', 'ip': '192.168.1.11', 'hostname': 'host11'},
+             {'gw': '192.168.1.1', 'ip': '192.168.1.12', 'hostname': 'host12'}])
 
 if __name__ == "__main__":
     unittest.main()

@@ -20,10 +20,13 @@ import cgitb
 import errno
 import os
 import pprint
+import re
 import sys
 import time
 
 import matcher
+
+_RANGE_REGEXP = re.compile('^(.*?)([0-9]+-[0-9]+(:([0-9]+-[0-9]+))*)(.*)$')
 
 
 def _generate_range(num_range):
@@ -37,8 +40,8 @@ def _generate_range(num_range):
             yield num_range
 
 
-def _generate_ip(pattern):
-    'Generate range of IPv4.'
+def _generate_values(pattern):
+    'Generate range of IPv4 or names with ranges defined like 10-12:15-18.'
     parts = pattern.split('.')
     if len(parts) == 4 and (pattern.find(':') != -1 or
                             pattern.find('-') != -1):
@@ -49,8 +52,15 @@ def _generate_ip(pattern):
                     for part3 in gens[3]:
                         yield '.'.join((part0, part1, part2, part3))
     else:
-        for _ in xrange(16387064):
-            yield pattern
+        res = _RANGE_REGEXP.search(pattern)
+        if res:
+            head = res.group(1)
+            foot = res.group(res.lastindex)
+            for num in _generate_range(res.group(2)):
+                yield head + num + foot
+        else:
+            for _ in xrange(16387064):
+                yield pattern
 
 
 def generate(model):
@@ -60,7 +70,7 @@ handled by _generate_ip.'''
     copy = {}
     copy.update(model)
     for key, value in copy.items():
-        copy[key] = _generate_ip(value)
+        copy[key] = _generate_values(value)
     while True:
         try:
             entry = {}
@@ -138,10 +148,11 @@ var is also augmented with the cmdb entry found.'''
             else:
                 sys.stderr.write("eDeploy: No more entry in the CMDB,"
                                  " aborting.\n")
-                sys.exit(1)
+                return False
     except IOError, xcpt:
         sys.stderr.write("eDeploy: exception while processing CMDB %s\n" %
                          str(xcpt))
+    return True
 
 
 def main():
@@ -179,6 +190,7 @@ def main():
                 break
         idx += 1
     else:
+        unlock(lockfd, lock_filename)
         sys.stderr.write('eDeploy: Unable to match requirements\n')
         sys.stderr.write('eDeploy: Specs: %s\n' % repr(specs))
         sys.stderr.write('eDeploy: Lines: %s\n' % repr(hw_items))
@@ -187,7 +199,9 @@ def main():
     if times != '*':
         names[idx] = (name, times - 1)
 
-    update_cmdb(name, cfg_dir, var)
+    if not update_cmdb(name, cfg_dir, var):
+        unlock(lockfd, lock_filename)
+        sys.exit(1)
 
     cfg = open(cfg_dir + name + '.configure').read(-1)
 

@@ -78,11 +78,17 @@ example, the ``vm.specs`` is a python list in this form::
  ]
 
 Each entry of the list is tuple of 4 entries that must be matched on
-the hardware profile detected on the system to install. If en element
-starts with a ``$``, it's a variable that will take the value of
-detected system config. These variables will be passed to the
-configure script that will use them. For example the ``vm.configure``
-is a Python script like that::
+the hardware profile detected on the system to install.
+
+If an element ends with ``)`` a function is used to match the
+value. Available functions are ``gt`` (greater than), ``ge`` (greater
+or equal), ``lt`` (lesser than), ``le`` (lesser or equal), and ``network``
+(match an IPv4 network).
+
+If en element starts with a ``$``, it's a variable that will take the
+value of the detected system config. These variables will be passed to
+the configure script that will use them. For example the
+``vm.configure`` is a Python script like that::
 
  disk1 = '/dev/' + var['disk']
  
@@ -119,15 +125,15 @@ matched spec. If nothing is found then the script tries to find an
 unused entry (with no ``'used': 1`` part). This selected entry is
 merged into ``var`` and then stored back in the CMDB file.
 
-A CMDB file to manage a set of IPv4 addesses or settings to use, it
-can be like that::
+A CMDB file manages a set of settings to use (i.e. IPv4 addresses or
+host names), it can be like that::
 
  [
-  {'ip': '192.168.122.3'},
-  {'ip': '192.168.122.4'},
-  {'ip': '192.168.122.5'},
-  {'ip': '192.168.122.6'},
-  {'ip': '192.168.122.7'}
+  {'ip': '192.168.122.3', 'hostname': 'host3'},
+  {'ip': '192.168.122.4', 'hostname': 'host4'},
+  {'ip': '192.168.122.5', 'hostname': 'host5'},
+  {'ip': '192.168.122.6', 'hostname': 'host6'},
+  {'ip': '192.168.122.7', 'hostname': 'host7'}
  ]
 
 Once an entry has been used, the CMDB file will be like that::
@@ -135,21 +141,20 @@ Once an entry has been used, the CMDB file will be like that::
  [
   {'disk': 'vda',
    'eth': 'eth0',
-   'gateway': '192.168.122.2',
-   'ip': '192.168.122.2',
+   'hostname': 'host3',
+   'ip': '192.168.122.3',
    'mac': '52:54:00:88:17:3c',
-   'netmask': '255.255.255.0',
    'used': 1},
-  {'ip': '192.168.122.4'},
-  {'ip': '192.168.122.5'},
-  {'ip': '192.168.122.6'},
-  {'ip': '192.168.122.7'}
+  {'ip': '192.168.122.4', 'hostname': 'host4'},
+  {'ip': '192.168.122.5', 'hostname': 'host5'},
+  {'ip': '192.168.122.6', 'hostname': 'host6'},
+  {'ip': '192.168.122.7', 'hostname': 'host7'}
  ]
 
 There is also an helper function that can be used like that to avoid
 to create long list of entries::
 
- generate({'ip': '192.168.122.3-7'})
+ generate({'ip': '192.168.122.3-7', 'hostname': 'host3-7'})
 
 The first time the ``upload.py`` script reads it, it expands the list
 and stores it in the regular form.

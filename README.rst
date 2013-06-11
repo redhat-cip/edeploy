@@ -63,10 +63,13 @@ The CGI script is configured with ``/etc/edeploy.conf``::
 ``CONFIGDIR`` points to a directory which contains specifications
 (``*.specs``), configurations (``*.configure``) and CMDB (``*.cmdb``)
 per hardware profile, a description of the hardware profile priorities
-(``state``).
+(``state``). All those files must be readable by the user running the
+http server.
 
 ``LOCKFILE`` points to a file used to lock the ``CONFIGDIR`` files
-that are read and written like ``*.cmdb`` and ``state``.
+that are read and written like ``*.cmdb`` and ``state``. These files
+(``LOCKFILE``, ``*.cmdb`` and ``state``) must be readable and writable
+by the user running the http server.
 
 ``state`` contains an ordered list of profiles and the number of times
 they must be installed for your deployment. Example::

@@ -73,6 +73,12 @@ function verify() {
     fi
     
     rsync --dry-run -av --delete-after $EXCLUDE ${SERV}::install/${VERS}/${ROLE}/ /
+function check_args() {
+    if [ -z "$VERS" -o -z "$ROLE" -o -z "$RSERV" -o -z "$RSERV_PORT" ]; then
+	echo "/var/lib/edeploy/conf must contain RSERV, VERS, ROLE and RSERV_PORT" 1>&2
+	exit 1
+    fi
+
 }
 
 function help() {
@@ -97,14 +103,19 @@ function usage() {
 command="$1"
 
 case "$command" in
-    upgrade|list|help|verify)
+	help)
+		help
 	;;
-    *)
-	usage 1>&2
-	exit 1
+	upgrade|list|verify)
+		check_args
+		"$command" "$@"
+	;;
+
+	*)
+		usage 1>&2
+		exit 1
 	;;
 esac
 
 shift
 
-"$command" "$@"

@@ -33,7 +33,7 @@ run_kvm() {
 		-net nic \
 		-net nic,model=virtio \
 		-net user,tftp=tftpboot,bootfile=/pxelinux.510,hostfwd=tcp::$SSH_PORT-:22 \
-		-drive file=$DISK,if=none,id=drive-virtio-disk0,format=qcow2,cache=none \
+		-drive file=$DISK,if=virtio,id=drive-virtio-disk0,format=qcow2,cache=none,media=disk,index=0 \
 	       	-boot n \
 		-serial stdio \
 		-smbios type=1,manufacturer=kvm,product=edeploy_test_vm

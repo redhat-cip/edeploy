@@ -52,16 +52,16 @@ def detect_system(l):
         xml = ET.fromstring(output)
         e = xml.findall("./node/serial")
         if len(e) >= 1:
-            l.append(('system', 'board', 'serial', e[0].text))
+            l.append(('system', 'product', 'serial', e[0].text))
         e = xml.findall("./node/product")
         if len(e) >= 1:
-            l.append(('system', 'board', 'product', e[0].text))
+            l.append(('system', 'product', 'name', e[0].text))
         e = xml.findall("./node/vendor")
         if len(e) >= 1:
-            l.append(('system', 'board', 'vendor', e[0].text))
+            l.append(('system', 'product', 'vendor', e[0].text))
         e = xml.findall("./node/version")
         if len(e) >= 1:
-            l.append(('system', 'board', 'version', e[0].text))
+            l.append(('system', 'product', 'version', e[0].text))
         for e in xml.findall(".//node[@class='network']"):
             name = e.find('logicalname')
             if name is not None:

@@ -5,14 +5,14 @@ import matcher
 class TestMatcher(unittest.TestCase):
     
     def test_equal(self):
-        lines = [('system', 'board', 'serial', 'CZJ31402CD')]
-        spec = ('system', 'board', 'serial', 'CZJ31402CD')
+        lines = [('system', 'product', 'serial', 'CZJ31402CD')]
+        spec = ('system', 'product', 'serial', 'CZJ31402CD')
         arr = {}
         self.assert_(matcher.match_spec(spec, lines, arr))
 
     def test_not_equal(self):
-        lines = [('system', 'board', 'serial', 'CZJ31402CD')]
-        spec = ('system', 'board', 'serial', 'CZJ31402CE')
+        lines = [('system', 'product', 'serial', 'CZJ31402CD')]
+        spec = ('system', 'product', 'serial', 'CZJ31402CE')
         arr = {}
         self.assert_(not matcher.match_spec(spec, lines, arr))
 
@@ -25,7 +25,7 @@ class TestMatcher(unittest.TestCase):
 
     def test_vars(self):
         lines = [
-            ('system', 'board', 'serial', 'CZJ31402CD'),
+            ('system', 'product', 'serial', 'CZJ31402CD'),
             ('disk', '1I:1:1', 'size', '1000GB'),
             ('disk', '1I:1:1', 'type', 'SATA'),
             ('disk', '1I:1:1', 'control', 'hpa'),
@@ -51,7 +51,7 @@ class TestMatcher(unittest.TestCase):
             ('disk', '2I:1:8', 'type', 'SSDSATA'),
             ('disk', '2I:1:8', 'control', 'hpa'),
             ]
-        specs = [('system', 'board', 'serial', 'CZJ31402CD'),
+        specs = [('system', 'product', 'serial', 'CZJ31402CD'),
                  ('disk', '$disk1', 'size', '100GB'),
                  ('disk', '$disk2', 'size', '100GB'),
                  ('disk', '$disk3', 'size', '1000GB'),

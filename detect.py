@@ -37,7 +37,7 @@ def detect_hpa(l):
         return True
     except hpacucli.Error as e:
         import sys
-        sys.stderr.write('Error: %s\n' % e.value)
+	sys.stderr.write('Info: detect_hpa : %s\n' % e.value)
         return False
 
 def detect_disks(l):

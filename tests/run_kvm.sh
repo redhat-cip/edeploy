@@ -54,6 +54,10 @@ pid file = rsyncd-edeploy.pid
 	gid=root
 	path=$INST/install
 
+[metadata]
+	uid=root
+	gid=root
+	path=$INST/metadata
 EOF
 
 	# Rsync shall die with the current test

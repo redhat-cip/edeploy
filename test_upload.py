@@ -48,5 +48,12 @@ class TestUpload(unittest.TestCase):
              {'gw': '192.168.1.1', 'ip': '192.168.1.11', 'hostname': 'host11'},
              {'gw': '192.168.1.1', 'ip': '192.168.1.12', 'hostname': 'host12'}])
 
+    def test_generate_253(self):
+        result = upload.generate({'hostname': '10.0.1-2.2-254'})
+        self.assertEqual(
+            len(result),
+            2 * 253,
+            result)
+
 if __name__ == "__main__":
     unittest.main()

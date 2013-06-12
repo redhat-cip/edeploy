@@ -51,6 +51,9 @@ def _generate_values(pattern):
                 for part2 in gens[2]:
                     for part3 in gens[3]:
                         yield '.'.join((part0, part1, part2, part3))
+                    gens[3] = _generate_range(parts[3])
+                gens[2] = _generate_range(parts[2])
+            gens[1] = _generate_range(parts[1])
     else:
         res = _RANGE_REGEXP.search(pattern)
         if res:

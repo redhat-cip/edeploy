@@ -42,7 +42,10 @@ The ``DEBUG`` variable if set to ``1`` on the kernel command line, it
 enables more debugging, the start of an ssh server on the configured
 system and the launch of an interactive shell at the end of the
 installation.
- 
+
+Please note that RSERV_PORT and HTTP_PORT are given here as an example to override the default settings 831 & 80 respectively.
+Unless you run the rsync server or the http server on a very particular setup, don't use this variables.
+
 CGI script
 ++++++++++
 

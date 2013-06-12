@@ -21,7 +21,7 @@ function upgrade() {
 
     mkdir -p /var/lib/edeploy
 
-    rsync -a ${SERV}::metadata/${VERS}/${ROLE}/${TARGET}/ /var/lib/edeploy/${TARGET}/
+    rsync -a rsync://${RSERV}:${RSERV_PORT}/metadata/${VERS}/${ROLE}/${TARGET}/ /var/lib/edeploy/${TARGET}/
     
     cd /var/lib/edeploy/${TARGET}/
     
@@ -29,7 +29,7 @@ function upgrade() {
 	./pre
     fi
     
-    rsync -av --delete-after --exclude-from=exclude ${SERV}::install/${TARGET}/${ROLE}/ / > /var/lib/edeploy/rsync_${VERS}_${TARGET}.out
+    rsync -av --delete-after --exclude-from=exclude rsync://${RSERV}:${RSERV_PORT}/install/${TARGET}/${ROLE}/ / > /var/lib/edeploy/rsync_${VERS}_${TARGET}.out
     
     set +e
     
@@ -52,27 +52,19 @@ function upgrade() {
 }
 
 function list() {
-    if [ -z "$VERS" -o -z "$ROLE" -o -z "$SERV" ]; then
-	echo "/var/lib/edeploy/conf must contain SERV, VERS and ROLE" 1>&2
-	exit 1
-    fi
-
-    rsync ${SERV}::metadata/${VERS}/${ROLE}/ 2> /dev/null
+    rsync rsync://${RSERV}:${RSERV_PORT}/metadata/${VERS}/${ROLE}/ 2> /dev/null
 }
 
 function verify() {
-    if [ -z "$VERS" -o -z "$ROLE" -o -z "$SERV" ]; then
-	echo "/var/lib/edeploy/conf must contain SERV, VERS and ROLE" 1>&2
-	exit 1
-    fi
-
     if [ -r /var/lib/edeploy/$VERS/exclude ]; then
 	EXCLUDE=--exclude-from=/var/lib/edeploy/$VERS/exclude
     else
 	EXCLUDE=" --exclude /proc --exclude /dev --exclude /sys --exclude /var/log --exclude /tmp --exclude /run --exclude /var/tmp"
     fi
     
-    rsync --dry-run -av --delete-after $EXCLUDE ${SERV}::install/${VERS}/${ROLE}/ /
+    rsync --dry-run -av --delete-after $EXCLUDE rsync://${RSERV}:${RSERV_PORT}/install/${VERS}/${ROLE}/ /
+}
+
 function check_args() {
     if [ -z "$VERS" -o -z "$ROLE" -o -z "$RSERV" -o -z "$RSERV_PORT" ]; then
 	echo "/var/lib/edeploy/conf must contain RSERV, VERS, ROLE and RSERV_PORT" 1>&2

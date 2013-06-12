@@ -152,27 +152,6 @@ class TestMatcher(unittest.TestCase):
         self.assert_(matcher.match_multiple(lines, spec, arr))
         self.assertEqual(arr['disk'], ['vda', 'vdb'])
 
-    def test_missing(self):
-        specs = [
-             ('system', 'product', 'vendor', 'kvm'),
-             ('system', 'product', 'name', 'edeploy_test_vm ()'),
-             ('disk', '$disk', 'size', 'gt(1)'),
-             ('network', '$eth', 'ipv4', 'network(10.0.2.0/24)'),
-             ('network', '$eth', 'serial', '$mac'),
-         ]
-        lines = [
-             ('disk', 'vda', 'size', '2'),
-             ('system', 'product', 'name', 'edeploy_test_vm ()'),
-             ('system', 'product', 'vendor', 'kvm'),
-             ('network', 'eth0', 'serial', '52:54:00:12:34:56'),
-             ('network', 'eth0', 'size', '1000000000'),
-             ('network', 'eth0', 'ipv4', '10.0.2.15'),
-             ('network', 'eth1', 'serial', '52:54:00:12:34:57'),
-             ('system', 'cpu', 'number', '1')]
-        arr = {}
-        self.assert_(matcher.match_all(lines, specs, arr))
-        self.assertEqual(arr['disk'], 'vda')
-
     def test_gt(self):
         specs = [('disk', '$disk', 'size', 'gt(10)')]
         lines = [

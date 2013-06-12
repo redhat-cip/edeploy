@@ -7,6 +7,7 @@ INST=$1
 SSH_PORT=2222
 PYTHON_PID=0
 RSYNC_PID=0
+LOCKFILE=edeploy.lock
 
 detect_kvm() {
 	VM=$(which kvm 2>/dev/null)
@@ -58,6 +59,7 @@ start_httpd() {
 
 stop_httpd() {
 	kill -9 $HTTP_PID &>/dev/null
+	rm -f $LOCKFILE
 }
 
 stop_rsyncd() {
@@ -70,7 +72,7 @@ create_edeploy_conf() {
 [SERVER]
 
 CONFIGDIR=$PWD/../config
-LOCKFILE=edeploy.lock
+LOCKFILE=$LOCKFILE
 EOF
 
 # Insure upload.py can create its lock file locally

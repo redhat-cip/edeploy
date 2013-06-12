@@ -10,9 +10,9 @@ function upgrade() {
 
     TARGET="$1"
     
-    if [ -z "$TARGET" -o -z "$VERS" -o -z "$ROLE" -o -z "$SERV" ]; then
+    if [ -z "$TARGET" ]; then
 	echo "Usage: $progname upgrade <target version>" 1>&2
-	echo "/var/lib/edeploy/conf must contain SERV, VERS and ROLE" 1>&2
+	echo "Missing <target version> ! Exiting !"
 	exit 1
     fi
 

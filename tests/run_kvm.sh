@@ -29,8 +29,15 @@ prepare_disk() {
 }
 
 run_kvm() {
-	$KVM --enable-kvm -m 512  -net nic -net nic,model=virtio -net user,tftp=tftpboot,bootfile=/pxelinux.510,hostfwd=tcp::$SSH_PORT-:22 -drive file=$DISK,if=none,id=drive-virtio-disk0,format=qcow2,cache=none -boot n -serial stdio
-}
+	$KVM --enable-kvm -m 512\
+		-net nic \
+		-net nic,model=virtio \
+		-net user,tftp=tftpboot,bootfile=/pxelinux.510,hostfwd=tcp::$SSH_PORT-:22 \
+		-drive file=$DISK,if=none,id=drive-virtio-disk0,format=qcow2,cache=none \
+	       	-boot n \
+		-serial stdio \
+		-smbios type=1,manufacturer=kvm,product=edeploy_test_vm
+} 
 
 
 start_rsyncd() {

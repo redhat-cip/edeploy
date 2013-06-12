@@ -84,6 +84,7 @@ EOF
 
 # Insure upload.py can create its lock file locally
 chmod a+rw .
+chmod a+rw $PWD/../config/state
 
 ln -sf $PWD/edeploy.conf /etc/
 }

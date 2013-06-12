@@ -349,7 +349,7 @@ elif /configure; then
 
     if [ -n "$ROLE" -a -n "$VERS" ]; then
 	log_n "Copying files from ${RSERV}:${RSERV_PORT}::install/${VERS}/${ROLE}..."
-	rsync -a ${RSERV}:${RSERV_PORT}::install/${VERS}/${ROLE}/ $d/
+	rsync -a rsync://${RSERV}:${RSERV_PORT}/install/${VERS}/${ROLE}/ $d/
 	echo "SERV=${RSERV}" >> $d/var/lib/edeploy/conf
 	log "done"
 	if [ -r /fstab ]; then

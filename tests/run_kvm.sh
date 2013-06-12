@@ -88,6 +88,7 @@ EOF
 # Insure upload.py can create its lock file locally
 chmod a+rw .
 chmod a+rw $PWD/../config/state
+chmod a+rw $PWD/../config/kvm-test.cmdb
 
 ln -sf $PWD/edeploy.conf /etc/
 }

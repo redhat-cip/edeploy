@@ -49,7 +49,7 @@ pid file = rsyncd-edeploy.pid
 [install]
 	uid=root
 	gid=root
-	path=$INST
+	path=$INST/install
 
 EOF
 

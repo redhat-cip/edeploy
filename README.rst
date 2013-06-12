@@ -33,7 +33,7 @@ Configure the PXE boot like that::
  
  LABEL eDeploy
  	KERNEL vmlinuz
- 	INITRD initrd.pxe SERV=10.0.2.2 RSERV=10.0.2.2 console=tty0 console=ttyS0,115200 DEBUG=1 RSERV_PORT=1515 HTTP_PORT=9000
+ 	INITRD initrd.pxe SERV=10.0.2.2 RSERV=10.0.2.2 console=tty0 console=ttyS0,115200 DEBUG=1 VERBOSE=1 RSERV_PORT=1515 HTTP_PORT=9000
  
  LABEL local
  	LOCALBOOT 0
@@ -42,6 +42,9 @@ The ``DEBUG`` variable if set to ``1`` on the kernel command line, it
 enables more debugging, the start of an ssh server on the configured
 system and the launch of an interactive shell at the end of the
 installation.
+
+The ``VERBOSE`` variable if set to ``1`` on the kernel command line, it turns on
+the -x of bash to ease the understanding of faulty commands
 
 Please note that RSERV_PORT and HTTP_PORT are given here as an example to override the default settings 831 & 80 respectively.
 Unless you run the rsync server or the http server on a very particular setup, don't use this variables.

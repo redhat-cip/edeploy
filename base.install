@@ -75,6 +75,12 @@ echo 'exit 0' > "${dir}"/etc/default/grub.d/edeploy.cfg
 
 export DEBIAN_FRONTEND=noninteractive
 
+# Resolv.conf got setup during the initial deboostrap
+# But since, you might have change your host to another network (office vs home vs mobile vs ...)
+# In such case, the resolv.conf is wrong and prevents apt (and all networking-depedent stuff from working)
+# So let's copy the current one to insure the setup is good
+cp -f /etc/resolv.conf "$dir/etc/"
+
 chroot "$dir" apt-get update
 
 chroot "$dir" apt-get install -y --force-yes openssh-server parted $PACKAGES net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase net-tools dmidecode bash curl hdparm xfsprogs acpid

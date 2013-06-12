@@ -29,12 +29,15 @@ prepare_disk() {
 }
 
 run_kvm() {
+	BOOT_DEVICE="n"
+	[ "$1" = "local" ] && BOOT_DEVICE="c"
+
 	$KVM --enable-kvm -m 512\
 		-net nic \
 		-net nic,model=virtio \
 		-net user,tftp=tftpboot,bootfile=/pxelinux.510,hostfwd=tcp::$SSH_PORT-:22 \
 		-drive file=$DISK,if=virtio,id=drive-virtio-disk0,format=qcow2,cache=none,media=disk,index=0 \
-	       	-boot n \
+	       	-boot $BOOT_DEVICE \
 		-serial stdio \
 		-smbios type=1,manufacturer=kvm,product=edeploy_test_vm
 } 
@@ -98,3 +101,4 @@ prepare_disk
 run_kvm
 stop_httpd
 stop_rsyncd
+run_kvm local

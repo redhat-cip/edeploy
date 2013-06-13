@@ -8,4 +8,5 @@
     ('network', '$eth', 'serial', '$mac'),
     ('network', '$eth-io', 'ipv4', 'network(10.0.3.0/24)'),
     ('network', '$eth-io', 'serial', '$mac-io'),
+    ('system', 'ipmi-fake', 'channel', '$ipmi-fake-channel'),
 ]

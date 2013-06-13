@@ -56,8 +56,14 @@ def detect_ipmi(l):
     modprobe("ipmi_si")
     modprobe("ipmi_devintf")
     if not os.path.exists('/dev/ipmi0') and not os.path.exists('/dev/ipmi/0') and not os.path.exists('/dev/ipmidev/0'):
-	sys.stderr.write('Info: No IPMI device found\n')
-	return False
+	status, output = commands.getstatusoutput('grep -qi hypervisor /proc/cpuinfo')
+	if status == 0:
+	   	l.append(('system', 'ipmi-fake', 'channel', 0))
+		sys.stderr.write('Info: Added fake IPMI device\n')
+		return True
+	else:
+		sys.stderr.write('Info: No IPMI device found\n')
+		return False
 
     for channel in range(0,16):
         status, output = commands.getstatusoutput('ipmitool channel info %d 2>&1 | grep -sq Volatile' % channel)

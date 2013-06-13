@@ -30,4 +30,7 @@ iface %(eth-io)s inet static
      hwaddress %(mac-io)s
 ''' % var)
 
+ipmi.ipmi_setup_user(var['ipmi-fake-channel'],'root','pastouche')
+ipmi.ipmi_setup_network(var['ipmi-fake-channel'],var['ip-ipmi'], var['netmask-ipmi'],var['gateway-ipmi'],-1)
+
 set_role('mysql', 'D7-F.1.0.0', disk1)

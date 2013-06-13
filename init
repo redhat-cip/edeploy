@@ -219,7 +219,7 @@ if [ -f /dev/ipmi0 -o -f /dev/ipmi/0 -o -f /dev/ipmidev/0 ]; then
     # Do we need some VLAN? Here's an example
     #  ipmitool lan set ${CHANNEL} vlan id 2>&1 >> /dev/null
     # Mandoratory, to apply the change
-    #ipmitool chassis power reset
+    ipmitool bmc reset cold
   fi
 else
     log "No IPMI BMC detected"

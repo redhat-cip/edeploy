@@ -183,48 +183,6 @@ for d in $(cut -f2 /proc/bus/pci/devices ); do
     done
 done
 
-step "Detecting IPMI"
-
-modprobe ipmi_smb
-modprobe ipmi_si
-modprobe ipmi_devintf
-
-if [ -f /dev/ipmi0 -o -f /dev/ipmi/0 -o -f /dev/ipmidev/0 ]; then
-    ipmitool -I open lan print > /tmp/ipmi.info
-    ipmimac=$(grep 'MAC Address' /tmp/ipmi.info|sed -e 's/.*: //')
-    # looking for the good channel
-    for i in $(seq 0 15)
-    do
-      rc=$(ipmitool channel info $i 2>&1 | grep -sq Volatile)
-      if [[ $? -eq 0 ]] ;then
-        CHANNEL=$i
-        # User configuration
-        ipmitool user set name 1 root
-        ipmitool user set password 1 pastouche $CHANNEL
-        ipmitool user priv 1 4 ${CHANNEL}
-        ipmitool user enable 1
-        ipmitool user test 1 16 pastouche
-        break
-      fi
-  done
-
-  # if the IPMI is set to factory settings (DHCP), we reconfigure it.
-  ipmitool lan print ${CHANNEL} | grep -sq DHCP
-  if [ $? -eq 0 ] ;then
-    ipmitool lan set ${CHANNEL} ipsrc static
-    #ipmitool lan set ${CHANNEL} ipaddr <ip> 2>&1 >> /dev/null
-    #ipmitool lan set ${CHANNEL} netmask <masq> 2>&1 >> /dev/null
-    #ipmitool lan set ${CHANNEL} defgw ipaddr <ip> 2>&1 >> /dev/null
-    ipmitool lan set ${CHANNEL} arp respond on 2>&1 >> /dev/null
-    # Do we need some VLAN? Here's an example
-    #  ipmitool lan set ${CHANNEL} vlan id 2>&1 >> /dev/null
-    # Mandoratory, to apply the change
-    ipmitool bmc reset cold
-  fi
-else
-    log "No IPMI BMC detected"
-fi
-
 step "Starting networking"
 
 if [ "$DEBUG" = 1 ]; then

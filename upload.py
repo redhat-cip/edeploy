@@ -216,6 +216,7 @@ def main():
 
 import sys
 import commands
+import ipmi
 
 def run(cmd):
     print '+ ' + cmd

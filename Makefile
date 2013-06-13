@@ -15,7 +15,7 @@ META=$(TOP)/metadata/$(VERS)
 
 all: $(INST)/$(IMG) $(INST)/mysql.done
 
-pxe $(INST)/$(IMG): $(INST)/base.done init pxe.install detect.py hpacucli.py matcher.py diskinfo.py
+pxe $(INST)/$(IMG): $(INST)/base.done init pxe.install detect.py hpacucli.py matcher.py diskinfo.py ipmi.py
 	./pxe.install $(INST)/base $(INST)/pxe $(IMG) $(VERS)
 
 img: pxe

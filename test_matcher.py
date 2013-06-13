@@ -61,7 +61,7 @@ class TestMatcher(unittest.TestCase):
                  ('disk', '$disk7', 'size', '1000GB'),
                  ('disk', '$disk8', 'size', '1000GB')]
         arr = {}
-        self.assert_(matcher.match_all(lines, specs, arr))
+        self.assert_(matcher.match_all(lines, specs, arr, {}))
         self.assertEqual(arr,
                          {'disk1': '2I:1:7',
                           'disk2': '2I:1:8',
@@ -87,7 +87,7 @@ class TestMatcher(unittest.TestCase):
             ('disk', '$disk2', 'size', '1000GB'),
             ]
         arr = {}
-        self.assert_(matcher.match_all(lines, specs, arr))
+        self.assert_(matcher.match_all(lines, specs, arr, {}))
         self.assertEqual(arr,
                          {'disk1': '1I:1:2',
                           'disk2': '1I:1:1',
@@ -109,7 +109,7 @@ class TestMatcher(unittest.TestCase):
             ('disk', '2I:1:8', 'slot', '2'),
             ]
         arr = {}
-        self.assert_(matcher.match_all(lines, specs, arr))
+        self.assert_(matcher.match_all(lines, specs, arr, {}))
 
     def test_2vars(self):
         specs = [
@@ -119,10 +119,28 @@ class TestMatcher(unittest.TestCase):
             ('disk', 'vda', 'size', '8'),
             ]
         arr = {}
-        self.assert_(matcher.match_all(lines, specs, arr))
+        self.assert_(matcher.match_all(lines, specs, arr, {}))
         self.assertEqual(arr,
                          {'size': '8',
                           'disk': 'vda',
+                          })
+
+    def test_2dollars(self):
+        specs = [
+            ('disk', '$$disk', 'size', '$size'),
+            ]
+        lines = [
+            ('disk', 'vda', 'size', '8'),
+            ]
+        arr = {}
+        arr2 = {}
+        self.assert_(matcher.match_all(lines, specs, arr, arr2))
+        self.assertEqual(arr,
+                         {'size': '8',
+                          'disk': 'vda',
+                          })
+        self.assertEqual(arr2,
+                         {'disk': 'vda',
                           })
 
     def test_multiple_vars(self):
@@ -139,8 +157,8 @@ class TestMatcher(unittest.TestCase):
             ('disk', 'vdb', 'size', '8'),
             ]
         arr = {}
-        self.assert_(not matcher.match_all(lines, specs, arr))
-        self.assert_(matcher.match_all(lines, specs2, arr), lines)
+        self.assert_(not matcher.match_all(lines, specs, arr, {}))
+        self.assert_(matcher.match_all(lines, specs2, arr, {}), lines)
 
     def test_multiple(self):
         spec = ('disk', '$disk', 'size', '8')
@@ -158,7 +176,7 @@ class TestMatcher(unittest.TestCase):
             ('disk', 'vda', 'size', '20'),
             ]
         arr = {}
-        self.assert_(matcher.match_all(lines, specs, arr))
+        self.assert_(matcher.match_all(lines, specs, arr, {}))
         self.assertEqual(arr['disk'], 'vda')
 
     def test_ge(self):
@@ -167,7 +185,7 @@ class TestMatcher(unittest.TestCase):
             ('disk', 'vda', 'size', '10'),
             ]
         arr = {}
-        self.assert_(matcher.match_all(lines, specs, arr))
+        self.assert_(matcher.match_all(lines, specs, arr, {}))
         self.assertEqual(arr['disk'], 'vda')
 
     def test_lt(self):
@@ -176,7 +194,7 @@ class TestMatcher(unittest.TestCase):
             ('disk', 'vda', 'size', '20'),
             ]
         arr = {}
-        self.assert_(matcher.match_all(lines, specs, arr))
+        self.assert_(matcher.match_all(lines, specs, arr, {}))
         self.assertEqual(arr['disk'], 'vda')
 
     def test_le(self):
@@ -185,7 +203,7 @@ class TestMatcher(unittest.TestCase):
             ('disk', 'vda', 'size', '20'),
             ]
         arr = {}
-        self.assert_(matcher.match_all(lines, specs, arr))
+        self.assert_(matcher.match_all(lines, specs, arr, {}))
         self.assertEqual(arr['disk'], 'vda')
 
     def test_network(self):
@@ -195,7 +213,7 @@ class TestMatcher(unittest.TestCase):
             ]
         arr = {}
         if matcher._HAS_IPADDR:
-            self.assert_(matcher.match_all(lines, specs, arr))
+            self.assert_(matcher.match_all(lines, specs, arr, {}))
             self.assertEqual(arr['eth'], 'eth0')
 
 if __name__ == "__main__":

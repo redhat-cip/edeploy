@@ -95,8 +95,10 @@ def match_spec(spec, lines, arr, adder=_adder):
     return False
 
 
-def match_all(lines, specs, arr):
-    'Match all lines according to a spec and store variables in <var>.'
+def match_all(lines, specs, arr, arr2):
+    '''Match all lines according to a spec and store variables in
+<arr>. Variables starting with 2 $ like $$vda are stored in arr and
+arr2.'''
     # Work on a copy of lines to avoid changing the real lines because
     # match_spec removes the matched line to not match it again on next
     # calls.
@@ -104,6 +106,12 @@ def match_all(lines, specs, arr):
     for spec in specs:
         if not match_spec(spec, lines, arr):
             return(False)
+    for key in arr:
+        if key[0] == '$':
+            nkey = key[1:]
+            arr[nkey] = arr[key]
+            arr2[nkey] = arr[key]
+            del arr[key]
     return True
 
 

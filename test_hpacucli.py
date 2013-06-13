@@ -4,7 +4,7 @@ import mock
 import hpacucli
 
 class TestParsing(unittest.TestCase):
-    
+
     def test_parse_ctrl_all_show(self):
         # => ctrl all show
         return self.assertEqual(
@@ -65,7 +65,7 @@ class TestController(unittest.TestCase):
     def setUp(self):
         self.cli = hpacucli.Cli()
         self.cli.process = mock.MagicMock()
-        
+
     def test_ctrl_all_show(self):
         self.cli.process.before = 'ctrl all show' + CTRL_ALL_SHOW_OUTPUT
         return self.assertEqual(self.cli.ctrl_all_show(),
@@ -249,7 +249,7 @@ Smart Array P420 in Slot 2
 
 '''
 
-# => ctrl slot=2 ld 1 show  
+# => ctrl slot=2 ld 1 show
 CTRL_LD_SHOW_OUTPUT = '''
 
 Smart Array P420 in Slot 2

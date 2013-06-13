@@ -36,7 +36,7 @@ if [ ! -d "$dir" ]; then
     mkdir -p "$dir"
 
     debootstrap --arch ${ARCH:=amd64} --variant=minbase $dist "$dir"
-    
+
     # workaround no signature downloaded
     rm -f "$dir"/var/lib/apt/lists/*[es]
     chroot "$dir" apt-get update
@@ -46,7 +46,7 @@ cp -p ${ORIG}/policy-rc.d ${dir}/usr/sbin/
 
 cat >> "$dir/etc/apt/apt.conf" <<EOF
 APT::Install-Recommends "0" ;
-APT::Install-Suggests "0" ; 
+APT::Install-Suggests "0" ;
 EOF
 
 cleanup() {

@@ -30,11 +30,11 @@ Configure the PXE boot like that::
  timeout 0
  default eDeploy
  serial 0
- 
+
  LABEL eDeploy
  	KERNEL vmlinuz
  	INITRD initrd.pxe SERV=10.0.2.2 RSERV=10.0.2.2 console=tty0 console=ttyS0,115200 DEBUG=1 VERBOSE=1 RSERV_PORT=1515 HTTP_PORT=9000
- 
+
  LABEL local
  	LOCALBOOT 0
 
@@ -62,7 +62,7 @@ script. This CGI script is a python script which needs the
 The CGI script is configured with ``/etc/edeploy.conf``::
 
  [SERVER]
- 
+
  CONFIGDIR=/root/edeploy/config
  LOCKFILE=/var/tmp/edeploy.lock
 
@@ -108,13 +108,13 @@ the configure script that will use them. For example the
 ``vm.configure`` is a Python script like that::
 
  disk1 = '/dev/' + var['disk']
- 
+
  for disk, path in ((disk1, '/chroot'), ):
      run('parted -s %s mklabel msdos' % disk)
      run('parted -s %s mkpart primary ext2 0%% 100%%' % disk)
      run('mkfs.ext4 %s1' % disk)
      run('mkdir -p %s; mount %s1 %s' % (path, disk, path))
- 
+
  open('/interfaces', 'w').write('''
  auto lo
  iface lo inet loopback

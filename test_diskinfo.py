@@ -3,10 +3,10 @@ import unittest
 import diskinfo
 
 class TestDiskinfo(unittest.TestCase):
-    
+
     def test_sizeingb(self):
         return self.assertEqual(diskinfo.sizeingb(977105060), 500L)
-    
+
     def test_parse_hdparm_output(self):
         return self.assertEqual(
             diskinfo.parse_hdparm_output(

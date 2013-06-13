@@ -26,7 +26,7 @@ def detect_hpa(l):
         controllers = cli.ctrl_all_show()
         if len(controllers) == 0:
             return False
-        
+
         for controller in controllers:
             slot = 'slot=%d' % controller[0]
             for name, disks in cli.ctrl_pd_all_show(slot):
@@ -74,16 +74,16 @@ def detect_system(l):
                 ip = e.find("configuration/setting[@id='ip']")
                 if ip is not None:
                     l.append(('network', name.text, 'ipv4', ip.attrib['value']))
-    
+
     status, output = commands.getstatusoutput('nproc')
     if status == 0:
         l.append(('system', 'cpu', 'number', output))
 
 if __name__ == "__main__":
     l = []
-    
+
     detect_hpa(l)
     detect_disks(l)
     detect_system(l)
-    
+
     pprint.pprint(l)

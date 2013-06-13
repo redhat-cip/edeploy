@@ -20,6 +20,14 @@ iface %(eth)s inet static
      netmask %(netmask)s
      gateway %(gateway)s
      hwaddress %(mac)s
+
+auto %(eth-io)s
+allow-hotplug %(eth-io)s
+iface %(eth-io)s inet static
+     address %(ip-io)s
+     netmask %(netmask-io)s
+     gateway %(gateway-io)s
+     hwaddress %(mac-io)s
 ''' % var)
 
 set_role('mysql', 'D7-F.1.0.0', disk1)

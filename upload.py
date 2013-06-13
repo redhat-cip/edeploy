@@ -88,6 +88,7 @@ handled by _generate_ip.'''
 def lock(filename):
     '''Lock a file and return a file descriptor. Need to call unlock to release
 the lock.'''
+    count = 0
     while True:
         try:
             lock_fd = os.open(filename, os.O_CREAT | os.O_EXCL | os.O_RDWR)
@@ -95,7 +96,10 @@ the lock.'''
         except OSError, xcpt:
             if xcpt.errno != errno.EEXIST:
                 raise
+            if count % 30 == 0:
+                sys.stderr.write('waiting for lock %s\n' % filename)
             time.sleep(1)
+            count += 1
     return lock_fd
 
 

@@ -68,4 +68,7 @@ for idx in range(3, 9):
 LABEL=osd%d /var/lib/ceph/osd/ceph-%d xfs rw,noatime,inode64 0 2
 ''' % (idx - 3, idx - 3))
 
+ipmi_setup_user(var['ipmi-channel'],'root','pastouche')
+ipmi_setup_network(var['ipmi-channel'],var['ip-ipmi'], var['netmask-ipmi'],var['gateway-ipmi'],-1)
+
 set_role('ceph', 'D7-F.1.0.0', disk)

@@ -18,4 +18,5 @@
     ('disk', '$disk8', 'size', '1000'),
     ('disk', '$disk8', 'slot', '$slot8'),
     ('system', 'cpu', 'number', "$nbcpu"),
+    ('system', 'ipmi', 'channel', "$ipmi_channel"),
 ]

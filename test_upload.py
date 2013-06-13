@@ -13,7 +13,7 @@ class TestUpload(unittest.TestCase):
         b = {'a': 2}
         self.assert_(not upload.is_included(a, b))
 
-    def test_is_included_different(self):
+    def test_is_included_more(self):
         a = {'a': 1, 'b': 2}
         b = {'a': 1, 'b': 2, 'c': 3}
         self.assert_(upload.is_included(a, b))

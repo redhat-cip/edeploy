@@ -41,29 +41,34 @@ def _generate_range(num_range):
 
 
 def _generate_values(pattern):
-    'Generate range of IPv4 or names with ranges defined like 10-12:15-18.'
-    parts = pattern.split('.')
-    if len(parts) == 4 and (pattern.find(':') != -1 or
-                            pattern.find('-') != -1):
-        gens = [_generate_range(part) for part in parts]
-        for part0 in gens[0]:
-            for part1 in gens[1]:
-                for part2 in gens[2]:
-                    for part3 in gens[3]:
-                        yield '.'.join((part0, part1, part2, part3))
-                    gens[3] = _generate_range(parts[3])
-                gens[2] = _generate_range(parts[2])
-            gens[1] = _generate_range(parts[1])
+    '''Create a generator for range of IPv4 or names with ranges
+defined like 10-12:15-18 or from a list of entries.'''
+    if type(pattern) == type(()) or type(pattern) == type([]):
+        for elt in pattern:
+            yield elt
     else:
-        res = _RANGE_REGEXP.search(pattern)
-        if res:
-            head = res.group(1)
-            foot = res.group(res.lastindex)
-            for num in _generate_range(res.group(2)):
-                yield head + num + foot
+        parts = pattern.split('.')
+        if len(parts) == 4 and (pattern.find(':') != -1 or
+                                pattern.find('-') != -1):
+            gens = [_generate_range(part) for part in parts]
+            for part0 in gens[0]:
+                for part1 in gens[1]:
+                    for part2 in gens[2]:
+                        for part3 in gens[3]:
+                            yield '.'.join((part0, part1, part2, part3))
+                        gens[3] = _generate_range(parts[3])
+                    gens[2] = _generate_range(parts[2])
+                gens[1] = _generate_range(parts[1])
         else:
-            for _ in xrange(16387064):
-                yield pattern
+            res = _RANGE_REGEXP.search(pattern)
+            if res:
+                head = res.group(1)
+                foot = res.group(res.lastindex)
+                for num in _generate_range(res.group(2)):
+                    yield head + num + foot
+            else:
+                for _ in xrange(16387064):
+                    yield pattern
 
 
 def generate(model):
@@ -121,7 +126,7 @@ def is_included(dict1, dict2):
     return True
 
 
-def update_cmdb(name, cfg_dir, var):
+def update_cmdb(name, cfg_dir, var, pref):
     '''Handle CMDB settings if present. CMDB is updated with var.
 var is also augmented with the cmdb entry found.'''
     cmdb_filename = cfg_dir + name + '.cmdb'
@@ -140,7 +145,7 @@ var is also augmented with the cmdb entry found.'''
         # and if this is the case, reuse the entry.
         idx = 0
         for entry in cmdb:
-            if is_included(var, entry):
+            if is_included(pref, entry):
                 update_entry(entry, cmdb, idx)
                 break
             idx += 1
@@ -193,7 +198,8 @@ def main():
         if times == '*' or times > 0:
             specs = eval(open(cfg_dir + name + '.specs', 'r').read(-1))
             var = {}
-            if matcher.match_all(hw_items, specs, var):
+            var2 = {}
+            if matcher.match_all(hw_items, specs, var, var2):
                 break
         idx += 1
     else:
@@ -203,10 +209,13 @@ def main():
         sys.stderr.write('eDeploy: Lines: %s\n' % repr(hw_items))
         sys.exit(1)
 
+    if var2 == {}:
+        var2 = var
+
     if times != '*':
         names[idx] = (name, times - 1)
 
-    if not update_cmdb(name, cfg_dir, var):
+    if not update_cmdb(name, cfg_dir, var, pref):
         unlock(lockfd, lock_filename)
         sys.exit(1)
 
@@ -214,8 +223,10 @@ def main():
 
     sys.stdout.write('''#!/usr/bin/env python
 
-import sys
 import commands
+import sys
+
+import hpacucli
 import ipmi
 
 def run(cmd):

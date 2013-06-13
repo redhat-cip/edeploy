@@ -55,5 +55,14 @@ class TestUpload(unittest.TestCase):
             2 * 253,
             result)
 
+    def test_generate_list(self):
+        result = upload.generate({'hostname': ('hosta', 'hostb', 'hostc')})
+        self.assertEqual(
+            result,
+            [{'hostname': 'hosta'},
+             {'hostname': 'hostb'},
+             {'hostname': 'hostc'}]
+            )
+
 if __name__ == "__main__":
     unittest.main()

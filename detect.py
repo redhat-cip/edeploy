@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 import diskinfo
 import hpacucli
 import matcher
-
+import os
 
 def size_in_gb(s):
     'Return the size in GB without the unit.'
@@ -45,6 +45,25 @@ def detect_disks(l):
     sizes = diskinfo.disksizes(names)
     for name in [name for name, size in sizes.items() if size > 0]:
         l.append(('disk', name, 'size', str(sizes[name])))
+
+def modprobe(module):
+    status, output = commands.getstatusoutput('modprobe %s' % module)
+    if status == 0:
+	sys.stderr.write('Info: Probing %s failed\n' % module)
+
+def detect_ipmi(l):
+    modprobe("ipmi_smb")
+    modprobe("ipmi_si")
+    modprobe("ipmi_devintf")
+    if not os.path.exists('/dev/ipmi0') and not os.path.exists('/dev/ipmi/0') and not os.path.exists('/dev/ipmidev/0'):
+	sys.stderr.write('Info: No IPMI device found\n')
+	#return False
+
+    for channel in range(0,16):
+        status, output = commands.getstatusoutput('ipmitool channel info %d 2>&1 | grep -sq Volatile' % channel)
+	if status == 0:
+    		l.append(('system', 'ipmi', 'channel', channel))
+		break;
 
 def detect_system(l):
     status, output = commands.getstatusoutput('lshw -xml')
@@ -85,5 +104,5 @@ if __name__ == "__main__":
     detect_hpa(l)
     detect_disks(l)
     detect_system(l)
-
+    detect_ipmi(l)
     pprint.pprint(l)

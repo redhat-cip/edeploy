@@ -38,10 +38,10 @@ run_kvm() {
 		-device virtio-net,netdev=net0, \
 		-device virtio-net,netdev=net1, \
 		-drive file=$DISK,if=virtio,id=drive-virtio-disk0,format=qcow2,cache=none,media=disk,index=0 \
-	       	-boot $BOOT_DEVICE \
+		-boot $BOOT_DEVICE \
 		-serial stdio \
 		-smbios type=1,manufacturer=kvm,product=edeploy_test_vm
-} 
+}
 
 
 start_rsyncd() {
@@ -62,7 +62,7 @@ pid file = rsyncd-edeploy.pid
 EOF
 
 	# Rsync shall die with the current test
-	rsync --daemon --config rsync-kvm.conf --port 1515 --no-detach & 
+	rsync --daemon --config rsync-kvm.conf --port 1515 --no-detach &
 	RSYNC_PID=$!
 }
 

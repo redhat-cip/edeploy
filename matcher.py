@@ -15,7 +15,7 @@ try:
 except ImportError:
     _HAS_IPADDR = False
 
-_FUNC_REGEXP = re.compile('^(.*)\((.*)\)')
+_FUNC_REGEXP = re.compile(r'^(.*)\((.*)\)')
 
 
 def _adder(array, index, value):
@@ -113,7 +113,6 @@ def match_multiple(lines, spec, arr):
     lines = list(lines)
     while match_spec(spec, lines, arr, adder=_appender):
         ret = True
-        print spec, lines
     return ret
 
 # matcher.py ends here

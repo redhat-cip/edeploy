@@ -9,10 +9,10 @@ fi
 function upgrade() {
 
     TARGET="$1"
-    
-    if [ -z "$TARGET" -o -z "$VERS" -o -z "$ROLE" -o -z "$SERV" ]; then
+
+    if [ -z "$TARGET" ]; then
 	echo "Usage: $progname upgrade <target version>" 1>&2
-	echo "/var/lib/edeploy/conf must contain SERV, VERS and ROLE" 1>&2
+	echo "Missing <target version> ! Exiting !"
 	exit 1
     fi
 
@@ -21,28 +21,28 @@ function upgrade() {
 
     mkdir -p /var/lib/edeploy
 
-    rsync -a ${SERV}::metadata/${VERS}/${ROLE}/${TARGET}/ /var/lib/edeploy/${TARGET}/
-    
+    rsync -a rsync://${RSERV}:${RSERV_PORT}/metadata/${VERS}/${ROLE}/${TARGET}/ /var/lib/edeploy/${TARGET}/
+
     cd /var/lib/edeploy/${TARGET}/
-    
+
     if [ -x pre ]; then
 	./pre
     fi
-    
-    rsync -av --delete-after --exclude-from=exclude ${SERV}::install/${TARGET}/${ROLE}/ / > /var/lib/edeploy/rsync_${VERS}_${TARGET}.out
-    
+
+    rsync -av --delete-after --exclude-from=exclude rsync://${RSERV}:${RSERV_PORT}/install/${TARGET}/${ROLE}/ / > /var/lib/edeploy/rsync_${VERS}_${TARGET}.out
+
     set +e
-    
+
     if [ -x post ]; then
 	./post
 	RET=$?
     fi
-    
-    echo -e "\nVersion ${TARGET}\n" > /etc/motd
+
+   echo -e "\nVersion ${TARGET}\n" > /etc/motd
     echo -e "VERS=${TARGET}\nROLE=${ROLE}\nSERV=${SERV}\n" > /var/lib/edeploy/conf
-    
+
     echo "Upgraded to $TARGET"
-    
+
     if [ $RET = 100 ]; then
 	echo "Reboot requested by the upgrade process..."
 	sync
@@ -52,27 +52,25 @@ function upgrade() {
 }
 
 function list() {
-    if [ -z "$VERS" -o -z "$ROLE" -o -z "$SERV" ]; then
-	echo "/var/lib/edeploy/conf must contain SERV, VERS and ROLE" 1>&2
-	exit 1
-    fi
-
-    rsync ${SERV}::metadata/${VERS}/${ROLE}/ 2> /dev/null
+    rsync rsync://${RSERV}:${RSERV_PORT}/metadata/${VERS}/${ROLE}/ 2> /dev/null
 }
 
 function verify() {
-    if [ -z "$VERS" -o -z "$ROLE" -o -z "$SERV" ]; then
-	echo "/var/lib/edeploy/conf must contain SERV, VERS and ROLE" 1>&2
-	exit 1
-    fi
-
     if [ -r /var/lib/edeploy/$VERS/exclude ]; then
 	EXCLUDE=--exclude-from=/var/lib/edeploy/$VERS/exclude
     else
 	EXCLUDE=" --exclude /proc --exclude /dev --exclude /sys --exclude /var/log --exclude /tmp --exclude /run --exclude /var/tmp"
     fi
-    
-    rsync --dry-run -av --delete-after $EXCLUDE ${SERV}::install/${VERS}/${ROLE}/ /
+
+    rsync --dry-run -av --delete-after $EXCLUDE rsync://${RSERV}:${RSERV_PORT}/install/${VERS}/${ROLE}/ /
+}
+
+function check_args() {
+    if [ -z "$VERS" -o -z "$ROLE" -o -z "$RSERV" -o -z "$RSERV_PORT" ]; then
+	echo "/var/lib/edeploy/conf must contain RSERV, VERS, ROLE and RSERV_PORT" 1>&2
+	exit 1
+    fi
+
 }
 
 function help() {
@@ -97,14 +95,19 @@ function usage() {
 command="$1"
 
 case "$command" in
-    upgrade|list|help|verify)
+	help)
+		help
 	;;
-    *)
-	usage 1>&2
-	exit 1
+	upgrade|list|verify)
+		check_args
+		"$command" "$@"
+	;;
+
+	*)
+		usage 1>&2
+		exit 1
 	;;
 esac
 
 shift
 
-"$command" "$@"

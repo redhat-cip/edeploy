@@ -135,7 +135,7 @@ var is also augmented with the cmdb entry found.'''
 
     try:
         cmdb = eval(open(cmdb_filename).read(-1))
-        sys.stderr.write(str(cmdb))
+        #sys.stderr.write(str(cmdb))
         # First pass to lookup if the var is already in the database
         # and if this is the case, reuse the entry.
         idx = 0

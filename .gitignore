@@ -5,3 +5,4 @@ initrd.pxe*
 disk
 *~
 *.pyc
+hpacucli_*.deb

@@ -33,14 +33,15 @@ run_kvm() {
 	[ "$1" = "local" ] && BOOT_DEVICE="c"
 
 	$KVM --enable-kvm -m 512\
-		-net nic \
-		-net nic,model=virtio \
-		-net user,tftp=tftpboot,bootfile=/pxelinux.510,hostfwd=tcp::$SSH_PORT-:22 \
+		-netdev user,id=net0,net=10.0.2.0/24,tftp=tftpboot,bootfile=/pxelinux.510,hostfwd=tcp::$SSH_PORT-:22 \
+		-netdev user,id=net1,net=10.0.3.0/24 \
+		-device virtio-net,netdev=net0, \
+		-device virtio-net,netdev=net1, \
 		-drive file=$DISK,if=virtio,id=drive-virtio-disk0,format=qcow2,cache=none,media=disk,index=0 \
-	       	-boot $BOOT_DEVICE \
+		-boot $BOOT_DEVICE \
 		-serial stdio \
 		-smbios type=1,manufacturer=kvm,product=edeploy_test_vm
-} 
+}
 
 
 start_rsyncd() {
@@ -54,10 +55,14 @@ pid file = rsyncd-edeploy.pid
 	gid=root
 	path=$INST/install
 
+[metadata]
+	uid=root
+	gid=root
+	path=$INST/metadata
 EOF
 
 	# Rsync shall die with the current test
-	rsync --daemon --config rsync-kvm.conf --port 1515 --no-detach & 
+	rsync --daemon --config rsync-kvm.conf --port 1515 --no-detach &
 	RSYNC_PID=$!
 }
 
@@ -88,6 +93,7 @@ EOF
 # Insure upload.py can create its lock file locally
 chmod a+rw .
 chmod a+rw $PWD/../config/state
+chmod a+rw $PWD/../config/kvm-test.cmdb
 
 ln -sf $PWD/edeploy.conf /etc/
 }

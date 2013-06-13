@@ -1,4 +1,5 @@
 #!/bin/bash
+VERBOSE=0
 
 exec 3>&1
 exec 4>&2
@@ -11,9 +12,9 @@ tpid=$!
 save_log() {
     exec 1>&3
     exec 2>&4
-    
+
     kill $tpid
-    
+
     if [ -d $d/var/log ]; then
 	cp /log $d/var/log/install.log
     fi
@@ -117,8 +118,9 @@ mount -t proc -o nodev,noexec,nosuid proc /proc
 ln -sf /proc/mounts /etc/mtab
 
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^DEBUG=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^VERBOSE==")
 
-if [ "$DEBUG" = 1 ]; then
+if [ "$VERBOSE" = 1 ]; then
     set -x			# show commands
 fi
 
@@ -151,7 +153,7 @@ fi
 # It's all over netlink now
 echo "" > /proc/sys/kernel/hotplug
 
-step "Start Udev"	
+step "Start Udev"
 # Start the udev daemon to process events
 /sbin/udevd --daemon --resolve-names=never
 
@@ -217,7 +219,7 @@ if [ -f /dev/ipmi0 -o -f /dev/ipmi/0 -o -f /dev/ipmidev/0 ]; then
     # Do we need some VLAN? Here's an example
     #  ipmitool lan set ${CHANNEL} vlan id 2>&1 >> /dev/null
     # Mandoratory, to apply the change
-    #ipmitool chassis power reset
+    ipmitool bmc reset cold
   fi
 else
     log "No IPMI BMC detected"
@@ -350,7 +352,9 @@ elif /configure; then
     if [ -n "$ROLE" -a -n "$VERS" ]; then
 	log_n "Copying files from ${RSERV}:${RSERV_PORT}::install/${VERS}/${ROLE}..."
 	rsync -a rsync://${RSERV}:${RSERV_PORT}/install/${VERS}/${ROLE}/ $d/
-	echo "SERV=${RSERV}" >> $d/var/lib/edeploy/conf
+	echo "SERV=${SERV}" >> $d/var/lib/edeploy/conf
+	echo "RSERV=${RSERV}" >> $d/var/lib/edeploy/conf
+	echo "RSERV_PORT=${RSERV_PORT}" >> $d/var/lib/edeploy/conf
 	log "done"
 	if [ -r /fstab ]; then
 	    cp /fstab $d/etc/fstab
@@ -362,11 +366,11 @@ elif /configure; then
 	mount -obind /proc $d/proc
 	mount -obind /sys $d/sys
 	chroot $d /bin/bash -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"
-	
+
 	if [ -d $d/var/log ]; then
 	    cp /log $d/var/log/install.log
 	fi
-	
+
 	if chroot $d /bin/bash -c "/usr/sbin/grub-install ${DISK}"; then
 	    umount $d/sys
 	    umount $d/dev

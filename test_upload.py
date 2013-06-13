@@ -3,7 +3,7 @@ import unittest
 import upload
 
 class TestUpload(unittest.TestCase):
-    
+
     def test_is_included_same(self):
         a = {'a': 1}
         self.assert_(upload.is_included(a, a))

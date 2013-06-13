@@ -6,4 +6,6 @@
     ('disk', '$disk', 'size', 'gt(1)'),
     ('network', '$eth', 'ipv4', 'network(10.0.2.0/24)'),
     ('network', '$eth', 'serial', '$mac'),
+    ('network', '$eth-io', 'ipv4', 'network(10.0.3.0/24)'),
+    ('network', '$eth-io', 'serial', '$mac-io'),
 ]

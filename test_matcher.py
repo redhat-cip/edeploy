@@ -3,7 +3,7 @@ import unittest
 import matcher
 
 class TestMatcher(unittest.TestCase):
-    
+
     def test_equal(self):
         lines = [('system', 'product', 'serial', 'CZJ31402CD')]
         spec = ('system', 'product', 'serial', 'CZJ31402CD')

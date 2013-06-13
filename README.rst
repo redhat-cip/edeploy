@@ -176,6 +176,28 @@ to create long list of entries::
 The first time the ``upload.py`` script reads it, it expands the list
 and stores it in the regular form.
 
+Special variables
+'''''''''''''''''
+
+If you define variables with 2 ``$``, only those variables will be
+used to match entries in the CMDB.
+
+This is useful if you want to match for example system tags to
+specific settings like that::
+
+ [
+  ('system', 'product', 'serial', '$$tag'),
+  ('network', '$eth', 'serial', '$mac'),
+ ]
+
+but you don't know in advance the MAC addresses or the names of the
+network interface in the CMDB::
+
+ generate({'tag': ('TAG1', 'TAG2', 'TAG3'),
+           'ip': '192.168.122.3-5',
+           'hostname': 'host3-5'})
+
+
 Rsync server
 ++++++++++++
 

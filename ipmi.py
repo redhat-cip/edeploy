@@ -16,7 +16,7 @@ def restart_bmc():
     state, output = commands.getstatusoutput('ipmitool bmc reset cold')
 
 def setup_network(channel, ip, netmask, gateway, vlan_id=-1):
-	sys.stderr.write('Info: ipmi_setup_network: Setting network ip="%s", netmask="%s", gateway="%s", vland_id="%d" on channel %s\n' % (ip,netmask,gateway,vlan_id,channel))
+    sys.stderr.write('Info: ipmi_setup_network: Setting network ip="%s", netmask="%s", gateway="%s", vland_id="%d" on channel %s\n' % (ip,netmask,gateway,vlan_id,channel))
     state, output = commands.getstatusoutput('ipmitool lan set %s ipsrc static' % channel)
     state, output = commands.getstatusoutput('ipmitool lan set %s ipaddr %s' % (channel, ip))
     state, output = commands.getstatusoutput('ipmitool lan set %s netmask %s' % (channel, netmask))

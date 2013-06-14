@@ -15,7 +15,7 @@ def setup_user(channel, username, password):
 		return False
 
 def restart_bmc():
-    sys.stderr.write('Info: Restarting IPMI BMC')
+    sys.stderr.write('Info: Restarting IPMI BMC\n')
     state, output = commands.getstatusoutput('ipmitool bmc reset cold')
 
 def setup_network(channel, ip, netmask, gateway, vlan_id=-1):

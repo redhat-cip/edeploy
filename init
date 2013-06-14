@@ -320,6 +320,11 @@ elif /configure; then
 	if [ -r /interfaces ]; then
 	    cp /interfaces $d/etc/network/interfaces
 	fi
+
+	if [ -r /hostname ]; then
+	    cp -f /hostname $d/etc/hostname
+	fi
+
 	mount -obind /dev $d/dev
 	mount -obind /proc $d/proc
 	mount -obind /sys $d/sys

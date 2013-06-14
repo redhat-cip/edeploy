@@ -215,7 +215,7 @@ def main():
     if times != '*':
         names[idx] = (name, times - 1)
 
-    if not update_cmdb(name, cfg_dir, var, pref):
+    if not update_cmdb(name, cfg_dir, var, var2):
         unlock(lockfd, lock_filename)
         sys.exit(1)
 

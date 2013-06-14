@@ -8,7 +8,10 @@ def setup_user(channel, username, password):
 	state, output = commands.getstatusoutput('ipmitool user priv 1 4 %s' % channel)
 	state, output = commands.getstatusoutput('ipmitool user enable')
 	state, output = commands.getstatusoutput('ipmitool user test 1 16 %s' % password)
-	if state != 0:
+	if state == 0:
+    		sys.stderr.write('Info: ipmi_setup_user: Setting user successful !\n')
+	else:
+		sys.stderr.write('Err: ipmi_setup_user: Setting user failed !\n' )
 		return False
 
 def restart_bmc():

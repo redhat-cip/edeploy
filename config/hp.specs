@@ -18,5 +18,10 @@
     ('disk', '$disk8', 'size', '1000'),
     ('disk', '$disk8', 'slot', '$slot8'),
     ('system', 'cpu', 'number', "$nbcpu"),
+    ('network', '$eth', 'ipv4', 'network(10.66.6.0/24)'),
+    ('network', '$eth', 'link', 'yes'),
+    ('network', '$eth', 'serial', '$mac'),
+    ('network', '$eth-io', 'link', 'yes'),
+    ('network', '$eth-io', 'serial', '$mac-io'),
     ('system', 'ipmi', 'channel', "$ipmi-channel"),
 ]

@@ -69,4 +69,29 @@ ipmi.setup_user(var['ipmi-channel'], 'root', 'pastouche')
 ipmi.setup_network(var['ipmi-channel'], var['ip-ipmi'],
                    var['netmask-ipmi'], var['gateway-ipmi'])
 
+open('/interfaces', 'w').write('''
+auto lo
+iface lo inet loopback
+
+auto %(eth)s
+allow-hotplug %(eth)s
+iface %(eth)s inet static
+     address %(ip)s
+     netmask %(netmask)s
+     gateway %(gateway)s
+     hwaddress %(mac)s
+
+auto %(eth-io)s
+allow-hotplug %(eth-io)s
+iface %(eth-io)s inet static
+     address %(ip-io)s
+     netmask %(netmask-io)s
+     gateway %(gateway-io)s
+     hwaddress %(mac-io)s
+''' % var)
+
+open('/hostname','w').write('''
+%(hostname)
+''' % var)
+
 set_role('ceph', 'D7-F.1.0.0', disk)

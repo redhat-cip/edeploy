@@ -1,9 +1,6 @@
 
 # -*- python -*-
 
-import hpacucli
-import subprocess
-
 cli = hpacucli.Cli(debug=True)
 cli.launch()
 
@@ -68,7 +65,8 @@ for idx in range(3, 9):
 LABEL=osd%d /var/lib/ceph/osd/ceph-%d xfs rw,noatime,inode64 0 2
 ''' % (idx - 3, idx - 3))
 
-ipmi_setup_user(var['ipmi-channel'],'root','pastouche')
-ipmi_setup_network(var['ipmi-channel'],var['ip-ipmi'], var['netmask-ipmi'],var['gateway-ipmi'],-1)
+ipmi.setup_user(var['ipmi-channel'], 'root', 'pastouche')
+ipmi.setup_network(var['ipmi-channel'], var['ip-ipmi'],
+                   var['netmask-ipmi'], var['gateway-ipmi'])
 
 set_role('ceph', 'D7-F.1.0.0', disk)

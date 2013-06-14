@@ -1,7 +1,7 @@
 import commands
 import sys
 
-def ipmi_setup_user(channel,username,password):
+def setup_user(channel, username, password):
 	sys.stderr.write('Info: ipmi_setup_user: Setting user="%s", password="%s" on channel %s\n' % (username,password,channel))
 	state, output = commands.getstatusoutput('ipmitool user set name 1 %s' % username)
 	state, output = commands.getstatusoutput('ipmitool user set password 1 %s' % password)
@@ -11,12 +11,12 @@ def ipmi_setup_user(channel,username,password):
 	if state != 0:
 		return False
 
-def ipmi_restart_bmc():
+def restart_bmc():
     sys.stderr.write('Info: Restarting IPMI BMC')
     state, output = commands.getstatusoutput('ipmitool bmc reset cold')
 
-def ipmi_setup_network(channel,ip,netmask,gateway,vlan_id):
-    sys.stderr.write('Info: ipmi_setup_network: Setting network ip="%s", netmask="%s", gateway="%s", vland_id="%d" on channel %s\n' % (ip,netmask,gateway,vlan_id,channel))
+def setup_network(channel, ip, netmask, gateway, vlan_id=-1):
+	sys.stderr.write('Info: ipmi_setup_network: Setting network ip="%s", netmask="%s", gateway="%s", vland_id="%d" on channel %s\n' % (ip,netmask,gateway,vlan_id,channel))
     state, output = commands.getstatusoutput('ipmitool lan set %s ipsrc static' % channel)
     state, output = commands.getstatusoutput('ipmitool lan set %s ipaddr %s' % (channel, ip))
     state, output = commands.getstatusoutput('ipmitool lan set %s netmask %s' % (channel, netmask))
@@ -29,4 +29,4 @@ def ipmi_setup_network(channel,ip,netmask,gateway,vlan_id):
     	state, output = commands.getstatusoutput('ipmitool lan set %s vlan id off' % channel)
 
     # We need to restart the bmc to insure the setup is properly done
-    ipmi_restart_bmc
+    restart_bmc()

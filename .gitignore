@@ -6,3 +6,4 @@ disk
 *~
 *.pyc
 hpacucli_*.deb
+hpacucli*.rpm

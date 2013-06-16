@@ -118,7 +118,8 @@ mount -t proc -o nodev,noexec,nosuid proc /proc
 ln -sf /proc/mounts /etc/mtab
 
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^DEBUG=")
-eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^VERBOSE==")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^VERBOSE=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^NOREBOOT=")
 
 if [ "$VERBOSE" = 1 ]; then
     set -x			# show commands
@@ -270,8 +271,8 @@ IFS=
 ip a
 
 # This is the default value for both SERV & RSERV
-SERV=10.0.3.1
-RSERV=$SERV
+SERV=10.0.0.1
+RSERV=
 RSERV_PORT=873
 HTTP_PORT=80
 
@@ -279,6 +280,10 @@ HTTP_PORT=80
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^R?SERV=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^RSERV_PORT=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^HTTP_PORT=")
+
+if [ -z "$RSERV" ]; then
+    RSERV="$SERV"
+fi
 
 ################################################################################
 step "Detecting hardware"
@@ -341,19 +346,21 @@ elif /configure; then
 	    save_log
 	    sync
 	    if [ "$DEBUG" != 1 ]; then
-		if [ -r $d/boot/vmlinuz-$(uname -r) ]; then
-		    echo "Same kernel detected, starting the new init..."
-		    if type -p switch_root; then
-			exec switch_root $d /sbin/init
+		if [ "$NOREBOOT" = 1 ]; then
+		    if [ -r $d/boot/vmlinuz-$(uname -r) ]; then
+			echo "Same kernel detected, starting the new init..."
+			if type -p switch_root; then
+			    exec switch_root $d /sbin/init
+			else
+			    umount /sys
+			    umount /dev
+			    umount /run
+			    umount /proc
+			    exec /usr/lib/klibc/bin/run-init ${d} /sbin/init < $d/dev/console > $d/dev/console 2>&1
+			fi
 		    else
-			umount /sys
-			umount /dev
-			umount /run
-			umount /proc
-			exec /usr/lib/klibc/bin/run-init ${d} /sbin/init < $d/dev/console > $d/dev/console 2>&1
+			echo "Not the same kernel, rebooting..."
 		    fi
-		else
-		    echo "Not the same kernel, rebooting..."
 		fi
 		umount -a
 		reboot -f

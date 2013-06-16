@@ -105,7 +105,6 @@ arr2.'''
     lines = list(lines)
     for spec in specs:
         if not match_spec(spec, lines, arr):
-            print spec, 'not matched', arr, lines
             return(False)
     for key in arr:
         if key[0] == '$':

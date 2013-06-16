@@ -17,6 +17,7 @@ $ curl -i -F name=test -F file=@/tmp/hw.lst http://localhost/cgi-bin/upload.py
 import ConfigParser
 import cgi
 import cgitb
+import commands
 import errno
 import os
 import pprint
@@ -185,6 +186,25 @@ def main():
     fileitem = form["file"]
     hw_items = eval(fileitem.file.read(-1))
 
+    use_pxemngr = (config.get('SERVER', 'USEPXEMNGR') == 'True')
+    pxemngr_url = config.get('SERVER', 'PXEMNGRURL')
+
+    if use_pxemngr:
+        sysvars = {}
+        matcher.match_spec(('system', 'product', 'serial', '$sysname'), hw_items,
+                           sysvars)
+        if matcher.match_multiple(hw_items, 
+                                  ('network', '$eth', 'serial', '$serial'),
+                                  sysvars):
+            if 'sysname' not in sysvars:
+                sysvars['sysname'] = sysvars['serial'][0].replace(':', '')
+            cmd = 'pxemngr addsystem %s %s' % (sysvars['sysname'],
+                                               ' '.join(sysvars['serial']))
+            status, output = commands.getstatusoutput(cmd)
+            sys.stderr.write('%s -> %d / %s' % (cmd, status, output))
+        else:
+            sys.stderr.write('unable to detect network macs\n')
+        
     lock_filename = config.get('SERVER', 'LOCKFILE')
     lockfd = lock(lock_filename)
 
@@ -246,6 +266,11 @@ var = ''')
     pprint.pprint(var)
 
     sys.stdout.write(cfg)
+
+    if use_pxemngr:
+        print '''
+run('curl -s %slocalboot/')
+''' % pxemngr_url
 
     pprint.pprint(names, stream=open(state_filename, 'w'))
 

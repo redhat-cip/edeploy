@@ -35,8 +35,10 @@ run_kvm() {
 	$KVM --enable-kvm -m 512\
 		-netdev user,id=net0,net=10.0.2.0/24,tftp=tftpboot,bootfile=/pxelinux.510,hostfwd=tcp::$SSH_PORT-:22 \
 		-netdev user,id=net1,net=10.0.3.0/24 \
-		-device virtio-net,netdev=net0, \
-		-device virtio-net,netdev=net1, \
+		-netdev user,id=net2,net=1.2.3.0/24 \
+		-device virtio-net,netdev=net0,mac=52:54:12:34:00:01 \
+		-device virtio-net,netdev=net1,mac=52:54:12:34:00:02 \
+		-device virtio-net,netdev=net2,mac=52:54:12:34:00:03 \
 		-drive file=$DISK,if=virtio,id=drive-virtio-disk0,format=qcow2,cache=none,media=disk,index=0 \
 		-boot $BOOT_DEVICE \
 		-serial stdio \

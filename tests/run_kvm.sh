@@ -88,6 +88,8 @@ create_edeploy_conf() {
 
 CONFIGDIR=$PWD/../config
 LOCKFILE=$LOCKFILE
+USEPXEMNGR=False
+PXEMNGRURL=http://192.168.122.1:8000/
 EOF
 
 # Insure upload.py can create its lock file locally

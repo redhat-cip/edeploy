@@ -30,6 +30,10 @@ openstack $(INST)/openstack.done: openstack.install $(INST)/base.done
 	./openstack.install $(INST)/base $(INST)/openstack $(VERS)
 	touch $(INST)/openstack.done
 
+openstack-compute $(INST)/openstack-compute.done: openstack-compute.install $(INST)/base.done
+	./openstack-compute.install $(INST)/base $(INST)/openstack-compute $(VERS)
+	touch $(INST)/openstack-compute.done
+
 mysql $(INST)/mysql.done: mysql.install $(INST)/base.done
 	./mysql.install $(INST)/base $(INST)/mysql $(VERS)
 	touch $(INST)/mysql.done

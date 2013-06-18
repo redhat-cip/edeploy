@@ -43,9 +43,8 @@ chroot ${dir} apt-get update
 chroot ${dir} apt-get install -y --force-yes git puppet-common wget lsb-release openssh-server
 chroot ${dir} apt-get clean
 
-chroot ${dir} bash -c "cd /etc/puppet/; rm -rf modules"
-chroot ${dir} bash -c "cd /etc/puppet/; /usr/bin/git clone gitolite@git.labs.enovance.com:puppet.git modules"
-chroot ${dir} bash -c "cd /etc/puppet/modules; git checkout origin/ocp/master; git submodule init; git submodule update"
+chroot ${dir} bash -c "cd /etc/puppet/modules; test -d nova || /usr/bin/git clone git@github.com:stackforge/puppet-nova.git nova"
+chroot ${dir} bash -c "cd /etc/puppet/modules; test -d quantum || /usr/bin/git clone git@github.com:stackforge/puppet-quantum.git quantum"
 
 cat > ${dir}/etc/puppet/manifests/install.manifest <<EOF
   class{'apt':

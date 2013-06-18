@@ -39,7 +39,7 @@ function upgrade() {
     fi
 
    echo -e "\nVersion ${TARGET}\n" > /etc/motd
-    echo -e "VERS=${TARGET}\nROLE=${ROLE}\nSERV=${SERV}\n" > /var/lib/edeploy/conf
+    echo -e "VERS=${TARGET}\nROLE=${ROLE}\nRSERV=${RSERV}\nRSERV_PORT=${RSERV_PORT}\n" > /var/lib/edeploy/conf
 
     echo "Upgraded to $TARGET"
 
@@ -93,6 +93,7 @@ function usage() {
 }
 
 command="$1"
+shift
 
 case "$command" in
 	help)
@@ -108,6 +109,4 @@ case "$command" in
 		exit 1
 	;;
 esac
-
-shift
 

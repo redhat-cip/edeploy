@@ -16,7 +16,7 @@ if [ $# != 4 ]; then
 fi
 
 if [ ! -d "$FDIR" ]; then
-    echo "Source directory $FDIR deson't exist" 1>&2
+    echo "Source directory $FDIR doesn't exist" 1>&2
     exit 1
 fi
 
@@ -28,7 +28,9 @@ set -x
 if [ ! -d ${TDIR} ]; then
     mkdir -p ${TDIR}
 
-    rsync -av --delete ${FDIR}/ ${TDIR}/
+    echo -n "Syncing ${FDIR} to ${TDIR}..."
+    rsync -a --delete ${FDIR}/ ${TDIR}/
+    echo "done"
 fi
 
 cleanup() {

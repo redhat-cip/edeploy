@@ -11,7 +11,7 @@
 import re
 import sys
 try:
-    import ipaddr2
+    import ipaddr
     _HAS_IPADDR = True
 except ImportError:
     _HAS_IPADDR = False

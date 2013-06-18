@@ -1,0 +1,21 @@
+# -*- shell-script -*-
+
+if [ -z "$dir" -o ! -d "$src" -o -z "$version" ]; then
+   echo "Usage: $0 <base directory> <target directory name> <version>" 1>&2
+   exit 1
+fi
+
+set -x
+set -e
+
+echo -n "Copying tree ${src}/ to ${dir}/"
+rsync -a ${src}/ ${dir}/
+echo done
+
+echo ${ROLE} > ${dir}/etc/hostname
+echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
+echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf
+
+cat ${ORIG}/${ROLE}.exclude >> "$dir/var/lib/edeploy/${version}/exclude"
+
+export DEBIAN_FRONTEND=noninteractive

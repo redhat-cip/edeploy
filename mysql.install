@@ -8,19 +8,7 @@ ROLE=mysql
 
 ORIG=$(cd $(dirname $0); pwd)
 
-if [ -z "$2" -o ! -d "$1" -o -z "$version" ]; then
-   echo "Usage: $0 <base directory> <target directory name> <version>" 1>&2
-   exit 1
-fi
-
-set -x
-set -e
-
-rsync -av ${src}/ ${dir}/
-
-echo mysql > ${dir}/etc/hostname
-
-export DEBIAN_FRONTEND=noninteractive
+. ${ORIG}/functions
 
 chroot ${dir} debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password password your_password'
 chroot ${dir} debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password_again password your_password'
@@ -28,8 +16,3 @@ chroot ${dir} debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_pas
 chroot ${dir} apt-get update
 chroot ${dir} apt-get install -y --force-yes puppet-common openssh-server mysql-server
 chroot ${dir} apt-get clean
-
-echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
-echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf
-
-cat ${ORIG}/mysql.exclude >> "$dir/var/lib/edeploy/${version}/exclude"

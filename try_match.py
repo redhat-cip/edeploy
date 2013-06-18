@@ -1,4 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+
 import sys
 import matcher
 
@@ -7,7 +8,8 @@ hw_items = eval(open(sys.argv[1], 'r').read(-1))
 
 var = {}
 var2 = {}
-if matcher.match_all(hw_items, specs, var, var2):
+
+if matcher.match_all(hw_items, specs, var, var2, debug=True):
     print var
 else:
     print False

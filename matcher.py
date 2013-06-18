@@ -9,8 +9,9 @@
 '''Functions to match according to a requirement specification.'''
 
 import re
+import sys
 try:
-    import ipaddr
+    import ipaddr2
     _HAS_IPADDR = True
 except ImportError:
     _HAS_IPADDR = False
@@ -95,7 +96,7 @@ def match_spec(spec, lines, arr, adder=_adder):
     return False
 
 
-def match_all(lines, specs, arr, arr2):
+def match_all(lines, specs, arr, arr2, debug=False):
     '''Match all lines according to a spec and store variables in
 <arr>. Variables starting with 2 $ like $$vda are stored in arr and
 arr2.'''
@@ -105,6 +106,8 @@ arr2.'''
     lines = list(lines)
     for spec in specs:
         if not match_spec(spec, lines, arr):
+            if debug:
+                sys.stderr.write('spec: %s not matched\n' % str(spec))
             return(False)
     for key in arr:
         if key[0] == '$':

@@ -49,23 +49,41 @@ chroot ${dir} bash -c "cd /etc/puppet/modules; test -d vswitch || /usr/bin/git c
 test -d ${dir}/etc/puppet/modules/apt || chroot ${dir} puppet module install puppetlabs/apt
 
 cat > ${dir}/etc/puppet/manifests/install.manifest <<EOF
-  class{'apt':
-    always_apt_update    => true,
-    purge_sources_list_d => false,
-    purge_preferences_d  => true,
-  }
-  apt::source {'debian.pkgs.enovance.com':
-      location => '[trusted=1] ftp://debian.pkgs.enovance.com/debian',
-      release => 'grizzly',
-      include_src => false,
-  }
-  apt::source {'wheezy-backport':
-      location => '[trusted=1] http://archive.gplhost.com/debian/',
-      release => 'grizzly-backports',
-      include_src => false,
-  }
-  class { 'nova::compute': }
-  class { 'quantum::agents::ovs': }
+class{'apt':
+  always_apt_update    => true,
+  purge_sources_list_d => false,
+  purge_preferences_d  => true,
+}
+
+apt::source {'debian.pkgs.enovance.com':
+    location => '[trusted=1] ftp://debian.pkgs.enovance.com/debian',
+    release => 'grizzly',
+    include_src => false,
+}
+
+apt::source {'wheezy-backport':
+    location => '[trusted=1] http://archive.gplhost.com/debian/',
+    release => 'grizzly-backports',
+    include_src => false,
+}
+
+class { 'nova': }
+
+class { 'nova::compute':
+  enabled => true,
+}
+
+class { 'nova::compute::libvirt':
+  libvirt_type => 'kvm',
+}
+
+class { 'quantum':
+  rpc_backend => 'quantum.openstack.common.rpc.impl_fake',
+}
+
+class { 'quantum::agents::ovs': }
+
+class { 'quantum::plugins::ovs': }
 EOF
 
 chroot ${dir} puppet apply /etc/puppet/manifests/install.manifest

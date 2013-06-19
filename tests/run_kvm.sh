@@ -10,7 +10,7 @@ RSYNC_PID=0
 LOCKFILE=edeploy.lock
 
 detect_kvm() {
-	VM=$(which kvm 2>/dev/null)
+	KVM=$(which kvm 2>/dev/null)
 	if [ $? -ne 0 ]; then
 		KVM=$(which qemu-kvm 2>/dev/null)
 		if [ $? -ne 0 ]; then

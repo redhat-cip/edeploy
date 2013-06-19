@@ -9,6 +9,15 @@ PYTHON_PID=0
 RSYNC_PID=0
 LOCKFILE=edeploy.lock
 
+fatal_error() {
+        echo $1;
+        exit 1
+}
+
+check_binary() {
+        type -p $1 || fatal_error "$1 is missing"
+}
+
 detect_kvm() {
 	KVM=$(which kvm 2>/dev/null)
 	if [ $? -ne 0 ]; then
@@ -103,6 +112,10 @@ ln -sf $PWD/edeploy.conf /etc/
 }
 
 ############## MAIN
+check_binary rsync
+check_binary qemu-img
+check_binary python
+
 start_rsyncd
 start_httpd
 create_edeploy_conf

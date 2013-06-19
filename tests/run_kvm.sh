@@ -111,7 +111,11 @@ ln -sf $PWD/edeploy.conf /etc/
 
 ############## MAIN
 check_binary rsync
-check_binary qemu-img
+check_binary qemu-utils
+check_binary debootstrap
+check_binary debhelper
+check_binary alien
+check_binary kvm
 check_binary python
 
 start_rsyncd

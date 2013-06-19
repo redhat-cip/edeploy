@@ -23,9 +23,7 @@ detect_kvm() {
 	if [ $? -ne 0 ]; then
 		KVM=$(which qemu-kvm 2>/dev/null)
 		if [ $? -ne 0 ]; then
-			echo "Please Install KVM first"
-			echo "Exiting !"
-			exit 1
+			fatal_error "Please Install KVM first"
 		fi
 	fi
 }

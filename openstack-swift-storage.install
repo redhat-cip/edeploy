@@ -52,7 +52,7 @@ chroot ${dir} bash -c "cd /etc/puppet/modules; test -d concat || /usr/bin/git cl
 chroot ${dir} bash -c "cd /etc/puppet/modules; test -d xinetd|| /usr/bin/git clone https://github.com/enovance/puppet-xinetd.git xinetd"
 chroot ${dir} bash -c "cd /etc/puppet/modules; test -d memcached || /usr/bin/git clone https://github.com/enovance/puppet-memcached.git memcached"
 chroot ${dir} bash -c "cd /etc/puppet/modules; test -d ssh || /usr/bin/git clone https://github.com/enovance/puppet-ssh.git ssh"
-test -d ${dir}/etc/puppet/modules/apt || chroot ${dir} puppet module install puppetlabs/apt
+test -d ${dir}/etc/puppet/modules/apt || chroot ${dir} puppet module install puppetlabs/apt --ignore-dependencies
 
 cat > ${dir}/etc/puppet/manifests/install.manifest <<EOF
 class{'apt':

@@ -1,0 +1,178 @@
+#!/bin/bash
+#
+# openstack-compute role for eDeploy
+#
+# Copyright © 2013 eNovance <licensing@enovance.com>
+#
+# Author: Emilien Macchi <emilien.macchi@enovance.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
+src="$1"
+dir="$2"
+version="$3"
+ROLE=openstack-compute
+
+if [ -z "$2" -o ! -d "$1" -o -z "$version" ]; then
+   echo "Usage: $0 <base directory> <target directory name> <version>" 1>&2
+   exit 1
+fi
+
+set -e
+set -x
+
+test -d ${dir} || rsync -av ${src}/ ${dir}/
+
+echo $ROLE > ${dir}/etc/hostname
+
+export DEBIAN_FRONTEND=noninteractive
+
+chroot ${dir} apt-get update
+chroot ${dir} apt-get install -y --force-yes git puppet-common wget lsb-release openssh-server
+chroot ${dir} apt-get clean
+
+chroot ${dir} bash -c "cd /etc/puppet/modules; test -d nova || /usr/bin/git clone https://github.com/enovance/puppet-nova.git nova"
+chroot ${dir} bash -c "cd /etc/puppet/modules; test -d glance || /usr/bin/git clone https://github.com/enovance/puppet-glance.git glance"
+chroot ${dir} bash -c "cd /etc/puppet/modules; test -d cinder || /usr/bin/git clone https://github.com/enovance/puppet-cinder.git cinder"
+chroot ${dir} bash -c "cd /etc/puppet/modules; test -d ceilometer || /usr/bin/git clone https://github.com/enovance/puppet-ceilometer.git ceilometer"
+chroot ${dir} bash -c "cd /etc/puppet/modules; test -d mongogb || /usr/bin/git clone https://github.com/enovance/puppetlabs-mongodb.git mongogb"
+chroot ${dir} bash -c "cd /etc/puppet/modules; test -d horizon || /usr/bin/git clone https://github.com/enovance/puppet-horizon.git horizon"
+chroot ${dir} bash -c "cd /etc/puppet/modules; test -d keystone || /usr/bin/git clone https://github.com/enovance/puppet-keystone.git keystone"
+chroot ${dir} bash -c "cd /etc/puppet/modules; test -d quantum || /usr/bin/git clone https://github.com/enovance/puppet-quantum.git quantum"
+chroot ${dir} bash -c "cd /etc/puppet/modules; test -d vswitch || /usr/bin/git clone https://github.com/enovance/puppet-vswitch.git vswitch"
+chroot ${dir} bash -c "cd /etc/puppet/modules; test -d stdlib || /usr/bin/git clone https://github.com/enovance/puppetlabs-stdlib.git stdlib"
+chroot ${dir} bash -c "cd /etc/puppet/modules; test -d concat || /usr/bin/git clone https://github.com/enovance/puppet-concat.git concat"
+chroot ${dir} bash -c "cd /etc/puppet/modules; test -d inifile || /usr/bin/git clone https://github.com/enovance/puppet-inifile.git inifile"
+chroot ${dir} bash -c "cd /etc/puppet/modules; test -d memcached || /usr/bin/git clone https://github.com/enovance/puppet-memcached.git memcached"
+chroot ${dir} bash -c "cd /etc/puppet/modules; test -d rabbitmq || /usr/bin/git clone https://github.com/enovance/puppetlabs-rabbitmq.git rabbitmq"
+test -d ${dir}/etc/puppet/modules/apt || chroot ${dir} puppet module install puppetlabs/apt
+
+cat > ${dir}/etc/puppet/manifests/install.manifest <<EOF
+class{'apt':
+  always_apt_update    => true,
+  purge_sources_list_d => false,
+  purge_preferences_d  => true,
+}
+
+apt::source {'debian.pkgs.enovance.com':
+    location => '[trusted=1] ftp://debian.pkgs.enovance.com/debian',
+    release => 'grizzly',
+    include_src => false,
+}
+
+apt::source {'wheezy-backport':
+    location => '[trusted=1] http://archive.gplhost.com/debian/',
+    release => 'grizzly-backports',
+    include_src => false,
+}
+
+
+class { 'quantum':
+  rpc_backend => 'quantum.openstack.common.rpc.impl_fake',
+}
+
+class { 'quantum::agents::ovs': }
+
+class { 'quantum::plugins::ovs': }
+
+class{'apt':
+  always_apt_update    => true,
+  purge_sources_list_d => false,
+  purge_preferences_d  => true,
+}
+
+apt::source {'debian.pkgs.enovance.com':
+    location => '[trusted=1] ftp://debian.pkgs.enovance.com/debian',
+    release => 'grizzly',
+    include_src => false,
+}
+
+apt::source {'wheezy-backport':
+    location => '[trusted=1] http://archive.gplhost.com/debian/',
+    release => 'grizzly-backports',
+    include_src => false,
+}
+
+class { 'quantum':
+  rpc_backend => 'quantum.openstack.common.rpc.impl_fake',
+}
+
+class { 'quantum::server':
+  auth_password => 'secrete',
+}
+
+class { 'glance': }
+
+class { 'glance::api':
+  keystone_password => 'secrete',
+}
+
+class { 'glance::registry':
+  keystone_password => 'secrete',
+}
+
+class { 'cinder':
+  sql_connection => '://cinder:cinder@localhost/cinder?charset=utf8',
+  rabbit_password => 'secrete',
+}
+
+class { 'cinder::api':
+  keystone_password => 'secrete',
+}
+
+class { 'cinder::scheduler': }
+
+class { 'mongodb': }
+
+class { 'ceilometer':
+  metering_secret => 'secrete',
+}
+
+class { 'ceilometer::api':
+  keystone_password => 'secrete',
+}
+
+class { 'ceilometer::db':
+  database_connection => 'mongodb://ceilometer:ceilometer@ceilometer/ceilometer',
+}
+
+class { 'ceilometer::collector': }
+
+class { 'ceilometer::agent::central': }
+
+class { 'memcached': }
+
+class { 'keystone':
+  admin_token => 'secrete',
+}
+
+class { 'nova::rabbitmq': }
+
+class { 'nova': }
+
+class { 'nova::api':
+  admin_password => 'secrete',
+}
+
+resources { 'nova_config': }
+
+# Not yet upstream :
+# class { 'nova::spicehtml5proxy': }
+EOF
+
+chroot ${dir} puppet apply /etc/puppet/manifests/install.manifest
+
+echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
+echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

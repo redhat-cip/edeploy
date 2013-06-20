@@ -9,6 +9,7 @@ FLASH_IMAGE="$2-$3.img"
 FLASH_SIZE=128 #in Megabytes
 LOOPBACK_BOOT=NONE
 BOOT_MOUNT_POINT=/tmp/$2-$3.tmp
+SYSLINUX_VER=5.10
 
 if [ ! -d "$SRC" ]; then
    echo "Usage: $0 <source dir> <img> <version> <initrd_path> <ip_serv>" 1>&2
@@ -152,8 +153,19 @@ umount_flash_fs() {
 
 install_bootloader() {
 	step "Install bootloader"
+
 	mkdir -p $BOOT_MOUNT_POINT/extlinux
-        extlinux/extlinux --install $BOOT_MOUNT_POINT/extlinux
+	if [ ! -x extlinux/extlinux ]; then
+		mkdir -p extlinux
+		# Installing extlinux & mbr from source
+		wget ftp://ftp.kernel.org/pub/linux/utils/boot/syslinux/syslinux-${SYSLINUX_VER}.tar.xz
+		tar -xf syslinux-${SYSLINUX_VER}.tar.xz
+		cp syslinux-${SYSLINUX_VER}/extlinux/extlinux extlinux/
+		cp syslinux-${SYSLINUX_VER}/mbr/mbr.bin extlinux/
+		rm -rf syslinux-${SYSLINUX_VER}*
+	fi
+
+	extlinux/extlinux --install $BOOT_MOUNT_POINT/extlinux
 
 	umount_flash_fs
 

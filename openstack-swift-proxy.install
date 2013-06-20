@@ -21,6 +21,10 @@ dir="$2"
 version="$3"
 ROLE=openstack-swift-proxy
 
+ORIG=$(cd $(dirname $0); pwd)
+
+. ${ORIG}/functions
+
 if [ -z "$2" -o ! -d "$1" -o -z "$version" ]; then
    echo "Usage: $0 <base directory> <target directory name> <version>" 1>&2
    exit 1

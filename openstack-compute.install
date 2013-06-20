@@ -44,6 +44,7 @@ chroot ${dir} apt-get install -y --force-yes git puppet-common wget lsb-release 
 chroot ${dir} apt-get clean
 
 chroot ${dir} bash -c "cd /etc/puppet/modules; test -d nova || /usr/bin/git clone https://github.com/enovance/puppet-nova.git nova"
+chroot ${dir} bash -c "cd /etc/puppet/modules; test -d ceilometer || /usr/bin/git clone https://github.com/enovance/puppet-ceilometer.git ceilometer"
 chroot ${dir} bash -c "cd /etc/puppet/modules; test -d quantum || /usr/bin/git clone https://github.com/enovance/puppet-quantum.git quantum"
 chroot ${dir} bash -c "cd /etc/puppet/modules; test -d vswitch || /usr/bin/git clone https://github.com/enovance/puppet-vswitch.git vswitch"
 test -d ${dir}/etc/puppet/modules/apt || chroot ${dir} puppet module install puppetlabs/apt
@@ -84,6 +85,8 @@ class { 'quantum':
 class { 'quantum::agents::ovs': }
 
 class { 'quantum::plugins::ovs': }
+
+class { 'ceilometer::agent::compute': }
 EOF
 
 chroot ${dir} puppet apply /etc/puppet/manifests/install.manifest

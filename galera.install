@@ -26,9 +26,6 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
-#chroot ${dir} debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password password your_password'
-#chroot ${dir} debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password_again password your_password'
-
 chroot ${dir} apt-get update
 chroot ${dir} apt-get install -y --force-yes git puppet-common wget lsb-release openssh-server
 chroot ${dir} apt-get clean

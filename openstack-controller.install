@@ -130,7 +130,9 @@ class { 'ceilometer::collector': }
 
 class { 'ceilometer::agent::central': }
 
-class { 'memcached': }
+class { 'memcached':
+  max_memory => '60%',
+}
 
 class { 'keystone':
   admin_token => 'secrete',

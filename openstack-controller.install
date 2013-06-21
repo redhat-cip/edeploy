@@ -88,12 +88,6 @@ class { 'quantum::agents::ovs': }
 
 class { 'quantum::plugins::ovs': }
 
-class{'apt':
-  always_apt_update    => true,
-  purge_sources_list_d => false,
-  purge_preferences_d  => true,
-}
-
 apt::source {'debian.pkgs.enovance.com':
     location => '[trusted=1] ftp://debian.pkgs.enovance.com/debian',
     release => 'grizzly',

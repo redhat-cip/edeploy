@@ -30,8 +30,8 @@ chroot ${dir} apt-get update
 chroot ${dir} apt-get install -y --force-yes git puppet-common wget lsb-release openssh-server
 chroot ${dir} apt-get clean
 
-chroot ${dir} bash -c "cd /etc/puppet/modules; test -d stdlib || /usr/bin/git clone https://github.com/enovance/puppetlabs-stdlib.git stdlib"
-chroot ${dir} bash -c "cd /etc/puppet/modules; test -d mysql || /usr/bin/git clone https://github.com/enovance/puppetlabs-mysql.git mysql"
+chroot ${dir} bash -c "cd /etc/puppet/modules; test -d stdlib || /usr/bin/git clone git://github.com/enovance/puppetlabs-stdlib.git stdlib"
+chroot ${dir} bash -c "cd /etc/puppet/modules; test -d mysql || /usr/bin/git clone git://github.com/enovance/puppetlabs-mysql.git mysql"
 test -d ${dir}/etc/puppet/modules/apt || chroot ${dir} puppet module install puppetlabs/apt --ignore-dependencies
 
 cat > ${dir}/etc/puppet/manifests/install.manifest <<EOF

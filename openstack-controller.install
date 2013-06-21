@@ -48,7 +48,7 @@ chroot ${dir} bash -c "cd /etc/puppet/modules; test -d nova || /usr/bin/git clon
 chroot ${dir} bash -c "cd /etc/puppet/modules; test -d glance || /usr/bin/git clone git://github.com/enovance/puppet-glance.git glance"
 chroot ${dir} bash -c "cd /etc/puppet/modules; test -d cinder || /usr/bin/git clone git://github.com/enovance/puppet-cinder.git cinder"
 chroot ${dir} bash -c "cd /etc/puppet/modules; test -d ceilometer || /usr/bin/git clone git://github.com/enovance/puppet-ceilometer.git ceilometer"
-chroot ${dir} bash -c "cd /etc/puppet/modules; test -d mongogb || /usr/bin/git clone git://github.com/enovance/puppetlabs-mongodb.git mongogb"
+chroot ${dir} bash -c "cd /etc/puppet/modules; test -d mongodb || /usr/bin/git clone git://github.com/enovance/puppetlabs-mongodb.git mongogb"
 chroot ${dir} bash -c "cd /etc/puppet/modules; test -d horizon || /usr/bin/git clone git://github.com/enovance/puppet-horizon.git horizon"
 chroot ${dir} bash -c "cd /etc/puppet/modules; test -d keystone || /usr/bin/git clone git://github.com/enovance/puppet-keystone.git keystone"
 chroot ${dir} bash -c "cd /etc/puppet/modules; test -d quantum || /usr/bin/git clone git://github.com/enovance/puppet-quantum.git quantum"

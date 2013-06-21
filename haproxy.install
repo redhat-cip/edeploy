@@ -32,6 +32,7 @@ chroot ${dir} apt-get clean
 
 chroot ${dir} bash -c "cd /etc/puppet/modules; test -d stdlib || /usr/bin/git clone git://github.com/enovance/puppetlabs-stdlib.git stdlib"
 chroot ${dir} bash -c "cd /etc/puppet/modules; test -d haproxy || /usr/bin/git clone git://github.com/enovance/puppetlabs-haproxy.git haproxy"
+chroot ${dir} bash -c "cd /etc/puppet/modules; test -d concat || /usr/bin/git clone git://github.com/enovance/puppet-concat.git concat"
 test -d ${dir}/etc/puppet/modules/apt || chroot ${dir} puppet module install puppetlabs/apt --ignore-dependencies
 
 cat > ${dir}/etc/puppet/manifests/install.manifest <<EOF

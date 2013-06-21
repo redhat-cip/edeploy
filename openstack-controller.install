@@ -79,7 +79,6 @@ apt::source {'wheezy-backport':
     include_src => false,
 }
 
-
 class { 'quantum':
   rpc_backend => 'quantum.openstack.common.rpc.impl_fake',
 }
@@ -87,22 +86,6 @@ class { 'quantum':
 class { 'quantum::agents::ovs': }
 
 class { 'quantum::plugins::ovs': }
-
-apt::source {'debian.pkgs.enovance.com':
-    location => '[trusted=1] ftp://debian.pkgs.enovance.com/debian',
-    release => 'grizzly',
-    include_src => false,
-}
-
-apt::source {'wheezy-backport':
-    location => '[trusted=1] http://archive.gplhost.com/debian/',
-    release => 'grizzly-backports',
-    include_src => false,
-}
-
-class { 'quantum':
-  rpc_backend => 'quantum.openstack.common.rpc.impl_fake',
-}
 
 class { 'quantum::server':
   auth_password => 'secrete',

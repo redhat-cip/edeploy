@@ -34,7 +34,7 @@ chroot ${dir} bash -c "cd /etc/puppet/modules; test -d ceilometer || /usr/bin/gi
 chroot ${dir} bash -c "cd /etc/puppet/modules; test -d quantum || /usr/bin/git clone git://github.com/enovance/puppet-quantum.git quantum"
 chroot ${dir} bash -c "cd /etc/puppet/modules; test -d vswitch || /usr/bin/git clone git://github.com/enovance/puppet-vswitch.git vswitch"
 chroot ${dir} bash -c "cd /etc/puppet/modules; test -d concat || /usr/bin/git clone git://github.com/enovance/puppet-concat.git concat"
-chroot ${dir} bash -c "cd /etc/puppet/modules; test -d inifile || /usr/bin/git clone git://github.com/enovance/puppet-inifile.git inifile"
+chroot ${dir} bash -c "cd /etc/puppet/modules; test -d inifile || /usr/bin/git clone git://github.com/enovance/puppetlabs-inifile.git inifile"
 test -d ${dir}/etc/puppet/modules/apt || chroot ${dir} puppet module install puppetlabs/apt
 
 cat > ${dir}/etc/puppet/manifests/install.manifest <<EOF

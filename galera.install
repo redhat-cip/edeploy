@@ -52,7 +52,7 @@ apt::source { "mariadb":
 }
 
 class { 'mysql::server':
-  package_name => 'mariadb-server',
+  package_name => 'mariadb-galera-server',
   config_hash  => {
     bind_address  => '127.0.0.1',
     root_password => 'password',

@@ -47,30 +47,6 @@ openstack $(INST)/openstack.done: openstack.install $(INST)/base.done
 	./openstack.install $(INST)/base $(INST)/openstack $(VERS)
 	touch $(INST)/openstack.done
 
-openstack-compute $(INST)/openstack-compute.done: openstack-compute.install $(INST)/openstack.done
-	./openstack-compute.install $(INST)/openstack $(INST)/openstack-compute $(VERS)
-	touch $(INST)/openstack-compute.done
-
-openstack-controller $(INST)/openstack-controller.done: openstack-controller.install $(INST)/openstack.done
-	./openstack-controller.install $(INST)/openstack $(INST)/openstack-controller $(VERS)
-	touch $(INST)/openstack-controller.done
-
-openstack-swift-proxy $(INST)/openstack-swift-proxy.done: openstack-swift-proxy.install $(INST)/openstack.done
-	./openstack-swift-proxy.install $(INST)/openstack $(INST)/openstack-swift-proxy $(VERS)
-	touch $(INST)/openstack-swift-proxy.done
-
-openstack-swift-storage $(INST)/openstack-swift-storage.done: openstack-swift-storage.install $(INST)/openstack.done
-	./openstack-swift-storage.install $(INST)/openstack $(INST)/openstack-swift-storage $(VERS)
-	touch $(INST)/openstack-swift-storage.done
-
-haproxy $(INST)/haproxy.done: haproxy.install $(INST)/openstack.done
-	./haproxy.install $(INST)/openstack $(INST)/haproxy $(VERS)
-	touch $(INST)/haproxy.done
-
-galera $(INST)/galera.done: galera.install $(INST)/openstack.done
-	./galera.install $(INST)/openstack $(INST)/galera $(VERS)
-	touch $(INST)/galera.done
-
 mysql $(INST)/mysql.done: mysql.install $(INST)/base.done
 	./mysql.install $(INST)/base $(INST)/mysql $(VERS)
 	touch $(INST)/mysql.done

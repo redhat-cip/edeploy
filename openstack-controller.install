@@ -102,7 +102,7 @@ class { 'glance::registry':
 }
 
 class { 'cinder':
-  sql_connection => '://cinder:cinder@localhost/cinder?charset=utf8',
+  sql_connection => 'mysql://cinder:cinder@localhost/cinder?charset=utf8',
   rabbit_password => 'secrete',
 }
 

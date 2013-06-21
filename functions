@@ -21,6 +21,20 @@ if [ -z "$dir" -o ! -d "$src" -o -z "$version" ]; then
    exit 1
 fi
 
+cleanup() {
+    rm -f "${dir}"/etc/default/grub.d/edeploy.cfg
+    a=10
+    while ! umount ${dir}/dev; do
+	sleep 1
+	a=$(($a - 1))
+	if [ $a -eq 0 ]; then
+	    exit
+	fi
+    done
+}
+
+trap cleanup 0
+
 set -x
 set -e
 
@@ -35,3 +49,8 @@ echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf
 cat ${ORIG}/${ROLE}.exclude >> "$dir/var/lib/edeploy/${version}/exclude"
 
 export DEBIAN_FRONTEND=noninteractive
+
+# magical stuff to let kernel upgrade work
+mkdir -p "${dir}"/etc/default/grub.d
+echo 'exit 0' > "${dir}"/etc/default/grub.d/edeploy.cfg
+mount -obind /dev ${dir}/dev

@@ -42,9 +42,9 @@ class{'apt':
   purge_preferences_d  => true,
 }
 
-apt::source { "haproxy":
-  location          => "[trusted=1] ftp://debian.pkgs.enovance.com/debian",
-  release           => "grizzly",
+apt::source { "wheezy-backports":
+  location          => "http://ftp2.fr.debian.org/debian/",
+  release           => "wheezy-backports main",
   include_src       => false,
   pin               => 1001
 }

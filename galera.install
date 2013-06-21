@@ -43,7 +43,7 @@ class{'apt':
 }
 
 apt::source { "mariadb":
-  location          => "http://ftp.igh.cnrs.fr/pub/mariadb/repo/10.0/debian/",
+  location          => "http://ftp.igh.cnrs.fr/pub/mariadb/repo/5.5-galera/debian/",
   release           => "wheezy main",
   include_src       => false,
   key_server        => "keyserver.ubuntu.com",

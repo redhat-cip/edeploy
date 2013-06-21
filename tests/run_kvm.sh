@@ -25,6 +25,7 @@ SSH_PORT=2222
 PYTHON_PID=0
 RSYNC_PID=0
 LOCKFILE=edeploy.lock
+SYSLINUX_VER=5.10
 
 fatal_error() {
         echo $1;
@@ -57,7 +58,7 @@ run_kvm() {
 	[ "$1" = "local" ] && BOOT_DEVICE="c"
 
 	$KVM --enable-kvm -m 512\
-		-netdev user,id=net0,net=10.0.2.0/24,tftp=tftpboot,bootfile=/pxelinux.510,hostfwd=tcp::$SSH_PORT-:22 \
+		-netdev user,id=net0,net=10.0.2.0/24,tftp=tftpboot,bootfile=/pxelinux.0,hostfwd=tcp::$SSH_PORT-:22 \
 		-netdev user,id=net1,net=10.0.3.0/24 \
 		-netdev user,id=net2,net=1.2.3.0/24 \
 		-device virtio-net,netdev=net0,mac=52:54:12:34:00:01 \
@@ -108,6 +109,18 @@ stop_rsyncd() {
 	rm -f rsyncd-edeploy.pid &>/dev/null
 }
 
+setup_pxe() {
+	if [ ! -f tftpboot/pxelinux.0 -o ! -f tftpboot/ldlinux.c32 ]; then
+		mkdir -p tftpboot
+	        # Installing extlinux & mbr from source
+		wget ftp://ftp.kernel.org/pub/linux/utils/boot/syslinux/syslinux-${SYSLINUX_VER}.tar.xz
+		tar -xf syslinux-${SYSLINUX_VER}.tar.xz
+		cp syslinux-${SYSLINUX_VER}/core/pxelinux.0 tftpboot/
+		cp syslinux-${SYSLINUX_VER}/com32/elflink/ldlinux/ldlinux.c32 tftpboot/
+		rm -rf syslinux-${SYSLINUX_VER}*
+	fi
+}
+
 create_edeploy_conf() {
 	cat > edeploy.conf << EOF
 [SERVER]
@@ -131,6 +144,7 @@ check_binary rsync
 check_binary qemu-img
 check_binary python
 
+setup_pxe
 start_rsyncd
 start_httpd
 create_edeploy_conf

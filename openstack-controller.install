@@ -26,24 +26,6 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
-if [ -z "$2" -o ! -d "$1" -o -z "$version" ]; then
-   echo "Usage: $0 <base directory> <target directory name> <version>" 1>&2
-   exit 1
-fi
-
-set -e
-set -x
-
-test -d ${dir} || rsync -av ${src}/ ${dir}/
-
-echo $ROLE > ${dir}/etc/hostname
-
-export DEBIAN_FRONTEND=noninteractive
-
-chroot ${dir} apt-get update
-chroot ${dir} apt-get install -y --force-yes git puppet-common wget lsb-release openssh-server
-chroot ${dir} apt-get clean
-
 chroot ${dir} bash -c "cd /etc/puppet/modules; test -d nova || /usr/bin/git clone git://github.com/enovance/puppet-nova.git nova"
 chroot ${dir} bash -c "cd /etc/puppet/modules; test -d glance || /usr/bin/git clone git://github.com/enovance/puppet-glance.git glance"
 chroot ${dir} bash -c "cd /etc/puppet/modules; test -d cinder || /usr/bin/git clone git://github.com/enovance/puppet-cinder.git cinder"
@@ -153,6 +135,3 @@ resources { 'nova_config': }
 EOF
 
 chroot ${dir} puppet apply /etc/puppet/manifests/install.manifest
-
-echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
-echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

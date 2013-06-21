@@ -47,28 +47,28 @@ openstack $(INST)/openstack.done: openstack.install $(INST)/base.done
 	./openstack.install $(INST)/base $(INST)/openstack $(VERS)
 	touch $(INST)/openstack.done
 
-openstack-compute $(INST)/openstack-compute.done: openstack-compute.install $(INST)/base.done
-	./openstack-compute.install $(INST)/base $(INST)/openstack-compute $(VERS)
+openstack-compute $(INST)/openstack-compute.done: openstack-compute.install $(INST)/openstack.done
+	./openstack-compute.install $(INST)/openstack $(INST)/openstack-compute $(VERS)
 	touch $(INST)/openstack-compute.done
 
-openstack-controller $(INST)/openstack-controller.done: openstack-controller.install $(INST)/base.done
-	./openstack-controller.install $(INST)/base $(INST)/openstack-controller $(VERS)
+openstack-controller $(INST)/openstack-controller.done: openstack-controller.install $(INST)/openstack.done
+	./openstack-controller.install $(INST)/openstack $(INST)/openstack-controller $(VERS)
 	touch $(INST)/openstack-controller.done
 
-openstack-swift-proxy $(INST)/openstack-swift-proxy.done: openstack-swift-proxy.install $(INST)/base.done
-	./openstack-swift-proxy.install $(INST)/base $(INST)/openstack-swift-proxy $(VERS)
+openstack-swift-proxy $(INST)/openstack-swift-proxy.done: openstack-swift-proxy.install $(INST)/openstack.done
+	./openstack-swift-proxy.install $(INST)/openstack $(INST)/openstack-swift-proxy $(VERS)
 	touch $(INST)/openstack-swift-proxy.done
 
-openstack-swift-storage $(INST)/openstack-swift-storage.done: openstack-swift-storage.install $(INST)/base.done
-	./openstack-swift-storage.install $(INST)/base $(INST)/openstack-swift-storage $(VERS)
+openstack-swift-storage $(INST)/openstack-swift-storage.done: openstack-swift-storage.install $(INST)/openstack.done
+	./openstack-swift-storage.install $(INST)/openstack $(INST)/openstack-swift-storage $(VERS)
 	touch $(INST)/openstack-swift-storage.done
 
-haproxy $(INST)/haproxy.done: haproxy.install $(INST)/base.done
-	./haproxy.install $(INST)/base $(INST)/haproxy $(VERS)
+haproxy $(INST)/haproxy.done: haproxy.install $(INST)/openstack.done
+	./haproxy.install $(INST)/openstack $(INST)/haproxy $(VERS)
 	touch $(INST)/haproxy.done
 
-galera $(INST)/haproxy.done: galera.install $(INST)/base.done
-	./galera.install $(INST)/base $(INST)/galera $(VERS)
+galera $(INST)/galera.done: galera.install $(INST)/openstack.done
+	./galera.install $(INST)/openstack $(INST)/galera $(VERS)
 	touch $(INST)/galera.done
 
 mysql $(INST)/mysql.done: mysql.install $(INST)/base.done

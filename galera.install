@@ -26,10 +26,6 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
-chroot ${dir} apt-get update
-chroot ${dir} apt-get install -y --force-yes git puppet-common wget lsb-release openssh-server
-chroot ${dir} apt-get clean
-
 chroot ${dir} bash -c "cd /etc/puppet/modules; test -d stdlib || /usr/bin/git clone git://github.com/enovance/puppetlabs-stdlib.git stdlib"
 chroot ${dir} bash -c "cd /etc/puppet/modules; test -d mysql || /usr/bin/git clone git://github.com/enovance/puppetlabs-mysql.git mysql"
 chroot ${dir} bash -c "cd /etc/puppet/modules; test -d concat || /usr/bin/git clone git://github.com/enovance/puppet-concat.git concat"
@@ -67,6 +63,3 @@ package {['galera'] :
 EOF
 
 chroot ${dir} puppet apply /etc/puppet/manifests/install.manifest
-
-echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
-echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

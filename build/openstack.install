@@ -26,12 +26,40 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
-cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
+if grep -q debian.org ${dir}/etc/apt/sources.list; then
+    cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
 deb http://33.apt-proxy.gplhost.com/debian grizzly main
 deb http://33.apt-proxy.gplhost.com/debian grizzly-backports main
 EOF
 
+    # for cloud-init
+    cat > ${dir}/etc/apt/sources.list.d/backport.list <<EOF
+deb http://ftp.debian.org/debian wheezy-backports main
+EOF
+
+    # for librb1
+    cat > ${dir}/etc/apt/sources.list.d/ceph.list <<EOF
+deb http://ceph.com/debian/ wheezy main
+EOF
+    
+    MCOLLECTIVE=mcollective-client
+else
+    # if [ ! -r puppetlabs-release-precise.deb ]; then
+    # 	wget http://apt.puppetlabs.com/puppetlabs-release-precise.deb
+    # fi
+    # cp puppetlabs-release-precise.deb ${dir}/tmp/puppetlabs-release-precise.deb
+    # chroot ${dir} dpkg -i /tmp/puppetlabs-release-precise.deb
+    # rm -f ${dir}/tmp/puppetlabs-release-precise.deb
+
+    cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
+deb http://ubuntu.pkgs.enovance.com/debian precise-grizzly-backports main
+EOF
+    # mcollective-client doesn't install under Ubuntu
+    MCOLLECTIVE=
+fi
+
 wget -O- -q http://33.apt-proxy.gplhost.com/debian/repository_key.asc | chroot ${dir} apt-key add -
+
 chroot ${dir} apt-get update
 chroot ${dir} apt-get dist-upgrade -y --force-yes
-chroot ${dir} apt-get install -y --force-yes puppet-common openssh-server mcollective-client wget lsb-release git
+chroot ${dir} apt-get install -y --force-yes puppet-common openssh-server $MCOLLECTIVE wget lsb-release git cloud-init

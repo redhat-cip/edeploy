@@ -19,7 +19,7 @@ Then the system will boot on the provisioned harddrive directly.
 How to start
 ------------
 
-Issue ``make`` to build the base directory with a minimal Debian
+Issue ``make`` to build the ``build`` directory with a minimal Debian
 wheezy tree, then strip it down to a pxe directory that will lead to
 the creation of an initrd.pxe. Take this initrd.pxe file and the
 base/boot/vmlinuz* kernel to boot from PXE.
@@ -33,7 +33,7 @@ Configure the PXE boot like that::
 
  LABEL eDeploy
  	KERNEL vmlinuz
- 	INITRD initrd.pxe SERV=10.0.2.2 RSERV=10.0.2.2 console=tty0 console=ttyS0,115200 DEBUG=1 VERBOSE=1 RSERV_PORT=1515 HTTP_PORT=9000
+ 	INITRD initrd.pxe SERV=10.0.2.2 DEBUG=1 VERBOSE=1 RSERV_PORT=1515 HTTP_PORT=9000
 
  LABEL local
  	LOCALBOOT 0
@@ -46,8 +46,10 @@ installation.
 The ``VERBOSE`` variable if set to ``1`` on the kernel command line, it turns on
 the -x of bash to ease the understanding of faulty commands
 
-Please note that RSERV_PORT and HTTP_PORT are given here as an example to override the default settings 831 & 80 respectively.
-Unless you run the rsync server or the http server on a very particular setup, don't use this variables.
+Please note that ``RSERV_PORT`` and ``HTTP_PORT`` are given here as an
+example to override the default settings 831 & 80 respectively.
+Unless you run the rsync server or the http server on a very
+particular setup, don't use this variables.
 
 CGI script
 ++++++++++
@@ -64,7 +66,7 @@ The CGI script is configured with ``/etc/edeploy.conf``::
  [SERVER]
 
  CONFIGDIR=/root/edeploy/config
- LOCKFILE=/var/tmp/edeploy.lock
+ LOCKFILE=/tmp/edeploy.lock
 
 ``CONFIGDIR`` points to a directory which contains specifications
 (``*.specs``), configurations (``*.configure``) and CMDB (``*.cmdb``)

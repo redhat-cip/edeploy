@@ -26,13 +26,14 @@ IMG=initrd.pxe
 ARCH=amd64
 export PATH := /sbin:/bin::$(PATH)
 SERV:=10.66.6.10
+PYDIR=../src
 
 INST=$(TOP)/install/$(VERS)
 META=$(TOP)/metadata/$(VERS)
 
 all: $(INST)/$(IMG) $(INST)/mysql.done
 
-pxe $(INST)/$(IMG): $(INST)/base.done init pxe.install detect.py hpacucli.py matcher.py diskinfo.py ipmi.py
+pxe $(INST)/$(IMG): $(INST)/base.done init pxe.install $(PYDIR)/detect.py $(PYDIR)/hpacucli.py $(PYDIR)/matcher.py $(PYDIR)/diskinfo.py $(PYDIR)/ipmi.py
 	./pxe.install $(INST)/base $(INST)/pxe $(IMG) $(VERS)
 
 img: pxe
@@ -46,30 +47,6 @@ base $(INST)/base.done: base.install policy-rc.d edeploy
 openstack $(INST)/openstack.done: openstack.install $(INST)/base.done
 	./openstack.install $(INST)/base $(INST)/openstack $(VERS)
 	touch $(INST)/openstack.done
-
-openstack-compute $(INST)/openstack-compute.done: openstack-compute.install $(INST)/openstack.done
-	./openstack-compute.install $(INST)/openstack $(INST)/openstack-compute $(VERS)
-	touch $(INST)/openstack-compute.done
-
-openstack-controller $(INST)/openstack-controller.done: openstack-controller.install $(INST)/openstack.done
-	./openstack-controller.install $(INST)/openstack $(INST)/openstack-controller $(VERS)
-	touch $(INST)/openstack-controller.done
-
-openstack-swift-proxy $(INST)/openstack-swift-proxy.done: openstack-swift-proxy.install $(INST)/openstack.done
-	./openstack-swift-proxy.install $(INST)/openstack $(INST)/openstack-swift-proxy $(VERS)
-	touch $(INST)/openstack-swift-proxy.done
-
-openstack-swift-storage $(INST)/openstack-swift-storage.done: openstack-swift-storage.install $(INST)/openstack.done
-	./openstack-swift-storage.install $(INST)/openstack $(INST)/openstack-swift-storage $(VERS)
-	touch $(INST)/openstack-swift-storage.done
-
-haproxy $(INST)/haproxy.done: haproxy.install $(INST)/openstack.done
-	./haproxy.install $(INST)/openstack $(INST)/haproxy $(VERS)
-	touch $(INST)/haproxy.done
-
-galera $(INST)/galera.done: galera.install $(INST)/openstack.done
-	./galera.install $(INST)/openstack $(INST)/galera $(VERS)
-	touch $(INST)/galera.done
 
 mysql $(INST)/mysql.done: mysql.install $(INST)/base.done
 	./mysql.install $(INST)/base $(INST)/mysql $(VERS)

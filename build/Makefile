@@ -52,6 +52,14 @@ mysql $(INST)/mysql.done: mysql.install $(INST)/base.done
 	./mysql.install $(INST)/base $(INST)/mysql $(VERS)
 	touch $(INST)/mysql.done
 
+galera $(INST)/galera.done: galera.install $(INST)/base.done
+	./galera.install $(INST)/base $(INST)/galera $(VERS)
+	touch $(INST)/galera.done
+
+haproxy $(INST)/haproxy.done: haproxy.install $(INST)/base.done
+	./haproxy.install $(INST)/base $(INST)/haproxy $(VERS)
+	touch $(INST)/haproxy.done
+
 ceph $(INST)/ceph.done: ceph.install $(INST)/base.done
 	./ceph.install $(INST)/base $(INST)/ceph $(VERS)
 	touch $(INST)/ceph.done

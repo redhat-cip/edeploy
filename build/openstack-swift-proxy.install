@@ -50,7 +50,7 @@ test -d ${dir}/etc/puppet/modules/apt || chroot ${dir} puppet module install pup
 cat > ${dir}/etc/puppet/manifests/install.manifest <<EOF
 class{'apt':
   always_apt_update    => true,
-  purge_sources_list_d => false,
+  purge_sources_list_d => true,
   purge_preferences_d  => true,
 }
 

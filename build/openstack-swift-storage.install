@@ -1,0 +1,78 @@
+#!/bin/bash
+#
+# Copyright (C) 2013 eNovance SAS <licensing@enovance.com>
+#
+# Author: Emilien Macchi <emilien.macchi@enovance.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+src="$1"
+dir="$2"
+version="$3"
+ROLE=openstack-swift-storage
+
+ORIG=$(cd $(dirname $0); pwd)
+
+. ${ORIG}/functions
+
+if [ -z "$2" -o ! -d "$1" -o -z "$version" ]; then
+   echo "Usage: $0 <base directory> <target directory name> <version>" 1>&2
+   exit 1
+fi
+
+set -e
+set -x
+
+test -d ${dir} || rsync -av ${src}/ ${dir}/
+
+echo $ROLE > ${dir}/etc/hostname
+
+export DEBIAN_FRONTEND=noninteractive
+
+chroot ${dir} apt-get update
+chroot ${dir} apt-get install -y --force-yes git puppet-common wget lsb-release openssh-server
+chroot ${dir} apt-get clean
+
+chroot ${dir} bash -c "cd /etc/puppet/modules; test -d stdlib || /usr/bin/git clone git://github.com/enovance/puppetlabs-stdlib.git stdlib"
+chroot ${dir} bash -c "cd /etc/puppet/modules; test -d concat || /usr/bin/git clone git://github.com/enovance/puppet-concat.git concat"
+test -d ${dir}/etc/puppet/modules/apt || chroot ${dir} puppet module install puppetlabs/apt --ignore-dependencies
+
+cat > ${dir}/etc/puppet/manifests/install.manifest <<EOF
+class{'apt':
+  always_apt_update    => true,
+  purge_sources_list_d => false,
+  purge_preferences_d  => true,
+}
+
+apt::source {'debian.pkgs.enovance.com':
+    location => '[trusted=1] ftp://debian.pkgs.enovance.com/debian',
+    release => 'grizzly',
+    include_src => false,
+}
+
+apt::source {'wheezy-backport':
+    location => '[trusted=1] http://archive.gplhost.com/debian/',
+    release => 'grizzly-backports',
+    include_src => false,
+}
+
+package { 'swift-account': ensure => present }
+package { 'swift-container': ensure => present }
+package { 'swift-object': ensure => present }
+package { 'xfsprogs': ensure => present }
+EOF
+
+chroot ${dir} puppet apply /etc/puppet/manifests/install.manifest
+
+echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
+echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

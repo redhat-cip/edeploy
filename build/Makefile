@@ -52,6 +52,10 @@ openstack-controller $(INST)/openstack-controller.done: openstack-controller.ins
 	./openstack-controller.install $(INST)/base $(INST)/openstack-controller $(VERS)
 	touch $(INST)/openstack-controller.done
 
+openstack-compute $(INST)/openstack-compute.done: openstack-compute.install $(INST)/base.done
+	./openstack-compute.install $(INST)/base $(INST)/openstack-compute $(VERS)
+	touch $(INST)/openstack-compute.done
+
 mysql $(INST)/mysql.done: mysql.install $(INST)/base.done
 	./mysql.install $(INST)/base $(INST)/mysql $(VERS)
 	touch $(INST)/mysql.done

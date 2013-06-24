@@ -54,7 +54,7 @@ apt::source {'wheezy-backport':
 
 package { 'openstack-compute-node':
   ensure => present ,
-  require => Apt::Source["wheezy-backports"]
+  require => Apt::Source["wheezy-backport"]
 }
 EOF
 

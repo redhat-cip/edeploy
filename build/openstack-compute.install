@@ -55,4 +55,6 @@ apt::source {'wheezy-backport':
 package { 'openstack-compute-node': ensure => present }
 EOF
 
+# Run Puppet two times:
+chroot ${dir} puppet apply /etc/puppet/manifests/install.manifest
 chroot ${dir} puppet apply /etc/puppet/manifests/install.manifest

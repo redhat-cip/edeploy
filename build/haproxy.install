@@ -48,11 +48,12 @@ apt::source { "wheezy-backports":
   include_src       => false,
 }
 
-class { 'haproxy': }
+class { 'haproxy':
+  require => Apt::Source["wheezy-backports"]
+}
+
 EOF
 
-# Run twice puppet to install HAproxy correctly:
-chroot ${dir} puppet apply /etc/puppet/manifests/install.manifest
 chroot ${dir} puppet apply /etc/puppet/manifests/install.manifest
 
 echo -e "\nVersion ${version}\n" > ${dir}/etc/motd

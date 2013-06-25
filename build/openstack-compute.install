@@ -40,21 +40,36 @@ class{'apt':
   purge_preferences_d  => true,
 }
 
-apt::source {'debian.pkgs.enovance.com':
-    location => '[trusted=1] ftp://debian.pkgs.enovance.com/debian',
-    release => 'grizzly',
-    include_src => false,
-}
+case $operatingsystem {
 
-apt::source {'wheezy-backport':
-    location => '[trusted=1] http://archive.gplhost.com/debian/',
-    release => 'grizzly-backports',
-    include_src => false,
-}
+  debian: {
+    apt::source {'debian.pkgs.enovance.com':
+      location => '[trusted=1] ftp://debian.pkgs.enovance.com/debian',
+      release => 'grizzly',
+      include_src => false,
+    }
+    apt::source {'wheezy-backport':
+      location => '[trusted=1] http://debian.gplhost.com/debian/',
+      release => 'grizzly-backports',
+      include_src => false,
+    }
+    package { 'openstack-compute-node':
+      ensure => present ,
+      require => Apt::Source["wheezy-backport"]
+    }
+  }
 
-package { 'openstack-compute-node':
-  ensure => present ,
-  require => Apt::Source["wheezy-backport"]
+  ubuntu: {
+    apt::source {'ubuntu.pkgs.enovance.com':
+      location => '[trusted=1] ftp://debian.pkgs.enovance.com/debian',
+      release => 'grizzly',
+      include_src => false,
+    }
+    package { 'openstack-compute-node':
+      ensure => present ,
+    }
+  }
+
 }
 EOF
 

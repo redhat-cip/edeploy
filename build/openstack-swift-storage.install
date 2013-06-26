@@ -54,22 +54,37 @@ class{'apt':
   purge_preferences_d  => true,
 }
 
-apt::source {'debian.pkgs.enovance.com':
-    location => '[trusted=1] ftp://debian.pkgs.enovance.com/debian',
-    release => 'grizzly',
-    include_src => false,
-}
+case $::operatingsystem {
 
-apt::source {'wheezy-backport':
-    location => '[trusted=1] http://archive.gplhost.com/debian/',
-    release => 'grizzly-backports',
-    include_src => false,
-}
+  debian: {
+    apt::source {'debian.pkgs.enovance.com':
+      location => '[trusted=1] ftp://debian.pkgs.enovance.com/debian',
+      release => 'grizzly',
+      include_src => false,
+    }
+    apt::source {'wheezy-backport':
+      location => '[trusted=1] http://debian.gplhost.com/debian/',
+      release => 'grizzly-backports',
+      include_src => false,
+    }
+    package { ['swift-account', 'swift-container', 'swift-object', 'xfsprogs']:
+      ensure => present ,
+      require => Apt::Source["wheezy-backport"]
+    }
+  }
 
-package { 'swift-account': ensure => present }
-package { 'swift-container': ensure => present }
-package { 'swift-object': ensure => present }
-package { 'xfsprogs': ensure => present }
+  ubuntu: {
+    apt::source {'ubuntu.pkgs.enovance.com':
+      location => '[trusted=1] ftp://debian.pkgs.enovance.com/debian',
+      release => 'grizzly',
+      include_src => false,
+    }
+    package { ['swift-account', 'swift-container', 'swift-object', 'xfsprogs']:
+      ensure => present ,
+    }
+  }
+
+}
 EOF
 
 chroot ${dir} puppet apply /etc/puppet/manifests/install.manifest

@@ -40,7 +40,7 @@ class{'apt':
   purge_preferences_d  => true,
 }
 
-case $operatingsystem {
+case $::operatingsystem {
 
   debian: {
     apt::source {'debian.pkgs.enovance.com':

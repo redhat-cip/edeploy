@@ -75,10 +75,13 @@ mount -obind /dev ${dir}/dev
 
 case $dist in
     precise)
-	PACKAGES="linux-image-virtual iputils-ping"
+	PACKAGES="linux-image-virtual iputils-ping linux-firmware"
 	;;
     wheezy|squeeze)
-	PACKAGES="linux-image-amd64 ipmitool sdparm htop acpi-support-base inetutils-ping"
+	PACKAGES="linux-image-amd64 ipmitool sdparm htop acpi-support-base inetutils-ping firmware-bnx2"
+	cat > ${dir}/etc/apt/sources.list.d/nonfree.list <<EOF
+deb http://ftp.debian.org/debian/ wheezy non-free
+EOF
 	;;
     *)
 	echo "unsupported distribution: $dist" 2>&1

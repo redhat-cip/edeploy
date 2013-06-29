@@ -49,8 +49,8 @@ else
 
 fi
 
-sudo apt-get update
-sudo apt-get install -y swift-account swift-container swift-object xfsprogs
+chroot ${dir} sudo apt-get update
+chroot ${dir} sudo apt-get install -y swift-account swift-container swift-object xfsprogs
 
 echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
 echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

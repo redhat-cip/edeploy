@@ -49,8 +49,8 @@ else
 
 fi
 
-sudo apt-get update
-sudo apt-get install -y openstack-compute-node
+chroot ${dir} sudo apt-get update
+chroot ${dir} sudo apt-get install -y openstack-compute-node
 
 echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
 echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

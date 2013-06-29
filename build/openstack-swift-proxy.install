@@ -41,6 +41,7 @@ EOF
 elif [ $OS == "Ubuntu" ]; then
     cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
 deb [trusted=1] ftp://ubuntu.pkgs.enovance.com/debian grizzly main
+deb [trusted=1] ftp://ubuntu.pkgs.enovance.com/debian precise-grizzly-backports main
 EOF
 
 else

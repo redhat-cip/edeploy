@@ -32,7 +32,7 @@ chroot ${dir} apt-get clean
 OS=$(lsb_release -i -s)
 RELEASE=$(lsb_release -c -s)
 
-if [ $OS == "debian" ] && [ $RELEASE =="wheezy"]; then
+if [ $OS == "Debian" ] && [ $RELEASE =="wheezy"]; then
     cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
 deb [trusted=1] ftp://debian.pkgs.enovance.com/debian grizzly main
 deb [trusted=1] http://debian.gplhost.com/debian/ grizzly-backports main
@@ -43,7 +43,10 @@ elif [ $OS == "Ubuntu" ]; then
 deb [trusted=1] ftp://ubuntu.pkgs.enovance.com/debian grizzly main
 EOF
 
-else echo "OS or Release not supported";; echo 1;
+else
+ echo "OS or Release not supported"
+ exit 1
+
 fi
 
 sudo apt-get update

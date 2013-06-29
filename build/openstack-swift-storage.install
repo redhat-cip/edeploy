@@ -25,69 +25,29 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
-if [ -z "$2" -o ! -d "$1" -o -z "$version" ]; then
-   echo "Usage: $0 <base directory> <target directory name> <version>" 1>&2
-   exit 1
-fi
-
-set -e
-set -x
-
-test -d ${dir} || rsync -av ${src}/ ${dir}/
-
-echo $ROLE > ${dir}/etc/hostname
-
-export DEBIAN_FRONTEND=noninteractive
-
 chroot ${dir} apt-get update
-chroot ${dir} apt-get install -y --force-yes git puppet-common wget lsb-release openssh-server
+chroot ${dir} apt-get install -y --force-yes lsb-release openssh-server
 chroot ${dir} apt-get clean
 
-chroot ${dir} bash -c "cd /etc/puppet/modules; test -d stdlib || /usr/bin/git clone git://github.com/enovance/puppetlabs-stdlib.git stdlib"
-chroot ${dir} bash -c "cd /etc/puppet/modules; test -d concat || /usr/bin/git clone git://github.com/enovance/puppet-concat.git concat"
-test -d ${dir}/etc/puppet/modules/apt || chroot ${dir} puppet module install puppetlabs/apt --ignore-dependencies
+OS=$(lsb_release -i -s)
+RELEASE=$(lsb_release -c -s)
 
-cat > ${dir}/etc/puppet/manifests/install.manifest <<EOF
-class{'apt':
-  always_apt_update    => true,
-  purge_sources_list_d => true,
-  purge_preferences_d  => true,
-}
-
-case $::operatingsystem {
-
-  debian: {
-    apt::source {'debian.pkgs.enovance.com':
-      location => '[trusted=1] ftp://debian.pkgs.enovance.com/debian',
-      release => 'grizzly',
-      include_src => false,
-    }
-    apt::source {'wheezy-backport':
-      location => '[trusted=1] http://debian.gplhost.com/debian/',
-      release => 'grizzly-backports',
-      include_src => false,
-    }
-    package { ['swift-account', 'swift-container', 'swift-object', 'xfsprogs']:
-      ensure => present ,
-      require => Apt::Source["wheezy-backport"]
-    }
-  }
-
-  ubuntu: {
-    apt::source {'ubuntu.pkgs.enovance.com':
-      location => '[trusted=1] ftp://debian.pkgs.enovance.com/debian',
-      release => 'grizzly',
-      include_src => false,
-    }
-    package { ['swift-account', 'swift-container', 'swift-object', 'xfsprogs']:
-      ensure => present ,
-    }
-  }
-
-}
+if [ $OS == "debian" ] && [ $RELEASE =="wheezy"]; then
+    cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
+deb [trusted=1] ftp://debian.pkgs.enovance.com/debian grizzly main
+deb [trusted=1] http://debian.gplhost.com/debian/ grizzly-backports main
 EOF
 
-chroot ${dir} puppet apply /etc/puppet/manifests/install.manifest
+elif [ $OS == "Ubuntu" ]; then
+    cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
+deb [trusted=1] ftp://ubuntu.pkgs.enovance.com/debian grizzly main
+EOF
+
+else echo "OS or Release not supported";; echo 1;
+fi
+
+sudo apt-get update
+sudo apt-get install -y swift-account swift-container swift-object xfsprogs
 
 echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
 echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

@@ -34,8 +34,8 @@ RELEASE=$(chroot ${dir} lsb_release -c -s)
 
 if [ $OS == "Debian" ] && [ $RELEASE == "wheezy" ]; then
     cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
-deb [trusted=1] ftp://debian.pkgs.enovance.com/debian grizzly main
-deb [trusted=1] http://archive.gplhost.com/debian/ grizzly-backports main
+deb [trusted=1 arch=amd64] ftp://ubuntu.pkgs.enovance.com/debian grizzly main
+deb [trusted=1 arch=amd64] ftp://ubuntu.pkgs.enovance.com/debian precise-grizzly-backports main
 EOF
 
 elif [ $OS == "Ubuntu" ]; then

@@ -126,6 +126,7 @@ step "Create directories"
 [ -d /sys ] || mkdir /sys
 [ -d /proc ] || mkdir /proc
 [ -d /tmp ] || mkdir /tmp
+rm -rf /var/lock
 mkdir -p /var/lock
 
 step "Mounting virtual fs"

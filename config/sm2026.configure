@@ -1,17 +1,18 @@
 
 # -*- python -*-
-for idx in range(1,6):
-	disk_name = 'disk%d' % (idx)
-	disk_path = '/dev/%s' % var[disk_name]
-	print 'Cleaning disk %s\n',disk_path
-	run('dd if=/dev/zero of=%s bs=1M count=10' % disk_path)
-	print 'Removing disk %s\n',disk_path
-	run('echo 1 > /sys/block/%s/device/delete' % var[disk_name])
-time.sleep(5)
-print 'Rescaning disks\n'
-run('for scan in /sys/class/scsi_host/host*/scan; do echo "- - - " > $scan; done')
-time.sleep(5)
-print 'Rescaning disk done\n'
+#for idx in range(1,6):
+#	disk_name = 'disk%d' % (idx)
+#	disk_path = '/dev/%s' % var[disk_name]
+#	print 'Cleaning disk %s\n' % disk_path
+#	run('dd if=/dev/zero of=%s bs=1M count=10 >/dev/null 2>&1' % disk_path)
+#	print 'Removing disk %s\n' % disk_path
+#	run('echo 1 > /sys/block/%s/device/delete >/dev/null 2>&1' % var[disk_name])
+#time.sleep(5)
+#print 'Rescaning disks\n'
+#run('for scan in /sys/class/scsi_host/host*/scan; do echo "- - - " > $scan; done')
+#time.sleep(5)
+#print 'Rescaning disk done\n'
+
 
 disk1 = var['disk1']
 
@@ -25,6 +26,10 @@ run('parted --script /dev/%s set 3 lvm on' % disk1)
 #run('parted --script /dev/%s align-check optimal 1' % disk1)
 #run('parted --script /dev/%s align-check optimal 2' % disk1)
 #run('parted --script /dev/%s align-check optimal 3' % disk1)
+
+# Insure that all devices are not linked to any dm stuff
+run('dmsetup remove_all || /bin/true')
+
 print "Creating LVM"
 run('pvcreate -ff -y --dataalignment 512k /dev/%s%d' % (disk1, 3))
 run('vgcreate -f -y --dataalignment 512k rootfs /dev/%s%d' % (disk1, 3))
@@ -44,6 +49,7 @@ LABEL=boot /boot ext4 defaults 0 2
 ''')
 print
 
+disks_name=''
 for idx in range(2, 6):
     disk_name = 'disk%d' % (idx)
     run('pvcreate -ff -y --dataalignment 512k /dev/%s' % var[disk_name])
@@ -53,7 +59,7 @@ for idx in range(2, 6):
 
 run('vgcreate -f -y --dataalignment 512k data %s' % (disks_name))
 run('lvcreate data -n var -L 1500G')
-run('mkfs.ext4 -L var -m 0 %s' % ('/dev/mapper/var'))
+run('mkfs.ext4 -L var -m 0 %s' % ('/dev/mapper/data-var'))
 run('mkdir /chroot/var')
 run('mount LABEL=var /chroot/var')
 fstab = open('/fstab', 'a')

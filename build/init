@@ -359,6 +359,8 @@ elif /configure; then
 	    cp /log $d/var/log/install.log
 	fi
 
+	#If the disk name doesn't have any /dev/ naming let's add it
+	echo "$DISK" | grep '^/dev/' || DISK="/dev/$DISK"
 	if chroot $d /bin/bash -c "/usr/sbin/grub-install ${DISK}"; then
 	    umount $d/sys
 	    umount $d/dev

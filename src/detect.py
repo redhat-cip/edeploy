@@ -23,7 +23,6 @@ import xml.etree.ElementTree as ET
 
 import diskinfo
 import hpacucli
-import matcher
 import os
 
 def size_in_gb(s):

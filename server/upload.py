@@ -269,6 +269,7 @@ import sys
 
 import hpacucli
 import ipmi
+import time
 
 def run(cmd):
     print '+ ' + cmd

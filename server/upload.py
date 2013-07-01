@@ -192,15 +192,20 @@ def main():
 
     cfg_dir = config.get('SERVER', 'CONFIGDIR') + '/'
 
-    cgitb.enable()
+    if len(sys.argv) == 3 and sys.argv[1] == '-f':
+        hw_file = open(sys.argv[2])
+    else:
+        cgitb.enable()
 
-    print "Content-Type: text/x-python"     # HTML is following
-    print                                   # blank line, end of headers
+        form = cgi.FieldStorage()
 
-    form = cgi.FieldStorage()
+        fileitem = form["file"]
+        hw_file = fileitem.file
 
-    fileitem = form["file"]
-    hw_items = eval(fileitem.file.read(-1))
+        print "Content-Type: text/x-python"     # HTML is following
+        print                                   # blank line, end of headers
+
+    hw_items = eval(hw_file.read(-1))
 
     use_pxemngr = (config.get('SERVER', 'USEPXEMNGR') == 'True')
     pxemngr_url = config.get('SERVER', 'PXEMNGRURL')

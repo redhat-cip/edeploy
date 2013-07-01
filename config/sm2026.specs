@@ -1,0 +1,16 @@
+# -*- python -*-
+
+[
+    ('disk', '$disk1', 'size', '500'),
+    ('disk', '$disk2', 'size', '500'),
+    ('disk', '$disk3', 'size', '500'),
+    ('disk', '$disk4', 'size', '500'),
+    ('disk', '$disk5', 'size', '500'),
+    ('disk', '$disk6', 'size', '500'),
+    ('system', 'cpu', 'number', "$nbcpu"),
+    ('network', '$eth', 'ipv4', 'network(172.30.4.0/24)'),
+    ('network', '$eth', 'link', 'yes'),
+    ('network', '$eth', 'serial', '$$tag'),
+    ('network', '$eth-io', 'link', 'no'),
+    ('network', '$eth-io', 'serial', '$mac-io'),
+]

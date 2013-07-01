@@ -208,9 +208,9 @@ if [ "$DEBUG" = 1 ]; then
     /etc/init.d/ssh start
 fi
 
-# Let's wait 15 seconds to get a DHCP answer
+# Let's wait 30 seconds to get a DHCP answer
 # Default is very very long....
-sed -i "s/^\#timeout.*/timeout 15/g" /etc/dhcp/dhclient.conf
+sed -i "s/^\#timeout.*/timeout 30/g" /etc/dhcp/dhclient.conf
 
 IFS=:
 export IFS

@@ -361,6 +361,15 @@ elif /configure; then
 
 	#If the disk name doesn't have any /dev/ naming let's add it
 	echo "$DISK" | grep '^/dev/' || DISK="/dev/$DISK"
+	export DISK
+	DISK_BASE=$(basename $DISK)
+	SER=$(cat /sys/block/$DISK_BASE/device/rev)
+	MODEL=$(cat /sys/block/$DISK_BASE/device/model)
+	VENDOR=$(cat /sys/block/$DISK_BASE/device/vendor)
+	echo  "################################################################################################"
+	echo  "# Installing grub  on device ${DISK} which is a $MODEL from $VENDOR with SN=$SER"
+	echo  "################################################################################################"
+	sleep 3
 	if chroot $d /bin/bash -c "/usr/sbin/grub-install ${DISK}"; then
 	    umount $d/sys
 	    umount $d/dev

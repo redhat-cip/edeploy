@@ -22,6 +22,7 @@ IMG="$3"
 VERS="$4"
 
 PYDIR=$(cd $(dirname $0)/../src; pwd)
+PYSERVERDIR=$(cd $(dirname $0)/../server; pwd)
 
 if [ ! -d "$SRC" -o -z "$DST" -o -z "$IMG" -o -z "$VERS" ]; then
    echo "Usage: $0 <source dir> <dest dir> <initrd to generate> <version>" 1>&2
@@ -33,7 +34,7 @@ set -e
 
 rsync -au --delete-excluded --delete --exclude /boot/ --exclude 'vmlinuz*' --exclude 'initrd*' --exclude usr/share/man --exclude usr/share/doc --exclude usr/share/info --exclude var/lib/dpkg --exclude 'var/cache/apt/archives/*.deb' --exclude usr/share/zoneinfo --exclude usr/share/locale ${SRC}/ ${DST}
 
-cp -p init ${PYDIR}/detect.py ${PYDIR}/hpacucli.py ${PYDIR}/matcher.py ${PYDIR}/diskinfo.py ${PYDIR}/ipmi.py ${DST}/
+cp -p init ${PYDIR}/detect.py ${PYDIR}/hpacucli.py ${PYSERVERDIR}/matcher.py ${PYDIR}/diskinfo.py ${PYDIR}/ipmi.py ${DST}/
 
 # If the ssh initscript features some upstart stuff, it needs to be disabled
 sed -i "s/exec \/lib\/init\/upstart\-job ssh/echo 'No upstart check required'/g" ${DST}/etc/init.d/ssh

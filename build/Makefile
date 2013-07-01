@@ -27,13 +27,14 @@ ARCH=amd64
 export PATH := /sbin:/bin::$(PATH)
 SERV:=10.66.6.10
 PYDIR=../src
+PYSERVERDIR=../server
 
 INST=$(TOP)/install/$(VERS)
 META=$(TOP)/metadata/$(VERS)
 
 all: $(INST)/$(IMG) $(INST)/mysql.done
 
-pxe $(INST)/$(IMG): $(INST)/base.done init pxe.install $(PYDIR)/detect.py $(PYDIR)/hpacucli.py $(PYDIR)/matcher.py $(PYDIR)/diskinfo.py $(PYDIR)/ipmi.py
+pxe $(INST)/$(IMG): $(INST)/base.done init pxe.install $(PYDIR)/detect.py $(PYDIR)/hpacucli.py $(PYSERVERDIR)/matcher.py $(PYDIR)/diskinfo.py $(PYDIR)/ipmi.py
 	./pxe.install $(INST)/base $(INST)/pxe $(IMG) $(VERS)
 
 img: pxe

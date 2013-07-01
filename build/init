@@ -292,11 +292,13 @@ SERV=10.0.0.1
 RSERV=
 RSERV_PORT=873
 HTTP_PORT=80
+HTTP_PATH=/cgi-bin/
 
 # Unless you override one or the other via the cmdline
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^R?SERV=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^RSERV_PORT=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^HTTP_PORT=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^HTTP_PATH=")
 
 if [ -z "$RSERV" ]; then
     RSERV="$SERV"
@@ -315,7 +317,7 @@ cd /
 
 step "Configuring system"
 
-curl -s -o/configure -F file=@/tmp/hw.py http://${SERV}:${HTTP_PORT}/cgi-bin/upload.py
+curl -s -o/configure -F file=@/tmp/hw.py http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py
 chmod +x configure 2> /dev/null
 
 d=/chroot

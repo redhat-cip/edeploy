@@ -33,7 +33,7 @@ Configure the PXE boot like that::
 
  LABEL eDeploy
  	KERNEL vmlinuz
- 	INITRD initrd.pxe SERV=10.0.2.2 DEBUG=1 VERBOSE=1 RSERV_PORT=1515 HTTP_PORT=9000
+ 	INITRD initrd.pxe SERV=10.0.2.2 DEBUG=1 VERBOSE=1 RSERV_PORT=1515 HTTP_PORT=9000 HTTP_PATH=/cgi-bin/edeploy/
 
  LABEL local
  	LOCALBOOT 0
@@ -46,10 +46,14 @@ installation.
 The ``VERBOSE`` variable if set to ``1`` on the kernel command line, it turns on
 the -x of bash to ease the understanding of faulty commands
 
-Please note that ``RSERV_PORT`` and ``HTTP_PORT`` are given here as an
+Please note that ``RSERV_PORT``, ``HTTP_PORT`` are given here as an
 example to override the default settings 831 & 80 respectively.
 Unless you run the rsync server or the http server on a very
 particular setup, don't use this variables.
+
+``HTTP_PATH`` variable can be use to override the default ``/cgi-bin/`` directory.
+This could be usefull if you don't have the rights in this diretory.
+The directory pointed by ``HTTP_PATH`` shall contains all edeploy code & configuration.
 
 CGI script
 ++++++++++

@@ -34,6 +34,10 @@ set -e
 rsync -au --delete-excluded --delete --exclude /boot/ --exclude 'vmlinuz*' --exclude 'initrd*' --exclude usr/share/man --exclude usr/share/doc --exclude usr/share/info --exclude var/lib/dpkg --exclude 'var/cache/apt/archives/*.deb' --exclude usr/share/zoneinfo --exclude usr/share/locale ${SRC}/ ${DST}
 
 cp -p init ${PYDIR}/detect.py ${PYDIR}/hpacucli.py ${PYDIR}/matcher.py ${PYDIR}/diskinfo.py ${PYDIR}/ipmi.py ${DST}/
+
+# If the ssh initscript features some upstart stuff, it needs to be disabled
+sed -i "s/exec \/lib\/init\/upstart\-job ssh/echo 'No upstart check required'/g" ${DST}/etc/init.d/ssh
+
 sed -i "s/VERS=.*/VERS=${VERS}/" ${DST}/init
 
 cd ${DST}; find . | cpio --quiet -R 0:0 -o -H newc | gzip -v > ../${IMG}

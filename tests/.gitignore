@@ -4,5 +4,4 @@ edeploy.lock
 kvm_storage.img
 rsync-kvm.conf
 *~
-tftpboot/vmlinuz
-tftpboot/initrd
+rsyncd-edeploy.pid

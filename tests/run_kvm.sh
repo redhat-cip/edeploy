@@ -94,7 +94,8 @@ EOF
 }
 
 start_httpd() {
-	ln -sf ../ cgi-bin &>/dev/null
+	rm -f cgi-bin
+	ln -sf ../server cgi-bin &>/dev/null
 	python -m CGIHTTPServer $HTTP_PORT &
 	HTTP_PID=$!
 }

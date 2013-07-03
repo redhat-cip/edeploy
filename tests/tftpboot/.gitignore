@@ -1,2 +1,4 @@
 pxelinux.0
 ldlinux.c32
+vmlinuz
+initrd

@@ -281,6 +281,9 @@ while true; do
 	    log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	    if [ "$DEBUG" != 1 ]; then
 		reboot -f
+	    else
+		log "!! DEBUG mode is set, let's give up and give a console !!"
+		exec /bin/bash -i
 	    fi
 	fi
 done

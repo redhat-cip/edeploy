@@ -77,7 +77,7 @@ PACKAGES="pciutils"
 
 case $dist in
     precise)
-	PACKAGES="$PACKAGES linux-image-virtual iputils-ping linux-firmware"
+	PACKAGES="$PACKAGES linux-image iputils-ping linux-firmware"
 	;;
     wheezy|squeeze)
 	PACKAGES="$PACKAGES linux-image-amd64 ipmitool sdparm htop acpi-support-base inetutils-ping firmware-bnx2"

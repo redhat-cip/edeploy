@@ -109,6 +109,11 @@ create_key() {
 	fi
 }
 
+give_up() {
+	log "$@"
+        exec /bin/bash -i
+}
+
 
 create_keys() {
 	hostkeys="$(host_keys_required)"
@@ -288,9 +293,8 @@ while true; do
 	    if [ "$DEBUG" != 1 ]; then
 		reboot -f
 	    else
-		log "!! DEBUG mode is set, let's give up and give a console !!"
-		show_kernel_modules
-		exec /bin/bash -i
+        	show_kernel_modules
+		give_up "!! DEBUG mode is set, let's give up as no DHCP server found"
 	    fi
 	fi
 done

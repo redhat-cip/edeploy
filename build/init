@@ -340,15 +340,19 @@ step "Detecting hardware"
 cd /
 ./detect.py > /tmp/hw.py
 
+show_network_cards
 show_kernel_modules
 ################################################################################
 # Send the detected hardware to the server and receive a configuration script
 # if there is a match on the server else stop.
 ################################################################################
 
-step "Configuring system"
-
+step "Configuring system via server ${SERV}"
 curl -s -o/configure -F file=@/tmp/hw.py http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py
+RET_CODE=$?
+if [ "$RET_CODE" != "0" ]; then
+	give_up "Curl exited as failed ($RET_CODE). Cannot get a configuration from http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py'"
+fi
 chmod +x configure 2> /dev/null
 
 d=/chroot

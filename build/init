@@ -26,6 +26,14 @@ exec > /log 2>&1
 tail -f /log > /dev/console &
 tpid=$!
 
+show_network_cards() {
+	# Let's search all devices that have "network" in their class or name
+	lspci | grep -wi Network
+
+	# Let's search all devices that are part of class 02 aka Network
+	for device in $(lspci -n | awk '{print $2}' | grep "^02"); do lspci -n | grep -w $device; done
+}
+
 show_kernel_modules() {
 	KMODS=$(LANG=C LC_ALL=C lspci -vv | grep "Kernel driver" | cut -d ":" -f 2 | tr '\n' ',')
 	KVER=$(uname -rm)
@@ -249,6 +257,13 @@ while true; do
 	fi
 
 	IFACES_NAME=$(echo $IFACES | tr '\n' ',')
+	# If we have only match "lo" it means no physical interface got detected !
+	if [ "$IFACES_NAME" = "lo," ]; then
+        	show_kernel_modules
+		show_network_cards
+		give_up "No Network interfaces found !"
+	fi
+
 	log "Valid Network Interfaces are : $IFACES_NAME"
 	echo $IFACES | while read iface rem; do
 	     iface=$(echo $iface)

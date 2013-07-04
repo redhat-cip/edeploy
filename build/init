@@ -35,7 +35,7 @@ show_network_cards() {
 }
 
 show_kernel_modules() {
-	KMODS=$(LANG=C LC_ALL=C lspci -vv | grep "Kernel driver" | cut -d ":" -f 2 | tr '\n' ',')
+	KMODS=$(LANG=C LC_ALL=C lspci -vv | grep "Kernel driver" | cut -d ":" -f 2 | sort -u | tr '\n' ',')
 	KVER=$(uname -rm)
 	log "Required kernel modules for $KVER are :$KMODS"
 }

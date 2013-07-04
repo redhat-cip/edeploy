@@ -81,5 +81,29 @@ class TestUpload(unittest.TestCase):
              {'hostname': 'hostc'}]
             )
 
+    def test_update_cmdb_simple(self):
+        cmdb = [{},]
+        var = {'a': 1}
+        result = upload.update_cmdb(cmdb, var, var, False)
+        self.assertTrue(result, cmdb)
+
+    def test_update_cmdb_reuse(self):
+        cmdb = [{'a': 1, 'used': 1},]
+        var = {'a': 1}
+        result = upload.update_cmdb(cmdb, var, var, False)
+        self.assertTrue(result, cmdb)
+    
+    def test_update_cmdb_full(self):
+        cmdb = [{'a': 2, 'used': 1},]
+        var = {'a': 1}
+        result = upload.update_cmdb(cmdb, var, var, False)
+        self.assertFalse(result, cmdb)
+    
+    def test_update_cmdb_full2(self):
+        cmdb = [{'a': 'ff:ff'},]
+        var = {'a': 'FF:FF'}
+        result = upload.update_cmdb(cmdb, var, var, True)
+        self.assertFalse(result, cmdb)
+    
 if __name__ == "__main__":
     unittest.main()

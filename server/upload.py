@@ -61,7 +61,7 @@ def _generate_range(num_range):
 def _generate_values(pattern):
     '''Create a generator for range of IPv4 or names with ranges
 defined like 10-12:15-18 or from a list of entries.'''
-    if type(pattern) == type(()) or type(pattern) == type([]):
+    if isinstance(pattern, list) or isinstance(pattern, tuple):
         for elt in pattern:
             yield elt
     else:
@@ -144,30 +144,53 @@ def is_included(dict1, dict2):
     return True
 
 
-def update_cmdb(name, cfg_dir, var, pref):
+def cmdb_filename(cfg_dir, name):
+    'Return the cmdb filename.'
+    return cfg_dir + name + '.cmdb'
+
+
+def load_cmdb(cfg_dir, name):
+    'Load the cmdb.'
+    filename = cmdb_filename(cfg_dir, name)
+    try:
+        return eval(open(filename).read(-1))
+    except IOError, xcpt:
+        sys.stderr.write("eDeploy: exception while processing CMDB %s\n" %
+                         str(xcpt))
+
+
+def save_cmdb(cfg_dir, name, cmdb):
+    'Save the cmdb.'
+    filename = cmdb_filename(cfg_dir, name)
+    try:
+        pprint.pprint(cmdb, stream=open(filename, 'w'))
+    except IOError, xcpt:
+        sys.stderr.write("eDeploy: exception while processing CMDB %s\n" %
+                         str(xcpt))
+
+
+def update_cmdb(cmdb, var, pref, forced_find):
     '''Handle CMDB settings if present. CMDB is updated with var.
 var is also augmented with the cmdb entry found.'''
-    cmdb_filename = cfg_dir + name + '.cmdb'
 
     def update_entry(entry, cmdb, idx):
         'Update var using a cmdb entry and save the full cmdb on disk.'
         var.update(entry)
         var['used'] = 1
         cmdb[idx] = var
-        pprint.pprint(cmdb, stream=open(cmdb_filename, 'w'))
 
-    try:
-        cmdb = eval(open(cmdb_filename).read(-1))
-        #sys.stderr.write(str(cmdb))
-        # First pass to lookup if the var is already in the database
-        # and if this is the case, reuse the entry.
-        idx = 0
-        for entry in cmdb:
-            if is_included(pref, entry):
-                update_entry(entry, cmdb, idx)
-                break
-            idx += 1
-        else:
+    #sys.stderr.write(str(cmdb))
+    # First pass to lookup if the var is already in the database
+    # and if this is the case, reuse the entry.
+    idx = 0
+    for entry in cmdb:
+        if is_included(pref, entry):
+            update_entry(entry, cmdb, idx)
+            break
+        idx += 1
+    else:
+        # not looking for $$ type matches
+        if not forced_find:
             # Second pass, find a not used entry.
             idx = 0
             for entry in cmdb:
@@ -179,9 +202,10 @@ var is also augmented with the cmdb entry found.'''
                 sys.stderr.write("eDeploy: No more entry in the CMDB,"
                                  " aborting.\n")
                 return False
-    except IOError, xcpt:
-        sys.stderr.write("eDeploy: exception while processing CMDB %s\n" %
-                         str(xcpt))
+        else:
+            sys.stderr.write("eDeploy: No entry matched in the CMDB,"
+                             " aborting.\n")
+            return False
     return True
 
 
@@ -213,9 +237,9 @@ def main():
 
     if use_pxemngr:
         sysvars = {}
-        matcher.match_spec(('system', 'product', 'serial', '$sysname'), hw_items,
-                           sysvars)
-        if matcher.match_multiple(hw_items, 
+        matcher.match_spec(('system', 'product', 'serial', '$sysname'),
+                           hw_items, sysvars)
+        if matcher.match_multiple(hw_items,
                                   ('network', '$eth', 'serial', '$serial'),
                                   sysvars):
             if 'sysname' not in sysvars:
@@ -226,15 +250,16 @@ def main():
             sys.stderr.write('%s -> %d / %s' % (cmd, status, output))
         else:
             sys.stderr.write('unable to detect network macs\n')
-        
+
     lock_filename = config.get('SERVER', 'LOCKFILE')
     lockfd = lock(lock_filename)
-    
+
     def cleanup():
+        'Remove lock.'
         unlock(lockfd, lock_filename)
-    
+
     atexit.register(cleanup)
-    
+
     state_filename = cfg_dir + 'state'
     names = eval(open(state_filename).read(-1))
 
@@ -255,14 +280,18 @@ def main():
         sys.stderr.write('eDeploy: Lines: %s\n' % repr(hw_items))
         sys.exit(1)
 
+    forced = (var2 != {})
+
     if var2 == {}:
         var2 = var
 
     if times != '*':
         names[idx] = (name, times - 1)
 
-    if not update_cmdb(name, cfg_dir, var, var2):
+    cmdb = load_cmdb(cfg_dir, name)
+    if not update_cmdb(cmdb, var, var2, forced):
         sys.exit(1)
+    save_cmdb(cfg_dir, name, cmdb)
 
     cfg = open(cfg_dir + name + '.configure').read(-1)
 

@@ -1,24 +1,30 @@
 
 # -*- python -*-
-#for idx in range(1,6):
-#	disk_name = 'disk%d' % (idx)
-#	disk_path = '/dev/%s' % var[disk_name]
-#	print 'Cleaning disk %s\n' % disk_path
-#	run('dd if=/dev/zero of=%s bs=1M count=10 >/dev/null 2>&1' % disk_path)
-#	print 'Removing disk %s\n' % disk_path
-#	run('echo 1 > /sys/block/%s/device/delete >/dev/null 2>&1' % var[disk_name])
-#time.sleep(5)
-#print 'Rescaning disks\n'
-#run('for scan in /sys/class/scsi_host/host*/scan; do echo "- - - " > $scan; done')
-#time.sleep(5)
-#print 'Rescaning disk done\n'
 
+# It's time to clean all the disks we are supposed to work on
+
+# Disabling dm devices
+run('dmsetup remove_all || /bin/true')
+
+# For all disks we know about
 for idx in range(1,6):
-	disk_name = 'disk%d' % (idx)
-	disk_path = '/dev/%s' % var[disk_name]
-	run('pvremove -y -ff %s* || /bin/true' % (disk_path))
-	run('dd if=/dev/zero of=%s bs=1M count=10 >/dev/null 2>&1' % disk_path)
-	run('echo 1 > /sys/block/%s/device/rescan >/dev/null 2>&1' % var[disk_name])
+        disk_name = 'disk%d' % (idx)
+        disk_path = '/dev/%s' % var[disk_name]
+        print 'Cleaning disk %s\n' % disk_path
+	# Let's remove all possible dm configuration on disk & partitions
+        run('pvremove -y -ff %s* || /bin/true' % (disk_path))
+	# Let's clear the partition table
+        run('dd if=/dev/zero of=%s bs=1M count=10 >/dev/null 2>&1' % disk_path)
+        print 'Removing disk %s\n' % disk_path
+	# Let's remove the disk from the ata bus
+        run('echo 1 > /sys/block/%s/device/delete >/dev/null 2>&1' % var[disk_name])
+# wait a little bit to insure all disks got ejected properly
+time.sleep(5)
+print 'Rescaning disks\n'
+# Asking all scsi buses to rescan for disks
+run('for scan in /sys/class/scsi_host/host*/scan; do echo "- - - " > $scan; done')
+time.sleep(5)
+print 'Rescaning disk done\n'
 
 disk1=var['disk1']
 

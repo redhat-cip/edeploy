@@ -340,7 +340,6 @@ step "Detecting hardware"
 cd /
 ./detect.py > /tmp/hw.py
 
-show_network_cards
 show_kernel_modules
 ################################################################################
 # Send the detected hardware to the server and receive a configuration script

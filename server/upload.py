@@ -30,6 +30,7 @@ On the to be configured host, it is usally called like that:
 $ curl -i -F name=test -F file=@/tmp/hw.lst http://localhost/cgi-bin/upload.py
 '''
 
+import atexit
 import ConfigParser
 import cgi
 import cgitb
@@ -228,7 +229,12 @@ def main():
         
     lock_filename = config.get('SERVER', 'LOCKFILE')
     lockfd = lock(lock_filename)
-
+    
+    def cleanup():
+        unlock(lockfd, lock_filename)
+    
+    atexit.register(cleanup)
+    
     state_filename = cfg_dir + 'state'
     names = eval(open(state_filename).read(-1))
 
@@ -244,7 +250,6 @@ def main():
                 break
         idx += 1
     else:
-        unlock(lockfd, lock_filename)
         sys.stderr.write('eDeploy: Unable to match requirements\n')
         sys.stderr.write('eDeploy: Specs: %s\n' % repr(specs))
         sys.stderr.write('eDeploy: Lines: %s\n' % repr(hw_items))
@@ -257,7 +262,6 @@ def main():
         names[idx] = (name, times - 1)
 
     if not update_cmdb(name, cfg_dir, var, var2):
-        unlock(lockfd, lock_filename)
         sys.exit(1)
 
     cfg = open(cfg_dir + name + '.configure').read(-1)
@@ -295,8 +299,6 @@ run('curl -s %slocalboot/')
 ''' % pxemngr_url
 
     pprint.pprint(names, stream=open(state_filename, 'w'))
-
-    unlock(lockfd, lock_filename)
 
 if __name__ == "__main__":
     main()

@@ -20,7 +20,7 @@ for idx in range(1,6):
 	run('dd if=/dev/zero of=%s bs=1M count=10 >/dev/null 2>&1' % disk_path)
 	run('echo 1 > /sys/block/%s/device/rescan >/dev/null 2>&1' % var[disk_name])
 
-disk1 =uvar['disk1']
+disk1=var['disk1']
 
 print "Creating Partitions"
 run('parted -a optimal --script /dev/%s mktable gpt' % disk1)

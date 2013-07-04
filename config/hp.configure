@@ -56,7 +56,7 @@ for idx in range(3, 9):
     print
     run('parted -a optimal --script %s mktable gpt' % var[disk_name])
     run('parted -a optimal --script %s mkpart primary ext2 0%% 100%%' % var[disk_name])
-    run('mkfs.xfs -f -d agcount=%s -l size=1024m -n size=64k -L osd%d %s1' % (var['nbcpu'], idx - 3, var[disk_name]))
+    run('mkfs.xfs -f -d agcount=%s -l size=1024m -n size=64k -i size=2048 -L osd%d %s1' % (var['nbcpu'], idx - 3, var[disk_name]))
     run('mkdir -p /chroot/var/lib/ceph/osd/ceph-%d' % (idx - 3))
     run('mount -orw,noatime,inode64 LABEL=osd%d /chroot/var/lib/ceph/osd/ceph-%d' % (idx - 3, idx - 3))
     run('lvcreate rootfs -n journal-osd%d -L 8G' % (idx - 3) )

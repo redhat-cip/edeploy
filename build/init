@@ -26,6 +26,12 @@ exec > /log 2>&1
 tail -f /log > /dev/console &
 tpid=$!
 
+show_kernel_modules() {
+	KMODS=$(LANG=C LC_ALL=C lspci -vv | grep "Kernel driver" | cut -d ":" -f 2 | tr '\n' ',')
+	KVER=$(uname -rm)
+	log "Required kernel modules for $KVER are :$KMODS"
+}
+
 save_log() {
     exec 1>&3
     exec 2>&4
@@ -283,6 +289,7 @@ while true; do
 		reboot -f
 	    else
 		log "!! DEBUG mode is set, let's give up and give a console !!"
+		show_kernel_modules
 		exec /bin/bash -i
 	    fi
 	fi
@@ -314,6 +321,7 @@ step "Detecting hardware"
 cd /
 ./detect.py > /tmp/hw.py
 
+show_kernel_modules
 ################################################################################
 # Send the detected hardware to the server and receive a configuration script
 # if there is a match on the server else stop.

@@ -73,12 +73,14 @@ trap cleanup 0
 
 mount -obind /dev ${dir}/dev
 
+PACKAGES="pciutils"
+
 case $dist in
     precise)
-	PACKAGES="linux-image-virtual iputils-ping linux-firmware"
+	PACKAGES="$PACKAGES linux-image-virtual iputils-ping linux-firmware"
 	;;
     wheezy|squeeze)
-	PACKAGES="linux-image-amd64 ipmitool sdparm htop acpi-support-base inetutils-ping firmware-bnx2"
+	PACKAGES="$PACKAGES linux-image-amd64 ipmitool sdparm htop acpi-support-base inetutils-ping firmware-bnx2"
 	cat > ${dir}/etc/apt/sources.list.d/nonfree.list <<EOF
 deb http://ftp.debian.org/debian/ wheezy non-free
 EOF

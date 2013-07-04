@@ -437,7 +437,8 @@ elif /configure; then
 	log "No role or version defined..."
     fi
 else
-    log "Problem during configuration of disks"
+    log "Problem during system configuration"
+    grep '<!-- ' /configure -A 40 >> /log
 fi
 
 save_log

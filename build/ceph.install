@@ -11,17 +11,9 @@ ORIG=$(cd $(dirname $0); pwd)
 . ${ORIG}/functions
 
 chroot ${dir} apt-get update
-chroot ${dir} apt-get install -y --force-yes git puppet-common wget lsb-release
+chroot ${dir} apt-get install -y --force-yes wget lsb-release
 chroot ${dir} apt-get clean
 
-chroot ${dir} bash -c "cd /etc/puppet/modules; test -d ceph || /usr/bin/git clone git://github.com/enovance/puppet-ceph.git ceph"
-test -d ${dir}/etc/puppet/modules/apt || chroot ${dir} puppet module install puppetlabs/apt
-test -d ${dir}/etc/puppet/modules/concat || chroot ${dir} puppet module install ripienaar/concat
-
-cat > ${dir}/etc/puppet/manifests/install.manifest <<EOF
-include ceph::apt::ceph
-include ceph::package
-EOF
-
-wget -q 'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc' -O- | chroot ${dir} apt-key add -
-chroot ${dir} puppet apply /etc/puppet/manifests/install.manifest
+chroot ${dir} wget -q -O- 'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc' | sudo apt-key add -
+chroot ${dir} echo deb http://ceph.com/debian-cuttlefish/ $(lsb_release -sc) main | sudo tee /etc/apt/sources.list.d/ceph.list
+chroot ${dir} apt-get update && sudo apt-get install ceph python-ceph -y

@@ -38,7 +38,7 @@ deb [trusted=1] ftp://debian.pkgs.enovance.com/debian grizzly main
 deb [trusted=1] http://archive.gplhost.com/debian/ grizzly-backports main
 EOF
 
-elif [ $OS == "Ubuntu" ]; then
+elif [ $OS == "Ubuntu" ] && [ $RELEASE == "precise" ]; then
     cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
 deb [trusted=1 arch=amd64] ftp://ubuntu.pkgs.enovance.com/debian precise-grizzly-backports main
 EOF

@@ -73,7 +73,7 @@ trap cleanup 0
 
 mount -obind /dev ${dir}/dev
 
-PACKAGES="pciutils"
+PACKAGES="pciutils rsyslog"
 
 case $dist in
     precise)

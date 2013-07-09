@@ -347,7 +347,7 @@ show_kernel_modules
 ################################################################################
 
 step "Configuring system via server ${SERV}"
-curl -s -o/configure -F file=@/tmp/hw.py http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py
+curl -s -o/configure -F file=@/tmp/hw.py http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py & (log_n "Awaiting eDeploy server :"; while [ ! -z "$(pidof curl)" ]; do log_n "."; sleep 1; done; log "done")
 RET_CODE=$?
 if [ "$RET_CODE" != "0" ]; then
 	give_up "Curl exited as failed ($RET_CODE). Cannot get a configuration from http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py'"

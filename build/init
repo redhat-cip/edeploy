@@ -75,7 +75,7 @@ get_config_option() {
 
 	# TODO: actually only one '=' allowed after option
 	perl -lne 's/\s+/ /g; print if s/^\s*'"$option"'[[:space:]=]+//i' \
-	   /etc/ssh/sshd_config
+	/etc/ssh/sshd_config
 }
 
 host_keys_required() {

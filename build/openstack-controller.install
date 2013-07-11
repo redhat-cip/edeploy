@@ -26,7 +26,7 @@ ORIG=$(cd $(dirname $0); pwd)
 . ${ORIG}/functions
 
 chroot ${dir} apt-get update
-chroot ${dir} apt-get install -y --force-yes lsb-release openssh-server iptables build-essential
+chroot ${dir} apt-get install -y --force-yes lsb-release openssh-server iptables build-essential wget
 chroot ${dir} apt-get clean
 
 OS=$(chroot ${dir} lsb_release -i -s)
@@ -40,7 +40,7 @@ EOF
 
 elif [ $OS == "Ubuntu" ] && [ $RELEASE == "precise" ]; then
     cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
-deb [trusted=1 arch=amd64] ftp://ubuntu.pkgs.enovance.com/debian precise-grizzly-backports main
+deb [trusted=1 arch=amd64] http://archive.gplhost.com/debian precise-grizzly-backports main
 EOF
     cat > ${dir}/etc/apt/sources.list <<EOF
 deb http://archive.ubuntu.com/ubuntu precise main

@@ -55,4 +55,4 @@ wget -O- -q http://33.apt-proxy.gplhost.com/debian/repository_key.asc | chroot $
 
 chroot ${dir} apt-get update
 chroot ${dir} apt-get dist-upgrade -y --force-yes
-chroot ${dir} apt-get install -y --force-yes puppet-common openssh-server mcollective-client wget lsb-release git cloud-init
+chroot ${dir} apt-get install -y --force-yes puppet-common openssh-server mcollective-client wget lsb-release git cloud-init wget

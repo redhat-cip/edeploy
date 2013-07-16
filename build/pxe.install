@@ -45,3 +45,4 @@ cd ${DST}; find . | cpio --quiet -R 0:0 -o -H newc | gzip -v > ../${IMG}
 
 echo "### Build complete ###"
 echo "### initrd is now available at ${DST}/../${IMG}"
+echo "### Don't forget to use the initrd with its associated kernel : $(ls ${SRC}/boot/vmlinuz-*)"

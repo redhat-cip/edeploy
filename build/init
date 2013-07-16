@@ -221,6 +221,14 @@ for d in $(cut -f2 /proc/bus/pci/devices ); do
     done
 done
 
+# Some kernel drivers doesn't have hardware dependencies but are required to make the device work
+# Let's probe them before starting the network stuff
+step "Probing Additional modules"
+for module in mlx4_en; do
+	log_n "Loading additional module $module "
+	modprobe $module && log "done" || log "error"
+done
+
 step "Starting networking"
 
 if [ "$DEBUG" = 1 ]; then

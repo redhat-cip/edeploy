@@ -238,7 +238,10 @@ fi
 
 # Let's wait 30 seconds to get a DHCP answer
 # Default is very very long....
-sed -i "s/^\#timeout.*/timeout 30/g" /etc/dhcp/dhclient.conf
+DHCP_TIMEOUT=30
+DHCP_GRACE_TIME=10
+DHCP_NO_RACETIMING=1
+sed -i "s/^\#timeout.*/timeout $DHCP_TIMEOUT/g" /etc/dhcp/dhclient.conf
 
 IFS=:
 export IFS
@@ -246,57 +249,69 @@ MAX_RUN=3
 RUN=0
 while true; do
 	log "Enabling Ethernet Links"
+	DEVICE_LIST=
 	pushd /sys/class/net >/dev/null
 		for device in *; do
 			if [ "$device" = "lo" ]; then
 				continue
 			fi
 			ip link set dev $device up
+			DEVICE_LIST="$DEVICE_LIST $device"
 		done
 	popd > /dev/null
 
 	# Only consider interface that have a Link ok
 	log "Waiting a few seconds to catch network link"
 	sleep 5
-	IFACES=$(mii-tool | grep "link ok"  | cut -d ":" -f1)
-	if [ -z "$IFACES" ]; then
-		log "No link detected, switching to iterative discovery"
-		IFACES=$(grep ':' /proc/net/dev | sed 's/ *//' | cut -d ':' -f 1)
-	fi
 
-	IFACES_NAME=$(echo $IFACES | tr '\n' ',')
+	log "List of available network devices is :$DEVICE_LIST"
+
+
 	# If we have only match "lo" it means no physical interface got detected !
-	if [ "$IFACES_NAME" = "lo," ]; then
+	if [ -z "$DEVICE_LIST" ]; then
         	show_kernel_modules
 		show_network_cards
-		give_up "No Network interfaces found !"
+		give_up "No Network interface found !"
 	fi
 
-	log "Valid Network Interfaces are : $IFACES_NAME"
-	echo $IFACES | while read iface rem; do
-	     iface=$(echo $iface)
-	     if [ $iface = lo ]; then
-	       continue
-	     fi
+	VALID_IFACES_COUNT=0
+	pushd /sys/class/net >/dev/null
+                for iface in *; do
+                        if [ "$iface" = "lo" ]; then
+                                continue
+                        fi
+			# Let's check if the network interface reports some carrier
+			# If so, let's try to get a DHCP answer from here
+			if [ "$(cat /sys/class/net/$iface/carrier)" = "1" ]; then
+				log "Adding Interface $iface : carrier detected"
+				CARRIER_DEVICE_LIST="$CARRIER_DEVICE_LIST $iface"
+				VALID_IFACES_COUNT=$(($VALID_IFACES_COUNT + 1))
+				# Let's run all the dhclients in parallel
+				( log "Waiting for $iface to come up.";
+			   	   dhclient $iface;
+				   count=$DHCP_GRACE_TIME
+			   	   while [ $count -gt 0 ] && ! ifconfig $iface|grep -q 'inet addr'; do
+			   		sleep 1;
+					count=$(($count - 1));
+			   	   done
+			   	   ifconfig $iface|grep -q 'inet addr' && log "$iface configuration done" || log "$iface configuration failed"
+			         ) & sleep $DHCP_NO_RACETIMING # Don't race dhcp clients too much
+			else
+				log "Rejecting Interface $iface : carrier not detected"
+			fi
+		done
+	popd >/dev/null
 
-	    log_n "Waiting for $iface to come up."
-	    dhclient $iface
-	    count=10
-	    while [ $count -gt 0 ] && ! ifconfig $iface|grep -q 'inet addr'; do
-		sleep 1
-		count=$(($count - 1))
-		log_n .
-	    done
-	    if ifconfig $iface|grep -q 'inet addr'; then
-		log "done"
-	    else
-		log failed
-	    fi
-	done
+	log "Valid interfaces with Carrier were $CARRIER_DEVICE_LIST"
+
+	# We now have to let enough time to let all the racing dhcpclient finishing
+	DHCP_WAITING_TIME=$((DHCP_TIMEOUT + $DHCP_GRACE_TIME + $VALID_IFACES_COUNT*$DHCP_NO_RACETIMING + 3))
+	log "Waiting DHCP anwsers to come up, waiting for $DHCP_WAITING_TIME seconds"
+	sleep $DHCP_WAITING_TIME
 
 	IP_SET=$(ip a  | grep -iw "inet" | grep -v "127.0.0.1" | wc -l)
 	if [ "$IP_SET" -gt 0 ]; then
-	    echo "Found $IP_SET interfaces properly configured"
+	    log "Found $IP_SET interfaces properly configured"
 	    # We found at least once DHCP server so we can continue
 	    # the install procedure
 	    break

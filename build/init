@@ -226,7 +226,7 @@ done
 step "Probing Additional modules"
 for module in mlx4_en; do
 	log_n "Loading additional module $module "
-	modprobe $module && log "done" || log "error"
+	modprobe $module && ( log "done"; echo $module >> /modules) || log "error"
 done
 
 step "Starting networking"
@@ -404,6 +404,10 @@ elif /configure; then
 
 	if [ -r /hostname ]; then
 	    cp -f /hostname $d/etc/hostname
+	fi
+
+	if [ -r /modules ]; then
+	    cat /modules >> $d/etc/modules
 	fi
 
 	mount -obind /dev $d/dev

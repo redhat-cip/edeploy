@@ -16,6 +16,7 @@
 # under the License.
 
 import unittest
+import pexpect
 import mock
 
 import hpacucli
@@ -116,6 +117,9 @@ class TestController(unittest.TestCase):
             '/dev/sda'
             )
 
+    def test_timeout_expect(self):
+        self.cli.process.expect = mock.MagicMock(side_effect = pexpect.TIMEOUT(''))
+        return self.assertRaises(hpacucli.Error, self.cli.ctrl_all_show)
 
 ##############################################################################
 # Output from real commands and expected results below

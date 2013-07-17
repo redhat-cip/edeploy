@@ -138,11 +138,14 @@ interact with it to configure or gather information.'''
         self.debug = debug
 
     def launch(self):
-        '''Launch an hpacucli from /sur/sbin. Must be called before
+        '''Launch an hpacucli from /usr/sbin. Must be called before
 any other method.'''
         if os.path.exists('/usr/sbin/hpacucli'):
-            self.process = pexpect.spawn('/usr/sbin/hpacucli')
-            self.process.expect(PROMPT_REGEXP)
+            try:
+                self.process = pexpect.spawn('/usr/sbin/hpacucli')
+                self.process.expect(PROMPT_REGEXP)
+            except (OSError, pexpect.EOF, pexpect.TIMEOUT):
+                return False
             return True
         else:
             return False
@@ -153,8 +156,11 @@ the prompt and return the output string.'''
         if self.debug:
             print line
         self.process.sendline(line)
-        self.process.expect(PROMPT_REGEXP)
-        ret = self.process.before[len(line):]
+        try:
+            self.process.expect(PROMPT_REGEXP)
+            ret = self.process.before[len(line):]
+	except pexpect.TIMEOUT:
+	    ret = 'Error: timeout'
         parse_error(ret)
         return ret
 

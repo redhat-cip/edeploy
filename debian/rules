@@ -1,0 +1,16 @@
+#!/usr/bin/make -f
+
+UPSTREAM_GIT = git://github.com/enovance/edeploy.git
+include /usr/share/openstack-pkg-tools/pkgos.make
+
+%:
+	dh $@  --with python2
+
+override_dh_install:
+	dh_install
+	sed -i -e "s#^CONFIGDIR=.*#CONFIGDIR=/etc/edeploy/www-config#" $(CURDIR)/debian/edeploy-www/etc/edeploy/edeploy.conf
+
+override_dh_python2:
+	dh_python2
+	dh_python2 /usr/share/edeploy
+	dh_python2 /usr/lib/cgi-bin

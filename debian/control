@@ -1,0 +1,54 @@
+Source: edeploy
+Section: python
+Priority: optional
+Maintainer: PKG OpenStack <openstack-devel@lists.alioth.debian.org>
+Uploaders: Julien Danjou <acid@debian.org>,
+           Thomas Goirand <zigo@debian.org>,
+           Mehdi Abaakouk <sileht@sileht.net>
+Build-Depends: debhelper (>= 9), openstack-pkg-tools, python-all (>= 2.6.6.3~)
+Standards-Version: 3.9.4
+Vcs-Browser: http://anonscm.debian.org/gitweb/?p=openstack/edeploy.git
+Vcs-Git: git://anonscm.debian.org/openstack/edeploy.git
+Homepage: https://github.com/enovance/edeploy
+
+Package: edeploy-www
+Architecture: all
+Pre-Depends: dpkg (>= 1.15.6~)
+Depends: ${python:Depends}, python-ipaddr, ${misc:Depends}
+Description: new way to provision/update systems - web server files
+ eDeploy is a new way to provision/update systems (physical or virtual) using
+ trees of files instead of packages or VM images.
+ .
+ Installation is done using these steps:
+  * Detect PCI hardware and setup network.
+  * Send the detected hardware config to the server.
+  * The server sends back a configuration script.
+  * Run the configuration script to setup IPMI, RAID, partitions and network.
+  * According to the defined role, rsync the tree on the newly created
+    partitions.
+  * Configure the grub2 boot loader and reboot the system.
+ .
+ Then the system will boot on the provisioned harddrive directly.
+ .
+ This package contains the web server files.
+
+Package: edeploy-build
+Architecture: all
+Pre-Depends: dpkg (>= 1.15.6~)
+Depends: ${python:Depends}, python-ipaddr, ${misc:Depends}
+Description: new way to provision/update systems - builder
+ eDeploy is a new way to provision/update systems (physical or virtual) using
+ trees of files instead of packages or VM images.
+ .
+ Installation is done using these steps:
+  * Detect PCI hardware and setup network.
+  * Send the detected hardware config to the server.
+  * The server sends back a configuration script.
+  * Run the configuration script to setup IPMI, RAID, partitions and network.
+  * According to the defined role, rsync the tree on the newly created
+    partitions.
+  * Configure the grub2 boot loader and reboot the system.
+ .
+ Then the system will boot on the provisioned harddrive directly.
+ .
+ This package contains the builder.

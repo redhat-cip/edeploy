@@ -1,0 +1,5 @@
+edeploy (0.2-1) unstable; urgency=low
+
+  * Initial release. (Closes: #717664)
+
+ -- Thomas Goirand <zigo@debian.org>  Tue, 23 Jul 2013 23:07:43 +0800

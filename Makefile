@@ -7,7 +7,7 @@ BUILD_DIR=build
 WWW_DIR=$(DESTDIR)/var/www/cgi-bin/$(PROG_NAME)
 WWW_CONFIG_DIR=$(WWW_DIR)/config
 ETC_DIR=$(DESTDIR)/etc/
-OPT_BUILD_DIR=$(DESTDIR)/opt/$(PROG_NAME)/$(BUILD_DIR)
+OPT_BUILD_DIR=$(DESTDIR)/usr/share/$(PROG_NAME)/$(BUILD_DIR)
 
 install-www:
 	mkdir -p $(WWW_DIR) && 	chmod 755 $(WWW_DIR)

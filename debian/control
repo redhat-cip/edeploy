@@ -1,11 +1,10 @@
 Source: edeploy
 Section: admin
 Priority: extra
-Vcs-Git: git://github.com/enovance/edeploy.git
-Vcs-Browser: https://github.com/enovance/edeploy.git
 Maintainer: Erwan Velu <erwan.velu@envoance.com>
-Build-Depends: debhelper (>= 7)
-Standards-Version: 3.9.3
+Build-Depends: debhelper (>= 7), python-all (>= 2.6.6.3~)
+Homepage: http://github.com/enovance/edeploy
+Standards-Version: 3.9.4
 
 Package: edeploy-www
 Architecture: linux-any

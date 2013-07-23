@@ -3,7 +3,7 @@
 export DESTDIR=$(CURDIR)/debian/tmp
 
 %:
-	dh $@
+	dh $@ --with python2
 
 override_dh_auto_install:
 	$(MAKE) DESTDIR=$(DESTDIR) install-www

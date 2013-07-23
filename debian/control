@@ -1,0 +1,19 @@
+Source: edeploy
+Section: admin
+Priority: extra
+Vcs-Git: git://github.com/enovance/edeploy.git
+Vcs-Browser: https://github.com/enovance/edeploy.git
+Maintainer: Erwan Velu <erwan.velu@envoance.com>
+Build-Depends: debhelper (>= 7)
+Standards-Version: 3.9.3
+
+Package: edeploy-www
+Architecture: linux-any
+Depends: python, python-ipaddr, ${misc:Depends}
+X-Python-Version: >= 2.6
+Description: The webservice that serves profiles
+
+Package: edeploy-build
+Architecture: linux-any
+Depends: make, debootstrap, alien, wget, chroot, sed, rsync, ${misc:Depends}
+Description: Tools to build operating systems for edeploy

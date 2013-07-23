@@ -1,0 +1,10 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+export DESTDIR=$(CURDIR)/debian/tmp
+
+%:
+	dh $@
+
+override_dh_auto_install:
+	$(MAKE) DESTDIR=$(DESTDIR) install-www
+	$(MAKE) DESTDIR=$(DESTDIR) install-build

@@ -8,7 +8,7 @@ include /usr/share/openstack-pkg-tools/pkgos.make
 
 override_dh_install:
 	dh_install
-	sed -i -e "s#^CONFIGDIR=.*#CONFIGDIR=/etc/edeploy/www-config#" $(CURDIR)/debian/edeploy-www/etc/edeploy/edeploy.conf
+	sed -i -e "s#^CONFIGDIR=.*#CONFIGDIR=/usr/lib/cgi-bin/config/#" $(CURDIR)/debian/edeploy-www/etc/edeploy.conf
 
 override_dh_python2:
 	dh_python2

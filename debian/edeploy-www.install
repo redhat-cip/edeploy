@@ -1,4 +1,4 @@
-server/edeploy.conf	/etc/edeploy
+server/edeploy.conf	/etc/
 server/matcher.py	/usr/lib/cgi-bin
 server/upload.py	/usr/lib/cgi-bin
-config/*		/etc/edeploy/www-config
+config/			/usr/lib/cgi-bin

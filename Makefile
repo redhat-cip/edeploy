@@ -15,7 +15,10 @@ install-www:
 	mkdir -p $(ETC_DIR) && chmod 755 $(ETC_DIR)
 	install -m 644 $(SERVER_DIR)/edeploy.conf $(ETC_DIR)/
 	install -m 755 $(SERVER_DIR)/upload.py $(SERVER_DIR)/matcher.py $(WWW_DIR)/
-	install -m 644 $(CONFIG_DIR)/* $(WWW_CONFIG_DIR)/
+	install -m 644 $(CONFIG_DIR)/*specs $(WWW_CONFIG_DIR)/
+	install -m 644 $(CONFIG_DIR)/*configure $(WWW_CONFIG_DIR)/
+	install -m 644 $(CONFIG_DIR)/*state $(WWW_CONFIG_DIR)/
+	cd $(CONFIG_DIR); for file in *cmdb; do echo $$file; if [ ! -e $(WWW_CONFIG_DIR)/$$file ]; then install -m 644 $$file $(WWW_CONFIG_DIR)/ ; fi ; done
 	chmod a+rw $(WWW_CONFIG_DIR)/state
 	sed -i -e "s/^CONFIGDIR=.*/CONFIGDIR=$(WWW_CONFIG_DIR)/" $(ETC_DIR)/edeploy.conf
 

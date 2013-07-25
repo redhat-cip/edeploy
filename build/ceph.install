@@ -14,6 +14,8 @@ chroot ${dir} apt-get update
 chroot ${dir} apt-get install -y --force-yes wget lsb-release
 chroot ${dir} apt-get clean
 
-chroot ${dir} wget -q -O- 'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc' | sudo apt-key add -
-chroot ${dir} echo deb http://ceph.com/debian-cuttlefish/ $(lsb_release -sc) main | sudo tee /etc/apt/sources.list.d/ceph.list
-chroot ${dir} apt-get update && sudo apt-get install ceph python-ceph -y
+chroot ${dir} wget -q 'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc'  -O release.asc
+chroot ${dir} apt-key add release.asc
+chroot ${dir} echo 'deb http://ceph.com/debian-cuttlefish/ $(lsb_release -sc) main' > /etc/apt/sources.list.d/ceph.list
+chroot ${dir} apt-get update 
+chroot ${dir} apt-get install ceph -y --force-yes

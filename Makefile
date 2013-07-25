@@ -16,7 +16,7 @@ install-www:
 	install -m 644 $(SERVER_DIR)/edeploy.conf $(ETC_DIR)/
 	install -m 755 $(SERVER_DIR)/upload.py $(SERVER_DIR)/matcher.py $(WWW_DIR)/
 	install -m 644 $(CONFIG_DIR)/* $(WWW_CONFIG_DIR)/
-	sed -i -e "s/^CONFIGDIR=.*/CONFIGDIR=$(WWw_CONFIG_DIR)/" $(ETC_DIR)/edeploy.conf
+	sed -i -e "s/^CONFIGDIR=.*/CONFIGDIR=$(WWW_CONFIG_DIR)/" $(ETC_DIR)/edeploy.conf
 
 install-build:
 	mkdir -p $(SHARE_BUILD_DIR) && chmod 755 $(SHARE_BUILD_DIR)

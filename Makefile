@@ -21,7 +21,7 @@ install-www:
 	cd $(CONFIG_DIR); for file in *cmdb; do echo $$file; if [ ! -e $(WWW_CONFIG_DIR)/$$file ]; then install -m 644 $$file $(WWW_CONFIG_DIR)/ ; fi ; done
 	chmod a+rw $(WWW_CONFIG_DIR)/*cmdb
 	chmod a+rw $(WWW_CONFIG_DIR)/state
-	sed -i -e "s/^CONFIGDIR=.*/CONFIGDIR=$(WWW_CONFIG_DIR)/" $(ETC_DIR)/edeploy.conf
+	sed -i -e "s|^CONFIGDIR=.*|CONFIGDIR=$(WWW_CONFIG_DIR)|" $(ETC_DIR)/edeploy.conf
 
 install-build:
 	mkdir -p $(SHARE_BUILD_DIR) && chmod 755 $(SHARE_BUILD_DIR)

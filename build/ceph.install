@@ -10,12 +10,23 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
+cat >> ${dir}/etc/apt/sources.list << EOF
+deb http://archive.ubuntu.com/ubuntu precise-updates main
+deb http://archive.ubuntu.com/ubuntu precise universe
+deb http://archive.ubuntu.com/ubuntu precise-updates universe
+EOF
+
 chroot ${dir} apt-get update
-chroot ${dir} apt-get install -y --force-yes wget lsb-release
+chroot ${dir} apt-get upgrade -y --force-yes
+chroot ${dir} apt-get install -y --force-yes wget lsb-release linux-image-3.8.0-26-generic
 chroot ${dir} apt-get clean
 
-chroot ${dir} wget -q 'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc'  -O release.asc
-chroot ${dir} apt-key add release.asc
-chroot ${dir} echo 'deb http://ceph.com/debian-cuttlefish/ $(lsb_release -sc) main' > /etc/apt/sources.list.d/ceph.list
-chroot ${dir} apt-get update 
-chroot ${dir} apt-get install ceph -y --force-yes
+cat > ${dir}/setup_ceph.sh << EOF
+wget -q -O- 'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc' |  apt-key add -
+echo deb http://ceph.com/debian-cuttlefish/ \$(lsb_release -sc) main |  tee /etc/apt/sources.list.d/ceph.list
+apt-get update &&  apt-get install ceph -y --force-yes
+EOF
+
+chmod +x ${dir}/setup_ceph.sh
+
+chroot ${dir} /setup_ceph.sh

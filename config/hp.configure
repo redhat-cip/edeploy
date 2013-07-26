@@ -44,7 +44,7 @@ run('mkdir /chroot/etc /chroot/boot')
 run('mount LABEL=boot /chroot/boot')
 fstab = open('/fstab', 'a')
 fstab.write('''
-LABEL=swap none swap sw 0 0
+/dev/disk/by-id/dm-name-rootfs-swap none swap sw 0 0
 LABEL=boot /boot ext4 defaults 0 2
 ''')
 print

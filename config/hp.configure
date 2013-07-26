@@ -19,8 +19,10 @@ print '# Creating SSD array'
 disk = cli.ctrl_create_ld(slot, (disk1, disk2), raid='1')
 print "# -> %s" % disk
 print "Creating Partitions"
+run('dd if=/dev/zero of=%s bs=1M count=100' % disk)
 run('parted -a optimal --script %s mktable gpt' % disk)
 run('parted -a optimal --script %s mkpart primary 0 2' % disk)
+run('parted --script %s set 1 boot on' % disk)
 run('parted --script %s set 1 bios_grub on' % disk)
 run('parted -a optimal --script %s mkpart primary ext2 2 256 ' % disk)
 run('parted -a optimal --script %s mkpart primary 257 100%%' % disk)
@@ -55,6 +57,7 @@ for idx in range(3, 9):
     var_nodev = var[disk_name].replace('/dev/','')
     print "# -> %s" % var[disk_name]
     print
+    run('dd if=/dev/zero of=%s bs=1M count=100' % var[disk_name])
     run('parted -a optimal --script %s mktable gpt' % var[disk_name])
     run('parted -a optimal --script %s mkpart ceph 0%% 100%%' % var[disk_name])
     run('mkfs.xfs -f -d agcount=%s -l size=1024m -n size=64k -i size=2048 %s1' % (var['nbcpu'], var[disk_name]))

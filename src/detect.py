@@ -88,8 +88,11 @@ def detect_ipmi(l):
 		sys.stderr.write('Info: No IPMI device found\n')
 		return False
 
-def detect_system(l):
-    status, output = commands.getstatusoutput('lshw -xml')
+def detect_system(l, output=None):
+    if output:
+        status = 0
+    else:
+        status, output = commands.getstatusoutput('lshw -xml')
     if status == 0:
         xml = ET.fromstring(output)
         e = xml.findall("./node/serial")
@@ -104,6 +107,9 @@ def detect_system(l):
         e = xml.findall("./node/version")
         if len(e) >= 1:
             l.append(('system', 'product', 'version', e[0].text))
+        e = xml.findall(".//node[@id='memory']/size")
+        if len(e) >= 1:
+            l.append(('system', 'memory', 'size', e[0].text))
         for e in xml.findall(".//node[@class='network']"):
             name = e.find('logicalname')
             if name is not None:
@@ -119,6 +125,8 @@ def detect_system(l):
                 link = e.find("configuration/setting[@id='link']")
                 if link is not None:
                     l.append(('network', name.text, 'link', link.attrib['value']))
+    else:
+        sys.stderr.write("Unable to run lshw: %s\n" % output)
 
     status, output = commands.getstatusoutput('nproc')
     if status == 0:

@@ -275,6 +275,7 @@ while true; do
 	fi
 
 	VALID_IFACES_COUNT=0
+	PIDS=
 	pushd /sys/class/net >/dev/null
                 for iface in *; do
                         if [ "$iface" = "lo" ]; then
@@ -287,15 +288,17 @@ while true; do
 				CARRIER_DEVICE_LIST="$CARRIER_DEVICE_LIST $iface"
 				VALID_IFACES_COUNT=$(($VALID_IFACES_COUNT + 1))
 				# Let's run all the dhclients in parallel
-				( log "Waiting for $iface to come up.";
-			   	   dhclient $iface;
+				( log "Waiting for $iface to come up."
+			   	   dhclient $iface
 				   count=$DHCP_GRACE_TIME
 			   	   while [ $count -gt 0 ] && ! ifconfig $iface|grep -q 'inet addr'; do
-			   		sleep 1;
-					count=$(($count - 1));
+			   	       sleep 1
+				       count=$(($count - 1))
 			   	   done
 			   	   ifconfig $iface|grep -q 'inet addr' && log "$iface configuration done" || log "$iface configuration failed"
-			         ) & sleep $DHCP_NO_RACETIMING # Don't race dhcp clients too much
+			         ) &
+				PIDS="$PIDS $!"
+				sleep $DHCP_NO_RACETIMING # Don't race dhcp clients too much
 			else
 				log "Rejecting Interface $iface : carrier not detected"
 			fi
@@ -306,8 +309,23 @@ while true; do
 
 	# We now have to let enough time to let all the racing dhcpclient finishing
 	DHCP_WAITING_TIME=$((DHCP_TIMEOUT + $DHCP_GRACE_TIME + $VALID_IFACES_COUNT*$DHCP_NO_RACETIMING + 3))
-	log "Waiting DHCP anwsers to come up, waiting for $DHCP_WAITING_TIME seconds"
-	sleep $DHCP_WAITING_TIME
+	log "Waiting for $VALID_IFACES_COUNT DHCP anwsers to come up in $DHCP_WAITING_TIME sec"
+
+	while [ -n "$PIDS" ]; do
+	    NEW_PIDS=
+	    for p in $PIDS; do
+		if [ -d /proc/$p ]; then
+		    NEW_PIDS="$NEW_PIDS $p"
+		fi
+	    done
+	    DHCP_WAITING_TIME=$(($DHCP_WAITING_TIME - 1))
+	    if [ -n "$NEW_PIDS" -a $DHCP_WAITING_TIME -gt 0 ]; then
+		PIDS="$NEW_PIDS"
+		sleep 1
+	    else
+		PIDS=
+	    fi
+	done
 
 	IP_SET=$(ip a  | grep -iw "inet" | grep -v "127.0.0.1" | wc -l)
 	if [ "$IP_SET" -gt 0 ]; then

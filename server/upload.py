@@ -155,8 +155,10 @@ def load_cmdb(cfg_dir, name):
     try:
         return eval(open(filename).read(-1))
     except IOError, xcpt:
-        sys.stderr.write("eDeploy: exception while processing CMDB %s\n" %
-                         str(xcpt))
+        if xcpt.errno != errno.ENOENT:
+            sys.stderr.write("eDeploy: exception while processing CMDB %s\n" %
+                             str(xcpt))
+        return None
 
 
 def save_cmdb(cfg_dir, name, cmdb):
@@ -289,9 +291,10 @@ def main():
         names[idx] = (name, times - 1)
 
     cmdb = load_cmdb(cfg_dir, name)
-    if not update_cmdb(cmdb, var, var2, forced):
-        sys.exit(1)
-    save_cmdb(cfg_dir, name, cmdb)
+    if cmdb:
+        if not update_cmdb(cmdb, var, var2, forced):
+            sys.exit(1)
+        save_cmdb(cfg_dir, name, cmdb)
 
     cfg = open(cfg_dir + name + '.configure').read(-1)
 

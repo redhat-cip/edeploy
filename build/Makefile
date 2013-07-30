@@ -45,6 +45,14 @@ base $(INST)/base.done: base.install policy-rc.d edeploy
 	cp -p policy-rc.d edeploy $(INST)/base/usr/sbin/
 	touch $(INST)/base.done
 
+cloud $(INST)/cloud.done: cloud.install $(INST)/base.done
+	./cloud.install $(INST)/base $(INST)/cloud $(VERS)
+	touch $(INST)/cloud.done
+
+devstack $(INST)/devstack.done: devstack.install $(INST)/cloud.done
+	./devstack.install $(INST)/cloud $(INST)/devstack $(DIST) $(VERS)
+	touch $(INST)/devstack.done
+
 openstack $(INST)/openstack.done: openstack.install $(INST)/base.done
 	./openstack.install $(INST)/base $(INST)/openstack $(VERS)
 	touch $(INST)/openstack.done

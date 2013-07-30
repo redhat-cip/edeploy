@@ -1,0 +1,88 @@
+#!/bin/bash
+#
+# Copyright (C) 2013 eNovance SAS <licensing@enovance.com>
+#
+# Author: Frederic Lepied <frederic.lepied@enovance.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+src="$1"
+dir="$2"
+version="$3"
+
+ROLE=cloud
+
+ORIG=$(cd $(dirname $0); pwd)
+
+. ${ORIG}/functions
+
+rm -f ${dir}/etc/cloud/cloud.cfg
+
+chroot ${dir} apt-get install -y cloud-init
+
+mkdir -p ${dir}/etc/cloud/cloud.cfg.d
+
+cat > ${dir}/etc/cloud/cloud.cfg.d/90_dpkg.cfg << EOF
+# to update this file, run dpkg-reconfigure cloud-init
+datasource_list: [ Ec2 ]
+EOF
+
+cat > ${dir}/etc/cloud/cloud.cfg <<EOF
+user: root
+disable_root: 0
+preserve_hostname: False
+
+cloud_init_modules:
+ - bootcmd
+ - resizefs
+ - set_hostname
+ - update_hostname
+ - update_etc_hosts
+ - ca-certs
+ - rsyslog
+ - ssh
+
+cloud_config_modules:
+ - mounts
+ - ssh-import-id
+ - locale
+ - set-passwords
+ - grub-dpkg
+ - apt-pipelining
+ - apt-update-upgrade
+ - landscape
+ - timezone
+ - puppet
+ - chef
+ - salt-minion
+ - mcollective
+ - disable-ec2-metadata
+ - runcmd
+ - byobu
+
+cloud_final_modules:
+ - rightscale_userdata
+ - scripts-per-once
+ - scripts-per-boot
+ - scripts-per-instance
+ - scripts-user
+ - keys-to-console
+ - phone-home
+ - final-message
+EOF
+
+# invalidate root password
+chroot ${dir} usermod -L root
+
+# ssh key gen is beeing taken care by cloud-init
+rm -f ${dir}/etc/first-boot.d/01-ssh

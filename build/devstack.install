@@ -1,0 +1,86 @@
+#!/bin/bash
+#
+# Copyright (C) 2013 eNovance SAS <licensing@enovance.com>
+#
+# Author: Frederic Lepied <frederic.lepied@enovance.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+src="$1"
+dir="$2"
+dist="$3"
+version="$4"
+
+ROLE=devstack
+
+ORIG=$(cd $(dirname $0); pwd)
+
+. ${ORIG}/functions
+
+echo "Preparing package sources for $dist"
+
+if [ $dist == "wheezy" ]; then
+    cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
+deb [trusted=1] http://archive.gplhost.com/debian grizzly main
+deb [trusted=1] http://archive.gplhost.com/debian/ grizzly-backports main
+EOF
+
+elif [ $dist == "precise" ]; then
+    cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
+deb [trusted=1 arch=amd64] http://archive.gplhost.com/debian precise-grizzly-backports main
+EOF
+    cat > ${dir}/etc/apt/sources.list <<EOF
+deb http://archive.ubuntu.com/ubuntu precise main
+deb-src http://archive.ubuntu.com/ubuntu precise main
+deb http://archive.ubuntu.com/ubuntu precise-updates main
+deb-src http://archive.ubuntu.com/ubuntu precise-updates main
+deb http://archive.ubuntu.com/ubuntu precise universe
+deb-src http://archive.ubuntu.com/ubuntu precise universe
+deb http://archive.ubuntu.com/ubuntu precise-updates universe
+deb-src http://archive.ubuntu.com/ubuntu precise-updates universe
+deb http://security.ubuntu.com/ubuntu precise-security main
+deb-src http://security.ubuntu.com/ubuntu precise-security main
+deb http://security.ubuntu.com/ubuntu precise-security universe
+deb-src http://security.ubuntu.com/ubuntu precise-security universe
+EOF
+
+else
+ echo "OS or Release not supported"
+ exit 1
+
+fi
+
+chroot ${dir} apt-get update
+
+chroot ${dir} apt-get install -y git lsb-release bridge-utils pylint python-pip screen unzip wget psmisc git lsof openssh-server openssl vim-nox locate python-virtualenv python-unittest2 iputils-ping wget curl tcpdump euca2ools tar python-cmd2 python-netaddr gcc libxml2-dev python-dev python-eventlet python-routes python-greenlet python-sqlalchemy python-wsgiref python-pastedeploy python-xattr python-iso8601 python-setuptools python-dev python-lxml python-pastescript python-pastedeploy python-paste sqlite3 python-pysqlite2 python-sqlalchemy python-mysqldb python-webob python-greenlet python-routes libldap2-dev libsasl2-dev python-dateutil msgpack-python dnsmasq-base dnsmasq-utils kpartx parted iputils-arping python-mysqldb python-xattr python-lxml gawk iptables ebtables sqlite3 sudo libjs-jquery-tablesorter vlan curl genisoimage socat python-mox python-paste python-migrate python-gflags python-greenlet python-libxml2 python-routes python-netaddr python-numpy python-pastedeploy python-eventlet python-cheetah python-carrot python-tempita python-sqlalchemy python-suds python-lockfile python-m2crypto python-boto python-kombu python-feedparser python-iso8601 python-qpid nbd-client lvm2 open-iscsi open-iscsi-utils genisoimage sysfsutils sg3-utils tgt lvm2 qemu-utils python-numpy python-beautifulsoup python-dateutil python-paste python-pastedeploy python-anyjson python-routes python-xattr python-sqlalchemy python-webob python-kombu pylint python-eventlet python-nose python-sphinx python-mox python-kombu python-coverage python-cherrypy3 python-migrate nodejs python-netaddr
+
+USER=stack
+
+cat > ${dir}/tmp/script <<EOF
+#!/bin/sh
+
+cd /home/$USER
+rm -rf devstack
+git clone git://github.com/openstack-dev/devstack.git
+cd devstack
+echo ADMIN_PASSWORD=password > localrc
+echo MYSQL_PASSWORD=password >> localrc
+echo RABBIT_PASSWORD=password >> localrc
+echo SERVICE_PASSWORD=password >> localrc
+echo SERVICE_TOKEN=tokentoken >> localrc
+EOF
+chmod a+x ${dir}/tmp/script
+chroot ${dir} useradd -G sudo -s /bin/bash $USER
+mkdir -p ${dir}/home/$USER
+chroot ${dir} chown $USER:$USER /home/$USER
+chroot ${dir} su - $USER -c "/tmp/script"

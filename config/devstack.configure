@@ -1,0 +1,21 @@
+
+# -*- python -*-
+
+disk1 = '/dev/' + var['disk']
+
+for disk, path in ((disk1, '/chroot'), ):
+    run('parted -s %s mklabel msdos' % disk)
+    run('parted -s %s mkpart primary ext2 0%% 100%%' % disk)
+    run('mkfs.ext4 %s1' % disk)
+    run('mkdir -p %s; mount %s1 %s' % (path, disk, path))
+
+open('/interfaces', 'w').write('''
+auto lo
+iface lo inet loopback
+
+auto %(eth)s
+allow-hotplug %(eth)s
+iface %(eth)s inet dhcp
+''' % var)
+
+set_role('devstack', 'U12.04-F.1.0.0', disk1)

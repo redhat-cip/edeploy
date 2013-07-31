@@ -133,7 +133,7 @@ def detect_system(l, output=None):
                     l.append(('network', name.text, 'link', link.attrib['value']))
 		driver = e.find("configuration/setting[@id='driver']")
                 if driver is not None:
-                    l.append(('network', name.text, 'driver', link.attrib['driver']))
+                    l.append(('network', name.text, 'driver', driver.attrib['value']))
 
     else:
         sys.stderr.write("Unable to run lshw: %s\n" % output)

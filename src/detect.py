@@ -116,6 +116,12 @@ def detect_system(l, output=None):
                 serial = e.find('serial')
                 if serial is not None:
                     l.append(('network', name.text, 'serial', serial.text))
+		vendor = e.find('vendor')
+                if vendor is not None:
+                    l.append(('network', name.text, 'vendor', vendor.text))
+		product = e.find('product')
+		if product is not None:
+                    l.append(('network', name.text, 'product', product.text))
                 size = e.find('size')
                 if size is not None:
                     l.append(('network', name.text, 'size', size.text))
@@ -125,6 +131,10 @@ def detect_system(l, output=None):
                 link = e.find("configuration/setting[@id='link']")
                 if link is not None:
                     l.append(('network', name.text, 'link', link.attrib['value']))
+		driver = e.find("configuration/setting[@id='driver']")
+                if driver is not None:
+                    l.append(('network', name.text, 'driver', link.attrib['driver']))
+
     else:
         sys.stderr.write("Unable to run lshw: %s\n" % output)
 

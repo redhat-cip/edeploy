@@ -313,7 +313,7 @@ while true; do
 
 	while [ -n "$PIDS" ]; do
 	    NEW_PIDS=
-	    for p in $PIDS; do
+	    for p in $(echo $PIDS); do
 		if [ -d /proc/$p ]; then
 		    NEW_PIDS="$NEW_PIDS $p"
 		fi

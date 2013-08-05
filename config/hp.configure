@@ -71,21 +71,47 @@ open('/interfaces', 'w').write('''
 auto lo
 iface lo inet loopback
 
-auto %(eth)s
-allow-hotplug %(eth)s
-iface %(eth)s inet static
-     address %(ip)s
-     netmask %(netmask)s
-     gateway %(gateway)s
-     hwaddress %(mac)s
+auto %(eth-pub1)s
+allow-bond0.pub %(eth-pub1)s
+iface %(eth-pub1)s inet manual
+    bond-master     bond0.pub
+    hwaddress %(mac-pub1)s
 
-auto %(eth-io)s
-allow-hotplug %(eth-io)s
-iface %(eth-io)s inet static
-     address %(ip-io)s
-     netmask %(netmask-io)s
-     gateway %(gateway-io)s
-     hwaddress %(mac-io)s
+auto %(eth-pub2)s
+allow-bond0.pub %(eth-pub2)s
+iface %(eth-pub2)s inet manual
+    bond-master     bond0.pub
+    hwaddress %(mac-pub2)s
+
+auto bond0.pub
+iface bond0.pub inet static
+    address %(ip)s
+    netmask %(netmask)s
+    gateway %(gateway)s
+    bond-slaves     none
+    bond-mode       active-backup
+    bond-miimon     100
+
+auto %(eth-io1)s
+allow-bond0.rep %(eth-io1)s
+iface %(eth-io1)s inet manual
+    bond-master     bond0.rep
+    hwaddress %(mac-io1)s
+
+auto %(eth-io2)s
+allow-bond0.rep %(eth-io2)s
+iface %(eth-io2)s inet manual
+    bond-master     bond0.rep
+    hwaddress %(mac-io2)s
+
+auto bond0.rep
+iface bond0.rep inet static
+    address %(ip-io)s
+    netmask %(netmask-io)s
+    gateway %(gateway-io)s
+    bond-slaves     none
+    bond-mode       active-backup
+    bond-miimon     100
 ''' % var)
 
 open('/hostname','w').write('''

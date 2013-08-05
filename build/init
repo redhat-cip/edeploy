@@ -428,6 +428,14 @@ elif /configure; then
 	    cat /modules >> $d/etc/modules
 	fi
 
+    if [ -r /ttyS1.conf ]; then
+        cp -f /ttyS1.conf $d/etc/init/ttyS1.conf
+    fi
+
+    if [ -r /grub ]; then
+        cp -f /grub $d/etc/default/grub
+    fi
+
 	mount -obind /dev $d/dev
 	mount -obind /proc $d/proc
 	mount -obind /sys $d/sys
@@ -449,6 +457,7 @@ elif /configure; then
 	echo  "################################################################################################"
 	sleep 3
 	if chroot $d /bin/bash -c "/usr/sbin/grub-install ${DISK}"; then
+        chroot $d /bin/bash -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"
 	    umount $d/sys
 	    umount $d/dev
 	    umount $d/proc

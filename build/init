@@ -393,7 +393,7 @@ RET_CODE=$?
 if [ "$RET_CODE" != "0" ]; then
 	give_up "Curl exited as failed ($RET_CODE). Cannot get a configuration from http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py'"
 fi
-chmod +x configure 2> /dev/null
+chmod +x /configure
 
 d=/chroot
 

@@ -475,7 +475,7 @@ elif /configure; then
 		reboot -f
 	    fi
 	else
-	    log failed
+	    log "Install of grub failed"
 	fi
     else
 	log "No role or version defined..."

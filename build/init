@@ -27,17 +27,17 @@ tail -f /log > /dev/console &
 tpid=$!
 
 show_network_cards() {
-	# Let's search all devices that have "network" in their class or name
-	lspci | grep -wi Network
+    # Let's search all devices that have "network" in their class or name
+    lspci | grep -wi Network
 
-	# Let's search all devices that are part of class 02 aka Network
-	for device in $(lspci -n | awk '{print $2}' | grep "^02"); do lspci -n | grep -w $device; done
+    # Let's search all devices that are part of class 02 aka Network
+    for device in $(lspci -n | awk '{print $2}' | grep "^02"); do lspci -n | grep -w $device; done
 }
 
 show_kernel_modules() {
-	KMODS=$(LANG=C LC_ALL=C lspci -vv | grep "Kernel driver" | cut -d ":" -f 2 | sort -u | tr '\n' ',')
-	KVER=$(uname -rm)
-	log "Required kernel modules for $KVER are :$KMODS"
+    KMODS=$(LANG=C LC_ALL=C lspci -vv | grep "Kernel driver" | cut -d ":" -f 2 | sort -u | tr '\n' ',')
+    KVER=$(uname -rm)
+    log "Required kernel modules for $KVER are :$KMODS"
 }
 
 save_log() {
@@ -67,6 +67,9 @@ log_n() {
 
 ################################################################################
 # extracted from /var/lib/dpkg/info/openssh-server.postinst
+#
+# Do not fix indentation to be able to compare with the original file
+# easily.
 ################################################################################
 get_config_option() {
 	option="$1"
@@ -167,10 +170,10 @@ grep -q '\<quiet\>' /proc/cmdline || log "Loading, please wait..."
 # Note that this only becomes /dev on the real filesystem if udev's scripts
 # are used; which they will be, but it's worth pointing out
 if ! mount -t devtmpfs -o mode=0755 udev /dev; then
-	log "W: devtmpfs not available, falling back to tmpfs for /dev"
-	mount -t tmpfs -o mode=0755 udev /dev
-	[ -e /dev/console ] || mknod -m 0600 /dev/console c 5 1
-	[ -e /dev/null ] || mknod /dev/null c 1 3
+    log "W: devtmpfs not available, falling back to tmpfs for /dev"
+    mount -t tmpfs -o mode=0755 udev /dev
+    [ -e /dev/console ] || mknod -m 0600 /dev/console c 5 1
+    [ -e /dev/null ] || mknod /dev/null c 1 3
 fi
 mkdir /dev/pts
 mount -t devpts -o noexec,nosuid,gid=5,mode=0620 devpts /dev/pts || true
@@ -225,8 +228,8 @@ done
 # Let's probe them before starting the network stuff
 step "Probing Additional modules"
 for module in mlx4_en; do
-	log_n "Loading additional module $module "
-	modprobe $module && ( log "done"; echo $module >> /modules) || log "error"
+    log_n "Loading additional module $module "
+    modprobe $module && ( log "done"; echo $module >> /modules) || log "error"
 done
 
 step "Starting networking"
@@ -248,111 +251,111 @@ export IFS
 MAX_RUN=3
 RUN=0
 while true; do
-	log "Enabling Ethernet Links"
-	DEVICE_LIST=
-	pushd /sys/class/net >/dev/null
-		for device in *; do
-			if [ "$device" = "lo" ]; then
-				continue
-			fi
-			ip link set dev $device up
-			DEVICE_LIST="$DEVICE_LIST $device"
-		done
-	popd > /dev/null
+    log "Enabling Ethernet Links"
+    DEVICE_LIST=
+    pushd /sys/class/net >/dev/null
+    for device in *; do
+	if [ "$device" = "lo" ]; then
+	    continue
+	fi
+	ip link set dev $device up
+	DEVICE_LIST="$DEVICE_LIST $device"
+    done
+    popd > /dev/null
 
 	# Only consider interface that have a Link ok
-	log "Waiting a few seconds to catch network link"
-	sleep 5
+    log "Waiting a few seconds to catch network link"
+    sleep 5
 
-	log "List of available network devices is :$DEVICE_LIST"
+    log "List of available network devices is :$DEVICE_LIST"
 
 
 	# If we have only match "lo" it means no physical interface got detected !
-	if [ -z "$DEVICE_LIST" ]; then
-        	show_kernel_modules
-		show_network_cards
-		give_up "No Network interface found !"
-	fi
+    if [ -z "$DEVICE_LIST" ]; then
+        show_kernel_modules
+	show_network_cards
+	give_up "No Network interface found !"
+    fi
 
-	VALID_IFACES_COUNT=0
-	PIDS=
-	pushd /sys/class/net >/dev/null
-                for iface in *; do
-                        if [ "$iface" = "lo" ]; then
-                                continue
-                        fi
-			# Let's check if the network interface reports some carrier
-			# If so, let's try to get a DHCP answer from here
-			if [ "$(cat /sys/class/net/$iface/carrier)" = "1" ]; then
-				log "Adding Interface $iface : carrier detected"
-				CARRIER_DEVICE_LIST="$CARRIER_DEVICE_LIST $iface"
-				VALID_IFACES_COUNT=$(($VALID_IFACES_COUNT + 1))
-				# Let's run all the dhclients in parallel
-				( log "Waiting for $iface to come up."
-			   	   dhclient $iface
-				   count=$DHCP_GRACE_TIME
-			   	   while [ $count -gt 0 ] && ! ifconfig $iface|grep -q 'inet addr'; do
-			   	       sleep 1
-				       count=$(($count - 1))
-			   	   done
-			   	   ifconfig $iface|grep -q 'inet addr' && log "$iface configuration done" || log "$iface configuration failed"
-			         ) &
-				PIDS="$PIDS $!"
-				sleep $DHCP_NO_RACETIMING # Don't race dhcp clients too much
-			else
-				log "Rejecting Interface $iface : carrier not detected"
-			fi
+    VALID_IFACES_COUNT=0
+    PIDS=
+    pushd /sys/class/net >/dev/null
+    for iface in *; do
+        if [ "$iface" = "lo" ]; then
+            continue
+        fi
+        # Let's check if the network interface reports some carrier
+	# If so, let's try to get a DHCP answer from here
+	if [ "$(cat /sys/class/net/$iface/carrier)" = "1" ]; then
+	    log "Adding Interface $iface : carrier detected"
+	    CARRIER_DEVICE_LIST="$CARRIER_DEVICE_LIST $iface"
+	    VALID_IFACES_COUNT=$(($VALID_IFACES_COUNT + 1))
+            # Let's run all the dhclients in parallel
+	    ( log "Waiting for $iface to come up."
+		dhclient $iface
+		count=$DHCP_GRACE_TIME
+		while [ $count -gt 0 ] && ! ifconfig $iface|grep -q 'inet addr'; do
+		    sleep 1
+		    count=$(($count - 1))
 		done
-	popd >/dev/null
+		ifconfig $iface|grep -q 'inet addr' && log "$iface configuration done" || log "$iface configuration failed"
+	    ) &
+	    PIDS="$PIDS $!"
+	    sleep $DHCP_NO_RACETIMING # Don't race dhcp clients too much
+	else
+	    log "Rejecting Interface $iface : carrier not detected"
+	fi
+    done
+    popd >/dev/null
 
-	log "Valid interfaces with Carrier were $CARRIER_DEVICE_LIST"
+    log "Valid interfaces with Carrier were $CARRIER_DEVICE_LIST"
 
-	# We now have to let enough time to let all the racing dhcpclient finishing
-	DHCP_WAITING_TIME=$((DHCP_TIMEOUT + $DHCP_GRACE_TIME + $VALID_IFACES_COUNT*$DHCP_NO_RACETIMING + 3))
-	log "Waiting for $VALID_IFACES_COUNT DHCP anwsers to come up in $DHCP_WAITING_TIME sec"
+    # We now have to let enough time to let all the racing dhcpclient finishing
+    DHCP_WAITING_TIME=$((DHCP_TIMEOUT + $DHCP_GRACE_TIME + $VALID_IFACES_COUNT*$DHCP_NO_RACETIMING + 3))
+    log "Waiting for $VALID_IFACES_COUNT DHCP anwsers to come up in $DHCP_WAITING_TIME sec"
 
-	while [ -n "$PIDS" ]; do
-	    NEW_PIDS=
-	    for p in $(echo $PIDS); do
-		if [ -d /proc/$p ]; then
-		    NEW_PIDS="$NEW_PIDS $p"
-		fi
-	    done
-	    DHCP_WAITING_TIME=$(($DHCP_WAITING_TIME - 1))
-	    if [ -n "$NEW_PIDS" -a $DHCP_WAITING_TIME -gt 0 ]; then
-		PIDS="$NEW_PIDS"
-		sleep 1
-	    else
-		PIDS=
+    while [ -n "$PIDS" ]; do
+	NEW_PIDS=
+	for p in $(echo $PIDS); do
+	    if [ -d /proc/$p ]; then
+		NEW_PIDS="$NEW_PIDS $p"
 	    fi
 	done
-
-	IP_SET=$(ip a  | grep -iw "inet" | grep -v "127.0.0.1" | wc -l)
-	if [ "$IP_SET" -gt 0 ]; then
-	    log "Found $IP_SET interfaces properly configured"
-	    # We found at least once DHCP server so we can continue
-	    # the install procedure
-	    break
-	fi
-
-	RUN=$(( $RUN + 1 ))
-	sleep 10
-	if [ "$RUN" != "$MAX_RUN" ]; then
-	    log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	    log "!! NO DHCP FOUND ! Waiting 10 seconds before trying again. !!"
-	    log "!! ($RUN / $MAX_RUN)                                       !!"
-	    log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	DHCP_WAITING_TIME=$(($DHCP_WAITING_TIME - 1))
+	if [ -n "$NEW_PIDS" -a $DHCP_WAITING_TIME -gt 0 ]; then
+	    PIDS="$NEW_PIDS"
+	    sleep 1
 	else
-	    log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	    log "!! NO DHCP FOUND after $RUN tries. Rebooting in 10 seconds !!"
-	    log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	    if [ "$DEBUG" != 1 ]; then
-		reboot -f
-	    else
-        	show_kernel_modules
-		give_up "!! DEBUG mode is set, let's give up as no DHCP server found"
-	    fi
+	    PIDS=
 	fi
+    done
+
+    IP_SET=$(ip a  | grep -iw "inet" | grep -v "127.0.0.1" | wc -l)
+    if [ "$IP_SET" -gt 0 ]; then
+	log "Found $IP_SET interfaces properly configured"
+	# We found at least once DHCP server so we can continue
+	# the install procedure
+	break
+    fi
+
+    RUN=$(( $RUN + 1 ))
+    sleep 10
+    if [ "$RUN" != "$MAX_RUN" ]; then
+	log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	log "!! NO DHCP FOUND ! Waiting 10 seconds before trying again. !!"
+	log "!! ($RUN / $MAX_RUN)                                       !!"
+	log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    else
+	log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	log "!! NO DHCP FOUND after $RUN tries. Rebooting in 10 seconds !!"
+	log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	if [ "$DEBUG" != 1 ]; then
+	    reboot -f
+	else
+            show_kernel_modules
+	    give_up "!! DEBUG mode is set, let's give up as no DHCP server found"
+	fi
+    fi
 done
 IFS=
 

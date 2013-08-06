@@ -246,8 +246,6 @@ DHCP_GRACE_TIME=10
 DHCP_NO_RACETIMING=1
 sed -i "s/^\#timeout.*/timeout $DHCP_TIMEOUT/g" /etc/dhcp/dhclient.conf
 
-IFS=:
-export IFS
 MAX_RUN=3
 RUN=0
 while true; do
@@ -263,14 +261,13 @@ while true; do
     done
     popd > /dev/null
 
-	# Only consider interface that have a Link ok
+    # Only consider interface that have a Link ok
     log "Waiting a few seconds to catch network link"
     sleep 5
 
     log "List of available network devices is :$DEVICE_LIST"
 
-
-	# If we have only match "lo" it means no physical interface got detected !
+    # If we have only match "lo" it means no physical interface got detected !
     if [ -z "$DEVICE_LIST" ]; then
         show_kernel_modules
 	show_network_cards
@@ -357,7 +354,6 @@ while true; do
 	fi
     fi
 done
-IFS=
 
 ip a
 

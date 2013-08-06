@@ -439,7 +439,6 @@ elif /configure; then
 	mount -obind /dev $d/dev
 	mount -obind /proc $d/proc
 	mount -obind /sys $d/sys
-	chroot $d /bin/bash -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"
 
 	if [ -d $d/var/log ]; then
 	    cp /log $d/var/log/install.log
@@ -457,7 +456,7 @@ elif /configure; then
 	echo  "################################################################################################"
 	sleep 3
 	if chroot $d /bin/bash -c "/usr/sbin/grub-install ${DISK}"; then
-        chroot $d /bin/bash -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"
+            chroot $d /bin/bash -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"
 	    umount $d/sys
 	    umount $d/dev
 	    umount $d/proc

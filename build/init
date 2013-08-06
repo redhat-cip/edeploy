@@ -427,13 +427,13 @@ elif /configure; then
 	    cat /modules >> $d/etc/modules
 	fi
 
-    if [ -r /ttyS1.conf ]; then
-        cp -f /ttyS1.conf $d/etc/init/ttyS1.conf
-    fi
+	if [ -r /ttyS1.conf ]; then
+	   cp -f /ttyS1.conf $d/etc/init/ttyS1.conf
+	fi
 
-    if [ -r /grub ]; then
-        cp -f /grub $d/etc/default/grub
-    fi
+	if [ -r /grub ]; then
+	   cp -f /grub $d/etc/default/grub
+	fi
 
 	mount -obind /dev $d/dev
 	mount -obind /proc $d/proc

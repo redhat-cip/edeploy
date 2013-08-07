@@ -15,6 +15,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import commands
 import unittest
 
 import detect
@@ -23,8 +24,14 @@ class TestDetect(unittest.TestCase):
 
     def test_detect_system(self):
         l = []
+        # replace the call to nproc by a fake result
+        save = commands.getstatusoutput
+        def fake(x):
+            return (0, "7")
+        commands.getstatusoutput = fake
         detect.detect_system(l, XML)
-        return self.assertEqual(
+        commands.getstatusoutput = save
+        self.assertEqual(
             l,
             [('system', 'product', 'serial', 'C02JR02WF57J'),
              ('system', 'product', 'name', 'MacBookAir5,2 (System SKU#)'),
@@ -44,7 +51,7 @@ class TestDetect(unittest.TestCase):
              ('network', 'wlan0', 'ipv4', '192.168.12.13'),
              ('network', 'wlan0', 'link', 'yes'),
              ('network', 'wlan0', 'driver', 'brcmsmac'),
-             ('system', 'cpu', 'number', '4')]
+             ('system', 'cpu', 'number', '7')]
             )
 
 XML = '''<?xml version="1.0" standalone="yes" ?>

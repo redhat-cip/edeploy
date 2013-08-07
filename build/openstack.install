@@ -28,8 +28,7 @@ ORIG=$(cd $(dirname $0); pwd)
 
 if grep -q debian.org ${dir}/etc/apt/sources.list; then
     cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
-deb http://33.apt-proxy.gplhost.com/debian grizzly main
-deb http://33.apt-proxy.gplhost.com/debian grizzly-backports main
+deb [trusted=1] http://cloud.pkgs.enovance.com/wheezy-grizzly/ grizzly main 
 EOF
 
     # for cloud-init

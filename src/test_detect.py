@@ -34,13 +34,16 @@ class TestDetect(unittest.TestCase):
              ('network', 'vnet0', 'serial', 'fe:54:00:c1:1a:f7'),
              ('network', 'vnet0', 'size', '10000000'),
              ('network', 'vnet0', 'link', 'yes'),
+             ('network', 'vnet0', 'driver', 'tun'),
              ('network', 'tap0', 'serial', 'e2:66:69:22:be:fb'),
              ('network', 'tap0', 'size', '10000000'),
              ('network', 'tap0', 'ipv4', '10.152.18.103'),
              ('network', 'tap0', 'link', 'yes'),
+             ('network', 'tap0', 'driver', 'tun'),
              ('network', 'wlan0', 'serial', '00:88:65:35:2b:50'),
              ('network', 'wlan0', 'ipv4', '192.168.12.13'),
              ('network', 'wlan0', 'link', 'yes'),
+             ('network', 'wlan0', 'driver', 'brcmsmac'),
              ('system', 'cpu', 'number', '4')]
             )
 

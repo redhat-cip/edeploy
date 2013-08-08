@@ -52,7 +52,6 @@ def detect_hpa(l):
                     l.append(('disk', disk[0], 'size', size_in_gb(disk[2])))
         return True
     except hpacucli.Error as e:
-        import sys
 	sys.stderr.write('Info: detect_hpa : %s\n' % e.value)
         return False
 

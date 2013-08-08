@@ -21,7 +21,6 @@ about disks, RAID arrays or controllers or to configure them.
 
 import os
 import re
-import sys
 import pexpect
 
 

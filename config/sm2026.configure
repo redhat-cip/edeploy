@@ -54,7 +54,7 @@ run('mkswap -f /dev/mapper/rootfs-swap')
 run('mount LABEL=slash /chroot')
 run('mkdir /chroot/etc /chroot/boot')
 run('mount LABEL=boot /chroot/boot')
-fstab = open('/fstab', 'a')
+fstab = open('/post_rsync/etc/fstab', 'a')
 fstab.write('''
 LABEL=swap none swap sw 0 0
 LABEL=boot /boot ext4 defaults 0 2
@@ -74,14 +74,13 @@ run('lvcreate data -n var -L 1500G')
 run('mkfs.ext4 -L var -m 0 %s' % ('/dev/mapper/data-var'))
 run('mkdir /chroot/var')
 run('mount LABEL=var /chroot/var')
-fstab = open('/fstab', 'a')
-fstab = open('/fstab', 'a')
+fstab = open('/post_rsync/etc/fstab', 'a')
 fstab.write('''
 LABEL=var /var ext4 rw,noatime 0 2
 ''' )
 
 
-open('/interfaces', 'w').write('''
+open('/post_rsync/etc/network/interfaces', 'w').write('''
 auto lo
 iface lo inet loopback
 
@@ -91,7 +90,7 @@ iface %(eth)s inet dhcp
      hwaddress %(tag)s
 ''' % var)
 
-#open('/hostname','w').write('''
+#open('/post_rsync/etc/hostname','w').write('''
 #%(hostname)
 #''' % var)
 

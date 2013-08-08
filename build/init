@@ -395,8 +395,10 @@ fi
 chmod +x /configure
 
 d=/chroot
+p=/post_rsync
 
 mkdir -p $d
+mkdir -p $p/etc/{init,network,default}
 
 if [ ! -x /configure ]; then
     log "No match on the server"
@@ -412,27 +414,12 @@ elif /configure; then
 	echo "RSERV=${RSERV}" >> $d/var/lib/edeploy/conf
 	echo "RSERV_PORT=${RSERV_PORT}" >> $d/var/lib/edeploy/conf
 	log "done"
-	if [ -r /fstab ]; then
-	    cp /fstab $d/etc/fstab
-	fi
-	if [ -r /interfaces ]; then
-	    cp /interfaces $d/etc/network/interfaces
-	fi
 
-	if [ -r /hostname ]; then
-	    cp -f /hostname $d/etc/hostname
-	fi
+	log "Installing post_rsync files"
+	rsync -avHP $p/* $d/
 
 	if [ -r /modules ]; then
 	    cat /modules >> $d/etc/modules
-	fi
-
-	if [ -r /ttyS1.conf ]; then
-	   cp -f /ttyS1.conf $d/etc/init/ttyS1.conf
-	fi
-
-	if [ -r /grub ]; then
-	   cp -f /grub $d/etc/default/grub
 	fi
 
 	mount -obind /dev $d/dev

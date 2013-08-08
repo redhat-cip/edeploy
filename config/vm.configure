@@ -10,9 +10,7 @@ for disk, path in ((disk1, '/chroot'), (disk2, '/chroot/var')):
     run('mkfs.ext4 %s1' % disk)
     run('mkdir -p %s; mount %s1 %s' % (path, disk, path))
 
-run('mkdir -p /chroot/etc')
-
-fstab = open('/fstab', 'a')
+fstab = open('/post_rsync/etc/fstab', 'a')
 fstab.write('%s1 /var ext4 defaults 0 2\n' % disk2)
 
 set_role('mysql', 'U12.04-F.1.0.0', disk1)

@@ -42,7 +42,7 @@ run('mkswap -f /dev/mapper/rootfs-swap')
 run('mount LABEL=slash /chroot')
 run('mkdir /chroot/etc /chroot/boot')
 run('mount LABEL=boot /chroot/boot')
-fstab = open('/fstab', 'a')
+fstab = open('/post_rsync/etc/fstab', 'a')
 fstab.write('''
 /dev/disk/by-id/dm-name-rootfs-swap none swap sw 0 0
 LABEL=boot /boot ext4 defaults 0 2
@@ -67,7 +67,7 @@ ipmi.setup_user(var['ipmi-channel'], 'root', 'pastouche')
 ipmi.setup_network(var['ipmi-channel'], var['ip-ipmi'],
                    var['netmask-ipmi'], var['gateway-ipmi'])
 
-open('/interfaces', 'w').write('''
+open('/post_rsync/etc/network/interfaces', 'w').write('''
 auto lo
 iface lo inet loopback
 
@@ -114,11 +114,11 @@ iface bond0.rep inet static
     bond-miimon     100
 ''' % var)
 
-open('/hostname','w').write('''
+open('/post_rsync/etc/hostname','w').write('''
 %(hostname)s
 ''' % var)
 
-open('/ttyS1.conf', 'w').write('''
+open('/post_rsync/etc/init/ttyS1.conf', 'w').write('''
 # ttyS1 - getty
 #
 # This service maintains a getty on ttyS1 from the point the system is
@@ -131,7 +131,7 @@ respawn
 exec /sbin/getty -L 115200 ttyS1 vt102
 ''')
 
-open('/grub', 'w').write('''
+open('/post_rsync/etc/default/grub', 'w').write('''
 # If you change this file, run 'update-grub' afterwards to update
 # /boot/grub/grub.cfg.
 # For full documentation of the options in this file, see:

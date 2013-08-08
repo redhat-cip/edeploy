@@ -312,6 +312,10 @@ def run(cmd):
     status, output = commands.getstatusoutput(cmd)
     print output
     if status != 0:
+        print "Command '%s' failed" % cmd
+        print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        print "!!! Configure script exited prematurely !!!"
+        print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
         sys.exit(status)
 
 def set_role(role, version, disk):

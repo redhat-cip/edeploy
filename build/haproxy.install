@@ -27,34 +27,40 @@ ORIG=$(cd $(dirname $0); pwd)
 . ${ORIG}/functions
 
 chroot ${dir} apt-get update
-chroot ${dir} apt-get install -y --force-yes git puppet-common wget lsb-release openssh-server
+chroot ${dir} apt-get install -y --force-yes wget lsb-release openssh-server python-software-properties
+chroot ${dir} apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db
 chroot ${dir} apt-get clean
 
-chroot ${dir} bash -c "cd /etc/puppet/modules; test -d stdlib || /usr/bin/git clone git://github.com/enovance/puppetlabs-stdlib.git stdlib"
-chroot ${dir} bash -c "cd /etc/puppet/modules; test -d haproxy || /usr/bin/git clone git://github.com/enovance/puppetlabs-haproxy.git haproxy"
-chroot ${dir} bash -c "cd /etc/puppet/modules; test -d concat || /usr/bin/git clone git://github.com/enovance/puppet-concat.git concat"
-test -d ${dir}/etc/puppet/modules/apt || chroot ${dir} puppet module install puppetlabs/apt --ignore-dependencies
+OS=$(chroot ${dir} lsb_release -i -s)
+RELEASE=$(chroot ${dir} lsb_release -c -s)
 
-cat > ${dir}/etc/puppet/manifests/install.manifest <<EOF
-class{'apt':
-  always_apt_update    => true,
-  purge_sources_list_d => true,
-  purge_preferences_d  => true,
-}
+if [ $OS == "Debian" ] && [ $RELEASE == "wheezy" ]; then
+   chroot ${dir} add-apt-repository 'deb http://ftp2.fr.debian.org/debian wheezy-backports main'
 
-apt::source { "wheezy-backports":
-  location          => "http://ftp2.fr.debian.org/debian/",
-  release           => "wheezy-backports",
-  include_src       => false,
-}
-
-class { 'haproxy':
-  require => Apt::Source["wheezy-backports"]
-}
-
+elif [ $OS == "Ubuntu" ] && [ $RELEASE == "precise" ]; then
+   cat > ${dir}/etc/apt/sources.list <<EOF
+deb http://archive.ubuntu.com/ubuntu precise main
+deb-src http://archive.ubuntu.com/ubuntu precise main
+deb http://archive.ubuntu.com/ubuntu precise-updates main
+deb-src http://archive.ubuntu.com/ubuntu precise-updates main
+deb http://archive.ubuntu.com/ubuntu precise universe
+deb-src http://archive.ubuntu.com/ubuntu precise universe
+deb http://archive.ubuntu.com/ubuntu precise-updates universe
+deb-src http://archive.ubuntu.com/ubuntu precise-updates universe
+deb http://security.ubuntu.com/ubuntu precise-security main
+deb-src http://security.ubuntu.com/ubuntu precise-security main
+deb http://security.ubuntu.com/ubuntu precise-security universe
+deb-src http://security.ubuntu.com/ubuntu precise-security universe
 EOF
 
-chroot ${dir} puppet apply /etc/puppet/manifests/install.manifest
+else
+ echo "OS or Release not supported"
+ exit 1
+
+fi
+
+chroot ${dir} sudo apt-get update &&  apt-get install -y haproxy
+
 
 echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
 echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

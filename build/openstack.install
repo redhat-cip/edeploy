@@ -43,14 +43,13 @@ EOF
     
 else
     cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
-deb http://ubuntu.pkgs.enovance.com/debian precise-grizzly-backports main
+deb [trusted=1] http://cloud.pkgs.enovance.com/precise-grizzly/ grizzly main 
 EOF
     cat > ${dir}/etc/apt/sources.list.d/universe.list <<EOF
 deb http://fr.archive.ubuntu.com/ubuntu/ precise universe
 EOF
 fi
 
-wget -O- -q http://33.apt-proxy.gplhost.com/debian/repository_key.asc | chroot ${dir} apt-key add -
 
 chroot ${dir} apt-get update
 chroot ${dir} apt-get dist-upgrade -y --force-yes

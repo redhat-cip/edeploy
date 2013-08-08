@@ -39,7 +39,7 @@ EOF
 
 elif [ $OS == "Ubuntu" ] && [ $RELEASE == "precise" ]; then
     cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
-deb [trusted=1 arch=amd64] http://archive.gplhost.com/debian precise-grizzly-backports main
+deb [trusted=1] http://cloud.pkgs.enovance.com/precise-grizzly/ grizzly main 
 EOF
     cat > ${dir}/etc/apt/sources.list <<EOF
 deb http://archive.ubuntu.com/ubuntu precise main

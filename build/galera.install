@@ -27,51 +27,42 @@ ORIG=$(cd $(dirname $0); pwd)
 . ${ORIG}/functions
 
 chroot ${dir} apt-get update
-chroot ${dir} apt-get install -y --force-yes git puppet-common wget lsb-release openssh-server
+chroot ${dir} apt-get install -y --force-yes wget lsb-release openssh-server python-software-properties
+chroot ${dir} apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db
 chroot ${dir} apt-get clean
 
-chroot ${dir} bash -c "cd /etc/puppet/modules; test -d stdlib || /usr/bin/git clone git://github.com/enovance/puppetlabs-stdlib.git stdlib"
-chroot ${dir} bash -c "cd /etc/puppet/modules; test -d mysql || /usr/bin/git clone git://github.com/enovance/puppetlabs-mysql.git mysql"
-chroot ${dir} bash -c "cd /etc/puppet/modules; test -d concat || /usr/bin/git clone git://github.com/enovance/puppet-concat.git concat"
-test -d ${dir}/etc/puppet/modules/apt || chroot ${dir} puppet module install puppetlabs/apt --ignore-dependencies
+OS=$(chroot ${dir} lsb_release -i -s)
+RELEASE=$(chroot ${dir} lsb_release -c -s)
 
-cat > ${dir}/etc/puppet/manifests/install.manifest <<EOF
-class{'apt':
-  always_apt_update    => true,
-  purge_sources_list_d => true,
-  purge_preferences_d  => true,
-}
+if [ $OS == "Debian" ] && [ $RELEASE == "wheezy" ]; then
+   chroot ${dir} add-apt-repository 'deb http://ftp.osuosl.org/pub/mariadb/repo/5.5/debian wheezy main'
 
-apt::source { "mariadb":
-  location          => "http://ftp.igh.cnrs.fr/pub/mariadb/repo/5.5-galera/debian/",
-  release           => "wheezy",
-  include_src       => false,
-  key_server        => "keyserver.ubuntu.com",
-  key               => "1BB943DB",
-}
+elif [ $OS == "Ubuntu" ] && [ $RELEASE == "precise" ]; then
+   chroot ${dir} add-apt-repository 'deb http://ftp.osuosl.org/pub/mariadb/repo/5.5/ubuntu precise main'
 
-apt::source { "squeeze":
-  location          => "http://ftp2.fr.debian.org/debian/",
-  release           => "squeeze",
-  include_src       => false,
-}
-
-class { 'mysql::server':
-  package_name => 'mariadb-galera-server',
-  config_hash  => {
-    bind_address  => '127.0.0.1',
-    root_password => 'password',
-  },
-  require      => Apt::Source['mariadb'],
-}
-
-package {['galera'] :
-  ensure  => latest,
-  require => Apt::Source['mariadb'],
-}
+   cat > ${dir}/etc/apt/sources.list <<EOF
+deb http://archive.ubuntu.com/ubuntu precise main
+deb-src http://archive.ubuntu.com/ubuntu precise main
+deb http://archive.ubuntu.com/ubuntu precise-updates main
+deb-src http://archive.ubuntu.com/ubuntu precise-updates main
+deb http://archive.ubuntu.com/ubuntu precise universe
+deb-src http://archive.ubuntu.com/ubuntu precise universe
+deb http://archive.ubuntu.com/ubuntu precise-updates universe
+deb-src http://archive.ubuntu.com/ubuntu precise-updates universe
+deb http://security.ubuntu.com/ubuntu precise-security main
+deb-src http://security.ubuntu.com/ubuntu precise-security main
+deb http://security.ubuntu.com/ubuntu precise-security universe
+deb-src http://security.ubuntu.com/ubuntu precise-security universe
 EOF
 
-chroot ${dir} puppet apply /etc/puppet/manifests/install.manifest
+else
+ echo "OS or Release not supported"
+ exit 1
+
+fi
+
+RELEASE=$(chroot ${dir} sudo apt-get update &&  apt-get install -y mariadb-galera-server galera mariadb-client
+
 
 echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
 echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

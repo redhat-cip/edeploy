@@ -40,7 +40,7 @@ def detect_hpa(l):
             return False
         controllers = cli.ctrl_all_show()
         if len(controllers) == 0:
-            print "Info: No hpa controller found"
+            sys.stderr.write("Info: No hpa controller found\n")
             return False
 
         for controller in controllers:

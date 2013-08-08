@@ -30,9 +30,9 @@ disk1=var['disk1']
 
 print "Creating Partitions"
 run('parted -a optimal --script /dev/%s mktable gpt' % disk1)
-run('parted -a optimal --script /dev/%s mkpart primary 0 2' % disk1)
+run('parted -a optimal --script /dev/%s mkpart primary 0%% 10' % disk1)
 run('parted --script /dev/%s set 1 bios_grub on' % disk1)
-run('parted -a optimal --script /dev/%s mkpart primary ext2 2 256 ' % disk1)
+run('parted -a optimal --script /dev/%s mkpart primary ext2 10 256 ' % disk1)
 run('parted -a optimal --script /dev/%s mkpart primary 257 100%%' % disk1)
 run('parted --script /dev/%s set 3 lvm on' % disk1)
 #run('parted --script /dev/%s align-check optimal 1' % disk1)

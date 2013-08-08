@@ -21,10 +21,10 @@ print "# -> %s" % disk
 print "Creating Partitions"
 run('dd if=/dev/zero of=%s bs=1M count=100' % disk)
 run('parted -a optimal --script %s mktable gpt' % disk)
-run('parted -a optimal --script %s mkpart primary 0 2' % disk)
+run('parted -a optimal --script %s mkpart primary 0%% 10' % disk)
 run('parted --script %s set 1 boot on' % disk)
 run('parted --script %s set 1 bios_grub on' % disk)
-run('parted -a optimal --script %s mkpart primary ext2 2 256 ' % disk)
+run('parted -a optimal --script %s mkpart primary ext2 10 256 ' % disk)
 run('parted -a optimal --script %s mkpart primary 257 100%%' % disk)
 run('parted --script %s set 3 lvm on' % disk)
 run('parted --script %s align-check optimal 1' % disk)

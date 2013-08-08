@@ -61,7 +61,7 @@ else
 
 fi
 
-RELEASE=$(chroot ${dir} sudo apt-get update &&  apt-get install -y mariadb-galera-server galera mariadb-client
+chroot ${dir} sudo apt-get update &&  apt-get install -y mariadb-galera-server galera mariadb-client
 
 
 echo -e "\nVersion ${version}\n" > ${dir}/etc/motd

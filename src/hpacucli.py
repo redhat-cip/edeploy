@@ -35,7 +35,7 @@ class Error(Exception):
         return repr(self.value)
 
 
-ALL_SHOW_REGEXP = re.compile(r'^(.*) in Slot ([0-9]+)\s*\(sn: (.*)\)', re.M)
+ALL_SHOW_REGEXP = re.compile(r'^(.*) in Slot ([0-9]+).*\(sn: (.*)\)', re.M)
 
 
 def parse_ctrl_all_show(output):

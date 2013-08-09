@@ -64,7 +64,8 @@ else
 fi
 
 chroot ${dir} curl -k 'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc' | apt-key add -
-chroot ${dir} apt-get update && apt-get install ceph -y --force-yes
+chroot ${dir} apt-get update
+chroot ${dir} apt-get install ceph -y --force-yes
 
 
 echo -e "\nVersion ${version}\n" > ${dir}/etc/motd

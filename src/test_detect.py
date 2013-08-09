@@ -22,6 +22,15 @@ import detect
 
 class TestDetect(unittest.TestCase):
 
+    def test_size_in_gb(self):
+        self.assertEqual(detect.size_in_gb('100 GB'), '100')
+
+    def test_size_in_tb(self):
+        self.assertEqual(detect.size_in_gb('100TB'), '100000')
+
+    def test_size_in_nothing(self):
+        self.assertEqual(detect.size_in_gb('100'), '100')
+
     def test_detect_system(self):
         l = []
         # replace the call to nproc by a fake result

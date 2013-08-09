@@ -18,7 +18,7 @@
 
 '''Main entry point for hardware and system detection routines in eDeploy.'''
 
-import commands
+from commands import getstatusoutput as cmd
 import pprint
 import sys
 import xml.etree.ElementTree as ET
@@ -55,8 +55,10 @@ def detect_hpa(hw_lst):
             for _, disks in cli.ctrl_pd_all_show(slot):
                 for disk in disks:
                     hw_lst.append(('disk', disk[0], 'type', disk[1]))
-                    hw_lst.append(('disk', disk[0], 'slot', str(controller[0])))
-                    hw_lst.append(('disk', disk[0], 'size', size_in_gb(disk[2])))
+                    hw_lst.append(('disk', disk[0], 'slot',
+                                   str(controller[0])))
+                    hw_lst.append(('disk', disk[0], 'size',
+                                   size_in_gb(disk[2])))
         return True
     except hpacucli.Error as expt:
         sys.stderr.write('Info: detect_hpa : %s\n' % expt.value)
@@ -73,7 +75,7 @@ def detect_disks(hw_lst):
 
 def modprobe(module):
     'Load a kernel module using modprobe.'
-    status, _ = commands.getstatusoutput('modprobe %s' % module)
+    status, _ = cmd('modprobe %s' % module)
     if status == 0:
         sys.stderr.write('Info: Probing %s failed\n' % module)
 
@@ -86,13 +88,14 @@ def detect_ipmi(hw_lst):
     if os.path.exists('/dev/ipmi0') or os.path.exists('/dev/ipmi/0') \
             or os.path.exists('/dev/ipmidev/0'):
         for channel in range(0, 16):
-            status, _ = commands.getstatusoutput('ipmitool channel info %d 2>&1 | grep -sq Volatile' % channel)
+            status, _ = cmd('ipmitool channel info %d 2>&1 | grep -sq Volatile'
+                            % channel)
             if status == 0:
                 hw_lst.append(('system', 'ipmi', 'channel', channel))
                 break
     else:
         # Are we running under an hypervisor ?
-        status, _ = commands.getstatusoutput('grep -qi hypervisor /proc/cpuinfo')
+        status, _ = cmd('grep -qi hypervisor /proc/cpuinfo')
         if status == 0:
             # Yes ! So let's create a fake ipmi device for testing purpose
             hw_lst.append(('system', 'ipmi-fake', 'channel', 0))
@@ -108,7 +111,7 @@ def detect_system(hw_lst, output=None):
     if output:
         status = 0
     else:
-        status, output = commands.getstatusoutput('lshw -xml')
+        status, output = cmd('lshw -xml')
     if status == 0:
         xml = ET.fromstring(output)
         elt = xml.findall("./node/serial")
@@ -160,15 +163,20 @@ def detect_system(hw_lst, output=None):
     else:
         sys.stderr.write("Unable to run lshw: %s\n" % output)
 
-    status, output = commands.getstatusoutput('nproc')
+    status, output = cmd('nproc')
     if status == 0:
         hw_lst.append(('system', 'cpu', 'number', output))
 
-if __name__ == "__main__":
-    l = []
 
-    detect_hpa(l)
-    detect_disks(l)
-    detect_system(l)
-    detect_ipmi(l)
-    pprint.pprint(l)
+def _main():
+    'Command line entry point.'
+    hrdw = []
+
+    detect_hpa(hrdw)
+    detect_disks(hrdw)
+    detect_system(hrdw)
+    detect_ipmi(hrdw)
+    pprint.pprint(hrdw)
+
+if __name__ == "__main__":
+    _main()

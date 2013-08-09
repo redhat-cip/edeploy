@@ -15,10 +15,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import commands
 import unittest
 
 import detect
+
 
 class TestDetect(unittest.TestCase):
 
@@ -34,12 +34,14 @@ class TestDetect(unittest.TestCase):
     def test_detect_system(self):
         l = []
         # replace the call to nproc by a fake result
-        save = commands.getstatusoutput
+        save = detect.cmd
+
         def fake(x):
             return (0, "7")
-        commands.getstatusoutput = fake
+
+        detect.cmd = fake
         detect.detect_system(l, XML)
-        commands.getstatusoutput = save
+        detect.cmd = save
         self.assertEqual(
             l,
             [('system', 'product', 'serial', 'C02JR02WF57J'),

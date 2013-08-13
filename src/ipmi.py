@@ -49,10 +49,13 @@ def setup_network(channel, ipv4, netmask, gateway, vlan_id=-1):
                       gateway,
                       vlan_id,
                       channel))
+    # NOTE (leseb): assuming you're missing an argument 
+    # and this already happened
+    # ipmitool always returns 0 and prompt the valid values...
     cmd('ipmitool lan set %s ipsrc static' % channel)
     cmd('ipmitool lan set %s ipaddr %s' % (channel, ipv4))
     cmd('ipmitool lan set %s netmask %s' % (channel, netmask))
-    cmd('ipmitool lan set %s defgw %s' % (channel, gateway))
+    cmd('ipmitool lan set %s defgw ipaddr %s' % (channel, gateway))
     cmd('ipmitool lan set %s arp respond on' % channel)
 
     if vlan_id >= 0:

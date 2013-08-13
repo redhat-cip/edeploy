@@ -108,58 +108,42 @@ def detect_ipmi(hw_lst):
 
 def detect_system(hw_lst, output=None):
     'Detect system characteristics from the output of lshw.'
+
+    def find_element(xml, xml_spec, sys_subtype,
+                     sys_type='product', sys_cls='system', attrib=None):
+        'Lookup an xml element and populate hw_lst when found.'
+        elt = xml.findall(xml_spec)
+        if len(elt) >= 1:
+            if attrib:
+                hw_lst.append((sys_cls, sys_type, sys_subtype,
+                               elt[0].attrib[attrib]))
+            else:
+                hw_lst.append((sys_cls, sys_type, sys_subtype, elt[0].text))
+    # handle output injection for testing purpose
     if output:
         status = 0
     else:
         status, output = cmd('lshw -xml')
     if status == 0:
         xml = ET.fromstring(output)
-        elt = xml.findall("./node/serial")
-        if len(elt) >= 1:
-            hw_lst.append(('system', 'product', 'serial', elt[0].text))
-        elt = xml.findall("./node/product")
-        if len(elt) >= 1:
-            hw_lst.append(('system', 'product', 'name', elt[0].text))
-        elt = xml.findall("./node/vendor")
-        if len(elt) >= 1:
-            hw_lst.append(('system', 'product', 'vendor', elt[0].text))
-        elt = xml.findall("./node/version")
-        if len(elt) >= 1:
-            hw_lst.append(('system', 'product', 'version', elt[0].text))
-        elt = xml.findall(".//node[@id='memory']/size")
-        if len(elt) >= 1:
-            hw_lst.append(('system', 'memory', 'size', elt[0].text))
+        find_element(xml, "./node/serial", 'serial')
+        find_element(xml, "./node/product", 'name')
+        find_element(xml, "./node/vendor", 'vendor')
+        find_element(xml, "./node/version", 'version')
+        find_element(xml, ".//node[@id='memory']/size", 'size', 'memory')
         for elt in xml.findall(".//node[@class='network']"):
             name = elt.find('logicalname')
             if name is not None:
-                serial = elt.find('serial')
-                if serial is not None:
-                    hw_lst.append(('network', name.text, 'serial',
-                                   serial.text))
-                vendor = elt.find('vendor')
-                if vendor is not None:
-                    hw_lst.append(('network', name.text, 'vendor',
-                                   vendor.text))
-                product = elt.find('product')
-                if product is not None:
-                    hw_lst.append(('network', name.text, 'product',
-                                   product.text))
-                size = elt.find('size')
-                if size is not None:
-                    hw_lst.append(('network', name.text, 'size', size.text))
-                ipv4 = elt.find("configuration/setting[@id='ip']")
-                if ipv4 is not None:
-                    hw_lst.append(('network', name.text, 'ipv4',
-                                   ipv4.attrib['value']))
-                link = elt.find("configuration/setting[@id='link']")
-                if link is not None:
-                    hw_lst.append(('network', name.text, 'link',
-                                   link.attrib['value']))
-                driver = elt.find("configuration/setting[@id='driver']")
-                if driver is not None:
-                    hw_lst.append(('network', name.text, 'driver',
-                                   driver.attrib['value']))
-
+                find_element(elt, 'serial', 'serial', name.text, 'network')
+                find_element(elt, 'vendor', 'vendor', name.text, 'network')
+                find_element(elt, 'product', 'product', name.text, 'network')
+                find_element(elt, 'size', 'size', name.text, 'network')
+                find_element(elt, "configuration/setting[@id='ip']", 'ipv4',
+                             name.text, 'network', 'value')
+                find_element(elt, "configuration/setting[@id='link']", 'link',
+                             name.text, 'network', 'value')
+                find_element(elt, "configuration/setting[@id='driver']",
+                             'driver', name.text, 'network', 'value')
     else:
         sys.stderr.write("Unable to run lshw: %s\n" % output)
 

@@ -26,6 +26,15 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
+if grep -q debian.org ${dir}/etc/apt/sources.list; then
+    # for cloud-init
+    cat > ${dir}/etc/apt/sources.list.d/backport.list <<EOF
+deb http://ftp.debian.org/debian wheezy-backports main
+EOF
+fi
+
+chroot ${dir} apt-get update
+
 rm -f ${dir}/etc/cloud/cloud.cfg
 
 chroot ${dir} apt-get install -y cloud-init

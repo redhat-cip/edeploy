@@ -35,6 +35,8 @@ deb [trusted=1] http://archive.gplhost.com/debian grizzly main
 deb [trusted=1] http://archive.gplhost.com/debian/ grizzly-backports main
 EOF
 
+PKGS=""
+
 elif [ $dist == "precise" ]; then
     cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
 deb [trusted=1 arch=amd64] http://archive.gplhost.com/debian precise-grizzly-backports main
@@ -54,6 +56,8 @@ deb http://security.ubuntu.com/ubuntu precise-security universe
 deb-src http://security.ubuntu.com/ubuntu precise-security universe
 EOF
 
+PKGS="open-iscsi-utils"
+
 else
  echo "OS or Release not supported"
  exit 1
@@ -62,7 +66,7 @@ fi
 
 chroot ${dir} apt-get update
 
-chroot ${dir} apt-get install -y git lsb-release bridge-utils pylint python-pip screen unzip wget psmisc git lsof openssh-server openssl vim-nox locate python-virtualenv python-unittest2 iputils-ping wget curl tcpdump euca2ools tar python-cmd2 python-netaddr gcc libxml2-dev python-dev python-eventlet python-routes python-greenlet python-sqlalchemy python-wsgiref python-pastedeploy python-xattr python-iso8601 python-setuptools python-dev python-lxml python-pastescript python-pastedeploy python-paste sqlite3 python-pysqlite2 python-sqlalchemy python-mysqldb python-webob python-greenlet python-routes libldap2-dev libsasl2-dev python-dateutil msgpack-python dnsmasq-base dnsmasq-utils kpartx parted iputils-arping python-mysqldb python-xattr python-lxml gawk iptables ebtables sqlite3 sudo libjs-jquery-tablesorter vlan curl genisoimage socat python-mox python-paste python-migrate python-gflags python-greenlet python-libxml2 python-routes python-netaddr python-numpy python-pastedeploy python-eventlet python-cheetah python-carrot python-tempita python-sqlalchemy python-suds python-lockfile python-m2crypto python-boto python-kombu python-feedparser python-iso8601 python-qpid nbd-client lvm2 open-iscsi open-iscsi-utils genisoimage sysfsutils sg3-utils tgt lvm2 qemu-utils python-numpy python-beautifulsoup python-dateutil python-paste python-pastedeploy python-anyjson python-routes python-xattr python-sqlalchemy python-webob python-kombu pylint python-eventlet python-nose python-sphinx python-mox python-kombu python-coverage python-cherrypy3 python-migrate nodejs python-netaddr
+chroot ${dir} apt-get install -y git lsb-release bridge-utils pylint python-pip screen unzip wget psmisc git lsof openssh-server openssl vim-nox locate python-virtualenv python-unittest2 iputils-ping wget curl tcpdump euca2ools tar python-cmd2 python-netaddr gcc libxml2-dev python-dev python-eventlet python-routes python-greenlet python-sqlalchemy python-wsgiref python-pastedeploy python-xattr python-iso8601 python-setuptools python-dev python-lxml python-pastescript python-pastedeploy python-paste sqlite3 python-pysqlite2 python-sqlalchemy python-mysqldb python-webob python-greenlet python-routes libldap2-dev libsasl2-dev python-dateutil msgpack-python dnsmasq-base dnsmasq-utils kpartx parted iputils-arping python-mysqldb python-xattr python-lxml gawk iptables ebtables sqlite3 sudo libjs-jquery-tablesorter vlan curl genisoimage socat python-mox python-paste python-migrate python-gflags python-greenlet python-libxml2 python-routes python-netaddr python-numpy python-pastedeploy python-eventlet python-cheetah python-carrot python-tempita python-sqlalchemy python-suds python-lockfile python-m2crypto python-boto python-kombu python-feedparser python-iso8601 python-qpid nbd-client lvm2 open-iscsi genisoimage sysfsutils sg3-utils tgt lvm2 qemu-utils python-numpy python-beautifulsoup python-dateutil python-paste python-pastedeploy python-anyjson python-routes python-xattr python-sqlalchemy python-webob python-kombu pylint python-eventlet python-nose python-sphinx python-mox python-kombu python-coverage python-cherrypy3 python-migrate nodejs python-netaddr $PKGS
 
 USER=stack
 

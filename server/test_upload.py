@@ -19,6 +19,7 @@ import unittest
 
 import upload
 
+
 class TestUpload(unittest.TestCase):
 
     def test_is_included_same(self):
@@ -47,6 +48,12 @@ class TestUpload(unittest.TestCase):
         self.assertEqual(list(upload._generate_values(model)),
                          ['host10', 'host11', 'host12'])
 
+    def test_generate_nothing(self):
+        model = 'host'
+        result = upload._generate_values(model)
+        self.assertEqual(result.next(),
+                         'host')
+
     def test_generate_range(self):
         self.assertEqual(list(upload._generate_range('10-12')),
                          ['10', '11', '12'])
@@ -60,10 +67,11 @@ class TestUpload(unittest.TestCase):
                  'ip': '192.168.1.10-12',
                  'hostname': 'host10-12'}
         self.assertEqual(
-            upload.generate(model), 
+            upload.generate(model),
             [{'gw': '192.168.1.1', 'ip': '192.168.1.10', 'hostname': 'host10'},
              {'gw': '192.168.1.1', 'ip': '192.168.1.11', 'hostname': 'host11'},
-             {'gw': '192.168.1.1', 'ip': '192.168.1.12', 'hostname': 'host12'}])
+             {'gw': '192.168.1.1', 'ip': '192.168.1.12', 'hostname': 'host12'}]
+            )
 
     def test_generate_253(self):
         result = upload.generate({'hostname': '10.0.1-2.2-254'})
@@ -81,29 +89,41 @@ class TestUpload(unittest.TestCase):
              {'hostname': 'hostc'}]
             )
 
+    def test_generate_none(self):
+        model = {'gateway': '10.66.6.1',
+                 'ip': '10.66.6.100',
+                 'netmask': '255.255.255.0',
+                 'gateway-ipmi': '10.66.6.1',
+                 'ip-ipmi': '10.66.6.110',
+                 'netmask-ipmi': '255.255.255.0',
+                 'hostname': 'hp-grid'
+                 }
+        result = upload.generate(model)
+        self.assertEqual(result, [model])
+
     def test_update_cmdb_simple(self):
-        cmdb = [{},]
+        cmdb = [{}]
         var = {'a': 1}
         result = upload.update_cmdb(cmdb, var, var, False)
         self.assertTrue(result, cmdb)
 
     def test_update_cmdb_reuse(self):
-        cmdb = [{'a': 1, 'used': 1},]
+        cmdb = [{'a': 1, 'used': 1}]
         var = {'a': 1}
         result = upload.update_cmdb(cmdb, var, var, False)
         self.assertTrue(result, cmdb)
-    
+
     def test_update_cmdb_full(self):
-        cmdb = [{'a': 2, 'used': 1},]
+        cmdb = [{'a': 2, 'used': 1}]
         var = {'a': 1}
         result = upload.update_cmdb(cmdb, var, var, False)
         self.assertFalse(result, cmdb)
-    
+
     def test_update_cmdb_full2(self):
-        cmdb = [{'a': 'ff:ff'},]
+        cmdb = [{'a': 'ff:ff'}]
         var = {'a': 'FF:FF'}
         result = upload.update_cmdb(cmdb, var, var, True)
         self.assertFalse(result, cmdb)
-    
+
 if __name__ == "__main__":
     unittest.main()

@@ -88,10 +88,21 @@ defined like 10-12:15-18 or from a list of entries.'''
                 for _ in xrange(16387064):
                     yield pattern
 
+STRING_TYPE = type('')
+
 
 def generate(model):
     '''Generate a list of dict according to a model. Ipv4 ranges are
 handled by _generate_ip.'''
+    # Safe guard for models without ranges
+    for value in model.values():
+        if type(value) != STRING_TYPE:
+            break
+        elif _RANGE_REGEXP.search(value):
+            break
+    else:
+        return [model]
+    # The model has a range starting from here
     result = []
     copy = {}
     copy.update(model)

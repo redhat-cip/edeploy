@@ -68,7 +68,7 @@ function upgrade() {
 }
 
 function list() {
-    rsync rsync://${RSERV}:${RSERV_PORT}/metadata/${VERS}/${ROLE}/ 2> /dev/null
+    rsync rsync://${RSERV}:${RSERV_PORT}/metadata/${VERS}/${ROLE}/ 2> /dev/null | sed -e 's/.* //' | grep -v '^\.$' | grep -v '^\.$'
 }
 
 function verify() {

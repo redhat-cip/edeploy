@@ -1,28 +1,31 @@
-DESTDIR=
 PROG_NAME=edeploy
-SERVER_DIR=server
-CONFIG_DIR=config
-BUILD_DIR=build
 
-WWW_DIR=$(DESTDIR)/usr/lib/cgi-bin/
-WWW_CONFIG_DIR=$(WWW_DIR)/config
-ETC_DIR=$(DESTDIR)/etc/
+WWW_DIR=$(DESTDIR)/usr/lib/cgi-bin
+WWW_CONF_DIR=/var/lib/edeploy
+WWW_CONFIG_DIR=$(DESTDIR)$(WWW_CONF_DIR)
+WWW_USER=www-data
+ETC_DIR=$(DESTDIR)/etc
 SHARE_BUILD_DIR=$(DESTDIR)/usr/share/$(PROG_NAME)/$(BUILD_DIR)
+ANSIBLE_DIR=$(DESTDIR)/usr/share/ansible
 
 install-www:
 	mkdir -p $(WWW_DIR) && 	chmod 755 $(WWW_DIR)
 	mkdir -p $(WWW_CONFIG_DIR) && chmod 755 $(WWW_CONFIG_DIR)
 	mkdir -p $(ETC_DIR) && chmod 755 $(ETC_DIR)
-	install -m 644 $(SERVER_DIR)/edeploy.conf $(ETC_DIR)/
-	install -m 755 $(SERVER_DIR)/upload.py $(SERVER_DIR)/matcher.py $(WWW_DIR)/
-	install -m 644 $(CONFIG_DIR)/*specs $(WWW_CONFIG_DIR)/
-	install -m 644 $(CONFIG_DIR)/*configure $(WWW_CONFIG_DIR)/
-	install -m 644 $(CONFIG_DIR)/*state $(WWW_CONFIG_DIR)/
-	cd $(CONFIG_DIR); for file in *cmdb; do echo $$file; if [ ! -e $(WWW_CONFIG_DIR)/$$file ]; then install -m 644 $$file $(WWW_CONFIG_DIR)/ ; fi ; done
-	chmod a+rw $(WWW_CONFIG_DIR)/*cmdb
-	chmod a+rw $(WWW_CONFIG_DIR)/state
-	sed -i -e "s|^CONFIGDIR=.*|CONFIGDIR=$(WWW_CONFIG_DIR)|" $(ETC_DIR)/edeploy.conf
+	mkdir -p $(ANSIBLE_DIR) && chmod 755 $(ANSIBLE_DIR)
+	install -m 644 server/edeploy.conf $(ETC_DIR)/
+	install -m 755 server/upload.py server/matcher.py $(WWW_DIR)/
+	install -m 644 config/*.specs $(WWW_CONFIG_DIR)/
+	install -m 644 config/*.configure $(WWW_CONFIG_DIR)/
+	install -m 644 config/state $(WWW_CONFIG_DIR)/
+	install -m 755 ansible/edeploy $(ANSIBLE_DIR)/
+	cd config; for file in *.cmdb; do echo $$file; if [ ! -e $(WWW_CONFIG_DIR)/$$file ]; then install -m 644 $$file $(WWW_CONFIG_DIR)/ ; fi ; done
+	chown $(WWW_USER):$(WWW_USER) $(WWW_CONFIG_DIR)/*.cmdb $(WWW_CONFIG_DIR)/state
+	sed -i -e "s|^CONFIGDIR=.*|CONFIGDIR=$(WWW_CONF_DIR)|" $(ETC_DIR)/edeploy.conf
 
 install-build:
 	mkdir -p $(SHARE_BUILD_DIR) && chmod 755 $(SHARE_BUILD_DIR)
-	cp -a $(BUILD_DIR)/* $(SHARE_BUILD_DIR)/
+	cp -a build/* $(SHARE_BUILD_DIR)/
+
+test:
+	nosetests src server

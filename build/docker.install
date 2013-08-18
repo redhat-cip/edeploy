@@ -27,6 +27,11 @@ ORIG=$(cd $(dirname $0); pwd)
 # Add the PPA sources to your apt sources list.
 . ${ORIG}/functions
 
+if grep -q debian.org ${dir}/etc/apt/sources.list; then
+    echo "Docker only supported under Ubuntu"
+    exit 1
+fi
+
 chroot ${dir} cat > ${dir}/etc/apt/sources.list << EOF
 deb http://archive.ubuntu.com/ubuntu precise main
 deb http://archive.ubuntu.com/ubuntu precise-updates main

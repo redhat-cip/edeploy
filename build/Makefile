@@ -90,8 +90,8 @@ ceph $(INST)/ceph.done: ceph.install $(INST)/base.done
 	touch $(INST)/ceph.done
 
 docker $(INST)/docker.done: docker.install $(INST)/base.done
-		./docker.install $(INST)/base $(INST)/docker $(VERS)
-			touch $(INST)/docker.done
+	./docker.install $(INST)/base $(INST)/docker $(VERS)
+	touch $(INST)/docker.done
 
 test: $(INST)/$(IMG)
 	cd ../tests/tftpboot/; ln -sf $(INST)/base/boot/vmlinuz* vmlinuz; ln -sf $(INST)/initrd.pxe initrd;

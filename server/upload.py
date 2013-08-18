@@ -131,17 +131,22 @@ the lock.'''
             if xcpt.errno != errno.EEXIST:
                 raise
             if count % 30 == 0:
-                sys.stderr.write('waiting for lock %s\n' % filename)
+                log('waiting for lock %s' % filename)
             time.sleep(1)
             count += 1
     return lock_fd
 
 
 def unlock(lock_fd, filename):
-    '''Called after the lock function to release a lock.'''
+    'Called after the lock function to release a lock.'
     if lock_fd:
         os.close(lock_fd)
         os.unlink(filename)
+
+
+def log(msg):
+    'Error Logging.'
+    sys.stderr.write('eDeploy: ' + msg + '\n')
 
 
 def is_included(dict1, dict2):
@@ -167,8 +172,7 @@ def load_cmdb(cfg_dir, name):
         return eval(open(filename).read(-1))
     except IOError, xcpt:
         if xcpt.errno != errno.ENOENT:
-            sys.stderr.write("eDeploy: exception while processing CMDB %s\n" %
-                             str(xcpt))
+            log("exception while processing CMDB %s" % str(xcpt))
         return None
 
 
@@ -178,8 +182,7 @@ def save_cmdb(cfg_dir, name, cmdb):
     try:
         pprint.pprint(cmdb, stream=open(filename, 'w'))
     except IOError, xcpt:
-        sys.stderr.write("eDeploy: exception while processing CMDB %s\n" %
-                         str(xcpt))
+        log("exception while processing CMDB %s" % str(xcpt))
 
 
 def update_cmdb(cmdb, var, pref, forced_find):
@@ -212,12 +215,10 @@ var is also augmented with the cmdb entry found.'''
                     break
                 idx += 1
             else:
-                sys.stderr.write("eDeploy: No more entry in the CMDB,"
-                                 " aborting.\n")
+                log("No more entry in the CMDB, aborting.")
                 return False
         else:
-            sys.stderr.write("eDeploy: No entry matched in the CMDB,"
-                             " aborting.\n")
+            log("No entry matched in the CMDB, aborting.")
             return False
     return True
 
@@ -257,12 +258,17 @@ def main():
                                   sysvars):
             if 'sysname' not in sysvars:
                 sysvars['sysname'] = sysvars['serial'][0].replace(':', '')
+            macs = ' '.join(sysvars['serial'])
             cmd = 'pxemngr addsystem %s %s' % (sysvars['sysname'],
-                                               ' '.join(sysvars['serial']))
+                                               macs)
             status, output = commands.getstatusoutput(cmd)
-            sys.stderr.write('%s -> %d / %s' % (cmd, status, output))
+            if status != 0:
+                log('%s -> %d / %s' % (cmd, status, output))
+            else:
+                log('added %s under pxemngr for MAC addresses %s'
+                    % (sysvars['sysname'], macs))
         else:
-            sys.stderr.write('unable to detect network macs\n')
+            log('unable to detect network macs')
 
     lock_filename = config.get('SERVER', 'LOCKFILE')
     lockfd = lock(lock_filename)
@@ -288,9 +294,9 @@ def main():
                 break
         idx += 1
     else:
-        sys.stderr.write('eDeploy: Unable to match requirements\n')
-        sys.stderr.write('eDeploy: Specs: %s\n' % repr(specs))
-        sys.stderr.write('eDeploy: Lines: %s\n' % repr(hw_items))
+        log('Unable to match requirements')
+        log('Specs: %s' % repr(specs))
+        log('Lines: %s' % repr(hw_items))
         sys.exit(1)
 
     forced = (var2 != {})

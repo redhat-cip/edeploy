@@ -67,11 +67,13 @@ EOF
 
 cleanup() {
     umount ${dir}/dev
+    umount ${dir}/proc
 }
 
 trap cleanup 0
 
 mount -obind /dev ${dir}/dev
+mount -obind /proc ${dir}/proc
 
 PACKAGES="pciutils rsyslog"
 

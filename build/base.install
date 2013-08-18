@@ -77,12 +77,22 @@ PACKAGES="pciutils rsyslog"
 
 case $dist in
     precise)
-	PACKAGES="$PACKAGES linux-image iputils-ping linux-firmware"
+	PACKAGES="$PACKAGES linux-image-generic-lts-raring linux-headers-generic-lts-raring iputils-ping linux-firmware"
+	cat > ${dir}/etc/apt/sources.list << EOF
+deb http://archive.ubuntu.com/ubuntu precise main
+deb http://archive.ubuntu.com/ubuntu precise-updates main
+deb http://archive.ubuntu.com/ubuntu precise universe
+deb http://archive.ubuntu.com/ubuntu precise-updates universe
+EOF
 	;;
-    wheezy|squeeze)
+    wheezy)
 	PACKAGES="$PACKAGES linux-image-amd64 ipmitool sdparm htop acpi-support-base inetutils-ping firmware-bnx2"
 	cat > ${dir}/etc/apt/sources.list.d/nonfree.list <<EOF
 deb http://ftp.debian.org/debian/ wheezy non-free
+EOF
+        cat > ${dir}/etc/apt/sources.list.d/updates.list <<EOF
+deb http://security.debian.org/ wheezy/updates main
+deb http://ftp.debian.org/debian/ wheezy-updates main
 EOF
 	;;
     *)

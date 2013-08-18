@@ -22,6 +22,7 @@ if [ -z "$dir" -o ! -d "$src" -o -z "$version" ]; then
 fi
 
 cleanup() {
+    ret=$?
     rm -f "${dir}"/etc/default/grub.d/edeploy.cfg
     for mpoint in /dev /proc; do
 	a=10
@@ -33,9 +34,11 @@ cleanup() {
 	    fi
 	done
     done
-    cd ${dir}
-    rm -f ../../${ROLE}-${version}.edeploy
-    find . | cpio --quiet -R 0:0 -o -H newc | gzip -9v > ../../${ROLE}-${version}.edeploy
+    if [ $ret = 0 ]; then
+	cd ${dir}
+	rm -f ../../${ROLE}-${version}.edeploy
+	find . | cpio --quiet -R 0:0 -o -H newc | gzip -9v > ../../${ROLE}-${version}.edeploy
+    fi
 }
 
 set -e

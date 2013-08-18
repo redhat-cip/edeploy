@@ -33,6 +33,9 @@ cleanup() {
 	    fi
 	done
     done
+    cd ${dir}
+    rm -f ../../${ROLE}-${version}.edeploy
+    find . | cpio --quiet -R 0:0 -o -H newc | gzip -9v > ../../${ROLE}-${version}.edeploy
 }
 
 set -e

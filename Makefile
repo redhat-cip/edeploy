@@ -17,9 +17,8 @@ install-www:
 	install -m 755 server/upload.py server/matcher.py $(WWW_DIR)/
 	install -m 644 config/*.specs $(WWW_CONFIG_DIR)/
 	install -m 644 config/*.configure $(WWW_CONFIG_DIR)/
-	install -m 644 config/state $(WWW_CONFIG_DIR)/
 	install -m 755 ansible/edeploy $(ANSIBLE_DIR)/
-	cd config; for file in *.cmdb; do echo $$file; if [ ! -e $(WWW_CONFIG_DIR)/$$file ]; then install -m 644 $$file $(WWW_CONFIG_DIR)/ ; fi ; done
+	cd config; for file in *.cmdb state; do echo $$file; if [ ! -e $(WWW_CONFIG_DIR)/$$file ]; then install -m 644 $$file $(WWW_CONFIG_DIR)/ ; fi ; done
 	chown $(WWW_USER):$(WWW_USER) $(WWW_CONFIG_DIR)/*.cmdb $(WWW_CONFIG_DIR)/state
 	sed -i -e "s|^CONFIGDIR=.*|CONFIGDIR=$(WWW_CONF_DIR)|" $(ETC_DIR)/edeploy.conf
 

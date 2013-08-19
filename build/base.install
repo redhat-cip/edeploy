@@ -115,6 +115,7 @@ export DEBIAN_FRONTEND=noninteractive
 cp -f /etc/resolv.conf "$dir/etc/"
 
 chroot "$dir" apt-get update
+chroot "$dir" apt-get dist-upgrade -y
 
 chroot "$dir" apt-get install -y --force-yes openssh-server parted $PACKAGES net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase net-tools dmidecode bash curl hdparm xfsprogs acpid ifenslave
 

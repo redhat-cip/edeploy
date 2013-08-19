@@ -223,6 +223,28 @@ var is also augmented with the cmdb entry found.'''
     return True
 
 
+def save_hw(items, name, hwdir):
+    'Save hw items for inspection on the server.'
+    try:
+        filename = os.path.join(hwdir, name + '.hw')
+        pprint.pprint(items, stream=open(filename, 'w'))
+    except Exception, xcpt:
+        log("exception while saving hw file: %s" % str(xcpt))
+
+
+def register_pxemngr(sysvars):
+    'Register the system in pxemngr.'
+    macs = ' '.join(sysvars['serial'])
+    cmd = 'pxemngr addsystem %s %s' % (sysvars['sysname'],
+                                       macs)
+    status, output = commands.getstatusoutput(cmd)
+    if status != 0:
+        log('%s -> %d / %s' % (cmd, status, output))
+    else:
+        log('added %s under pxemngr for MAC addresses %s'
+            % (sysvars['sysname'], macs))
+
+
 def main():
     '''CGI entry point.'''
 
@@ -231,6 +253,7 @@ def main():
 
     cfg_dir = config.get('SERVER', 'CONFIGDIR') + '/'
 
+    # parse hw file given in argument or passed to cgi script
     if len(sys.argv) == 3 and sys.argv[1] == '-f':
         hw_file = open(sys.argv[2])
     else:
@@ -245,31 +268,18 @@ def main():
         print                                   # blank line, end of headers
 
     hw_items = eval(hw_file.read(-1))
+    sysvars = {}
+    matcher.match_spec(('system', 'product', 'serial', '$sysname'),
+                       hw_items, sysvars)
+    if matcher.match_multiple(hw_items,
+                              ('network', '$eth', 'serial', '$serial'),
+                              sysvars):
+        if 'sysname' not in sysvars:
+            sysvars['sysname'] = sysvars['serial'][0].replace(':', '')
+    else:
+        log('unable to detect network macs')
 
-    use_pxemngr = (config.get('SERVER', 'USEPXEMNGR') == 'True')
-    pxemngr_url = config.get('SERVER', 'PXEMNGRURL')
-
-    if use_pxemngr:
-        sysvars = {}
-        matcher.match_spec(('system', 'product', 'serial', '$sysname'),
-                           hw_items, sysvars)
-        if matcher.match_multiple(hw_items,
-                                  ('network', '$eth', 'serial', '$serial'),
-                                  sysvars):
-            if 'sysname' not in sysvars:
-                sysvars['sysname'] = sysvars['serial'][0].replace(':', '')
-            macs = ' '.join(sysvars['serial'])
-            cmd = 'pxemngr addsystem %s %s' % (sysvars['sysname'],
-                                               macs)
-            status, output = commands.getstatusoutput(cmd)
-            if status != 0:
-                log('%s -> %d / %s' % (cmd, status, output))
-            else:
-                log('added %s under pxemngr for MAC addresses %s'
-                    % (sysvars['sysname'], macs))
-        else:
-            log('unable to detect network macs')
-
+    # avoid concurrent accesses
     lock_filename = config.get('SERVER', 'LOCKFILE')
     lockfd = lock(lock_filename)
 
@@ -278,6 +288,14 @@ def main():
         unlock(lockfd, lock_filename)
 
     atexit.register(cleanup)
+
+    save_hw(hw_items, sysvars['sysname'], cfg_dir)
+
+    use_pxemngr = (config.get('SERVER', 'USEPXEMNGR') == 'True')
+    pxemngr_url = config.get('SERVER', 'PXEMNGRURL')
+
+    if use_pxemngr:
+        register_pxemngr(sysvars)
 
     state_filename = cfg_dir + 'state'
     names = eval(open(state_filename).read(-1))

@@ -33,7 +33,28 @@ fi
 set -x
 set -e
 
-rsync -au --delete-excluded --delete --exclude /boot/ --exclude 'vmlinuz*' --exclude 'initrd*' --exclude usr/share/man --exclude usr/share/doc --exclude usr/share/info --exclude var/lib/dpkg  --exclude var/lib/apt --exclude 'var/cache/apt/archives/*.deb' --exclude usr/share/zoneinfo --exclude usr/share/locale ${SRC}/ ${DST}
+rsync -au --delete-excluded --delete --exclude /boot/ \
+    --exclude 'vmlinuz*' \
+    --exclude 'initrd*' \
+    --exclude usr/share/man \
+    --exclude usr/share/doc \
+    --exclude usr/share/info \
+    --exclude var/lib/dpkg  \
+    --exclude var/lib/apt \
+    --exclude var/cache/debconf \
+    --exclude 'var/cache/apt/archives/*.deb' \
+    --exclude usr/share/zoneinfo \
+    --exclude usr/share/locale \
+    --exclude usr/lib/*/gconv/ \
+    --exclude 'lib/modules/*/kernel/net/netfilter' \
+    --exclude 'lib/modules/*/kernel/sound' \
+    --exclude 'lib/modules/*/kernel/drivers/sound' \
+    --exclude 'lib/modules/*/kernel/drivers/media' \
+    --exclude 'lib/modules/*/kernel/drivers/gpu/' \
+    --exclude 'lib/modules/*/kernel/drivers/net/wireless/' \
+    --exclude 'ocfs2*.ko' \
+    --exclude '*.pyc' \
+    ${SRC}/ ${DST}
 
 cp -p init ${PYDIR}/detect.py ${PYDIR}/hpacucli.py ${PYSERVERDIR}/matcher.py ${PYDIR}/diskinfo.py ${PYDIR}/ipmi.py ${DST}/
 

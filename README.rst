@@ -35,6 +35,10 @@ Configure the PXE boot like that::
  	KERNEL vmlinuz
  	INITRD initrd.pxe SERV=10.0.2.2 DEBUG=1 VERBOSE=1 RSERV_PORT=1515 HTTP_PORT=9000 HTTP_PATH=/cgi-bin/edeploy/
 
+ LABEL eDeploy-http
+ 	KERNEL vmlinuz
+ 	INITRD initrd.pxe SERV=10.0.2.2 HSERV=10.0.2.99 HSERV_PORT=8080
+
  LABEL local
  	LOCALBOOT 0
 
@@ -203,6 +207,15 @@ network interface in the CMDB::
            'ip': '192.168.122.3-5',
            'hostname': 'host3-5'})
 
+HTTP server
+++++++++++++
+If required, an HTTP server can be used to get the OS images.
+Setting up the ``HSERV`` and optionally ``HSERV_PORT``` variables to
+target the appropriate server. An ``install`` directory shall be available
+from the root directory to get .edeploy files.
+
+eDeploy will try to get the image file by using the following command ::
+ http://${HSERV}:${HSERV_PORT}//install/${ROLE}-${VERS}.edeploy
 
 Rsync server
 ++++++++++++

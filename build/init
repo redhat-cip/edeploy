@@ -360,6 +360,7 @@ ip a
 # This is the default value for both SERV & RSERV
 SERV=10.0.0.1
 HSERV=
+HSERV_PORT=80
 RSERV=
 RSERV_PORT=873
 HTTP_PORT=80
@@ -367,16 +368,12 @@ HTTP_PATH=/cgi-bin/
 
 # Unless you override one or the other via the cmdline
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^[HR]?SERV=")
-eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^RSERV_PORT=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^[HR]?SERV_PORT=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^HTTP_PORT=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^HTTP_PATH=")
 
 if [ -z "$RSERV" ]; then
     RSERV="$SERV"
-fi
-
-if [ -z "$HSERV" ]; then
-    HSERV="$RSERV"
 fi
 
 ################################################################################
@@ -425,10 +422,10 @@ elif /configure; then
     . /role
 
     if [ -n "$ROLE" -a -n "$VERS" ]; then
-	log_n "Transfering files from http://${HSERV}/install/${ROLE}-${VERS}.edeploy..."
-	curl -s -S http://${HSERV}/install/${ROLE}-${VERS}.edeploy | gzip -d | (cd $d/; cpio --quiet -id)
-	if [ $? != 0 ]; then
-	    log failed
+	if [ ! -z "$HSERV" ]; then
+	    log_n "Transfering files from http://${HSERV}/install/${ROLE}-${VERS}.edeploy..."
+	    curl -s -S http://${HSERV}:${HSERV_PORT}/install/${ROLE}-${VERS}.edeploy | gzip -d | (cd $d/; cpio --quiet -id)
+	else
 	    log_n "Copying files from rsync://${RSERV}:${RSERV_PORT}/install/${VERS}/${ROLE}..."
 	    rsync -a rsync://${RSERV}:${RSERV_PORT}/install/${VERS}/${ROLE}/ $d/
 	fi

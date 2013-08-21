@@ -98,6 +98,15 @@ start_httpd() {
 	ln -sf ../server cgi-bin &>/dev/null
 	python -m CGIHTTPServer $HTTP_PORT &
 	HTTP_PID=$!
+
+    echo "Waiting HTTP server to start"
+    RETURN_CODE="7"
+    while [ $RETURN_CODE -ne 0 ]; do
+         curl -s http://localhost:${HTTP_PORT}/cgi-bin/upload.py &>/dev/null
+         RETURN_CODE="$?"
+         sleep .1
+    done
+    echo "HTTP server started"
 }
 
 stop_httpd() {

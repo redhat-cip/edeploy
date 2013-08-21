@@ -26,7 +26,7 @@ LOAD="$3"
 SSH_PORT=2222
 PYTHON_PID=0
 RSYNC_PID=0
-LOCKFILE=edeploy.lock
+LOCKFILE=/tmp/edeploy.lock
 SYSLINUX_VER=5.10
 
 fatal_error() {

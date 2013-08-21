@@ -204,6 +204,7 @@ for pid in $PIDS; do
     echo "Waiting http instance with pid=$pid"
     START_WAIT=$(date +"%s")
     wait $pid
+    PID_RETURN_CODE="$?"
     STOP_WAIT=$(date +"%s")
     WAIT_TIME=$(($STOP_WAIT - $START_WAIT))
     echo "$WAIT_TIME" >> $SCRIPT_DIR/wait
@@ -213,7 +214,6 @@ for pid in $PIDS; do
     if [ $WAIT_TIME -lt $MIN_WAIT ]; then
         MIN_WAIT=$WAIT_TIME
     fi
-    PID_RETURN_CODE="$?"
     if [ $PID_RETURN_CODE -ne 0 ]; then
         echo "pid=$pid failed at getting a script"
         FAILED_CURL=$((FAILED_CURL + 1))

@@ -227,7 +227,7 @@ for instance in `seq 1 $CONCURENT_HTTP_REQUESTS`; do
             echo "Instance n°$instance failed with a python error : please check $SCRIPT_DIR/$SCRIPT_FILE.$instance" &&
             FAILED_PYTHON=$((FAILED_PYTHON + 1))
     else
-            echo "Instance n°$instance didn't produce data : please check $SCRIPT_DIR/$SCRIPT_FILE.*"
+            echo "Instance n°$instance didn't produce data : please check $SCRIPT_DIR/$SCRIPT_FILE.$instance*"
             FAILED_MISSING=$((FAILED_MISSING + 1))
     fi
 done

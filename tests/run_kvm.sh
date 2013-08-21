@@ -165,6 +165,7 @@ PIDS=""
 FAILED_CURL=0
 FAILED_PYTHON=0
 FAILED_MISSING=0
+FAILED_ROLE=0
 
 if [ -z "$HTTP_SERVER" ]; then
     HTTP_SERVER="localhost:${HTTP_PORT}"
@@ -235,6 +236,14 @@ for instance in `seq 1 $CONCURENT_HTTP_REQUESTS`; do
         grep -q "error in a Python program" $SCRIPT_DIR/$SCRIPT_FILE.$instance &&
             echo "Instance n°$instance failed with a python error : please check $SCRIPT_DIR/$SCRIPT_FILE.$instance" &&
             FAILED_PYTHON=$((FAILED_PYTHON + 1))
+
+        # We need to check if a role is defined. If not that's a serious problem as the file can be damaged or incomplete
+        # That's a good way to check file's integrity
+        grep -v "def set_role" $SCRIPT_DIR/$SCRIPT_FILE.$instance | grep -q "set_role"
+        if [ $? -ne 0 ]; then
+            echo "Instance n°$instance failed is not a valid script_file : please check $SCRIPT_DIR/$SCRIPT_FILE.$instance" ;
+            FAILED_ROLE=$((FAILED_ROLE + 1))
+        fi
     else
             echo "Instance n°$instance didn't produce data : please check $SCRIPT_DIR/$SCRIPT_FILE.$instance*"
             FAILED_MISSING=$((FAILED_MISSING + 1))
@@ -244,7 +253,7 @@ done
 REPORT_SPAWN_TIME=$(($SPAWN_TIME-$START_TIME))
 REPORT_WAIT_TIME=$(($WAIT_TIME-$SPAWN_TIME))
 AVERAGE_WAIT_TIME=$(echo "scale=3; $REPORT_WAIT_TIME / $CONCURENT_HTTP_REQUESTS" | bc | tr '.' ',')
-TOTAL_FAILURES=$(($FAILED_CURL + FAILED_PYTHON + $FAILED_MISSING))
+TOTAL_FAILURES=$(($FAILED_CURL + FAILED_PYTHON + $FAILED_MISSING + $FAILED_ROLE))
 STD_DEV_WAIT=$(awk '{sum+=$1; array[NR]=$1} END {for(x=1;x<=NR;x++){sumsq+=((array[x]-(sum/NR))**2);}print sqrt(sumsq/NR)}' $SCRIPT_DIR/wait | tr '.' ',')
 echo "#######################"
 echo "# Stress-http Results #"
@@ -254,6 +263,7 @@ echo "Failures counting"
 printf "  CURL              : %4d\n" $FAILED_CURL
 printf "  Python            : %4d\n" $FAILED_PYTHON
 printf "  Missing files     : %4d\n" $FAILED_MISSING
+printf "  No role defined   : %4d\n" $FAILED_ROLE
 printf "  Total             : %4d\n" $TOTAL_FAILURES
 echo "CURL timing"
 printf "  Total Spawning  : %4d  seconds\n" $REPORT_SPAWN_TIME

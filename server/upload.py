@@ -275,7 +275,7 @@ def main():
                               ('network', '$eth', 'serial', '$serial'),
                               sysvars):
         if 'sysname' not in sysvars:
-            sysvars['sysname'] = sysvars['serial'][0].replace(':', '')
+            sysvars['sysname'] = sysvars['serial'][0].replace(':', '-')
     else:
         log('unable to detect network macs')
 

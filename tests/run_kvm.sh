@@ -99,9 +99,9 @@ start_httpd() {
 	rm -f cgi-bin
 	ln -sf ../server cgi-bin &>/dev/null
     if [ "$1" = "no_log" ]; then
-	    python -m CGIHTTPServer $HTTP_PORT $LOG &>/dev/null &
+        python -m CGIHTTPServer $HTTP_PORT &>/dev/null &
     else
-	    python -m CGIHTTPServer $HTTP_PORT $LOG &
+        python -m CGIHTTPServer $HTTP_PORT &
     fi
 	HTTP_PID=$!
 

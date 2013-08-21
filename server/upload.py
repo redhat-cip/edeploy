@@ -251,16 +251,6 @@ def main():
     config = ConfigParser.ConfigParser()
     config.read('/etc/edeploy.conf')
 
-    # avoid concurrent accesses
-    lock_filename = config.get('SERVER', 'LOCKFILE')
-    lockfd = lock(lock_filename)
-
-    def cleanup():
-        'Remove lock.'
-        unlock(lockfd, lock_filename)
-
-    atexit.register(cleanup)
-
     cfg_dir = config.get('SERVER', 'CONFIGDIR') + '/'
 
     # parse hw file given in argument or passed to cgi script
@@ -288,6 +278,16 @@ def main():
             sysvars['sysname'] = sysvars['serial'][0].replace(':', '-')
     else:
         log('unable to detect network macs')
+
+    # avoid concurrent accesses
+    lock_filename = config.get('SERVER', 'LOCKFILE')
+    lockfd = lock(lock_filename)
+
+    def cleanup():
+        'Remove lock.'
+        unlock(lockfd, lock_filename)
+
+    atexit.register(cleanup)
 
     save_hw(hw_items, sysvars['sysname'], cfg_dir)
 

@@ -5,3 +5,4 @@ kvm_storage.img
 rsync-kvm.conf
 *~
 rsyncd-edeploy.pid
+stress-http/

@@ -23,6 +23,7 @@ HTTP_PORT=9000
 INST=$1
 MODE=$2
 LOAD="$3"
+HTTP_SERVER="$4"
 SSH_PORT=2222
 PYTHON_PID=0
 RSYNC_PID=0
@@ -157,12 +158,18 @@ ln -sf $PWD/edeploy.conf /etc/
 
 stress-http() {
 CONCURENT_HTTP_REQUESTS=$1
+HTTP_SERVER=$2
 SCRIPT_DIR="stress-http"
 SCRIPT_FILE="upload"
 PIDS=""
 FAILED_CURL=0
 FAILED_PYTHON=0
 FAILED_MISSING=0
+
+if [ -z "$HTTP_SERVER" ]; then
+    HTTP_SERVER="localhost:${HTTP_PORT}"
+fi
+
 rm -rf $SCRIPT_DIR
 mkdir -p $SCRIPT_DIR
 
@@ -188,10 +195,12 @@ cat > $SCRIPT_DIR/hw-match.py << EOF
 ]
 EOF
 
+echo "About to start the stress test on http://${HTTP_SERVER}/cgi-bin/upload.py"
+
 START_TIME=$(date +"%s")
 for instance in `seq 1 $CONCURENT_HTTP_REQUESTS`; do
     echo -n "Spawning http instance $instance pid="
-    curl -o$SCRIPT_DIR/$SCRIPT_FILE.$instance --retry-delay 1 --retry-max-time 10 -F file=@$SCRIPT_DIR/hw-match.py http://localhost:${HTTP_PORT}/cgi-bin/upload.py &>$SCRIPT_DIR/$SCRIPT_FILE.$instance.out &
+    curl -o$SCRIPT_DIR/$SCRIPT_FILE.$instance --retry-delay 1 --retry-max-time 10 -F file=@$SCRIPT_DIR/hw-match.py http://${HTTP_SERVER}/cgi-bin/upload.py &>$SCRIPT_DIR/$SCRIPT_FILE.$instance.out &
     PID="$!"
     echo "$PID"
     PIDS="$PIDS $PID"
@@ -262,13 +271,19 @@ case "$MODE" in
         check_binary seq
         check_binary bc
         check_binary python
-        start_httpd no_log
+        if [ -z "$HTTP_SERVER" ]; then
+            start_httpd no_log
+        fi
         create_edeploy_conf
         if [ -z "$LOAD" ]; then
             LOAD=5
         fi
-        stress-http $LOAD
-        stop_httpd
+
+        stress-http $LOAD $HTTP_SERVER
+
+        if [ -z "$HTTP_SERVER" ]; then
+            stop_httpd
+        fi
     ;;
     *)
         check_binary rsync

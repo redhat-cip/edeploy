@@ -29,6 +29,9 @@ SERV:=10.66.6.10
 PYDIR=../src
 PYSERVERDIR=../server
 
+LOAD=5
+HTTP=
+
 INST=$(TOP)/install/$(VERS)
 META=$(TOP)/metadata/$(VERS)
 
@@ -98,7 +101,7 @@ test: $(INST)/$(IMG)
 	cd ../tests; ./run_kvm.sh $(TOP)
 
 stress-http:
-	cd ../tests; ./run_kvm.sh $(TOP) stress-http $(LOAD)
+	cd ../tests; ./run_kvm.sh $(TOP) stress-http $(LOAD) $(HTTP)
 
 
 dist:

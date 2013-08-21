@@ -33,7 +33,7 @@ fatal_error() {
 }
 
 check_binary() {
-        type -p $1 || fatal_error "$1 is missing"
+        type -p $1 >/dev/null || fatal_error "$1 is missing"
 }
 
 detect_kvm() {

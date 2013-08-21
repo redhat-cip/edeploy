@@ -21,6 +21,8 @@ DISK=kvm_storage.img
 DISK_SIZE=2000 # in MB
 HTTP_PORT=9000
 INST=$1
+MODE=$2
+LOAD="$3"
 SSH_PORT=2222
 PYTHON_PID=0
 RSYNC_PID=0
@@ -96,7 +98,11 @@ EOF
 start_httpd() {
 	rm -f cgi-bin
 	ln -sf ../server cgi-bin &>/dev/null
-	python -m CGIHTTPServer $HTTP_PORT &
+    if [ "$1" = "no_log" ]; then
+	    python -m CGIHTTPServer $HTTP_PORT $LOG &>/dev/null &
+    else
+	    python -m CGIHTTPServer $HTTP_PORT $LOG &
+    fi
 	HTTP_PID=$!
 
     echo "Waiting HTTP server to start"
@@ -149,18 +155,135 @@ chmod a+rw $PWD/../config/kvm-test.cmdb
 ln -sf $PWD/edeploy.conf /etc/
 }
 
-############## MAIN
-check_binary rsync
-check_binary qemu-img
-check_binary python
+stress-http() {
+CONCURENT_HTTP_REQUESTS=$1
+SCRIPT_DIR="stress-http"
+SCRIPT_FILE="upload"
+PIDS=""
+FAILED_CURL=0
+FAILED_PYTHON=0
+FAILED_MISSING=0
+rm -rf $SCRIPT_DIR
+mkdir -p $SCRIPT_DIR
 
-setup_pxe
-start_rsyncd
-start_httpd
-create_edeploy_conf
-detect_kvm
-prepare_disk
-run_kvm
-stop_httpd
-stop_rsyncd
-run_kvm local
+cat > $SCRIPT_DIR/hw-match.py << EOF
+[('disk', 'vda', 'size', '2'),
+ ('system', 'product', 'name', 'edeploy_test_vm ()'),
+ ('system', 'product', 'vendor', 'kvm'),
+ ('system', 'memory', 'size', '536870912'),
+ ('network', 'eth2', 'serial', '52:54:12:34:00:03'),
+ ('network', 'eth2', 'ipv4', '1.2.3.15'),
+ ('network', 'eth2', 'link', 'yes'),
+ ('network', 'eth2', 'driver', 'virtio_net'),
+ ('network', 'eth1', 'serial', '52:54:12:34:00:02'),
+ ('network', 'eth1', 'ipv4', '10.0.3.15'),
+ ('network', 'eth1', 'link', 'yes'),
+ ('network', 'eth1', 'driver', 'virtio_net'),
+ ('network', 'eth0', 'serial', '52:54:12:34:00:01'),
+ ('network', 'eth0', 'ipv4', '10.0.2.15'),
+ ('network', 'eth0', 'link', 'yes'),
+ ('network', 'eth0', 'driver', 'virtio_net'),
+ ('system', 'cpu', 'number', '1'),
+ ('system', 'ipmi-fake', 'channel', 0)
+]
+EOF
+
+START_TIME=$(date +"%s")
+for instance in `seq 1 $CONCURENT_HTTP_REQUESTS`; do
+    echo -n "Spawning http instance $instance pid="
+    curl -o$SCRIPT_DIR/$SCRIPT_FILE.$instance --retry-delay 1 --retry-max-time 10 -F file=@$SCRIPT_DIR/hw-match.py http://localhost:${HTTP_PORT}/cgi-bin/upload.py &>$SCRIPT_DIR/$SCRIPT_FILE.$instance.out &
+    PID="$!"
+    echo "$PID"
+    PIDS="$PIDS $PID"
+done
+SPAWN_TIME=$(date +"%s")
+
+MIN_WAIT=99999999999
+MAX_WAIT=-1
+for pid in $PIDS; do
+    echo "Waiting http instance with pid=$pid"
+    START_WAIT=$(date +"%s")
+    wait $pid
+    STOP_WAIT=$(date +"%s")
+    WAIT_TIME=$(($STOP_WAIT - $START_WAIT))
+    echo "$WAIT_TIME" >> $SCRIPT_DIR/wait
+    if [ $WAIT_TIME -gt $MAX_WAIT ]; then
+        MAX_WAIT=$WAIT_TIME
+    fi
+    if [ $WAIT_TIME -lt $MIN_WAIT ]; then
+        MIN_WAIT=$WAIT_TIME
+    fi
+    PID_RETURN_CODE="$?"
+    if [ $PID_RETURN_CODE -ne 0 ]; then
+        echo "pid=$pid failed at getting a script"
+        FAILED_CURL=$((FAILED_CURL + 1))
+    fi
+done
+WAIT_TIME=$(date +"%s")
+
+for instance in `seq 1 $CONCURENT_HTTP_REQUESTS`; do
+    if [ -e $SCRIPT_DIR/$SCRIPT_FILE.$instance ]; then
+        grep -q "error in a Python program" $SCRIPT_DIR/$SCRIPT_FILE.$instance &&
+            echo "Instance n°$instance failed with a python error : please check $SCRIPT_DIR/$SCRIPT_FILE.$instance" &&
+            FAILED_PYTHON=$((FAILED_PYTHON + 1))
+    else
+            echo "Instance n°$instance didn't produce data : please check $SCRIPT_DIR/$SCRIPT_FILE.*"
+            FAILED_MISSING=$((FAILED_MISSING + 1))
+    fi
+done
+
+REPORT_SPAWN_TIME=$(($SPAWN_TIME-$START_TIME))
+REPORT_WAIT_TIME=$(($WAIT_TIME-$SPAWN_TIME))
+AVERAGE_WAIT_TIME=$(echo "scale=3; $REPORT_WAIT_TIME / $CONCURENT_HTTP_REQUESTS" | bc | tr '.' ',')
+TOTAL_FAILURES=$(($FAILED_CURL + FAILED_PYTHON + $FAILED_MISSING))
+STD_DEV_WAIT=$(awk '{sum+=$1; array[NR]=$1} END {for(x=1;x<=NR;x++){sumsq+=((array[x]-(sum/NR))**2);}print sqrt(sumsq/NR)}' $SCRIPT_DIR/wait | tr '.' ',')
+echo "#######################"
+echo "# Stress-http Results #"
+echo "#######################"
+printf "Number of requests  : %4d\n" $CONCURENT_HTTP_REQUESTS
+echo "Failures counting"
+printf "  CURL              : %4d\n" $FAILED_CURL
+printf "  Python            : %4d\n" $FAILED_PYTHON
+printf "  Missing files     : %4d\n" $FAILED_MISSING
+printf "  Total             : %4d\n" $TOTAL_FAILURES
+echo "CURL timing"
+printf "  Total Spawning  : %4d  seconds\n" $REPORT_SPAWN_TIME
+printf "  Total Waiting   : %4d  seconds\n" $REPORT_WAIT_TIME
+printf "  Min waiting     : %4d  seconds\n" $MIN_WAIT
+printf "  Max waiting     : %4d  seconds\n" $MAX_WAIT
+printf "  Average waiting : %7.2f seconds\n" $AVERAGE_WAIT_TIME
+printf "  Std deviation   : %7.2f seconds\n" $STD_DEV_WAIT
+}
+
+############## MAIN
+case "$MODE" in
+    "stress-http")
+        check_binary curl
+        check_binary seq
+        check_binary bc
+        check_binary python
+        start_httpd no_log
+        create_edeploy_conf
+        if [ -z "$LOAD" ]; then
+            LOAD=5
+        fi
+        stress-http $LOAD
+        stop_httpd
+    ;;
+    *)
+        check_binary rsync
+        check_binary qemu-img
+        check_binary python
+
+        setup_pxe
+        start_rsyncd
+        start_httpd
+        create_edeploy_conf
+        detect_kvm
+        prepare_disk
+        run_kvm
+        stop_httpd
+        stop_rsyncd
+        run_kvm local
+    ;;
+esac

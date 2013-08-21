@@ -97,6 +97,10 @@ test: $(INST)/$(IMG)
 	cd ../tests/tftpboot/; ln -sf $(INST)/base/boot/vmlinuz* vmlinuz; ln -sf $(INST)/initrd.pxe initrd;
 	cd ../tests; ./run_kvm.sh $(TOP)
 
+stress-http:
+	cd ../tests; ./run_kvm.sh $(TOP) stress-http $(LOAD)
+
+
 dist:
 	tar zcvf ../edeploy.tgz Makefile init README.rst *.install edeploy update-scenario.sh *.py
 

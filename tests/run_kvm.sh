@@ -210,11 +210,14 @@ SPAWN_TIME=$(date +"%s")
 
 MIN_WAIT=99999999999
 MAX_WAIT=-1
+COUNT=1
 for pid in $PIDS; do
-    echo "Waiting http instance with pid=$pid"
+    REMAINING_PIDS=$(($CONCURENT_HTTP_REQUESTS - $COUNT))
+    echo "Waiting http instance with pid=$pid : $REMAINING_PIDS remaining"
     START_WAIT=$(date +"%s")
     wait $pid
     PID_RETURN_CODE="$?"
+    COUNT=$(($COUNT + 1))
     STOP_WAIT=$(date +"%s")
     WAIT_TIME=$(($STOP_WAIT - $START_WAIT))
     echo "$WAIT_TIME" >> $SCRIPT_DIR/wait

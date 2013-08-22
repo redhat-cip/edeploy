@@ -130,9 +130,9 @@ class TestUpload(unittest.TestCase):
                  ('network', 'eth0', 'serial', 'mac')]
         clone = list(items)
         self.assertEqual(upload.generate_filename_and_macs(items),
-                         {'serial': ['mac'],
-                          'eth': ['eth0'],
+                         {
                           'sysname': 'Sysname',
+                          'sysserial': 'Sysname',
                           })
         self.assertEqual(items, clone)
 

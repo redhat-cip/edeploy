@@ -255,6 +255,8 @@ def generate_filename_and_macs(items):
     # Duplicate items as it will be modified by match_* functions
     hw_items = list(items)
     sysvars = {}
+    sysvars['sysname']=''
+
     matcher.match_spec(('system', 'product', 'name', '$sysprodname'),
                        hw_items, sysvars)
 

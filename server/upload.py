@@ -245,6 +245,24 @@ def register_pxemngr(sysvars):
             % (sysvars['sysname'], macs))
 
 
+def generate_filename_and_macs(items):
+    '''Generate a file name for a hardware using the serial numlber
+    or the mac address and lookup the mac addresses.'''
+    # Duplicate items as it will be modified by match_* functions
+    hw_items = list(items)
+    sysvars = {}
+    matcher.match_spec(('system', 'product', 'serial', '$sysname'),
+                       hw_items, sysvars)
+    if matcher.match_multiple(hw_items,
+                              ('network', '$eth', 'serial', '$serial'),
+                              sysvars):
+        if 'sysname' not in sysvars:
+            sysvars['sysname'] = sysvars['serial'][0].replace(':', '-')
+    else:
+        log('unable to detect network macs')
+    return sysvars
+
+
 def main():
     '''CGI entry point.'''
 
@@ -268,16 +286,6 @@ def main():
         print                                   # blank line, end of headers
 
     hw_items = eval(hw_file.read(-1))
-    sysvars = {}
-    matcher.match_spec(('system', 'product', 'serial', '$sysname'),
-                       hw_items, sysvars)
-    if matcher.match_multiple(hw_items,
-                              ('network', '$eth', 'serial', '$serial'),
-                              sysvars):
-        if 'sysname' not in sysvars:
-            sysvars['sysname'] = sysvars['serial'][0].replace(':', '-')
-    else:
-        log('unable to detect network macs')
 
     # avoid concurrent accesses
     lock_filename = config.get('SERVER', 'LOCKFILE')
@@ -289,13 +297,14 @@ def main():
 
     atexit.register(cleanup)
 
-    save_hw(hw_items, sysvars['sysname'], cfg_dir)
+    filename_and_macs = generate_filename_and_macs(hw_items)
+    save_hw(hw_items, filename_and_macs['sysname'], cfg_dir)
 
     use_pxemngr = (config.get('SERVER', 'USEPXEMNGR') == 'True')
     pxemngr_url = config.get('SERVER', 'PXEMNGRURL')
 
     if use_pxemngr:
-        register_pxemngr(sysvars)
+        register_pxemngr(filename_and_macs)
 
     state_filename = cfg_dir + 'state'
     names = eval(open(state_filename).read(-1))

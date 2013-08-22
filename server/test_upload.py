@@ -125,5 +125,26 @@ class TestUpload(unittest.TestCase):
         result = upload.update_cmdb(cmdb, var, var, True)
         self.assertFalse(result, cmdb)
 
+    def test_generate_filename_and_macs(self):
+        items = [('system', 'product', 'serial', 'Sysname'),
+                 ('network', 'eth0', 'serial', 'mac')]
+        clone = list(items)
+        self.assertEqual(upload.generate_filename_and_macs(items),
+                         {'serial': ['mac'],
+                          'eth': ['eth0'],
+                          'sysname': 'Sysname',
+                          })
+        self.assertEqual(items, clone)
+
+    def test_generate_filename_and_macs_no_sysname(self):
+        items = [('network', 'eth0', 'serial', 'aa:bb:cc')]
+        clone = list(items)
+        self.assertEqual(upload.generate_filename_and_macs(items),
+                         {'serial': ['aa:bb:cc'],
+                          'eth': ['eth0'],
+                          'sysname': 'aa-bb-cc',
+                          })
+        self.assertEqual(items, clone)
+
 if __name__ == "__main__":
     unittest.main()

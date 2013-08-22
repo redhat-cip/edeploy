@@ -68,6 +68,7 @@ def _network(left, right):
     else:
         return False
 
+
 def match_spec(spec, lines, arr, adder=_adder):
     'Match a line according to a spec and store variables in <var>.'
     # match a line without variable

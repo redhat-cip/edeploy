@@ -73,8 +73,11 @@ The CGI script is configured with ``/etc/edeploy.conf``::
 
  [SERVER]
 
- CONFIGDIR=/root/edeploy/config
- LOCKFILE=/tmp/edeploy.lock
+ CONFIGDIR   = /var/lib/edeploy
+ LOCKFILE    = /tmp/edeploy.lock
+ USEPXEMNGR  = True
+ PXEMNGRURL  = http://192.168.122.1:8000/
+ METADATAURL = http://192.168.122.1/
 
 ``CONFIGDIR`` points to a directory which contains specifications
 (``*.specs``), configurations (``*.configure``) and CMDB (``*.cmdb``)
@@ -86,6 +89,11 @@ http server.
 that are read and written like ``*.cmdb`` and ``state``. These files
 (``LOCKFILE``, ``*.cmdb`` and ``state``) must be readable and writable
 by the user running the http server.
+
+``USEPXEMNGR``, if present and set to ``True``, allows to require a
+local boot from pxemngr using the url configured in ``PXEMNGRURL``.
+
+``METADATAURL`` points to the server giving the metadata for cloud-init.
 
 ``state`` contains an ordered list of profiles and the number of times
 they must be installed for your deployment. Example::
@@ -236,8 +244,6 @@ now and configured to serve an install target like this in the
  [metadata]
          path = /var/lib/debootstrap/metadata
          comment = eDeploy metadata
-  uid = root
-  gid = root
 
 Image management
 ----------------

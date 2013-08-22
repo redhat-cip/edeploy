@@ -419,7 +419,7 @@ if [ ! -x /configure ]; then
 
 elif /configure; then
 
-    . /role
+    . /vars
 
     if [ -n "$ROLE" -a -n "$VERS" ]; then
 	if [ ! -z "$HSERV" ]; then
@@ -441,12 +441,17 @@ elif /configure; then
 	    cat /modules >> $d/etc/modules
 	fi
 
+	if [ -n "${METADATA_URL}" ]; then
+	    sed -i -e "s@GRUB_CMDLINE_LINUX_DEFAULT=.*@GRUB_CMDLINE_LINUX_DEFAULT=\"ds=nocloud-net\\\\;s=${METADATA_URL}\"@" $d/etc/default/grub
+	fi
+	
 	mount -obind /dev $d/dev
 	mount -obind /proc $d/proc
 	mount -obind /sys $d/sys
 
 	if [ -d $d/var/log ]; then
-	    cp /log $d/var/log/install.log
+	    cp -p /log $d/var/log/install.log
+	    cp -p /vars /hw.py $d/var/log/
 	fi
 
 	#If the disk name doesn't have any /dev/ naming let's add it

@@ -323,8 +323,15 @@ def main():
     filename_and_macs = generate_filename_and_macs(hw_items)
     save_hw(hw_items, filename_and_macs['sysname'], cfg_dir)
 
-    use_pxemngr = (config.get('SERVER', 'USEPXEMNGR') == 'True')
-    pxemngr_url = config.get('SERVER', 'PXEMNGRURL')
+    def config_get(section, name, default):
+        try:
+            return config.get(section, name)
+        except ConfigParser.NoOptionError:
+            return default
+
+    use_pxemngr = (config_get('SERVER', 'USEPXEMNGR', False) == 'True')
+    pxemngr_url = config_get('SERVER', 'PXEMNGRURL', None)
+    metadata_url = config_get('SERVER', 'METADATAURL', None)
 
     if use_pxemngr:
         register_pxemngr(filename_and_macs)
@@ -386,9 +393,10 @@ def run(cmd):
         sys.exit(status)
 
 def set_role(role, version, disk):
-    open('/role', 'w').write("ROLE=%s\\nVERS=%s\\nDISK=%s\\n" % (role,
-                                                                 version,
-                                                                 disk))
+    with open('/vars', 'w') as f:
+        f.write("ROLE=%s\\nVERS=%s\\nDISK=%s\\n" % (role,
+                                                    version,
+                                                    disk))
 
 var = ''')
 
@@ -400,6 +408,11 @@ var = ''')
         print '''
 run('curl -s %slocalboot/')
 ''' % pxemngr_url
+
+    if metadata_url:
+        print '''
+run('echo "METADATA_URL=%s" >> /vars')
+''' % metadata_url
 
     pprint.pprint(names, stream=open(state_filename, 'w'))
 

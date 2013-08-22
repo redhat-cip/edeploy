@@ -43,7 +43,7 @@ mkdir -p ${dir}/etc/cloud/cloud.cfg.d
 
 cat > ${dir}/etc/cloud/cloud.cfg.d/90_dpkg.cfg << EOF
 # to update this file, run dpkg-reconfigure cloud-init
-datasource_list: [ Ec2 ]
+datasource_list: [ NoCloud ]
 EOF
 
 cat > ${dir}/etc/cloud/cloud.cfg <<EOF

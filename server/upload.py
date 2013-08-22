@@ -246,20 +246,41 @@ def register_pxemngr(sysvars):
 
 
 def generate_filename_and_macs(items):
-    '''Generate a file name for a hardware using the serial numlber
-    or the mac address and lookup the mac addresses.'''
+    '''Generate a file name for a hardware using DMI information
+    (product name and version) then if the DMI serial number is
+    available we use it unless we lookup the first mac address.
+    As a result, we do have a filename like :
+        <dmi_product_name>-<dmi_product_version>-{dmi_serial_num|mac_address}'''
+
     # Duplicate items as it will be modified by match_* functions
     hw_items = list(items)
     sysvars = {}
-    matcher.match_spec(('system', 'product', 'serial', '$sysname'),
+    matcher.match_spec(('system', 'product', 'name', '$sysprodname'),
                        hw_items, sysvars)
-    if matcher.match_multiple(hw_items,
+
+    if 'sysprodname' in sysvars:
+        sysvars['sysname'] = re.sub(r'\W+', '', sysvars['sysprodname']) + '-'
+
+    matcher.match_spec(('system', 'product', 'vendor', '$sysprodvendor'),
+                       hw_items, sysvars)
+
+    if 'sysprodvendor' in sysvars:
+        sysvars['sysname'] = sysvars['sysname'] + re.sub(r'\W+','', sysvars['sysprodvendor']) + '-'
+
+    matcher.match_spec(('system', 'product', 'serial', '$sysserial'),
+                       hw_items, sysvars)
+
+    # If we do have a serial number, let's use it unless take the first mac address
+    if 'sysserial' in sysvars:
+        sysvars['sysname'] = sysvars['sysname'] + re.sub(r'\W+','', sysvars['sysserial'])
+    else:
+        if matcher.match_multiple(hw_items,
                               ('network', '$eth', 'serial', '$serial'),
                               sysvars):
-        if 'sysname' not in sysvars:
-            sysvars['sysname'] = sysvars['serial'][0].replace(':', '-')
-    else:
-        log('unable to detect network macs')
+            sysvars['sysname'] = sysvars['sysname'] + sysvars['serial'][0].replace(':', '-')
+        else:
+            log('unable to detect network macs')
+
     return sysvars
 
 

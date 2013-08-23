@@ -255,7 +255,7 @@ def generate_filename_and_macs(items):
     # Duplicate items as it will be modified by match_* functions
     hw_items = list(items)
     sysvars = {}
-    sysvars['sysname']=''
+    sysvars['sysname'] = ''
 
     matcher.match_spec(('system', 'product', 'name', '$sysprodname'),
                        hw_items, sysvars)
@@ -267,19 +267,19 @@ def generate_filename_and_macs(items):
                        hw_items, sysvars)
 
     if 'sysprodvendor' in sysvars:
-        sysvars['sysname'] = sysvars['sysname'] + re.sub(r'\W+','', sysvars['sysprodvendor']) + '-'
+        sysvars['sysname'] += re.sub(r'\W+', '', sysvars['sysprodvendor']) + '-'
 
     matcher.match_spec(('system', 'product', 'serial', '$sysserial'),
                        hw_items, sysvars)
 
-    # If we do have a serial number, let's use it unless take the first mac address
+    # Let's use any existing DMI serial number or take the first mac address
     if 'sysserial' in sysvars:
-        sysvars['sysname'] = sysvars['sysname'] + re.sub(r'\W+','', sysvars['sysserial'])
+        sysvars['sysname'] += re.sub(r'\W+', '', sysvars['sysserial'])
     else:
         if matcher.match_multiple(hw_items,
                               ('network', '$eth', 'serial', '$serial'),
                               sysvars):
-            sysvars['sysname'] = sysvars['sysname'] + sysvars['serial'][0].replace(':', '-')
+            sysvars['sysname'] +=  sysvars['serial'][0].replace(':', '-')
         else:
             log('unable to detect network macs')
 

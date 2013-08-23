@@ -158,8 +158,9 @@ the prompt and return the output string.'''
         try:
             self.process.expect(PROMPT_REGEXP)
             ret = self.process.before[len(line):]
-	except pexpect.TIMEOUT:
-	    ret = 'Error: timeout'
+        except pexpect.TIMEOUT:
+            ret = 'Error: timeout'
+
         parse_error(ret)
         return ret
 

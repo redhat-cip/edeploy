@@ -16,6 +16,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+. common
+
 if [ -z "$dir" -o ! -d "$src" -o -z "$version" ]; then
    echo "Usage: $0 <base directory> <target directory name> <version>" 1>&2
    exit 1
@@ -37,7 +39,8 @@ cleanup() {
     if [ $ret = 0 ]; then
 	cd ${dir}
 	rm -f ../../${ROLE}-${version}.edeploy
-	find . | cpio --quiet -R 0:0 -o -H newc | pigz -9v > ../../${ROLE}-${version}.edeploy
+
+	find . | cpio --quiet -R 0:0 -o -H newc | compress -9v > ../../${ROLE}-${version}.edeploy
     fi
 }
 

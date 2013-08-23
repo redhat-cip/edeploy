@@ -20,10 +20,12 @@ SRC="$1"
 DST="$2"
 IMG="$3"
 VERS="$4"
-COMPRESS=gzip
 
 PYDIR=$(cd $(dirname $0)/../src; pwd)
 PYSERVERDIR=$(cd $(dirname $0)/../server; pwd)
+ORIG=$(cd $(dirname $0); pwd)
+
+. ${ORIG}/common
 
 if [ ! -d "$SRC" -o -z "$DST" -o -z "$IMG" -o -z "$VERS" ]; then
    echo "Usage: $0 <source dir> <dest dir> <initrd to generate> <version>" 1>&2
@@ -63,12 +65,8 @@ sed -i "s/exec \/lib\/init\/upstart\-job ssh/echo 'No upstart check required'/g"
 
 sed -i "s/VERS=.*/VERS=${VERS}/" ${DST}/init
 
-if [ ! -z $(which pigz 2>/dev/null) ]; then
-    COMPRESS=pigz
-fi
-
 echo "Creating initrd and compressing with $COMPRESS"
-cd ${DST}; find . | cpio --quiet -R 0:0 -o -H newc | $COMPRESS -9v > ../${IMG}
+cd ${DST}; find . | cpio --quiet -R 0:0 -o -H newc | compress -9v > ../${IMG}
 
 echo "### Build complete ###"
 echo "### initrd is now available at ${DST}/../${IMG}"

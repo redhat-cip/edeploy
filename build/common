@@ -1,0 +1,7 @@
+compress() {
+    COMPRESS=gzip
+    if [ ! -z $(which pigz 2>/dev/null) ]; then
+        COMPRESS=pigz
+    fi
+    $COMPRESS $@
+}

@@ -250,7 +250,8 @@ def generate_filename_and_macs(items):
     (product name and version) then if the DMI serial number is
     available we use it unless we lookup the first mac address.
     As a result, we do have a filename like :
-        <dmi_product_name>-<dmi_product_version>-{dmi_serial_num|mac_address}'''
+
+    <dmi_product_name>-<dmi_product_version>-{dmi_serial_num|mac_address}'''
 
     # Duplicate items as it will be modified by match_* functions
     hw_items = list(items)
@@ -267,7 +268,8 @@ def generate_filename_and_macs(items):
                        hw_items, sysvars)
 
     if 'sysprodvendor' in sysvars:
-        sysvars['sysname'] += re.sub(r'\W+', '', sysvars['sysprodvendor']) + '-'
+        sysvars['sysname'] += re.sub(r'\W+', '', sysvars['sysprodvendor']) + \
+            '-'
 
     matcher.match_spec(('system', 'product', 'serial', '$sysserial'),
                        hw_items, sysvars)
@@ -277,9 +279,9 @@ def generate_filename_and_macs(items):
         sysvars['sysname'] += re.sub(r'\W+', '', sysvars['sysserial'])
     else:
         if matcher.match_multiple(hw_items,
-                              ('network', '$eth', 'serial', '$serial'),
-                              sysvars):
-            sysvars['sysname'] +=  sysvars['serial'][0].replace(':', '-')
+                                  ('network', '$eth', 'serial', '$serial'),
+                                  sysvars):
+            sysvars['sysname'] += sysvars['serial'][0].replace(':', '-')
         else:
             log('unable to detect network macs')
 
@@ -324,6 +326,7 @@ def main():
     save_hw(hw_items, filename_and_macs['sysname'], cfg_dir)
 
     def config_get(section, name, default):
+        'Secured config getter.'
         try:
             return config.get(section, name)
         except ConfigParser.NoOptionError:

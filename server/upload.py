@@ -294,7 +294,18 @@ def main():
     config = ConfigParser.ConfigParser()
     config.read('/etc/edeploy.conf')
 
-    cfg_dir = config.get('SERVER', 'CONFIGDIR') + '/'
+    def config_get(section, name, default):
+        'Secured config getter.'
+        try:
+            return config.get(section, name)
+        except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
+            return default
+
+    cfg_dir = config_get(
+        'SERVER', 'CONFIGDIR',
+        os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                     '..',
+                                     'config'))) + '/'
 
     # parse hw file given in argument or passed to cgi script
     if len(sys.argv) == 3 and sys.argv[1] == '-f':
@@ -310,10 +321,15 @@ def main():
         print "Content-Type: text/x-python"     # HTML is following
         print                                   # blank line, end of headers
 
-    hw_items = eval(hw_file.read(-1))
+    try:
+        hw_items = eval(hw_file.read(-1))
+    except Exception, excpt:
+        log('Unable to read hardware file: %s' % str(excpt))
+        print("'Invalid hardware file: %s'" % str(excpt))
+        sys.exit(1)
 
     # avoid concurrent accesses
-    lock_filename = config.get('SERVER', 'LOCKFILE')
+    lock_filename = config_get('SERVER', 'LOCKFILE', '/tmp/edeploy.lock')
     lockfd = lock(lock_filename)
 
     def cleanup():
@@ -324,13 +340,6 @@ def main():
 
     filename_and_macs = generate_filename_and_macs(hw_items)
     save_hw(hw_items, filename_and_macs['sysname'], cfg_dir)
-
-    def config_get(section, name, default):
-        'Secured config getter.'
-        try:
-            return config.get(section, name)
-        except ConfigParser.NoOptionError:
-            return default
 
     use_pxemngr = (config_get('SERVER', 'USEPXEMNGR', False) == 'True')
     pxemngr_url = config_get('SERVER', 'PXEMNGRURL', None)
@@ -417,7 +426,8 @@ run('curl -s %slocalboot/')
 run('echo "METADATA_URL=%s" >> /vars')
 ''' % metadata_url
 
-    pprint.pprint(names, stream=open(state_filename, 'w'))
+    with open(state_filename, 'w') as state_file:
+        pprint.pprint(names, stream=state_file)
 
 if __name__ == "__main__":
     main()

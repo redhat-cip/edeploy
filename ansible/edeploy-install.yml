@@ -1,0 +1,48 @@
+---
+- hosts: edeployservers
+  vars:
+    - pxemngr: false
+  user: root
+  tasks:
+  - name: ensure needed packages for eDeploy are installed
+    apt: pkg={{ item }} state=present
+    with_items:
+      - apache2
+      - python-ipaddr
+      - python-pip
+      - git
+      - rsync
+  - name: extract eDeploy git repo
+    git: repo=https://github.com/enovance/edeploy.git
+         dest=/srv/edeploy force=no
+  - name: install eDeploy CGI script and set permissions for it
+    file: src=/srv/edeploy/server/upload.py dest=/usr/lib/cgi-bin/upload.py state=link
+  - name: install eDeploy CGI script and set permissions for it
+    file: path=/srv/edeploy/config/state owner=www-data group=www-data
+  - name: install eDeploy CGI script and set permissions for it
+    file: path=/var/lib/debootstrap/install state=directory
+  - name: install eDeploy CGI script and set permissions for it
+    file: src=/var/lib/debootstrap/install dest=/var/www/install state=link
+  - name: list cmdb files 
+    action: shell ls -1 /srv/edeploy/config/*.cmdb
+    register: cmdbfiles 
+  - name: fix cmdb permissions
+    file: path={{ item }} owner=www-data group=www-data
+    with_items: ${cmdbfiles.stdout_lines}
+  - name: create rsync conf file
+    copy: src=rsyncd.conf dest=/etc/rsyncd.conf
+  - name: enable rsync daemon
+    lineinfile: dest=/etc/default/rsync regexp=RSYNC_ENABLE= line="RSYNC_ENABLE=true" state=present
+    notify: start rsync daemon
+  - name: install eDeploy profile in pxemngr
+    template: src=edeploy.prof dest=/var/lib/tftpboot/pxelinux.cfg/profiles/edeploy.prof
+    notify: sync bootnames
+    when: pxemngr
+  handlers:
+    - name: sync bootnames
+      command: pxemngr syncbootnames
+      notify: set default PXE boot to eDeploy
+    - name: set default PXE boot to eDeploy
+      command: pxemngr nextboot default edeploy
+    - name: start rsync daemon
+      service: name=rsync state=started

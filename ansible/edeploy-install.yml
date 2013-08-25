@@ -15,17 +15,29 @@
   - name: extract eDeploy git repo
     git: repo=https://github.com/enovance/edeploy.git
          dest=/srv/edeploy force=no
+  - name: create eDeploy config dir
+    file: path=/etc/edeploy state=directory
+  - name: copy config files
+    cp: src=/srv/edeploy/config/* dest=/etc/edeploy
+  - name: create edeploy CGI config
+    ini_file: dest=/etc/edeploy.conf section=SERVER option=CONFIGDIR value=/etc/edeploy mode=0644
+  - name: enable pxemngr support in CGI config
+    ini_file: dest=/etc/edeploy.conf section=SERVER option=USEPXEMNGR value=True mode=0644
+    when: pxemngr
+  - name: set pxemngr URL in CGI config
+    ini_file: dest=/etc/edeploy.conf section=SERVER option=PXEMNGRURL value=http://{{ ansible_default_ipv4["address"] }}/ mode=0644
+    when: pxemngr
   - name: install eDeploy CGI script and set permissions for it
     file: src=/srv/edeploy/server/upload.py dest=/usr/lib/cgi-bin/upload.py state=link
-  - name: install eDeploy CGI script and set permissions for it
-    file: path=/srv/edeploy/config/state owner=www-data group=www-data
-  - name: install eDeploy CGI script and set permissions for it
+  - name: owner of state file
+    file: path=/etc/edeploy/state owner=www-data group=www-data
+  - name: create directory for install trees
     file: path=/var/lib/debootstrap/install state=directory
-  - name: install eDeploy CGI script and set permissions for it
+  - name: link install trees location for web server
     file: src=/var/lib/debootstrap/install dest=/var/www/install state=link
   - name: list cmdb files 
-    action: shell ls -1 /srv/edeploy/config/*.cmdb
-    register: cmdbfiles 
+    action: shell ls -1 /etc/edeploy/*.cmdb
+    register: cmdbfiles
   - name: fix cmdb permissions
     file: path={{ item }} owner=www-data group=www-data
     with_items: ${cmdbfiles.stdout_lines}

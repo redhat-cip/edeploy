@@ -7,6 +7,7 @@ WWW_USER=www-data
 ETC_DIR=$(DESTDIR)/etc
 SHARE_BUILD_DIR=$(DESTDIR)/usr/share/$(PROG_NAME)/$(BUILD_DIR)
 ANSIBLE_DIR=$(DESTDIR)/usr/share/ansible
+PYSRC=$(shell ls src/*.py server/*.py ansible/library/edeploy ansible/library/cp | grep -v test_)
 
 install-www:
 	mkdir -p $(WWW_DIR) && 	chmod 755 $(WWW_DIR)
@@ -28,3 +29,11 @@ install-build:
 
 test:
 	nosetests src server
+
+quality: pylint flake8
+
+flake8:
+	flake8 $(PYSRC)
+
+pylint:
+	pylint -f parseable $(PYSRC)

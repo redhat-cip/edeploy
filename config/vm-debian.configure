@@ -9,9 +9,6 @@ for disk, path in ((disk1, '/chroot'), ):
     run('mkfs.ext4 %s1' % disk)
     run('mkdir -p %s; mount %s1 %s' % (path, disk, path))
 
-var['netmask'] = '255.255.255.0'
-var['gateway'] = '192.168.122.1'
-
 open('/post_rsync/etc/network/interfaces', 'w').write('''
 auto lo
 iface lo inet loopback

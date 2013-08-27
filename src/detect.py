@@ -94,10 +94,10 @@ def detect_ipmi(hw_lst):
                 hw_lst.append(('system', 'ipmi', 'channel', channel))
                 break
     else:
-        # Are we running under an hypervisor ?
-        status, _ = cmd('grep -qi hypervisor /proc/cpuinfo')
+        # do we need a fake ipmi device for testing purpose ?
+        status, _ = cmd('grep -qi FAKEIPMI /proc/cmdline')
         if status == 0:
-            # Yes ! So let's create a fake ipmi device for testing purpose
+            # Yes ! So let's create a fake entry
             hw_lst.append(('system', 'ipmi-fake', 'channel', 0))
             sys.stderr.write('Info: Added fake IPMI device\n')
             return True

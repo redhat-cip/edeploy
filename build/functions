@@ -26,6 +26,7 @@ fi
 cleanup() {
     ret=$?
     rm -f "${dir}"/etc/default/grub.d/edeploy.cfg
+    chroot ${dir} apt-get clean
     for mpoint in /dev /proc; do
 	a=10
 	while ! umount ${dir}$mpoint; do

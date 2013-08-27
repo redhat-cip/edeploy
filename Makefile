@@ -1,11 +1,9 @@
-PROG_NAME=edeploy
-
 WWW_DIR=$(DESTDIR)/usr/lib/cgi-bin
 WWW_CONF_DIR=/var/lib/edeploy
 WWW_CONFIG_DIR=$(DESTDIR)$(WWW_CONF_DIR)
 WWW_USER=www-data
 ETC_DIR=$(DESTDIR)/etc
-SHARE_BUILD_DIR=$(DESTDIR)/usr/share/$(PROG_NAME)/$(BUILD_DIR)
+SHARE_BUILD_DIR=$(DESTDIR)/usr/share/edeploy/$(BUILD_DIR)
 ANSIBLE_DIR=$(DESTDIR)/usr/share/ansible
 PYSRC=$(shell ls src/*.py server/*.py ansible/library/edeploy ansible/library/cp | grep -v test_)
 
@@ -18,7 +16,8 @@ install-www:
 	install -m 755 server/upload.py server/matcher.py $(WWW_DIR)/
 	install -m 644 config/*.specs $(WWW_CONFIG_DIR)/
 	install -m 644 config/*.configure $(WWW_CONFIG_DIR)/
-	install -m 755 ansible/edeploy $(ANSIBLE_DIR)/
+	install -m 755 ansible/library/edeploy $(ANSIBLE_DIR)/
+	install -m 755 ansible/library/cp $(ANSIBLE_DIR)/
 	cd config; for file in *.cmdb state; do echo $$file; if [ ! -e $(WWW_CONFIG_DIR)/$$file ]; then install -m 644 $$file $(WWW_CONFIG_DIR)/ ; fi ; done
 	chown $(WWW_USER):$(WWW_USER) $(WWW_CONFIG_DIR)/*.cmdb $(WWW_CONFIG_DIR)/state
 	sed -i -e "s|^CONFIGDIR=.*|CONFIGDIR=$(WWW_CONF_DIR)|" $(ETC_DIR)/edeploy.conf

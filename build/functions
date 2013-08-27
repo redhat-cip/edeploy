@@ -41,7 +41,7 @@ cleanup() {
 	cd ${dir}
 	rm -f ../../${ROLE}-${version}.edeploy
 
-	find . | cpio --quiet -R 0:0 -o -H newc | compress -9v > ../../${ROLE}-${version}.edeploy
+	tar c . | compress -9v > ../../${ROLE}-${version}.edeploy
     fi
 }
 

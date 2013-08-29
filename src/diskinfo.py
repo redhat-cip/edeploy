@@ -15,7 +15,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from commands import getstatusoutput as cmd
+from commands import getoutput as cmd
 import os
 
 

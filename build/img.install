@@ -24,6 +24,7 @@ SERV="$5"
 HSERV="$6"
 DEBUG="$7"
 FLASH_IMAGE="$2-$3.img"
+VDI_IMAGE="$2-$3.vdi"
 FLASH_SIZE=128 #in Megabytes
 LOOPBACK_BOOT=NONE
 BOOT_MOUNT_POINT=/tmp/$2-$3.tmp
@@ -169,6 +170,14 @@ umount_flash_fs() {
 	umount $BOOT_MOUNT_POINT
 }
 
+create_vdi() {
+    type -p VBoxManage &>/dev/null || return
+    step "Creating VDI file for VirtualBox"
+    rm -f $VDI_IMAGE &>/dev/null
+    VBoxManage convertfromraw $FLASH_IMAGE --format VDI $VDI_IMAGE &>/dev/null
+    echo "Virtual Image for VirtualBox is available here : $VDI_IMAGE"
+}
+
 install_bootloader() {
 	step "Install bootloader"
 
@@ -207,9 +216,5 @@ install_bootloader
 
 free_loopbacks
 
-#rsync -au --delete-excluded --delete --exclude /boot/ --exclude 'vmlinuz*' --exclude 'initrd*' --exclude usr/share/man --exclude usr/share/doc --exclude usr/share/info --exclude var/lib/dpkg --exclude 'var/cache/apt/archives/*.deb' --exclude usr/share/zoneinfo --exclude usr/share/locale ${SRC}/ ${DST}
-
-#cp -p init detect.py hpacucli.py matcher.py diskinfo.py ${DST}/
-#sed -i "s/VERS=.*/VERS=${VERS}/" ${DST}/init
-
-#cd ${DST}; find . | cpio --quiet -R 0:0 -o -H newc | gzip -v > ../${IMG}
+create_vdi
+echo "Raw disk image is available here               : $FLASH_IMAGE"

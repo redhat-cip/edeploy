@@ -130,9 +130,10 @@ class TestUpload(unittest.TestCase):
                  ('network', 'eth0', 'serial', 'mac')]
         clone = list(items)
         self.assertEqual(upload.generate_filename_and_macs(items),
-                         {
-                          'sysname': 'Sysname',
+                         {'sysname': 'Sysname',
                           'sysserial': 'Sysname',
+                          'eth': ['eth0'],
+                          'serial': ['mac'],
                           })
         self.assertEqual(items, clone)
 
@@ -145,6 +146,26 @@ class TestUpload(unittest.TestCase):
                           'sysname': 'aa-bb-cc',
                           })
         self.assertEqual(items, clone)
+
+    def test_generate_filename_and_macs_virtualbox(self):
+        items = [('disk', 'sda', 'size', '8'),
+                 ('system', 'product', 'serial', '0'),
+                 ('system', 'product', 'name', 'VirtualBox ()'),
+                 ('system', 'product', 'vendor', 'innotek GmbH'),
+                 ('system', 'product', 'version', '1.2'),
+                 ('system', 'memory', 'size', '521113600'),
+                 ('network', 'eth0', 'serial', '08:00:27:6f:77:22'),
+                 ('network', 'eth0', 'vendor', 'Intel Corporation'),
+                 ('network', 'eth0', 'product',
+                  '82540EM Gigabit Ethernet Controller'),
+                 ('network', 'eth0', 'size', '1000000000'),
+                 ('network', 'eth0', 'ipv4', '10.0.2.15'),
+                 ('network', 'eth0', 'link', 'yes'),
+                 ('network', 'eth0', 'driver', 'e1000'),
+                 ('system', 'cpu', 'number', '1')]
+        result = upload.generate_filename_and_macs(items)
+        self.assertTrue('serial' in result, result)
+        self.assertTrue('eth' in result, result)
 
 if __name__ == "__main__":
     unittest.main()

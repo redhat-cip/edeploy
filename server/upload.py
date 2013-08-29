@@ -277,13 +277,15 @@ def generate_filename_and_macs(items):
     # Let's use any existing DMI serial number or take the first mac address
     if 'sysserial' in sysvars:
         sysvars['sysname'] += re.sub(r'\W+', '', sysvars['sysserial'])
-    else:
-        if matcher.match_multiple(hw_items,
-                                  ('network', '$eth', 'serial', '$serial'),
-                                  sysvars):
+
+    # we always need to have the mac addresses for pxemngr
+    if matcher.match_multiple(hw_items,
+                              ('network', '$eth', 'serial', '$serial'),
+                              sysvars):
+        if not 'sysserial' in sysvars:
             sysvars['sysname'] += sysvars['serial'][0].replace(':', '-')
-        else:
-            log('unable to detect network macs')
+    else:
+        log('unable to detect network macs')
 
     return sysvars
 

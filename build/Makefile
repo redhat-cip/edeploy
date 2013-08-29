@@ -29,6 +29,8 @@ IMG=initrd.pxe
 ARCH=amd64
 export PATH := /sbin:/bin::$(PATH)
 SERV:=10.66.6.10
+HSERV:=10.66.6.10
+DEBUG=1
 PYDIR=../src
 PYSERVERDIR=../server
 
@@ -41,10 +43,10 @@ META=$(TOP)/metadata/$(VERS)
 all: $(INST)/$(IMG) $(INST)/mysql.done
 
 pxe $(INST)/$(IMG): $(INST)/base.done init pxe.install $(PYDIR)/detect.py $(PYDIR)/hpacucli.py $(PYSERVERDIR)/matcher.py $(PYDIR)/diskinfo.py $(PYDIR)/ipmi.py
-	./pxe.install $(INST)/base $(INST)/pxe $(IMG) $(VERS)
+	./pxe.install $(INST)/base $(INST)/pxe $(IMG) $(VERS) $(DEBUG)
 
-img: pxe
-	./img.install $(INST)/base $(IMG) $(VERS) $(INST) $(SERV)
+img: $(INST)/$(IMG)
+	./img.install $(INST)/base $(IMG) $(VERS) $(INST) $(SERV) $(HSERV) $(DEBUG)
 
 base $(INST)/base.done: base.install policy-rc.d edeploy
 	ARCH=$(ARCH) ./base.install $(INST)/base $(DIST) $(VERS)

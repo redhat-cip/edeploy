@@ -194,6 +194,10 @@ install_bootloader() {
 	fi
 
 	extlinux/extlinux --install $BOOT_MOUNT_POINT/extlinux
+    if [ $? -ne 0 ]; then
+        umount_flash_fs
+        fatal_error "Cannot execute extlinux. Please check if your system features a 32bit glibc"
+    fi
 
 	umount_flash_fs
 

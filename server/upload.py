@@ -290,6 +290,21 @@ def generate_filename_and_macs(items):
     return sysvars
 
 
+def fatal_error(error):
+    '''Report a shell script with the error message and log
+    the message on stderr.'''
+    print('''#!/bin/sh
+
+cat <<EOF
+%s
+EOF
+
+exit 1
+''' % error)
+    sys.stderr.write('%s\n' % error)
+    sys.exit(1)
+
+
 def main():
     '''CGI entry point.'''
 
@@ -305,9 +320,10 @@ def main():
 
     cfg_dir = config_get(
         'SERVER', 'CONFIGDIR',
-        os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                     '..',
-                                     'config'))) + '/'
+        os.path.normpath(
+            os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                         '..',
+                         'config')) + '/')
 
     # parse hw file given in argument or passed to cgi script
     if len(sys.argv) == 3 and sys.argv[1] == '-f':
@@ -317,18 +333,19 @@ def main():
 
         form = cgi.FieldStorage()
 
-        fileitem = form["file"]
-        hw_file = fileitem.file
-
         print "Content-Type: text/x-python"     # HTML is following
         print                                   # blank line, end of headers
+
+        if not 'file' in form:
+            fatal_error('No file passed to the CGI')
+
+        fileitem = form['file']
+        hw_file = fileitem.file
 
     try:
         hw_items = eval(hw_file.read(-1))
     except Exception, excpt:
-        log('Unable to read hardware file: %s' % str(excpt))
-        print("'Invalid hardware file: %s'" % str(excpt))
-        sys.exit(1)
+        fatal_error("'Invalid hardware file: %s'" % str(excpt))
 
     # avoid concurrent accesses
     lock_filename = config_get('SERVER', 'LOCKFILE', '/tmp/edeploy.lock')
@@ -365,10 +382,7 @@ def main():
                 break
         idx += 1
     else:
-        log('Unable to match requirements')
-        log('Specs: %s' % repr(specs))
-        log('Lines: %s' % repr(hw_items))
-        sys.exit(1)
+        fatal_error('Unable to match requirements')
 
     forced = (var2 != {})
 

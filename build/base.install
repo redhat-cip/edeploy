@@ -24,6 +24,8 @@ ROLE=base
 
 ORIG=$(cd $(dirname $0); pwd)
 
+. common
+
 fatal_error() {
 	echo $1;
 	exit 1
@@ -183,3 +185,5 @@ dpkg-reconfigure openssh-server
 EOF
 
 chmod 755 ${dir}/etc/rc.local ${dir}/etc/first-boot.d/01-ssh
+
+tar c . | compress -9v > ../../${ROLE}-${version}.edeploy

@@ -68,8 +68,13 @@ APT::Install-Suggests "0" ;
 EOF
 
 cleanup() {
+    rc=$?
     umount ${dir}/dev
     umount ${dir}/proc
+    if [ $rc = 0 ]; then
+	cd ${dir}
+	tar c . | compress -9v > ../../${ROLE}-${version}.edeploy
+    fi
 }
 
 trap cleanup 0
@@ -185,5 +190,3 @@ dpkg-reconfigure openssh-server
 EOF
 
 chmod 755 ${dir}/etc/rc.local ${dir}/etc/first-boot.d/01-ssh
-
-tar c . | compress -9v > ../../${ROLE}-${version}.edeploy

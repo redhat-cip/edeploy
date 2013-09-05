@@ -109,6 +109,7 @@ def detect_ipmi(hw_lst):
 def detect_system(hw_lst, output=None):
     'Detect system characteristics from the output of lshw.'
 
+    socket_count=0
     def find_element(xml, xml_spec, sys_subtype,
                      sys_type='product', sys_cls='system', attrib=None):
         'Lookup an xml element and populate hw_lst when found.'
@@ -144,19 +145,22 @@ def detect_system(hw_lst, output=None):
                              name.text, 'network', 'value')
                 find_element(elt, "configuration/setting[@id='driver']",
                              'driver', name.text, 'network', 'value')
+
         for elt in xml.findall(".//node[@class='processor']"):
             name = elt.find('physid')
             if name is not None:
+                hw_lst.append(('system', 'cpu%s'%(socket_count), 'physid', name.text))
                 find_element(elt,"configuration/setting[@id='cores']",
-                             'cores', 'cpu'+name.text,'system', 'value')
+                             'cores', 'cpu%s'%(socket_count),'system', 'value')
                 find_element(elt,"configuration/setting[@id='enabledcores']",
-                             'enabled_cores', 'cpu'+name.text,'system', 'value')
+                             'enabled_cores', 'cpu%s'%(socket_count),'system', 'value')
                 find_element(elt,"configuration/setting[@id='threads']",
-                             'threads', 'cpu'+name.text,'system', 'value')
-
+                             'threads', 'cpu%s'%(socket_count),'system', 'value')
+                socket_count=socket_count+1
     else:
         sys.stderr.write("Unable to run lshw: %s\n" % output)
 
+    hw_lst.append(('system', 'cpu', 'sockets_count', socket_count))
     status, output = cmd('nproc')
     if status == 0:
         hw_lst.append(('system', 'cpu', 'number', output))

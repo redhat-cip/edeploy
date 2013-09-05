@@ -166,21 +166,21 @@ def detect_system(hw_lst, output=None):
         for elt in xml.findall(".//node[@class='processor']"):
             name = elt.find('physid')
             if name is not None:
-                hw_lst.append(('system', 'cpu%s'%(socket_count), 'physid', name.text))
+                hw_lst.append(('cpu', 'physical_%s'%(socket_count), 'physid', name.text))
                 find_element(elt,"configuration/setting[@id='cores']",
-                             'cores', 'cpu%s'%(socket_count),'system', 'value')
+                             'cores', 'physical_%s'%(socket_count),'cpu', 'value')
                 find_element(elt,"configuration/setting[@id='enabledcores']",
-                             'enabled_cores', 'cpu%s'%(socket_count),'system', 'value')
+                             'enabled_cores', 'physical_%s'%(socket_count),'cpu', 'value')
                 find_element(elt,"configuration/setting[@id='threads']",
-                             'threads', 'cpu%s'%(socket_count),'system', 'value')
+                             'threads', 'physical_%s'%(socket_count), 'cpu', 'value')
                 socket_count=socket_count+1
     else:
         sys.stderr.write("Unable to run lshw: %s\n" % output)
 
-    hw_lst.append(('system', 'cpu', 'sockets_count', socket_count))
+    hw_lst.append(('cpu', 'physical', 'number', socket_count))
     status, output = cmd('nproc')
     if status == 0:
-        hw_lst.append(('system', 'cpu', 'number', output))
+        hw_lst.append(('cpu', 'logical', 'number', output))
 
 def _main():
     'Command line entry point.'

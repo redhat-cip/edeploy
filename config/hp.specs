@@ -17,7 +17,7 @@
     ('disk', '$disk7', 'slot', '$slot7'),
     ('disk', '$disk8', 'size', '1000'),
     ('disk', '$disk8', 'slot', '$slot8'),
-    ('system', 'cpu', 'number', "$nbcpu"),
+    ('cpu', 'logical', 'number', "$nbcpu"),
     ('network', '$eth-pub1', 'ipv4', 'network(10.66.6.0/24)'),
     ('network', '$eth-pub1', 'link', 'yes'),
     ('network', '$eth-pub1', 'serial', '$mac-pub1'),

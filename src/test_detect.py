@@ -1190,10 +1190,10 @@ class TestDetect(unittest.TestCase):
             ('system', 'product', 'name', 'S2915'),
             ('system', 'product', 'vendor', 'Tyan Computer Corporation'),
             ('system', 'product', 'version', 'REFERENCE'),
-            ('system', 'cpu0', 'physid', '3'),
-            ('system', 'cpu1', 'physid', '4'),
-            ('system', 'cpu', 'sockets_count', 2),
-            ('system', 'cpu', 'number', '4')]
+            ('cpu', 'physical_0', 'physid', '3'),
+            ('cpu', 'physical_1', 'physid', '4'),
+            ('cpu', 'physical', 'number', 2),
+            ('cpu', 'logical', 'number', '4')]
             )
 
 
@@ -2058,12 +2058,12 @@ class TestDetect(unittest.TestCase):
              ('network', 'wwan0', 'serial', '02:15:e0:ec:01:00'),
              ('network', 'wwan0', 'link', 'no'),
              ('network', 'wwan0', 'driver', 'cdc_ncm'),
-             ('system', 'cpu0', 'physid', '1'),
-             ('system', 'cpu0', 'cores', '2'),
-             ('system', 'cpu0', 'enabled_cores', '2'),
-             ('system', 'cpu0', 'threads', '4'),
-             ('system', 'cpu', 'sockets_count', 1),
-             ('system', 'cpu', 'number', '4')]
+             ('cpu', 'physical_0', 'physid', '1'),
+             ('cpu', 'physical_0', 'cores', '2'),
+             ('cpu', 'physical_0', 'enabled_cores', '2'),
+             ('cpu', 'physical_0', 'threads', '4'),
+             ('cpu', 'physical', 'number', 1),
+             ('cpu', 'logical', 'number', '4')]
             )
 
     def test_detect_system(self):
@@ -2110,12 +2110,12 @@ class TestDetect(unittest.TestCase):
              ('network', 'wlan0', 'ipv4', '192.168.12.13'),
              ('network', 'wlan0', 'link', 'yes'),
              ('network', 'wlan0', 'driver', 'brcmsmac'),
-             ('system', 'cpu0', 'physid', '0'),
-             ('system', 'cpu1', 'physid', '5'),
-             ('system', 'cpu2', 'physid', 'a'),
-             ('system', 'cpu3', 'physid', 'f'),
-             ('system', 'cpu', 'sockets_count', 4),
-             ('system', 'cpu', 'number', '7')]
+             ('cpu', 'physical_0', 'physid', '0'),
+             ('cpu', 'physical_1', 'physid', '5'),
+             ('cpu', 'physical_2', 'physid', 'a'),
+             ('cpu', 'physical_3', 'physid', 'f'),
+             ('cpu', 'physical', 'number', 4),
+             ('cpu', 'logical', 'number', '7')]
             )
 
 XML = '''<?xml version="1.0" standalone="yes" ?>

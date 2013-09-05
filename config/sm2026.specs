@@ -7,7 +7,7 @@
     ('disk', '$disk4', 'size', '500'),
     ('disk', '$disk5', 'size', '500'),
     ('disk', '$disk6', 'size', '500'),
-    ('system', 'cpu', 'number', "$nbcpu"),
+    ('cpu', 'logical', 'number', "$nbcpu"),
     ('network', '$eth', 'ipv4', 'network(172.30.4.0/24)'),
     ('network', '$eth', 'link', 'yes'),
     ('network', '$eth', 'serial', '$$tag'),

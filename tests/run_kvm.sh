@@ -142,7 +142,7 @@ create_edeploy_conf() {
 	cat > edeploy.conf << EOF
 [SERVER]
 
-CONFIGDIR=$PWD/../config
+CONFIGDIR=$PWD/../config/
 LOCKFILE=$LOCKFILE
 USEPXEMNGR=False
 PXEMNGRURL=http://192.168.122.1:8000/
@@ -150,6 +150,8 @@ EOF
 
 # Insure upload.py can create its lock file locally
 chmod a+rw .
+chmod a+rw $PWD/../config/
+chmod a+rw $PWD/../config/*.hw
 chmod a+rw $PWD/../config/state
 chmod a+rw $PWD/../config/kvm-test.cmdb
 

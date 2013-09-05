@@ -144,29 +144,22 @@ def detect_system(hw_lst, output=None):
                              name.text, 'network', 'value')
                 find_element(elt, "configuration/setting[@id='driver']",
                              'driver', name.text, 'network', 'value')
+        for elt in xml.findall(".//node[@class='processor']"):
+            name = elt.find('physid')
+            if name is not None:
+                find_element(elt,"configuration/setting[@id='cores']",
+                             'cores', 'cpu'+name.text,'system', 'value')
+                find_element(elt,"configuration/setting[@id='enabledcores']",
+                             'enabled_cores', 'cpu'+name.text,'system', 'value')
+                find_element(elt,"configuration/setting[@id='threads']",
+                             'threads', 'cpu'+name.text,'system', 'value')
+
     else:
         sys.stderr.write("Unable to run lshw: %s\n" % output)
 
     status, output = cmd('nproc')
     if status == 0:
         hw_lst.append(('system', 'cpu', 'number', output))
-
-    status, output = cmd('grep "physical id" /proc/cpuinfo | sort -n | uniq | wc -l')
-    if status == 0:
-        # If no physical id got found, at least we have one socket to run :)
-        if (output == '0'):
-            hw_lst.append(('system', 'cpu', 'sockets', '1'))
-        else:
-            hw_lst.append(('system', 'cpu', 'sockets', output))
-
-    status, output = cmd('grep "cpu cores" /proc/cpuinfo | sort -n | uniq | head -1 | cut -d ":" -f 2| tr -d " "')
-    if status == 0:
-        if (output):
-            hw_lst.append(('system', 'cpu', 'cores', output))
-        else:
-            # If no cpu cores got found, at least we have one core to run :)
-            hw_lst.append(('system', 'cpu', 'cores', '1'))
-
 
 def _main():
     'Command line entry point.'

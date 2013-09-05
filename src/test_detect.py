@@ -31,6 +31,861 @@ class TestDetect(unittest.TestCase):
     def test_size_in_nothing(self):
         self.assertEqual(detect.size_in_gb('100'), '100')
 
+    def test_detect_system_2(self):
+        l = []
+        # replace the call to nproc by a fake result
+        save = detect.cmd
+
+        def fake(x):
+            return (0, "4")
+
+        XML='''<?xml version="1.0" standalone="yes" ?>
+<list>
+<node id="localhost.localdomain" claimed="true" class="system" handle="DMI:000F">
+ <description>Ordinateur Bloc-notes</description>
+ <product>2347GF8 (LENOVO_MT_2347)</product>
+ <vendor>LENOVO</vendor>
+ <version>ThinkPad T430</version>
+ <serial>PB4F20N</serial>
+ <width units="bits">64</width>
+ <configuration>
+  <setting id="administrator_password" value="disabled" />
+  <setting id="chassis" value="notebook" />
+  <setting id="family" value="ThinkPad T430" />
+  <setting id="power-on_password" value="disabled" />
+  <setting id="sku" value="LENOVO_MT_2347" />
+  <setting id="uuid" value="81ACF869-C952-CB11-AF7F-DF81D2500F24" />
+ </configuration>
+ <capabilities>
+  <capability id="smbios-2.7" >SMBIOS version 2.7</capability>
+  <capability id="dmi-2.7" >DMI version 2.7</capability>
+  <capability id="vsyscall32" >excution d'applications 32 bits</capability>
+ </capabilities>
+  <node id="core" claimed="true" class="bus" handle="DMI:0010">
+   <description>Carte mre</description>
+   <product>2347GF8</product>
+   <vendor>LENOVO</vendor>
+   <physid>0</physid>
+   <version>Not Defined</version>
+   <serial>1ZLMB31B1G6</serial>
+   <slot>Not Available</slot>
+    <node id="cpu" claimed="true" class="processor" handle="DMI:0001">
+     <description>CPU</description>
+     <product>Intel(R) Core(TM) i5-3320M CPU @ 2.60GHz</product>
+     <vendor>Intel Corp.</vendor>
+     <physid>1</physid>
+     <businfo>cpu@0</businfo>
+     <version>Intel(R) Core(TM) i5-3320M CPU @ 2.60GHz</version>
+     <serial>None</serial>
+     <slot>CPU Socket - U3E1</slot>
+     <size units="Hz">2601000000</size>
+     <capacity units="Hz">2601000000</capacity>
+     <width units="bits">64</width>
+     <clock units="Hz">100000000</clock>
+     <configuration>
+      <setting id="cores" value="2" />
+      <setting id="enabledcores" value="2" />
+      <setting id="threads" value="4" />
+     </configuration>
+     <capabilities>
+      <capability id="x86-64" >64bits extensions (x86-64)</capability>
+      <capability id="fpu" >mathematical co-processor</capability>
+      <capability id="fpu_exception" >FPU exceptions reporting</capability>
+      <capability id="wp" />
+      <capability id="vme" >virtual mode extensions</capability>
+      <capability id="de" >debugging extensions</capability>
+      <capability id="pse" >page size extensions</capability>
+      <capability id="tsc" >time stamp counter</capability>
+      <capability id="msr" >model-specific registers</capability>
+      <capability id="pae" >4GB+ memory addressing (Physical Address Extension)</capability>
+      <capability id="mce" >machine check exceptions</capability>
+      <capability id="cx8" >compare and exchange 8-byte</capability>
+      <capability id="apic" >on-chip advanced programmable interrupt controller (APIC)</capability>
+      <capability id="sep" >fast system calls</capability>
+      <capability id="mtrr" >memory type range registers</capability>
+      <capability id="pge" >page global enable</capability>
+      <capability id="mca" >machine check architecture</capability>
+      <capability id="cmov" >conditional move instruction</capability>
+      <capability id="pat" >page attribute table</capability>
+      <capability id="pse36" >36-bit page size extensions</capability>
+      <capability id="clflush" />
+      <capability id="dts" >debug trace and EMON store MSRs</capability>
+      <capability id="acpi" >thermal control (ACPI)</capability>
+      <capability id="mmx" >multimedia extensions (MMX)</capability>
+      <capability id="fxsr" >fast floating point save/restore</capability>
+      <capability id="sse" >streaming SIMD extensions (SSE)</capability>
+      <capability id="sse2" >streaming SIMD extensions (SSE2)</capability>
+      <capability id="ss" >self-snoop</capability>
+      <capability id="ht" >HyperThreading</capability>
+      <capability id="tm" >thermal interrupt and status</capability>
+      <capability id="pbe" >pending break event</capability>
+      <capability id="syscall" >fast system calls</capability>
+      <capability id="nx" >no-execute bit (NX)</capability>
+      <capability id="rdtscp" />
+      <capability id="constant_tsc" />
+      <capability id="arch_perfmon" />
+      <capability id="pebs" />
+      <capability id="bts" />
+      <capability id="rep_good" />
+      <capability id="nopl" />
+      <capability id="xtopology" />
+      <capability id="nonstop_tsc" />
+      <capability id="aperfmperf" />
+      <capability id="eagerfpu" />
+      <capability id="pni" />
+      <capability id="pclmulqdq" />
+      <capability id="dtes64" />
+      <capability id="monitor" />
+      <capability id="ds_cpl" />
+      <capability id="vmx" />
+      <capability id="smx" />
+      <capability id="est" />
+      <capability id="tm2" />
+      <capability id="ssse3" />
+      <capability id="cx16" />
+      <capability id="xtpr" />
+      <capability id="pdcm" />
+      <capability id="pcid" />
+      <capability id="sse4_1" />
+      <capability id="sse4_2" />
+      <capability id="x2apic" />
+      <capability id="popcnt" />
+      <capability id="tsc_deadline_timer" />
+      <capability id="aes" />
+      <capability id="xsave" />
+      <capability id="avx" />
+      <capability id="f16c" />
+      <capability id="rdrand" />
+      <capability id="lahf_lm" />
+      <capability id="ida" />
+      <capability id="arat" />
+      <capability id="epb" />
+      <capability id="xsaveopt" />
+      <capability id="pln" />
+      <capability id="pts" />
+      <capability id="dtherm" />
+      <capability id="tpr_shadow" />
+      <capability id="vnmi" />
+      <capability id="flexpriority" />
+      <capability id="ept" />
+      <capability id="vpid" />
+      <capability id="fsgsbase" />
+      <capability id="smep" />
+      <capability id="erms" />
+      <capability id="cpufreq" >CPU Frequency scaling</capability>
+     </capabilities>
+      <node id="cache:0" claimed="true" class="memory" handle="DMI:0003">
+       <description>L1 cache</description>
+       <physid>3</physid>
+       <slot>L1-Cache</slot>
+       <size units="bytes">32768</size>
+       <capacity units="bytes">32768</capacity>
+       <capabilities>
+        <capability id="internal" >Interne</capability>
+        <capability id="write-through" >Write-trough</capability>
+        <capability id="instruction" >Cache d'instructions</capability>
+       </capabilities>
+      </node>
+      <node id="cache:1" claimed="true" class="memory" handle="DMI:0004">
+       <description>L2 cache</description>
+       <physid>4</physid>
+       <slot>L2-Cache</slot>
+       <size units="bytes">262144</size>
+       <capacity units="bytes">262144</capacity>
+       <capabilities>
+        <capability id="internal" >Interne</capability>
+        <capability id="write-through" >Write-trough</capability>
+        <capability id="unified" >Cache unifi</capability>
+       </capabilities>
+      </node>
+      <node id="cache:2" claimed="true" class="memory" handle="DMI:0005">
+       <description>L3 cache</description>
+       <physid>5</physid>
+       <slot>L3-Cache</slot>
+       <size units="bytes">3145728</size>
+       <capacity units="bytes">3145728</capacity>
+       <capabilities>
+        <capability id="internal" >Interne</capability>
+        <capability id="write-back" >Write-back</capability>
+        <capability id="unified" >Cache unifi</capability>
+       </capabilities>
+      </node>
+    </node>
+    <node id="cache" claimed="true" class="memory" handle="DMI:0002">
+     <description>L1 cache</description>
+     <physid>2</physid>
+     <slot>L1-Cache</slot>
+     <size units="bytes">32768</size>
+     <capacity units="bytes">32768</capacity>
+     <capabilities>
+      <capability id="internal" >Interne</capability>
+      <capability id="write-through" >Write-trough</capability>
+      <capability id="data" >Cache de donnes</capability>
+     </capabilities>
+    </node>
+    <node id="memory" claimed="true" class="memory" handle="DMI:0007">
+     <description>Mmoire Systme</description>
+     <physid>7</physid>
+     <slot>Carte mre</slot>
+     <size units="bytes">8589934592</size>
+      <node id="bank:0" claimed="true" class="memory" handle="DMI:0008">
+       <description>SODIMM DDR3 Synchrone 1600 MHz (0,6 ns)</description>
+       <product>M471B5273CH0-CK0</product>
+       <vendor>Samsung</vendor>
+       <physid>0</physid>
+       <serial>1222BCCE</serial>
+       <slot>ChannelA-DIMM0</slot>
+       <size units="bytes">4294967296</size>
+       <width units="bits">64</width>
+       <clock units="Hz">1600000000</clock>
+      </node>
+      <node id="bank:1" claimed="true" class="memory" handle="DMI:0009">
+       <description>SODIMM DDR3 Synchrone 1600 MHz (0,6 ns)</description>
+       <product>M471B5273CH0-CK0</product>
+       <vendor>Samsung</vendor>
+       <physid>1</physid>
+       <serial>1222BCA2</serial>
+       <slot>ChannelB-DIMM0</slot>
+       <size units="bytes">4294967296</size>
+       <width units="bits">64</width>
+       <clock units="Hz">1600000000</clock>
+      </node>
+    </node>
+    <node id="firmware" claimed="true" class="memory" handle="">
+     <description>BIOS</description>
+     <vendor>LENOVO</vendor>
+     <physid>e</physid>
+     <version>G1ET73WW (2.09 )</version>
+     <date>10/19/2012</date>
+     <size units="bytes">131072</size>
+     <capacity units="bytes">12517376</capacity>
+     <capabilities>
+      <capability id="pci" >bus PCI</capability>
+      <capability id="pnp" >Plug-and-Play</capability>
+      <capability id="upgrade" >BIOS EEPROM can be upgraded</capability>
+      <capability id="shadowing" >BIOS shadowing</capability>
+      <capability id="cdboot" >Dmarrage depuis un CD-ROM/DVD</capability>
+      <capability id="bootselect" >Selectable boot path</capability>
+      <capability id="edd" >Enhanced Disk Drive extensions</capability>
+      <capability id="int13floppy720" >3.5&quot; 720KB floppy</capability>
+      <capability id="int5printscreen" >Print Screen key</capability>
+      <capability id="int9keyboard" >controleur de clavier i8042</capability>
+      <capability id="int14serial" >INT14 serial line control</capability>
+      <capability id="int17printer" >INT17 printer control</capability>
+      <capability id="int10video" >INT10 CGA/Mono video</capability>
+      <capability id="acpi" >ACPI</capability>
+      <capability id="usb" >USB legacy emulation</capability>
+      <capability id="biosbootspecification" >BIOS boot specification</capability>
+      <capability id="uefi" >UEFI specification is supported</capability>
+     </capabilities>
+    </node>
+    <node id="pci" claimed="true" class="bridge" handle="PCIBUS:0000:00">
+     <description>Host bridge</description>
+     <product>3rd Gen Core processor DRAM Controller</product>
+     <vendor>Intel Corporation</vendor>
+     <physid>100</physid>
+     <businfo>pci@0000:00:00.0</businfo>
+     <version>09</version>
+     <width units="bits">32</width>
+     <clock units="Hz">33000000</clock>
+      <node id="display" claimed="true" class="display" handle="PCI:0000:00:02.0">
+       <description>VGA compatible controller</description>
+       <product>3rd Gen Core processor Graphics Controller</product>
+       <vendor>Intel Corporation</vendor>
+       <physid>2</physid>
+       <businfo>pci@0000:00:02.0</businfo>
+       <version>09</version>
+       <width units="bits">64</width>
+       <clock units="Hz">33000000</clock>
+       <configuration>
+        <setting id="driver" value="i915" />
+        <setting id="latency" value="0" />
+       </configuration>
+       <capabilities>
+        <capability id="msi" >Message Signalled Interrupts</capability>
+        <capability id="pm" >Power Management</capability>
+        <capability id="vga_controller" />
+        <capability id="bus_master" >bus mastering</capability>
+        <capability id="cap_list" >PCI capabilities listing</capability>
+        <capability id="rom" >extension ROM</capability>
+       </capabilities>
+       <resources>
+        <resource type="irq" value="43" />
+        <resource type="memoire" value="f0000000-f03fffff" />
+        <resource type="memoire" value="e0000000-efffffff" />
+        <resource type="portE/S" value="5000(taille=64)" />
+       </resources>
+      </node>
+      <node id="usb:0" claimed="true" class="bus" handle="PCI:0000:00:14.0">
+       <description>USB controller</description>
+       <product>7 Series/C210 Series Chipset Family USB xHCI Host Controller</product>
+       <vendor>Intel Corporation</vendor>
+       <physid>14</physid>
+       <businfo>pci@0000:00:14.0</businfo>
+       <version>04</version>
+       <width units="bits">64</width>
+       <clock units="Hz">33000000</clock>
+       <configuration>
+        <setting id="driver" value="xhci_hcd" />
+        <setting id="latency" value="0" />
+       </configuration>
+       <capabilities>
+        <capability id="pm" >Power Management</capability>
+        <capability id="msi" >Message Signalled Interrupts</capability>
+        <capability id="xhci" />
+        <capability id="bus_master" >bus mastering</capability>
+        <capability id="cap_list" >PCI capabilities listing</capability>
+       </capabilities>
+       <resources>
+        <resource type="irq" value="44" />
+        <resource type="memoire" value="f2520000-f252ffff" />
+       </resources>
+      </node>
+      <node id="communication" claimed="true" class="communication" handle="PCI:0000:00:16.0">
+       <description>Communication controller</description>
+       <product>7 Series/C210 Series Chipset Family MEI Controller #1</product>
+       <vendor>Intel Corporation</vendor>
+       <physid>16</physid>
+       <businfo>pci@0000:00:16.0</businfo>
+       <version>04</version>
+       <width units="bits">64</width>
+       <clock units="Hz">33000000</clock>
+       <configuration>
+        <setting id="driver" value="mei" />
+        <setting id="latency" value="0" />
+       </configuration>
+       <capabilities>
+        <capability id="pm" >Power Management</capability>
+        <capability id="msi" >Message Signalled Interrupts</capability>
+        <capability id="bus_master" >bus mastering</capability>
+        <capability id="cap_list" >PCI capabilities listing</capability>
+       </capabilities>
+       <resources>
+        <resource type="irq" value="45" />
+        <resource type="memoire" value="f2535000-f253500f" />
+       </resources>
+      </node>
+      <node id="network" claimed="true" class="network" handle="PCI:0000:00:19.0">
+       <description>Ethernet interface</description>
+       <product>82579LM Gigabit Network Connection</product>
+       <vendor>Intel Corporation</vendor>
+       <physid>19</physid>
+       <businfo>pci@0000:00:19.0</businfo>
+       <logicalname>eth0</logicalname>
+       <version>04</version>
+       <serial>00:21:cc:d9:bf:26</serial>
+       <capacity>1000000000</capacity>
+       <width units="bits">32</width>
+       <clock units="Hz">33000000</clock>
+       <configuration>
+        <setting id="autonegotiation" value="on" />
+        <setting id="broadcast" value="yes" />
+        <setting id="driver" value="e1000e" />
+        <setting id="driverversion" value="2.1.4-k" />
+        <setting id="firmware" value="0.13-3" />
+        <setting id="latency" value="0" />
+        <setting id="link" value="no" />
+        <setting id="multicast" value="yes" />
+        <setting id="port" value="twisted pair" />
+       </configuration>
+       <capabilities>
+        <capability id="pm" >Power Management</capability>
+        <capability id="msi" >Message Signalled Interrupts</capability>
+        <capability id="bus_master" >bus mastering</capability>
+        <capability id="cap_list" >PCI capabilities listing</capability>
+        <capability id="ethernet" />
+        <capability id="physical" >Interface physique</capability>
+        <capability id="tp" >paire torsade</capability>
+        <capability id="10bt" >10Mbit/s</capability>
+        <capability id="10bt-fd" >10Mbit/s (full duplex)</capability>
+        <capability id="100bt" >100Mbit/s</capability>
+        <capability id="100bt-fd" >100Mbit/s (full duplex)</capability>
+        <capability id="1000bt-fd" >1Gbit/s (full duplex)</capability>
+        <capability id="autonegotiation" >Auto-ngotiation</capability>
+       </capabilities>
+       <resources>
+        <resource type="irq" value="48" />
+        <resource type="memoire" value="f2500000-f251ffff" />
+        <resource type="memoire" value="f253b000-f253bfff" />
+        <resource type="portE/S" value="5080(taille=32)" />
+       </resources>
+      </node>
+      <node id="usb:1" claimed="true" class="bus" handle="PCI:0000:00:1a.0">
+       <description>USB controller</description>
+       <product>7 Series/C210 Series Chipset Family USB Enhanced Host Controller #2</product>
+       <vendor>Intel Corporation</vendor>
+       <physid>1a</physid>
+       <businfo>pci@0000:00:1a.0</businfo>
+       <version>04</version>
+       <width units="bits">32</width>
+       <clock units="Hz">33000000</clock>
+       <configuration>
+        <setting id="driver" value="ehci-pci" />
+        <setting id="latency" value="0" />
+       </configuration>
+       <capabilities>
+        <capability id="pm" >Power Management</capability>
+        <capability id="debug" >Debug port</capability>
+        <capability id="ehci" >Enhanced Host Controller Interface (USB2)</capability>
+        <capability id="bus_master" >bus mastering</capability>
+        <capability id="cap_list" >PCI capabilities listing</capability>
+       </capabilities>
+       <resources>
+        <resource type="irq" value="16" />
+        <resource type="memoire" value="f253a000-f253a3ff" />
+       </resources>
+      </node>
+      <node id="multimedia" claimed="true" class="multimedia" handle="PCI:0000:00:1b.0">
+       <description>Audio device</description>
+       <product>7 Series/C210 Series Chipset Family High Definition Audio Controller</product>
+       <vendor>Intel Corporation</vendor>
+       <physid>1b</physid>
+       <businfo>pci@0000:00:1b.0</businfo>
+       <version>04</version>
+       <width units="bits">64</width>
+       <clock units="Hz">33000000</clock>
+       <configuration>
+        <setting id="driver" value="snd_hda_intel" />
+        <setting id="latency" value="0" />
+       </configuration>
+       <capabilities>
+        <capability id="pm" >Power Management</capability>
+        <capability id="msi" >Message Signalled Interrupts</capability>
+        <capability id="pciexpress" >PCI Express</capability>
+        <capability id="bus_master" >bus mastering</capability>
+        <capability id="cap_list" >PCI capabilities listing</capability>
+       </capabilities>
+       <resources>
+        <resource type="irq" value="46" />
+        <resource type="memoire" value="f2530000-f2533fff" />
+       </resources>
+      </node>
+      <node id="pci:0" claimed="true" class="bridge" handle="PCIBUS:0000:02">
+       <description>PCI bridge</description>
+       <product>7 Series/C210 Series Chipset Family PCI Express Root Port 1</product>
+       <vendor>Intel Corporation</vendor>
+       <physid>1c</physid>
+       <businfo>pci@0000:00:1c.0</businfo>
+       <version>c4</version>
+       <width units="bits">32</width>
+       <clock units="Hz">33000000</clock>
+       <configuration>
+        <setting id="driver" value="pcieport" />
+       </configuration>
+       <capabilities>
+        <capability id="pci" />
+        <capability id="pciexpress" >PCI Express</capability>
+        <capability id="msi" >Message Signalled Interrupts</capability>
+        <capability id="pm" >Power Management</capability>
+        <capability id="normal_decode" />
+        <capability id="bus_master" >bus mastering</capability>
+        <capability id="cap_list" >PCI capabilities listing</capability>
+       </capabilities>
+       <resources>
+        <resource type="irq" value="16" />
+        <resource type="portE/S" value="4000(taille=4096)" />
+        <resource type="memoire" value="f1d00000-f24fffff" />
+        <resource type="portE/S" value="f0400000(taille=8388608)" />
+       </resources>
+        <node id="generic" claimed="true" class="generic" handle="PCI:0000:02:00.0">
+         <description>System peripheral</description>
+         <product>MMC/SD Host Controller</product>
+         <vendor>Ricoh Co Ltd</vendor>
+         <physid>0</physid>
+         <businfo>pci@0000:02:00.0</businfo>
+         <version>07</version>
+         <width units="bits">32</width>
+         <clock units="Hz">33000000</clock>
+         <configuration>
+          <setting id="driver" value="sdhci-pci" />
+          <setting id="latency" value="0" />
+         </configuration>
+         <capabilities>
+          <capability id="msi" >Message Signalled Interrupts</capability>
+          <capability id="pm" >Power Management</capability>
+          <capability id="pciexpress" >PCI Express</capability>
+          <capability id="bus_master" >bus mastering</capability>
+          <capability id="cap_list" >PCI capabilities listing</capability>
+         </capabilities>
+         <resources>
+          <resource type="irq" value="16" />
+          <resource type="memoire" value="f1d00000-f1d000ff" />
+         </resources>
+        </node>
+      </node>
+      <node id="pci:1" claimed="true" class="bridge" handle="PCIBUS:0000:03">
+       <description>PCI bridge</description>
+       <product>7 Series/C210 Series Chipset Family PCI Express Root Port 2</product>
+       <vendor>Intel Corporation</vendor>
+       <physid>1c.1</physid>
+       <businfo>pci@0000:00:1c.1</businfo>
+       <version>c4</version>
+       <width units="bits">32</width>
+       <clock units="Hz">33000000</clock>
+       <configuration>
+        <setting id="driver" value="pcieport" />
+       </configuration>
+       <capabilities>
+        <capability id="pci" />
+        <capability id="pciexpress" >PCI Express</capability>
+        <capability id="msi" >Message Signalled Interrupts</capability>
+        <capability id="pm" >Power Management</capability>
+        <capability id="normal_decode" />
+        <capability id="bus_master" >bus mastering</capability>
+        <capability id="cap_list" >PCI capabilities listing</capability>
+       </capabilities>
+       <resources>
+        <resource type="irq" value="17" />
+        <resource type="memoire" value="f1c00000-f1cfffff" />
+       </resources>
+        <node id="network" claimed="true" class="network" handle="PCI:0000:03:00.0">
+         <description>Interface rseau sans fil</description>
+         <product>Centrino Advanced-N 6205 [Taylor Peak]</product>
+         <vendor>Intel Corporation</vendor>
+         <physid>0</physid>
+         <businfo>pci@0000:03:00.0</businfo>
+         <logicalname>wlan0</logicalname>
+         <version>34</version>
+         <serial>84:3a:4b:33:62:82</serial>
+         <width units="bits">64</width>
+         <clock units="Hz">33000000</clock>
+         <configuration>
+          <setting id="broadcast" value="yes" />
+          <setting id="driver" value="iwlwifi" />
+          <setting id="driverversion" value="3.8.13.4-desktop-1.mga3" />
+          <setting id="firmware" value="18.168.6.1" />
+          <setting id="ip" value="192.168.1.185" />
+          <setting id="latency" value="0" />
+          <setting id="link" value="yes" />
+          <setting id="multicast" value="yes" />
+          <setting id="wireless" value="IEEE 802.11abgn" />
+         </configuration>
+         <capabilities>
+          <capability id="pm" >Power Management</capability>
+          <capability id="msi" >Message Signalled Interrupts</capability>
+          <capability id="pciexpress" >PCI Express</capability>
+          <capability id="bus_master" >bus mastering</capability>
+          <capability id="cap_list" >PCI capabilities listing</capability>
+          <capability id="ethernet" />
+          <capability id="physical" >Interface physique</capability>
+          <capability id="wireless" >Rseau sans fil</capability>
+         </capabilities>
+         <resources>
+          <resource type="irq" value="47" />
+          <resource type="memoire" value="f1c00000-f1c01fff" />
+         </resources>
+        </node>
+      </node>
+      <node id="pci:2" claimed="true" class="bridge" handle="PCIBUS:0000:04">
+       <description>PCI bridge</description>
+       <product>7 Series/C210 Series Chipset Family PCI Express Root Port 3</product>
+       <vendor>Intel Corporation</vendor>
+       <physid>1c.2</physid>
+       <businfo>pci@0000:00:1c.2</businfo>
+       <version>c4</version>
+       <width units="bits">32</width>
+       <clock units="Hz">33000000</clock>
+       <configuration>
+        <setting id="driver" value="pcieport" />
+       </configuration>
+       <capabilities>
+        <capability id="pci" />
+        <capability id="pciexpress" >PCI Express</capability>
+        <capability id="msi" >Message Signalled Interrupts</capability>
+        <capability id="pm" >Power Management</capability>
+        <capability id="normal_decode" />
+        <capability id="bus_master" >bus mastering</capability>
+        <capability id="cap_list" >PCI capabilities listing</capability>
+       </capabilities>
+       <resources>
+        <resource type="irq" value="18" />
+        <resource type="portE/S" value="3000(taille=4096)" />
+        <resource type="memoire" value="f1400000-f1bfffff" />
+        <resource type="portE/S" value="f0c00000(taille=8388608)" />
+       </resources>
+      </node>
+      <node id="usb:2" claimed="true" class="bus" handle="PCI:0000:00:1d.0">
+       <description>USB controller</description>
+       <product>7 Series/C210 Series Chipset Family USB Enhanced Host Controller #1</product>
+       <vendor>Intel Corporation</vendor>
+       <physid>1d</physid>
+       <businfo>pci@0000:00:1d.0</businfo>
+       <version>04</version>
+       <width units="bits">32</width>
+       <clock units="Hz">33000000</clock>
+       <configuration>
+        <setting id="driver" value="ehci-pci" />
+        <setting id="latency" value="0" />
+       </configuration>
+       <capabilities>
+        <capability id="pm" >Power Management</capability>
+        <capability id="debug" >Debug port</capability>
+        <capability id="ehci" >Enhanced Host Controller Interface (USB2)</capability>
+        <capability id="bus_master" >bus mastering</capability>
+        <capability id="cap_list" >PCI capabilities listing</capability>
+       </capabilities>
+       <resources>
+        <resource type="irq" value="23" />
+        <resource type="memoire" value="f2539000-f25393ff" />
+       </resources>
+      </node>
+      <node id="isa" claimed="true" class="bridge" handle="PCI:0000:00:1f.0">
+       <description>ISA bridge</description>
+       <product>QM77 Express Chipset LPC Controller</product>
+       <vendor>Intel Corporation</vendor>
+       <physid>1f</physid>
+       <businfo>pci@0000:00:1f.0</businfo>
+       <version>04</version>
+       <width units="bits">32</width>
+       <clock units="Hz">33000000</clock>
+       <configuration>
+        <setting id="driver" value="lpc_ich" />
+        <setting id="latency" value="0" />
+       </configuration>
+       <capabilities>
+        <capability id="isa" />
+        <capability id="bus_master" >bus mastering</capability>
+        <capability id="cap_list" >PCI capabilities listing</capability>
+       </capabilities>
+       <resources>
+        <resource type="irq" value="0" />
+       </resources>
+      </node>
+      <node id="storage" claimed="true" class="storage" handle="PCI:0000:00:1f.2">
+       <description>SATA controller</description>
+       <product>7 Series Chipset Family 6-port SATA Controller [AHCI mode]</product>
+       <vendor>Intel Corporation</vendor>
+       <physid>1f.2</physid>
+       <businfo>pci@0000:00:1f.2</businfo>
+       <version>04</version>
+       <width units="bits">32</width>
+       <clock units="Hz">66000000</clock>
+       <configuration>
+        <setting id="driver" value="ahci" />
+        <setting id="latency" value="0" />
+       </configuration>
+       <capabilities>
+        <capability id="storage" />
+        <capability id="msi" >Message Signalled Interrupts</capability>
+        <capability id="pm" >Power Management</capability>
+        <capability id="ahci_1.0" />
+        <capability id="bus_master" >bus mastering</capability>
+        <capability id="cap_list" >PCI capabilities listing</capability>
+       </capabilities>
+       <resources>
+        <resource type="irq" value="42" />
+        <resource type="portE/S" value="50a8(taille=8)" />
+        <resource type="portE/S" value="50b4(taille=4)" />
+        <resource type="portE/S" value="50a0(taille=8)" />
+        <resource type="portE/S" value="50b0(taille=4)" />
+        <resource type="portE/S" value="5060(taille=32)" />
+        <resource type="memoire" value="f2538000-f25387ff" />
+       </resources>
+      </node>
+      <node id="serial" claimed="true" class="bus" handle="PCI:0000:00:1f.3">
+       <description>SMBus</description>
+       <product>7 Series/C210 Series Chipset Family SMBus Controller</product>
+       <vendor>Intel Corporation</vendor>
+       <physid>1f.3</physid>
+       <businfo>pci@0000:00:1f.3</businfo>
+       <version>04</version>
+       <width units="bits">64</width>
+       <clock units="Hz">33000000</clock>
+       <configuration>
+        <setting id="driver" value="i801_smbus" />
+        <setting id="latency" value="0" />
+       </configuration>
+       <resources>
+        <resource type="irq" value="18" />
+        <resource type="memoire" value="f2534000-f25340ff" />
+        <resource type="portE/S" value="efa0(taille=32)" />
+       </resources>
+      </node>
+    </node>
+    <node id="scsi:0" claimed="true" class="storage" handle="">
+     <physid>0</physid>
+     <logicalname>scsi0</logicalname>
+     <capabilities>
+      <capability id="emulated" >Emulated device</capability>
+     </capabilities>
+      <node id="disk" claimed="true" class="disk" handle="SCSI:00:00:00:00">
+       <description>ATA Disk</description>
+       <product>TOSHIBA THNSNC12</product>
+       <vendor>Toshiba</vendor>
+       <physid>0.0.0</physid>
+       <businfo>scsi@0:0.0.0</businfo>
+       <logicalname>/dev/sda</logicalname>
+       <dev>8:0</dev>
+       <version>CJLA</version>
+       <serial>81PS10ECTMAZ</serial>
+       <size units="bytes">128035676160</size>
+       <configuration>
+        <setting id="ansiversion" value="5" />
+        <setting id="sectorsize" value="512" />
+        <setting id="signature" value="0001bcc1" />
+       </configuration>
+       <capabilities>
+        <capability id="partitioned" >Partitioned disk</capability>
+        <capability id="partitioned:dos" >MS-DOS partition table</capability>
+       </capabilities>
+        <node id="volume:0" claimed="true" class="volume" handle="">
+         <description>Linux swap volume</description>
+         <physid>1</physid>
+         <businfo>scsi@0:0.0.0,1</businfo>
+         <logicalname>/dev/sda1</logicalname>
+         <dev>8:1</dev>
+         <version>1</version>
+         <serial>d8b3f967-8950-4b3b-8c6a-764d232429b3</serial>
+         <size units="bytes">8380510208</size>
+         <capacity>8380511744</capacity>
+         <configuration>
+          <setting id="filesystem" value="swap" />
+          <setting id="pagesize" value="4096" />
+         </configuration>
+         <capabilities>
+          <capability id="primary" >Primary partition</capability>
+          <capability id="bootable" >Bootable partition (active)</capability>
+          <capability id="nofs" >No filesystem</capability>
+          <capability id="swap" >Linux swap</capability>
+          <capability id="initialized" >initialized volume</capability>
+         </capabilities>
+        </node>
+        <node id="volume:1" claimed="true" class="volume" handle="">
+         <description>Extended partition</description>
+         <physid>2</physid>
+         <businfo>scsi@0:0.0.0,2</businfo>
+         <logicalname>/dev/sda2</logicalname>
+         <dev>8:2</dev>
+         <size units="bytes">119651374080</size>
+         <capacity>119651374080</capacity>
+         <capabilities>
+          <capability id="primary" >Primary partition</capability>
+          <capability id="extended" >Extended partition</capability>
+          <capability id="partitioned" >Partitioned disk</capability>
+          <capability id="partitioned:extended" >Extended partition</capability>
+         </capabilities>
+          <node id="logicalvolume:0" claimed="true" class="volume" handle="">
+           <description>Linux filesystem partition</description>
+           <physid>5</physid>
+           <logicalname>/dev/sda5</logicalname>
+           <logicalname>/</logicalname>
+           <dev>8:5</dev>
+           <capacity>31336512000</capacity>
+           <configuration>
+            <setting id="mount.fstype" value="ext4" />
+            <setting id="mount.options" value="rw,noatime,data=ordered" />
+            <setting id="state" value="mounted" />
+           </configuration>
+          </node>
+          <node id="logicalvolume:1" claimed="true" class="volume" handle="">
+           <description>Linux filesystem partition</description>
+           <physid>6</physid>
+           <logicalname>/dev/sda6</logicalname>
+           <logicalname>/home</logicalname>
+           <dev>8:6</dev>
+           <capacity>88313601024</capacity>
+           <configuration>
+            <setting id="mount.fstype" value="ext4" />
+            <setting id="mount.options" value="rw,noatime,data=ordered" />
+            <setting id="state" value="mounted" />
+           </configuration>
+          </node>
+        </node>
+      </node>
+    </node>
+    <node id="scsi:1" claimed="true" class="storage" handle="">
+     <physid>3</physid>
+     <logicalname>scsi1</logicalname>
+     <capabilities>
+      <capability id="emulated" >Emulated device</capability>
+     </capabilities>
+      <node id="cdrom" claimed="true" class="disk" handle="SCSI:01:00:00:00">
+       <description>DVD-RAM writer</description>
+       <product>DVDRAM GT50N</product>
+       <vendor>HL-DT-ST</vendor>
+       <physid>0.0.0</physid>
+       <businfo>scsi@1:0.0.0</businfo>
+       <logicalname>/dev/sr0</logicalname>
+       <dev>11:0</dev>
+       <version>LT20</version>
+       <configuration>
+        <setting id="ansiversion" value="5" />
+        <setting id="status" value="nodisc" />
+       </configuration>
+       <capabilities>
+        <capability id="removable" >support is removable</capability>
+        <capability id="audio" >Audio CD playback</capability>
+        <capability id="cd-r" >CD-R burning</capability>
+        <capability id="cd-rw" >CD-RW burning</capability>
+        <capability id="dvd" >DVD playback</capability>
+        <capability id="dvd-r" >DVD-R burning</capability>
+        <capability id="dvd-ram" >DVD-RAM burning</capability>
+       </capabilities>
+      </node>
+    </node>
+  </node>
+  <node id="battery" claimed="true" class="power" handle="DMI:002E">
+   <product>45N1011</product>
+   <vendor>LGC</vendor>
+   <physid>1</physid>
+   <slot>Rear</slot>
+   <capacity units="mWh">93600</capacity>
+   <configuration>
+    <setting id="voltage" value="11,1V" />
+   </configuration>
+  </node>
+  <node id="network" disabled="true" claimed="true" class="network" handle="">
+   <description>Ethernet interface</description>
+   <physid>2</physid>
+   <logicalname>wwan0</logicalname>
+   <serial>02:15:e0:ec:01:00</serial>
+   <configuration>
+    <setting id="broadcast" value="yes" />
+    <setting id="driver" value="cdc_ncm" />
+    <setting id="driverversion" value="14-Mar-2012" />
+    <setting id="firmware" value="Mobile Broadband Network Device" />
+    <setting id="link" value="no" />
+    <setting id="multicast" value="yes" />
+   </configuration>
+   <capabilities>
+    <capability id="ethernet" />
+    <capability id="physical" >Interface physique</capability>
+   </capabilities>
+  </node>
+</node>
+</list>
+'''
+        detect.cmd = fake
+        detect.detect_system(l, XML)
+        detect.cmd = save
+        print l
+        self.assertEqual(
+            l,
+            [('system', 'product', 'serial', 'PB4F20N'),
+             ('system', 'product', 'name', '2347GF8 (LENOVO_MT_2347)'),
+             ('system', 'product', 'vendor', 'LENOVO'),
+             ('system', 'product', 'version', 'ThinkPad T430'),
+             ('system', 'memory', 'size', '8589934592'),
+             ('network', 'eth0', 'serial', '00:21:cc:d9:bf:26'),
+             ('network', 'eth0', 'vendor', 'Intel Corporation'),
+             ('network', 'eth0', 'product', '82579LM Gigabit Network Connection'),
+             ('network', 'eth0', 'link', 'no'),
+             ('network', 'eth0', 'driver', 'e1000e'),
+             ('network', 'wlan0', 'serial', '84:3a:4b:33:62:82'),
+             ('network', 'wlan0', 'vendor', 'Intel Corporation'),
+             ('network', 'wlan0', 'product', 'Centrino Advanced-N 6205 [Taylor Peak]'),
+             ('network', 'wlan0', 'ipv4', '192.168.1.185'),
+             ('network', 'wlan0', 'link', 'yes'),
+             ('network', 'wlan0', 'driver', 'iwlwifi'),
+             ('network', 'wwan0', 'serial', '02:15:e0:ec:01:00'),
+             ('network', 'wwan0', 'link', 'no'),
+             ('network', 'wwan0', 'driver', 'cdc_ncm'),
+             ('system', 'cpu1', 'cores', '2'),
+             ('system', 'cpu1', 'enabled_cores', '2'),
+             ('system', 'cpu1', 'threads', '4'),
+             ('system', 'cpu', 'number', '4')]
+            )
+
     def test_detect_system(self):
         l = []
         # replace the call to nproc by a fake result

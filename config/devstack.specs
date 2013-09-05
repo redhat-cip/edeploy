@@ -2,6 +2,6 @@
 
 [
     ('disk', '$disk', 'size', 'gt(4)'),
-    ('system', 'memory', 'size', 'ge(2000000000)'),
+    ('memory', 'total', 'size', 'ge(2000000000)'),
     ('network', '$eth', 'serial', '$mac'),
 ]

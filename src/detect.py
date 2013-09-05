@@ -131,7 +131,24 @@ def detect_system(hw_lst, output=None):
         find_element(xml, "./node/product", 'name')
         find_element(xml, "./node/vendor", 'vendor')
         find_element(xml, "./node/version", 'version')
-        find_element(xml, ".//node[@id='memory']/size", 'size', 'memory')
+        for elt in xml.findall(".//node[@id='memory']"):
+            name = elt.find('physid')
+            if name is not None:
+                find_element(elt, 'size', 'size','total', 'memory')
+                bank_count=0
+                for bank_list in elt.findall(".//node[@id]"):
+                    if ('bank:') in bank_list.get('id'):
+                        bank_count=bank_count+1
+                        for bank in elt.findall(".//node[@id='%s']"%(bank_list.get('id'))):
+                            find_element(bank, 'size', 'size', bank_list.get('id'), 'memory')
+                            find_element(bank, 'clock', 'clock', bank_list.get('id'), 'memory')
+                            find_element(bank, 'description', 'description', bank_list.get('id'), 'memory')
+                            find_element(bank, 'vendor', 'vendor', bank_list.get('id'), 'memory')
+                            find_element(bank, 'serial', 'serial', bank_list.get('id'), 'memory')
+                            find_element(bank, 'slot', 'slot', bank_list.get('id'), 'memory')
+                if bank_count > 0:
+                    hw_lst.append(('memory', 'banks', 'count', bank_count))
+
         for elt in xml.findall(".//node[@class='network']"):
             name = elt.find('logicalname')
             if name is not None:

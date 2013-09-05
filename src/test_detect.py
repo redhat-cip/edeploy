@@ -2024,7 +2024,6 @@ class TestDetect(unittest.TestCase):
         detect.cmd = fake
         detect.detect_system(l, XML)
         detect.cmd = save
-        print l
         self.assertEqual(
             l,
             [('system', 'product', 'serial', 'PB4F20N'),

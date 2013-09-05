@@ -18,6 +18,7 @@
 
 VERBOSE=0
 
+. init.common
 exec 3>&1
 exec 4>&2
 
@@ -26,136 +27,16 @@ exec > /log 2>&1
 tail -f /log > /dev/console &
 tpid=$!
 
-show_network_cards() {
-    # Let's search all devices that have "network" in their class or name
-    lspci | grep -wi Network
-
-    # Let's search all devices that are part of class 02 aka Network
-    for device in $(lspci -n | awk '{print $2}' | grep "^02"); do lspci -n | grep -w $device; done
-}
-
-show_kernel_modules() {
-    KMODS=$(LANG=C LC_ALL=C lspci -vv | grep "Kernel driver" | cut -d ":" -f 2 | sort -u | tr '\n' ',')
-    KVER=$(uname -rm)
-    log "Required kernel modules for $KVER are :$KMODS"
-}
-
-save_log() {
-    exec 1>&3
-    exec 2>&4
-
-    kill $tpid
-
-    if [ -d $d/var/log ]; then
-	cp /log $d/var/log/install.log
-    fi
-}
-
-step() {
-    echo "################################################################"
-    echo "$@"
-    echo "################################################################"
-}
-
-log() {
-    echo "$@"
-}
-
-log_n() {
-    echo -n "$@"
-}
-
-################################################################################
-# extracted from /var/lib/dpkg/info/openssh-server.postinst
-#
-# Do not fix indentation to be able to compare with the original file
-# easily.
-################################################################################
-get_config_option() {
-	option="$1"
-
-	[ -f /etc/ssh/sshd_config ] || return
-
-	# TODO: actually only one '=' allowed after option
-	perl -lne 's/\s+/ /g; print if s/^\s*'"$option"'[[:space:]=]+//i' \
-	/etc/ssh/sshd_config
-}
-
-host_keys_required() {
-	hostkeys="$(get_config_option HostKey)"
-	if [ "$hostkeys" ]; then
-		echo "$hostkeys"
-	else
-		# No HostKey directives at all, so the server picks some
-		# defaults depending on the setting of Protocol.
-		protocol="$(get_config_option Protocol)"
-		[ "$protocol" ] || protocol=1,2
-		if echo "$protocol" | grep 1 >/dev/null; then
-			echo /etc/ssh/ssh_host_key
-		fi
-		if echo "$protocol" | grep 2 >/dev/null; then
-			echo /etc/ssh/ssh_host_rsa_key
-			echo /etc/ssh/ssh_host_dsa_key
-			echo /etc/ssh/ssh_host_ecdsa_key
-		fi
-	fi
-}
-
-create_key() {
-	msg="$1"
-	shift
-	hostkeys="$1"
-	shift
-	file="$1"
-	shift
-
-	if echo "$hostkeys" | grep -x "$file" >/dev/null && \
-	   [ ! -f "$file" ] ; then
-		echo -n $msg
-		ssh-keygen -q -f "$file" -N '' "$@"
-		echo
-		if which restorecon >/dev/null 2>&1; then
-			restorecon "$file.pub"
-		fi
-	fi
-}
-
-give_up() {
-	log "$@"
-        exec /bin/bash -i
-}
-
-
-create_keys() {
-	hostkeys="$(host_keys_required)"
-
-	create_key "Creating SSH1 key; this may take some time ..." \
-		"$hostkeys" /etc/ssh/ssh_host_key -t rsa1
-
-	create_key "Creating SSH2 RSA key; this may take some time ..." \
-		"$hostkeys" /etc/ssh/ssh_host_rsa_key -t rsa
-	create_key "Creating SSH2 DSA key; this may take some time ..." \
-		"$hostkeys" /etc/ssh/ssh_host_dsa_key -t dsa
-	create_key "Creating SSH2 ECDSA key; this may take some time ..." \
-		"$hostkeys" /etc/ssh/ssh_host_ecdsa_key -t ecdsa
-}
 
 ################################################################################
 
 step "Create directories"
-[ -d /dev ] || mkdir -m 0755 /dev
-[ -d /root ] || mkdir -m 0700 /root
-[ -d /sys ] || mkdir /sys
-[ -d /proc ] || mkdir /proc
-[ -d /tmp ] || mkdir /tmp
+create_main_directories
 rm -rf /var/lock
 mkdir -p /var/lock
 
 step "Mounting virtual fs"
-mount -t sysfs -o nodev,noexec,nosuid sysfs /sys
-mount -t proc -o nodev,noexec,nosuid proc /proc
-# Some things don't work properly without /etc/mtab.
-ln -sf /proc/mounts /etc/mtab
+mount_virtual_fs
 
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^DEBUG=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^VERBOSE=")
@@ -166,21 +47,6 @@ if [ "$VERBOSE" = 1 ]; then
 fi
 
 grep -q '\<quiet\>' /proc/cmdline || log "Loading, please wait..."
-
-# Note that this only becomes /dev on the real filesystem if udev's scripts
-# are used; which they will be, but it's worth pointing out
-if ! mount -t devtmpfs -o mode=0755 udev /dev; then
-    log "W: devtmpfs not available, falling back to tmpfs for /dev"
-    mount -t tmpfs -o mode=0755 udev /dev
-    [ -e /dev/console ] || mknod -m 0600 /dev/console c 5 1
-    [ -e /dev/null ] || mknod /dev/null c 1 3
-fi
-mkdir /dev/pts
-mount -t devpts -o noexec,nosuid,gid=5,mode=0620 devpts /dev/pts || true
-mount -t tmpfs -o "nosuid,size=20%,mode=0755" tmpfs /run
-mkdir /run/initramfs
-# compatibility symlink for the pre-oneiric locations
-ln -s /run/initramfs /dev/.initramfs
 
 step "Starting services"
 if [ -x /etc/init.d/sysklogd ]; then
@@ -213,24 +79,7 @@ serial="$(dmidecode -s system-serial-number)"
 # Hardware detection starts here
 ################################################################################
 
-step "Detecting PCI devices"
-
-for d in $(cut -f2 /proc/bus/pci/devices ); do
-    echo $d| sed 's/\(....\)/\1 /'|while read vendor device; do
-	grep "pci:v0000${vendor}d0000${device}" /lib/modules/$(uname -r)/modules.alias|while read a n module; do
-	    log_n "Loading $module "
-	    modprobe $module && log "done" || log "error"
-	done
-    done
-done
-
-# Some kernel drivers doesn't have hardware dependencies but are required to make the device work
-# Let's probe them before starting the network stuff
-step "Probing Additional modules"
-for module in mlx4_en; do
-    log_n "Loading additional module $module "
-    modprobe $module && ( log "done"; echo $module >> /modules) || log "error"
-done
+probe_pci_devices
 
 step "Starting networking"
 
@@ -239,121 +88,7 @@ if [ "$DEBUG" = 1 ]; then
     /etc/init.d/ssh start
 fi
 
-# Let's wait 30 seconds to get a DHCP answer
-# Default is very very long....
-DHCP_TIMEOUT=30
-DHCP_GRACE_TIME=10
-DHCP_NO_RACETIMING=1
-sed -i "s/^\#timeout.*/timeout $DHCP_TIMEOUT/g" /etc/dhcp/dhclient.conf
-
-MAX_RUN=3
-RUN=0
-while true; do
-    log "Enabling Ethernet Links"
-    DEVICE_LIST=
-    pushd /sys/class/net >/dev/null
-    for device in *; do
-	if [ "$device" = "lo" ]; then
-	    continue
-	fi
-	ip link set dev $device up
-	DEVICE_LIST="$DEVICE_LIST $device"
-    done
-    popd > /dev/null
-
-    # Only consider interface that have a Link ok
-    log "Waiting a few seconds to catch network link"
-    sleep 10
-
-    log "List of available network devices is :$DEVICE_LIST"
-
-    # If we have only match "lo" it means no physical interface got detected !
-    if [ -z "$DEVICE_LIST" ]; then
-        show_kernel_modules
-	show_network_cards
-	give_up "No Network interface found !"
-    fi
-
-    VALID_IFACES_COUNT=0
-    PIDS=
-    pushd /sys/class/net >/dev/null
-    for iface in *; do
-        if [ "$iface" = "lo" ]; then
-            continue
-        fi
-        # Let's check if the network interface reports some carrier
-	# If so, let's try to get a DHCP answer from here
-	if [ "$(cat /sys/class/net/$iface/carrier)" = "1" ]; then
-	    log "Adding Interface $iface : carrier detected"
-	    CARRIER_DEVICE_LIST="$CARRIER_DEVICE_LIST $iface"
-	    VALID_IFACES_COUNT=$(($VALID_IFACES_COUNT + 1))
-            # Let's run all the dhclients in parallel
-	    ( log "Waiting for $iface to come up."
-		dhclient $iface
-		count=$DHCP_GRACE_TIME
-		while [ $count -gt 0 ] && ! ifconfig $iface|grep -q 'inet addr'; do
-		    sleep 1
-		    count=$(($count - 1))
-		done
-		ifconfig $iface|grep -q 'inet addr' && log "$iface configuration done" || log "$iface configuration failed"
-	    ) &
-	    PIDS="$PIDS $!"
-	    sleep $DHCP_NO_RACETIMING # Don't race dhcp clients too much
-	else
-	    log "Rejecting Interface $iface : carrier not detected"
-	fi
-    done
-    popd >/dev/null
-
-    log "Valid interfaces with Carrier were $CARRIER_DEVICE_LIST"
-
-    # We now have to let enough time to let all the racing dhcpclient finishing
-    DHCP_WAITING_TIME=$((DHCP_TIMEOUT + $DHCP_GRACE_TIME + $VALID_IFACES_COUNT*$DHCP_NO_RACETIMING + 3))
-    log "Waiting for $VALID_IFACES_COUNT DHCP anwsers to come up in $DHCP_WAITING_TIME sec"
-
-    while [ -n "$PIDS" ]; do
-	NEW_PIDS=
-	for p in $(echo $PIDS); do
-	    if [ -d /proc/$p ]; then
-		NEW_PIDS="$NEW_PIDS $p"
-	    fi
-	done
-	DHCP_WAITING_TIME=$(($DHCP_WAITING_TIME - 1))
-	if [ -n "$NEW_PIDS" -a $DHCP_WAITING_TIME -gt 0 ]; then
-	    PIDS="$NEW_PIDS"
-	    sleep 1
-	else
-	    PIDS=
-	fi
-    done
-
-    IP_SET=$(ip a  | grep -iw "inet" | grep -v "127.0.0.1" | wc -l)
-    if [ "$IP_SET" -gt 0 ]; then
-	log "Found $IP_SET interfaces properly configured"
-	# We found at least once DHCP server so we can continue
-	# the install procedure
-	break
-    fi
-
-    RUN=$(( $RUN + 1 ))
-    sleep 10
-    if [ "$RUN" != "$MAX_RUN" ]; then
-	log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	log "!! NO DHCP FOUND ! Waiting 10 seconds before trying again. !!"
-	log "!! ($RUN / $MAX_RUN)                                       !!"
-	log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-    else
-	log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	log "!! NO DHCP FOUND after $RUN tries. Rebooting in 10 seconds !!"
-	log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	if [ "$DEBUG" != 1 ]; then
-	    reboot -f
-	else
-            show_kernel_modules
-	    give_up "!! DEBUG mode is set, let's give up as no DHCP server found"
-	fi
-    fi
-done
+probe_network_devices
 
 ip a
 

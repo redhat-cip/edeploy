@@ -110,7 +110,7 @@ stress-http:
 
 
 dist:
-	tar zcvf ../edeploy.tgz Makefile init README.rst *.install edeploy update-scenario.sh *.py
+	tar zcvf ../edeploy.tgz Makefile init init.common README.rst *.install edeploy update-scenario.sh *.py
 
 clean:
 	-rm -f *~ $(INST)/*.done

@@ -1,0 +1,159 @@
+#!/bin/bash
+#
+# Copyright (C) 2013 eNovance SAS <licensing@enovance.com>
+#
+# Author: Frederic Lepied <frederic.lepied@enovance.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+VERBOSE=0
+
+. init.common
+exec 3>&1
+exec 4>&2
+
+exec > /log 2>&1
+
+tail -f /log > /dev/console &
+tpid=$!
+
+
+################################################################################
+
+step "Create directories"
+create_main_directories
+rm -rf /var/lock
+mkdir -p /var/lock
+
+step "Mounting virtual fs"
+mount_virtual_fs
+
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^DEBUG=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^VERBOSE=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^NOREBOOT=")
+
+if [ "$VERBOSE" = 1 ]; then
+    set -x			# show commands
+fi
+
+grep -q '\<quiet\>' /proc/cmdline || log "Loading, please wait..."
+
+step "Starting services"
+if [ -x /etc/init.d/sysklogd ]; then
+    /etc/init.d/sysklogd start
+fi
+
+if [ -x /etc/init.d/klogd ]; then
+    /etc/init.d/klogd start
+fi
+
+# It's all over netlink now
+echo "" > /proc/sys/kernel/hotplug
+
+step "Start Udev"
+# Start the udev daemon to process events
+/sbin/udevd --daemon --resolve-names=never
+
+# Iterate sysfs and fire off everything; if we include a rule for it then
+# it'll get handled; otherwise it'll get handled later when we do this again
+# in the main boot sequence.
+( /sbin/udevadm trigger --action=add --subsystem-match=block; \
+  /sbin/udevadm trigger --action=add --subsystem-nomatch=block; ) &
+
+################################################################################
+# Use the system tag to find the role
+################################################################################
+serial="$(dmidecode -s system-serial-number)"
+
+################################################################################
+# Hardware detection starts here
+################################################################################
+
+probe_pci_devices
+
+step "Starting networking"
+
+if [ "$DEBUG" = 1 ]; then
+    create_keys
+    /etc/init.d/ssh start
+fi
+
+probe_network_devices
+
+ip a
+
+# This is the default value for both SERV & RSERV
+SERV=10.0.0.1
+HSERV=
+HSERV_PORT=80
+RSERV=
+RSERV_PORT=873
+HTTP_PORT=80
+HTTP_PATH=/cgi-bin/
+DURATION=
+SMOKE_TEST=
+
+# Unless you override one or the other via the cmdline
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^[HR]?SERV=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^[HR]?SERV_PORT=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^HTTP_PORT=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^HTTP_PATH=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^DURATION=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^SMOKE_TEST")
+
+if [ -z "$RSERV" ]; then
+    RSERV="$SERV"
+fi
+
+################################################################################
+step "Detecting hardware"
+
+cd /
+./detect.py > /hw.py
+./health-check.py hw.py > /health.py
+
+show_kernel_modules
+################################################################################
+# Send the detected hardware to the server and receive a configuration script
+# if there is a match on the server else stop.
+################################################################################
+
+step "Configuring system via server ${SERV}"
+curl -s -S -o/configure -F file=@/health.py http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload-health.py &
+#Saving curl's PID
+PID="$!"
+
+log_n "Awaiting eDeploy server :"
+while [ ! -z "$(pidof curl)" ]
+    do log_n "."
+    sleep 1
+done
+log "done"
+
+#Let's grab curl's return code based on it's pid
+wait $PID
+RET_CODE=$?
+if [ "$RET_CODE" != "0" ]; then
+    give_up "Curl exited as failed ($RET_CODE). Cannot get a configuration from http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py'"
+fi
+
+save_log
+
+if [ "$DEBUG" = 1 ]; then
+    echo "Debug mode, launching an interactive shell"
+    exec /bin/bash -i
+else
+    echo "Shutting down the system in 10 sec"
+    sleep 10
+    poweroff -f
+fi

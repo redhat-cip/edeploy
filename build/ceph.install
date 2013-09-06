@@ -63,7 +63,7 @@ else
 
 fi
 
-chroot ${dir} curl -k 'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc' | apt-key add -
+chroot ${dir} sh -c "curl -k 'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc' | apt-key add -"
 chroot ${dir} apt-get update
 chroot ${dir} apt-get install ceph -y --force-yes
 

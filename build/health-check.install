@@ -64,7 +64,6 @@ rsync -au --delete-excluded --delete --exclude /boot/ \
 
 cp -p init.common ${PYDIR}/detect.py ${PYDIR}/health-check.py ${PYDIR}/hpacucli.py ${PYSERVERDIR}/matcher.py ${PYDIR}/diskinfo.py ${PYDIR}/ipmi.py ${DST}/
 cp -p init.health ${DST}/init
-gcc memtest.c -static -Os -o ${DST}/usr/bin/memtest
 
 # If the ssh initscript features some upstart stuff, it needs to be disabled
 sed -i "s/exec \/lib\/init\/upstart\-job ssh/echo 'No upstart check required'/g" ${DST}/etc/init.d/ssh

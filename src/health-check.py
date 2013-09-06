@@ -101,12 +101,44 @@ def cpu_perf(hw):
             run_sysbench(hw,10, 1, cpu_nb)
     run_sysbench(hw,10, int(result))
 
+def run_memtest(hw, max_time, block_size, cpu_count, processor_num=-1):
+    'Running memtest on a processor'
+    taskset=''
+    if (processor_num < 0):
+        print 'Benchmarking memory @%s from all CPUs for %d seconds (%d threads)\n' % (block_size, max_time,cpu_count)
+    else:
+        print 'Benchmarking memory @%s from CPU %d for %d seconds (%d threads)\n' % (block_size, processor_num,max_time,cpu_count)
+        taskset='taskset %s' % hex(1 << processor_num)
+
+    cmd = subprocess.Popen('%s sysbench --max-time=%d --max-requests=1000000 --num-threads=1 --test=memory --memory-block-size=%s run' %(taskset, max_time,block_size),
+             shell=True, stdout=subprocess.PIPE)
+    for line in cmd.stdout:
+             if "transferred" in line:
+                 title,right = line.rstrip('\n').replace(' ','').split('(')
+                 perf,useless = right.split('.')
+                 if processor_num==-1:
+                     hw.append(('cpu', 'logical', 'bandwidth_%s'%block_size, perf))
+                 else:
+                     hw.append(('cpu', 'logical_%d'%processor_num, 'bandwidth_%s'%block_size, perf))
+
+def mem_perf(hw):
+    'Report the memory performance'
+    block_size_list=['1K', '4K', '1M', '16M', '128M', '1G']
+    result=get_value(hw,'cpu','logical','number')
+    if result is not None:
+        for cpu_nb in range(int(result)):
+            for block_size in block_size_list:
+                run_memtest(hw, 3, block_size, 1, cpu_nb)
+
+    for block_size in block_size_list:
+        run_memtest(hw, 3, block_size, int(result))
 
 def _main():
     'Command line entry point.'
     hrdw = eval(open(sys.argv[1]).read(-1))
 
     cpu_perf(hrdw)
+    mem_perf(hrdw)
     pprint.pprint(hrdw)
 
 if __name__ == "__main__":

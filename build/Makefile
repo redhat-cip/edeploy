@@ -42,6 +42,9 @@ META=$(TOP)/metadata/$(VERS)
 
 all: $(INST)/$(IMG) $(INST)/mysql.done
 
+health-check: $(INST)/base.done init.health health-check.install $(PYDIR)/detect.py $(PYDIR)/hpacucli.py $(PYSERVERDIR)/matcher.py $(PYDIR)/diskinfo.py $(PYDIR)/ipmi.py
+	./health-check.install $(INST)/base $(INST)/health-check $(IMG) $(VERS) $(DEBUG)
+
 pxe $(INST)/$(IMG): $(INST)/base.done init pxe.install $(PYDIR)/detect.py $(PYDIR)/hpacucli.py $(PYSERVERDIR)/matcher.py $(PYDIR)/diskinfo.py $(PYDIR)/ipmi.py
 	./pxe.install $(INST)/base $(INST)/pxe $(IMG) $(VERS) $(DEBUG)
 
@@ -99,6 +102,10 @@ ceph $(INST)/ceph.done: ceph.install $(INST)/base.done
 docker $(INST)/docker.done: docker.install $(INST)/base.done
 	./docker.install $(INST)/base $(INST)/docker $(VERS)
 	touch $(INST)/docker.done
+
+health-test: health-check
+	cd ../tests/tftpboot/; ln -sf $(INST)/base/boot/vmlinuz* vmlinuz; ln -sf $(INST)/initrd.pxe initrd;
+	cd ../tests; ./run_kvm.sh $(TOP) health
 
 test: $(INST)/$(IMG)
 	cd ../tests/tftpboot/; ln -sf $(INST)/base/boot/vmlinuz* vmlinuz; ln -sf $(INST)/initrd.pxe initrd;

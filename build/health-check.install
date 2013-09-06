@@ -1,0 +1,79 @@
+#!/bin/bash
+#
+# Copyright (C) 2013 eNovance SAS <licensing@enovance.com>
+#
+# Author: Frederic Lepied <frederic.lepied@enovance.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+SRC="$1"
+DST="$2"
+IMG="$3"
+VERS="$4"
+
+PYDIR=$(cd $(dirname $0)/../src; pwd)
+PYSERVERDIR=$(cd $(dirname $0)/../server; pwd)
+ORIG=$(cd $(dirname $0); pwd)
+
+. ${ORIG}/common
+
+if [ ! -d "$SRC" -o -z "$DST" -o -z "$IMG" -o -z "$VERS" ]; then
+   echo "Usage: $0 <source dir> <dest dir> <initrd to generate> <version>" 1>&2
+   exit 1
+fi
+
+set -x
+set -e
+
+chroot ${SRC} apt-get update
+chroot ${SRC} apt-get install -y --force-yes sysbench
+chroot ${SRC} apt-get clean
+
+rsync -au --delete-excluded --delete --exclude /boot/ \
+    --exclude 'vmlinuz*' \
+    --exclude 'initrd*' \
+    --exclude usr/share/man \
+    --exclude usr/share/doc \
+    --exclude usr/share/info \
+    --exclude var/lib/dpkg  \
+    --exclude var/lib/apt \
+    --exclude var/cache/debconf \
+    --exclude 'var/cache/apt/archives/*.deb' \
+    --exclude usr/share/zoneinfo \
+    --exclude usr/share/locale \
+    --exclude usr/lib/*/gconv/ \
+    --exclude 'lib/modules/*/kernel/net/netfilter' \
+    --exclude 'lib/modules/*/kernel/sound' \
+    --exclude 'lib/modules/*/kernel/drivers/sound' \
+    --exclude 'lib/modules/*/kernel/drivers/media' \
+    --exclude 'lib/modules/*/kernel/drivers/gpu/' \
+    --exclude 'lib/modules/*/kernel/drivers/net/wireless/' \
+    --exclude 'ocfs2*.ko' \
+    --exclude '*.pyc' \
+    ${SRC}/ ${DST}
+
+cp -p init.common ${PYDIR}/detect.py ${PYDIR}/health-check.py ${PYDIR}/hpacucli.py ${PYSERVERDIR}/matcher.py ${PYDIR}/diskinfo.py ${PYDIR}/ipmi.py ${DST}/
+cp -p init.health ${DST}/init
+gcc memtest.c -static -Os -o ${DST}/usr/bin/memtest
+
+# If the ssh initscript features some upstart stuff, it needs to be disabled
+sed -i "s/exec \/lib\/init\/upstart\-job ssh/echo 'No upstart check required'/g" ${DST}/etc/init.d/ssh
+
+sed -i "s/VERS=.*/VERS=${VERS}/" ${DST}/init
+
+echo "Creating initrd and compressing with $COMPRESS"
+cd ${DST}; find . | cpio --quiet -R 0:0 -o -H newc | compress -9v > ../${IMG}
+
+echo "### Build complete ###"
+echo "### initrd is now available at ${DST}/../${IMG}"
+echo "### Don't forget to use the initrd with its associated kernel : $(ls ${SRC}/boot/vmlinuz-*)"

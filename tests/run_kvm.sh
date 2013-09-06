@@ -300,6 +300,12 @@ case "$MODE" in
             stop_httpd
         fi
     ;;
+    "health")
+        setup_pxe
+        detect_kvm
+        prepare_disk
+        run_kvm
+    ;;
     *)
         check_binary rsync
         check_binary qemu-img

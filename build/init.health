@@ -120,6 +120,8 @@ step "Detecting hardware"
 
 cd /
 ./detect.py > /hw.py
+
+step "Benchmarking system"
 ./health-check.py hw.py > /health.py
 
 show_kernel_modules

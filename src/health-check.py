@@ -76,9 +76,9 @@ def run_sysbench(hw, max_time, cpu_count, processor_num=-1):
     'Running sysbench cpu stress of a give amount of logical cpu'
     taskset=''
     if (processor_num < 0):
-        print 'Benchmarking all CPUs for %d seconds (%d threads)\n' % (max_time,cpu_count)
+        sys.stderr.write('Benchmarking all CPUs for %d seconds (%d threads)\n' % (max_time,cpu_count))
     else:
-        print 'Benchmarking CPU %d for %d seconds (%d threads)\n' % (processor_num,max_time,cpu_count)
+        sys.stderr.write('Benchmarking CPU %d for %d seconds (%d threads)\n' % (processor_num,max_time,cpu_count))
         taskset='taskset %s' % hex(1 << processor_num)
 
     cmd = subprocess.Popen('%s sysbench --max-time=%d --max-requests=1000000 --num-threads=%d --test=cpu --cpu-max-prime=15000 run' %(taskset, max_time,cpu_count),
@@ -86,7 +86,6 @@ def run_sysbench(hw, max_time, cpu_count, processor_num=-1):
     for line in cmd.stdout:
              if "total number of events" in line:
                  title,perf = line.rstrip('\n').replace(' ','').split(':')
-                 print perf
                  if processor_num==-1:
                      hw.append(('cpu', 'logical', 'loops_per_sec', int(perf)/max_time))
                  else:
@@ -106,9 +105,9 @@ def run_memtest(hw, max_time, block_size, cpu_count, processor_num=-1):
     'Running memtest on a processor'
     taskset=''
     if (processor_num < 0):
-        print 'Benchmarking memory @%s from all CPUs for %d seconds (%d threads)\n' % (block_size, max_time,cpu_count)
+        sys.stderr.write('Benchmarking memory @%s from all CPUs for %d seconds (%d threads)\n' % (block_size, max_time,cpu_count))
     else:
-        print 'Benchmarking memory @%s from CPU %d for %d seconds (%d threads)\n' % (block_size, processor_num,max_time,cpu_count)
+        sys.stderr.write('Benchmarking memory @%s from CPU %d for %d seconds (%d threads)\n' % (block_size, processor_num,max_time,cpu_count))
         taskset='taskset %s' % hex(1 << processor_num)
 
     cmd = subprocess.Popen('%s sysbench --max-time=%d --max-requests=1000000 --num-threads=1 --test=memory --memory-block-size=%s run' %(taskset, max_time,block_size),

@@ -98,8 +98,8 @@ def cpu_perf(hw):
         for cpu_nb in range(int(result)):
             get_bogomips(hw,cpu_nb)
             get_cache_size(hw,cpu_nb)
-            run_sysbench(hw,10, 1, cpu_nb)
-    run_sysbench(hw,10, int(result))
+            run_sysbench(hw,5, 1, cpu_nb)
+    run_sysbench(hw,5, int(result))
 
 def run_memtest(hw, max_time, block_size, cpu_count, processor_num=-1):
     'Running memtest on a processor'

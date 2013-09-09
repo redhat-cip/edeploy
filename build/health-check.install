@@ -35,6 +35,8 @@ fi
 set -x
 set -e
 
+cp -f /etc/resolv.conf ${SRC}/etc
+
 chroot ${SRC} apt-get update
 chroot ${SRC} apt-get install -y --force-yes sysbench
 chroot ${SRC} apt-get clean

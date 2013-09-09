@@ -24,6 +24,7 @@ import sys
 import xml.etree.ElementTree as ET
 import subprocess
 import platform
+import re
 
 import diskinfo
 import hpacucli
@@ -40,6 +41,12 @@ def is_included(dict1, dict2):
             return False
     return True
 
+def get_disks_name(hw):
+    disks=[]
+    for entry in hw:
+        if (entry[0]=='disk' and entry[2]=='size'):
+            disks.append(entry[1])
+    return disks
 
 def get_value(hw, level1, level2, level3):
     for entry in hw:
@@ -180,12 +187,49 @@ def mem_perf(hw):
 
     get_ddr_timing(hw)
 
+def run_fio(hw,disks_list,mode,io_size,time):
+    filelist = [ f for f in os.listdir(".") if f.endswith(".fio") ]
+    for f in filelist:
+        os.remove(f)
+    fio="fio --ioengine=libaio --invalidate=1 --ramp_time=5 --iodepth=32 --runtime=%d --time_based --direct=1 --bs=%s --rw=%s"%(time,io_size,mode)
+    for disk in disks_list:
+        if not '/dev/' in disk:
+            disk='/dev/%s'%disk
+        short_disk=disk.replace('/dev/','')
+        fio="%s --name=MYJOB-%s --filename='%s'" %(fio,short_disk,disk)
+    cmd = subprocess.Popen(fio,
+                        shell=True, stdout=subprocess.PIPE)
+    current_disk=''
+    for line in cmd.stdout:
+        if ('MYJOB-' in line) and ('pid=' in line):
+            #MYJOB-sda: (groupid=0, jobs=1): err= 0: pid=23652: Mon Sep  9 16:21:42 2013
+            current_disk = re.search('MYJOB-(.*): \(groupid',line).group(1)
+        if 'read : io=' in line:
+             #read : io=169756KB, bw=16947KB/s, iops=4230, runt= 10017msec
+             if (len(disks_list)>1):
+                 mode_str="simultaneous_%s_%s"%(mode,io_size)
+             else:
+                 mode_str="standalone_%s_%s"%(mode,io_size)
+#              hw.append(('disk,'current_disk,mode+'_io', re.search('io=(.*KdB),',line).group(1).replace('KB',''))
+             hw.append(('disk',current_disk,mode_str+'_bwps', re.search('bw=(.*KB/s),',line).group(1).replace('KB/s','')))
+             hw.append(('disk',current_disk,mode_str+'_iops', re.search('iops=(.*),',line).group(1)))
+
+def storage_perf(hw):
+    'Reporting disk performance'
+    for disk in get_disks_name(hw):
+        run_fio(hw, ['%s'%disk],"randread","4k",10)
+        run_fio(hw, ['%s'%disk],"read","1M",10)
+
+    run_fio(hw,get_disks_name(hw),"randread","4k",10)
+    run_fio(hw,get_disks_name(hw),"read","1M",10)
+
 def _main():
     'Command line entry point.'
     hrdw = eval(open(sys.argv[1]).read(-1))
 
     cpu_perf(hrdw)
     mem_perf(hrdw)
+    storage_perf(hrdw)
     pprint.pprint(hrdw)
 
 if __name__ == "__main__":

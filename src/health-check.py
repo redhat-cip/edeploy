@@ -23,6 +23,7 @@ import pprint
 import sys
 import xml.etree.ElementTree as ET
 import subprocess
+import platform
 
 import diskinfo
 import hpacucli
@@ -121,6 +122,35 @@ def run_memtest(hw, max_time, block_size, cpu_count, processor_num=-1):
                  else:
                      hw.append(('cpu', 'logical_%d'%processor_num, 'bandwidth_%s'%block_size, perf))
 
+def get_ddr_timing(hw):
+    'Report the DDR timings'
+    sys.stderr.write('Reporting DDR Timings\n')
+    found=False
+    cmd = subprocess.Popen('ddr-timings-%s'% platform.machine(),
+                         shell=True, stdout=subprocess.PIPE)
+#DDR   tCL   tRCD  tRP   tRAS  tRRD  tRFC  tWR   tWTPr tRTPr tFAW  B2B
+# #0 |  11    15    15    31     7   511    11    31    15    63    31
+
+    for line in cmd.stdout:
+             if "DDR" in line:
+                found=True
+                continue;
+             if (found):
+                ddr_channel,tCL,tRCD,tRP,tRAS,tRRD,tRFC,tWR,tWTPr,tRTPr,tFAW,B2B = line.rstrip('\n').replace('|',' ').split()
+                ddr_channel=ddr_channel.replace('#','')
+                hw.append(('memory', 'DDR_%s'%ddr_channel, 'tCL', tCL))
+                hw.append(('memory', 'DDR_%s'%ddr_channel, 'tRCD', tRCD))
+                hw.append(('memory', 'DDR_%s'%ddr_channel, 'tRP', tRP))
+                hw.append(('memory', 'DDR_%s'%ddr_channel, 'tRAS', tRAS))
+                hw.append(('memory', 'DDR_%s'%ddr_channel, 'tRRD', tRRD))
+                hw.append(('memory', 'DDR_%s'%ddr_channel, 'tRFC', tRFC))
+                hw.append(('memory', 'DDR_%s'%ddr_channel, 'tWR', tWR))
+                hw.append(('memory', 'DDR_%s'%ddr_channel, 'tWTPr', tWTPr))
+                hw.append(('memory', 'DDR_%s'%ddr_channel, 'tRTPr', tRTPr))
+                hw.append(('memory', 'DDR_%s'%ddr_channel, 'tFAW', tFAW))
+                hw.append(('memory', 'DDR_%s'%ddr_channel, 'B2B', B2B))
+
+
 def mem_perf(hw):
     'Report the memory performance'
     block_size_list=['1K', '4K', '1M', '16M', '128M', '1G']
@@ -132,6 +162,8 @@ def mem_perf(hw):
 
     for block_size in block_size_list:
         run_memtest(hw, 3, block_size, int(result))
+
+    get_ddr_timing(hw)
 
 def _main():
     'Command line entry point.'

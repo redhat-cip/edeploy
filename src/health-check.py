@@ -131,6 +131,22 @@ def get_ddr_timing(hw):
 # #0 |  11    15    15    31     7   511    11    31    15    63    31
 
     for line in cmd.stdout:
+             if 'is a Triple' in line:
+                hw.append(('memory', 'DDR', 'type', '3'))
+                continue
+
+             if 'is a Dual' in line:
+                hw.append(('memory', 'DDR', 'type', '2'))
+                continue
+
+             if 'is a Single' in line:
+                hw.append(('memory', 'DDR', 'type', '1'))
+                continue
+
+             if 'is a Zero' in line:
+                hw.append(('memory', 'DDR', 'type', '0'))
+                continue
+
              if "DDR" in line:
                 found=True
                 continue;

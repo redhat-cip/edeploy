@@ -50,7 +50,6 @@ img: $(INST)/$(IMG)
 
 base $(INST)/base.done: base.install policy-rc.d edeploy
 	ARCH=$(ARCH) ./base.install $(INST)/base $(DIST) $(VERS)
-	cp -p policy-rc.d edeploy $(INST)/base/usr/sbin/
 	touch $(INST)/base.done
 
 cloud $(INST)/cloud.done: cloud.install $(INST)/base.done

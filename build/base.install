@@ -50,22 +50,36 @@ check_binary sed
 set -e				# abort on failure
 set -x				# print commands
 
+case $dist in
+    centos)
+	DEB=
+	;;
+    *)
+	DEB=1
+esac
+
 if [ ! -d "$dir" ]; then
     mkdir -p "$dir"
 
-    debootstrap --arch ${ARCH:=amd64} --variant=minbase $dist "$dir"
+    if [ -n "$DEB" ]; then
+	debootstrap --arch ${ARCH:=amd64} --variant=minbase $dist "$dir"
 
-    # workaround no signature downloaded
-    rm -f "$dir"/var/lib/apt/lists/*[es]
-    chroot "$dir" apt-get update
+	# workaround no signature downloaded
+	rm -f "$dir"/var/lib/apt/lists/*[es]
+	chroot "$dir" apt-get update
+    else
+	mkdir -p "$dir/dev" "$dir/proc"
+    fi
 fi
 
-cp -p ${ORIG}/policy-rc.d ${dir}/usr/sbin/
+if [ -n "$DEB" ] ;then
+    cp -p ${ORIG}/policy-rc.d ${dir}/usr/sbin/
 
-cat >> "$dir/etc/apt/apt.conf" <<EOF
+    cat >> "$dir/etc/apt/apt.conf" <<EOF
 APT::Install-Recommends "0" ;
 APT::Install-Suggests "0" ;
 EOF
+fi
 
 cleanup() {
     rc=$?
@@ -81,6 +95,11 @@ trap cleanup 0
 
 mount -obind /dev ${dir}/dev
 mount -obind /proc ${dir}/proc
+
+if [ -z "$DEB" ]; then
+    rpm -ivh --root "$dir" ftp://fr2.rpmfind.net/linux/centos/6.4/os/x86_64/Packages/centos-release-6-4.el6.centos.10.x86_64.rpm
+    yum --installroot "$dir" --nogpgcheck install -y yum base
+fi
 
 PACKAGES="pciutils rsyslog"
 
@@ -104,6 +123,9 @@ deb http://security.debian.org/ wheezy/updates main
 deb http://ftp.debian.org/debian/ wheezy-updates main
 EOF
 	;;
+    centos)
+	PACKAGES="$PACKAGES passwd kernel"
+	;;
     *)
 	echo "unsupported distribution: $dist" 2>&1
 	exit 1
@@ -121,10 +143,14 @@ export DEBIAN_FRONTEND=noninteractive
 # So let's copy the current one to insure the setup is good
 cp -f /etc/resolv.conf "$dir/etc/"
 
+if [ -n "$DEB" ]; then
 chroot "$dir" apt-get update
 chroot "$dir" apt-get dist-upgrade -y
 
-chroot "$dir" apt-get install -y --force-yes openssh-server parted $PACKAGES net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase net-tools dmidecode bash curl hdparm xfsprogs acpid ifenslave
+chroot "$dir" apt-get install -y --force-yes openssh-server parted $PACKAGES net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase net-tools dmidecode bash curl hdparm xfsprogs acpid ifenslave kexec-tools
+else
+    yum --installroot "$dir" --nogpgcheck install -y openssh-server parted  $PACKAGES net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase net-tools dmidecode bash curl hdparm xfsprogs acpid ifenslave
+fi
 
 rm -f "${dir}"/etc/default/grub.d/edeploy.cfg
 
@@ -132,13 +158,22 @@ rm -f "${dir}"/etc/default/grub.d/edeploy.cfg
 if [ ! -r hpacucli-9.40-12.0.x86_64.rpm ]; then
     wget http://downloads.linux.hp.com/SDR/downloads/ServicePackforProLiant/2013.02.0/hp/swpackages/hpacucli-9.40-12.0.x86_64.rpm
 fi
-if [ ! -r hpacucli_9.40-13_amd64.deb  ]; then
-    alien hpacucli-9.40-12.0.x86_64.rpm
+
+if [ -n "$DEB" ]; then
+    if [ ! -r hpacucli_9.40-13_amd64.deb  ]; then
+	alien hpacucli-9.40-12.0.x86_64.rpm
+    fi
+    cp hpacucli_9.40-13_amd64.deb "$dir"/tmp/hpacucli.deb
+    chroot "$dir" apt-get -y install lib32gcc1 lib32stdc++6 python-pexpect lvm2 vim-tiny bsdmainutils
+    chroot "$dir" dpkg -i /tmp/hpacucli.deb
+    rm "$dir"/tmp/hpacucli.deb
+
+    chroot "$dir" apt-get clean
+else
+    cp hpacucli-9.40-12.0.x86_64.rpm $dir/tmp
+    #chroot $dir rpm -ivh /tmp/hpacucli-9.40-12.0.x86_64.rpm
+    rm -f $dir/tmp/hpacucli-9.40-12.0.x86_64.rpm
 fi
-cp hpacucli_9.40-13_amd64.deb "$dir"/tmp/hpacucli.deb
-chroot "$dir" apt-get -y install lib32gcc1 lib32stdc++6 python-pexpect lvm2 vim-tiny bsdmainutils
-chroot "$dir" dpkg -i /tmp/hpacucli.deb
-rm "$dir"/tmp/hpacucli.deb
 
 # Ubuntu specific
 if [ $dist = precise ]; then
@@ -149,13 +184,12 @@ fi
 # let the key be generated on first boot
 rm -f "$dir"/etc/ssh/*key*
 
-chroot "$dir" apt-get clean
-
 rm -f ${dir}/var/tmp/* ${dir}/tmp/*
 
 echo -e "root\nroot"|chroot "$dir" passwd
 
 mkdir -p "$dir/var/lib/edeploy/${version}"
+cp -p ${ORIG}/edeploy ${dir}/usr/sbin/
 
 echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
 echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

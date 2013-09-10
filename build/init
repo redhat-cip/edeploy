@@ -209,19 +209,18 @@ elif /configure; then
 	    sync
 	    if [ "$DEBUG" != 1 ]; then
 		if [ "$NOREBOOT" = 1 ]; then
-		    if [ -r $d/boot/vmlinuz-$(uname -r) ]; then
-			echo "Same kernel detected, starting the new init..."
-			if type -p switch_root; then
-			    exec switch_root $d /sbin/init
+		    if type -p kexec; then
+			echo "Trying kexec..."
+			cp $d/boot/vmlinuz* /tmp/vmlinuz
+			cp $d/boot/initrd.img* /tmp/initrd.img
+			eval $(grep root=UUID= $d/boot/grub/grub.cfg|head -1|tr ' ' '\n'|grep '^root=UUID=')
+			umount $d
+			if [ -z "$root" ]; then
+			    echo "unable to detect root device"
 			else
-			    umount /sys
-			    umount /dev
-			    umount /run
-			    umount /proc
-			    exec /usr/lib/klibc/bin/run-init ${d} /sbin/init < $d/dev/console > $d/dev/console 2>&1
+			    kexec -l /tmp/vmlinuz --initrd=/tmp/initrd.img --append="root=$root"
+			    kexec -e
 			fi
-		    else
-			echo "Not the same kernel, rebooting..."
 		    fi
 		fi
 		umount -a

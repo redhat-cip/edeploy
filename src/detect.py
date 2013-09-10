@@ -71,13 +71,13 @@ def detect_disks(hw_lst):
     sizes = diskinfo.disksizes(names)
     for name in [name for name, size in sizes.items() if size > 0]:
         hw_lst.append(('disk', name, 'size', str(sizes[name])))
-    item_list=['vendor','model','rev']
-    for my_item in item_list:
-        try:
-            with open('/sys/block/%s/device/%s'%(name,my_item), 'r') as f:
-                hw_lst.append(('disk', name,my_item,f.readline().rstrip('\n').strip()))
-        except:
-            True
+        item_list=['vendor','model','rev']
+        for my_item in item_list:
+            try:
+                with open('/sys/block/%s/device/%s'%(name,my_item), 'r') as f:
+                    hw_lst.append(('disk', name,my_item,f.readline().rstrip('\n').strip()))
+            except:
+                sys.stderr.write('Failed at getting disk information at /sys/block/%s/device/%s'%(name,my_item))
 
 def modprobe(module):
     'Load a kernel module using modprobe.'

@@ -224,10 +224,9 @@ def run_fio(hw,disks_list,mode,io_size,time):
                     divide=1024
                  try:
                     iperf=perf.replace('KB/s','').replace('B/s','').replace('MB/s','')
-                    print "iperf is %s\n" % iperf
                  except:
                      True
-                 hw.append(('disk',current_disk,mode_str+'_bwps', int(float(int(iperf)*multiply/divide))))
+                 hw.append(('disk',current_disk,mode_str+'_KBps', int(float(int(iperf)*multiply/divide))))
              except:
                 sys.stderr.write('Failed at detecting bwps pattern with %s'%line)
 

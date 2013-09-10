@@ -204,32 +204,72 @@ def run_fio(hw,disks_list,mode,io_size,time):
         if ('MYJOB-' in line) and ('pid=' in line):
             #MYJOB-sda: (groupid=0, jobs=1): err= 0: pid=23652: Mon Sep  9 16:21:42 2013
             current_disk = re.search('MYJOB-(.*): \(groupid',line).group(1)
-        if 'read : io=' in line:
+            continue
+        if ("read : io=" in line) or ("write: io=" in line):
              #read : io=169756KB, bw=16947KB/s, iops=4230, runt= 10017msec
              if (len(disks_list)>1):
                  mode_str="simultaneous_%s_%s"%(mode,io_size)
              else:
                  mode_str="standalone_%s_%s"%(mode,io_size)
-#              hw.append(('disk,'current_disk,mode+'_io', re.search('io=(.*KdB),',line).group(1).replace('KB',''))
-             hw.append(('disk',current_disk,mode_str+'_bwps', re.search('bw=(.*KB/s),',line).group(1).replace('KB/s','')))
-             hw.append(('disk',current_disk,mode_str+'_iops', re.search('iops=(.*),',line).group(1)))
 
-def storage_perf(hw):
+             try:
+                 perf=re.search('bw=(.*?B/s),',line).group(1)
+                 multiply=1
+                 divide=1
+                 if "MB/s" in perf:
+                    multiply=1024
+                 elif "KB/s" in perf:
+                    multiply=1
+                 elif "B/s" in perf:
+                    divide=1024
+                 try:
+                    iperf=perf.replace('KB/s','').replace('B/s','').replace('MB/s','')
+                    print "iperf is %s\n" % iperf
+                 except:
+                     True
+                 hw.append(('disk',current_disk,mode_str+'_bwps', int(float(int(iperf)*multiply/divide))))
+             except:
+                sys.stderr.write('Failed at detecting bwps pattern with %s'%line)
+
+             try:
+                 hw.append(('disk',current_disk,mode_str+'_iops', re.search('iops=(.*),',line).group(1)))
+             except:
+                sys.stderr.write('Failed at detecting iops pattern with %s'%line)
+
+def storage_perf(hw,allow_destructive):
     'Reporting disk performance'
+    mode="non destructive"
+    if allow_destructive:
+        mode='destructive'
+
+    sys.stderr.write('Running storage bench in %s mode\n'%mode)
     for disk in get_disks_name(hw):
         run_fio(hw, ['%s'%disk],"randread","4k",10)
         run_fio(hw, ['%s'%disk],"read","1M",10)
+        if allow_destructive:
+            run_fio(hw, ['%s'%disk],"randwrite","4k",10)
+            run_fio(hw, ['%s'%disk],"write","1M",10)
 
     run_fio(hw,get_disks_name(hw),"randread","4k",10)
     run_fio(hw,get_disks_name(hw),"read","1M",10)
+    if allow_destructive:
+        run_fio(hw, ['%s'%disk],"randwrite","4k",10)
+        run_fio(hw, ['%s'%disk],"write","1M",10)
 
 def _main():
     'Command line entry point.'
+    allow_destructive=False
+    try:
+        if os.environ['DESTRUCTIVE_MODE']:
+            allow_destructive=True
+    except:
+        True
+
     hrdw = eval(open(sys.argv[1]).read(-1))
 
     cpu_perf(hrdw)
     mem_perf(hrdw)
-    storage_perf(hrdw)
+    storage_perf(hrdw,allow_destructive)
     pprint.pprint(hrdw)
 
 if __name__ == "__main__":

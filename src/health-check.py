@@ -41,11 +41,14 @@ def is_included(dict1, dict2):
             return False
     return True
 
-def get_disks_name(hw):
+def get_disks_name(hw,without_bootable=False):
     disks=[]
     for entry in hw:
         if (entry[0]=='disk' and entry[2]=='size'):
-            disks.append(entry[1])
+            if (without_bootable and is_booted_storage_device(entry[1]))
+                sys.stderr.write("Skipping disk %s in destructive mode, this is the booted device !"%entry[1])
+            else:
+                disks.append(entry[1])
     return disks
 
 def get_value(hw, level1, level2, level3):
@@ -262,6 +265,18 @@ def get_output_filename(hw):
 
     return sysname+".hw"
 
+def is_booted_storage_device(disk):
+    cmdline="grep -w /ahcexport /proc/mounts | cut -d ' ' -f 1 | sed -e 's/[0-9]*//g'"
+    if not '/dev/' in disk:
+            disk='/dev/%s'%disk
+    cmd = subprocess.Popen(cmdline,
+            shell=True, stdout=subprocess.PIPE)
+    for booted_disk in cmd.stdout:
+        booted_disk=booted_disk.rstrip('\n').strip()
+        if booted_disk == disk:
+            return True
+    return False
+
 def storage_perf(hw,allow_destructive):
     'Reporting disk performance'
     mode="non destructive"
@@ -270,17 +285,21 @@ def storage_perf(hw,allow_destructive):
 
     sys.stderr.write('Running storage bench in %s mode\n'%mode)
     for disk in get_disks_name(hw):
+        is_booted_storage_device(disk)
         run_fio(hw, ['%s'%disk],"randread","4k",10)
         run_fio(hw, ['%s'%disk],"read","1M",10)
         if allow_destructive:
-            run_fio(hw, ['%s'%disk],"randwrite","4k",10)
-            run_fio(hw, ['%s'%disk],"write","1M",10)
+            if is_booted_storage_device(disk):
+                sys.stderr.write("Skipping disk %s in destructive mode, this is the booted device !"%disk)
+            else:
+                run_fio(hw, ['%s'%disk],"randwrite","4k",10)
+                run_fio(hw, ['%s'%disk],"write","1M",10)
 
     run_fio(hw,get_disks_name(hw),"randread","4k",10)
     run_fio(hw,get_disks_name(hw),"read","1M",10)
     if allow_destructive:
-        run_fio(hw, ['%s'%disk],"randwrite","4k",10)
-        run_fio(hw, ['%s'%disk],"write","1M",10)
+        run_fio(hw, get_disks_name(hw, True),"randwrite","4k",10)
+        run_fio(hw, get_disks_name(hw, True),"write","1M",10)
 
 def _main():
     'Command line entry point.'

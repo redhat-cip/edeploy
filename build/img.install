@@ -175,7 +175,39 @@ setup_bootloader() {
 
 	KERNEL_OPTIONS="quiet panic=-1 oops=panic consoleblank=0"
 	mkdir $1/extlinux
+    if [ "$MODE" = "health" ]; then
+cat << EOF >> $1/extlinux/extlinux.conf
+TOTALTIMEOUT 100
+TIMEOUT 100
+PROMPT 1
+UI menu.c32
+DEFAULT SAFE
+MENU TITLE Automatic Health Check ($VER)
 
+LABEL SAFE
+        MENU DEFAULT
+        MENU LABEL Run Benchmark in safe mode
+        TEXT HELP
+         Run a series of test to estimate system's performance.
+         CPU, MEMORY and STORAGE will be benchmarked.
+         Test duration will vary regarding the hardware setup.
+        ENDTEXT
+        KERNEL /vmlinuz
+        INITRD /initrd.pxe
+        APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG
+
+LABEL DESTRUCTIVE
+        MENU LABEL Run Benchmark in destructive mode
+        TEXT HELP
+         Run a destructive write test to storage device in addition of safe mode
+                      !!! EXISTING DATA ON STORAGE DEVICE !!!
+                      !!!  WILL BE DESTROYED PERMANENTLY  !!!
+        ENDTEXT
+        KERNEL /vmlinuz
+        INITRD /initrd.pxe
+        APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG DESTRUCTIVE_MODE=1
+EOF
+    else
 cat << EOF >> $1/extlinux/extlinux.conf
 TOTALTIMEOUT 10
 PROMPT 0
@@ -187,6 +219,7 @@ LABEL FLASH
         APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG
 
 EOF
+    fi
 }
 
 umount_flash_fs() {
@@ -207,16 +240,20 @@ install_bootloader() {
 	step "Install bootloader"
 
 	mkdir -p $BOOT_MOUNT_POINT/extlinux
-	if [ ! -x extlinux/extlinux ]; then
+	if [ ! -x extlinux/extlinux ] || [ ! -f extlinux/menu.c32 ] || [ ! -f extlinux/libutil.c32 ]; then
+        rm -rf extlinux
 		mkdir -p extlinux
 		# Installing extlinux & mbr from source
 		wget ftp://ftp.kernel.org/pub/linux/utils/boot/syslinux/${TESTING_SYSLINUX}/syslinux-${SYSLINUX_VER}.tar.xz
 		tar -xf syslinux-${SYSLINUX_VER}.tar.xz
 		cp syslinux-${SYSLINUX_VER}/extlinux/extlinux extlinux/
 		cp syslinux-${SYSLINUX_VER}/mbr/mbr.bin extlinux/
+        cp syslinux-${SYSLINUX_VER}/com32/menu/menu.c32 extlinux/
+        cp syslinux-${SYSLINUX_VER}/com32/libutil/libutil.c32 extlinux/
 		rm -rf syslinux-${SYSLINUX_VER}*
 	fi
 
+    cp extlinux/*.c32 $BOOT_MOUNT_POINT/extlinux/
 	extlinux/extlinux --install $BOOT_MOUNT_POINT/extlinux
     if [ $? -ne 0 ]; then
         umount_flash_fs

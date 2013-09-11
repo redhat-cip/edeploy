@@ -223,6 +223,9 @@ def run_fio(hw,disks_list,mode,io_size,time):
 
              try:
                  perf=re.search('bw=(.*?B/s),',line).group(1)
+             except:
+                sys.stderr.write('Failed at detecting bwps pattern with %s'%line)
+             else:
                  multiply=1
                  divide=1
                  if "MB/s" in perf:
@@ -235,9 +238,7 @@ def run_fio(hw,disks_list,mode,io_size,time):
                     iperf=perf.replace('KB/s','').replace('B/s','').replace('MB/s','')
                  except:
                      True
-                 hw.append(('disk',current_disk,mode_str+'_KBps', int(float(int(iperf)*multiply/divide))))
-             except:
-                sys.stderr.write('Failed at detecting bwps pattern with %s'%line)
+                 hw.append(('disk',current_disk,mode_str+'_KBps', int(float(float(iperf)*multiply/divide))))
 
              try:
                  hw.append(('disk',current_disk,mode_str+'_iops', re.search('iops=(.*),',line).group(1)))

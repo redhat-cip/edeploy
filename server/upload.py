@@ -52,8 +52,12 @@ def _generate_range(num_range):
     for rang in num_range.split(':'):
         boundaries = rang.split('-')
         if len(boundaries) == 2:
+            if boundaries[0][0] == '0':
+                fmt = '%%0%dd' % len(boundaries[0])
+            else:
+                fmt = '%d'
             for res in range(int(boundaries[0]), int(boundaries[1]) + 1):
-                yield str(res)
+                yield fmt % res
         else:
             yield num_range
 

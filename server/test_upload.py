@@ -58,6 +58,10 @@ class TestUpload(unittest.TestCase):
         self.assertEqual(list(upload._generate_range('10-12')),
                          ['10', '11', '12'])
 
+    def test_generate_range_zero(self):
+        self.assertEqual(list(upload._generate_range('001-003')),
+                         ['001', '002', '003'])
+
     def test_generate_range_colon(self):
         self.assertEqual(list(upload._generate_range('1-3:10-12')),
                          ['1', '2', '3', '10', '11', '12'])
@@ -71,6 +75,21 @@ class TestUpload(unittest.TestCase):
             [{'gw': '192.168.1.1', 'ip': '192.168.1.10', 'hostname': 'host10'},
              {'gw': '192.168.1.1', 'ip': '192.168.1.11', 'hostname': 'host11'},
              {'gw': '192.168.1.1', 'ip': '192.168.1.12', 'hostname': 'host12'}]
+            )
+
+    def test_generate_with_zeros(self):
+        model = {'gw': '192.168.1.1',
+                 'ip': '192.168.1.1-6',
+                 'hostname': 'ceph001-006'}
+        self.assertEqual(
+            upload.generate(model),
+            [{'gw': '192.168.1.1', 'ip': '192.168.1.1', 'hostname': 'ceph001'},
+             {'gw': '192.168.1.1', 'ip': '192.168.1.2', 'hostname': 'ceph002'},
+             {'gw': '192.168.1.1', 'ip': '192.168.1.3', 'hostname': 'ceph003'},
+             {'gw': '192.168.1.1', 'ip': '192.168.1.4', 'hostname': 'ceph004'},
+             {'gw': '192.168.1.1', 'ip': '192.168.1.5', 'hostname': 'ceph005'},
+             {'gw': '192.168.1.1', 'ip': '192.168.1.6', 'hostname': 'ceph006'},
+             ]
             )
 
     def test_generate_253(self):

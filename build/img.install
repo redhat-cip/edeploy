@@ -23,10 +23,12 @@ INST="$4"
 SERV="$5"
 HSERV="$6"
 DEBUG="$7"
+MODE="$8"
 FLASH_IMAGE="$2-$3.img"
 VDI_IMAGE="$2-$3.vdi"
 FLASH_SIZE=128 #in Megabytes
 LOOPBACK_BOOT=NONE
+LOOPBACK_DATA=NONE
 BOOT_MOUNT_POINT=/tmp/$2-$3.tmp
 #TESTING_SYSLINUX=Testing/6.02
 SYSLINUX_VER=5.10
@@ -64,21 +66,29 @@ get_fdisk_parameter() {
 
 prepare_flash_image() {
 	step "Prepare flash image"
+
+    if [ "$MODE" = "health" ]; then
+        FLASH_IMAGE="$MODE-$VER.img"
+        VDI_IMAGE="$MODE-$VER.vdi"
+    fi
+
 	if [ ! -e $FLASH_IMAGE ]; then
 
 		echo "Zeroification in progess"
-		dd if=/dev/zero of=$FLASH_IMAGE bs=1M count=$FLASH_SIZE 
+		dd if=/dev/zero of=$FLASH_IMAGE bs=1M count=$FLASH_SIZE
 		sync
 
 		echo "Partionning in progress"
-		#Let's mount the flash image in loopback
-		# first partition is for /boot
-		# next one is for /var/lib/config
-		# next one is for /var/lib/persistent
-		# the rest is for /var/lib/session
-		sfdisk -uM --force $(get_fdisk_parameter $FLASH_SIZE) $FLASH_IMAGE << EOF
+        if [ "$MODE" = "health" ]; then
+            sfdisk -uM --force $(get_fdisk_parameter $FLASH_SIZE) $FLASH_IMAGE << EOF
+0,10,
+10,,L,*
+EOF
+        else
+		    sfdisk -uM --force $(get_fdisk_parameter $FLASH_SIZE) $FLASH_IMAGE << EOF
 ,,L,*
 EOF
+        fi
 	fi
 }
 
@@ -109,9 +119,18 @@ loop_size(){
 prepare_flash_fs() {
 	step "Prepare flash fs"
 
-	#Let's search the next loopback device
-	LOOPBACK_BOOT=$(losetup -f)
-	losetup -o $(loop_offset $FLASH_IMAGE 1) $(losetupsizeopt) $(loop_size $FLASH_IMAGE 1) $LOOPBACK_BOOT $FLASH_IMAGE
+    LOOPBACK_BOOT=$(losetup -f)
+
+    #Let's search the next loopback device
+    if [ "$MODE" = "health" ]; then
+	    losetup -o $(loop_offset $FLASH_IMAGE 2) $(losetupsizeopt) $(loop_size $FLASH_IMAGE 2) $LOOPBACK_BOOT $FLASH_IMAGE
+    	LOOPBACK_DATA=$(losetup -f)
+	    losetup -o $(loop_offset $FLASH_IMAGE 1) $(losetupsizeopt) $(loop_size $FLASH_IMAGE 1) $LOOPBACK_DATA $FLASH_IMAGE
+        echo "Formatting /ahcexport"
+	    mkfs.vfat -n ahcexport $LOOPBACK_DATA
+    else
+	    losetup -o $(loop_offset $FLASH_IMAGE 1) $(losetupsizeopt) $(loop_size $FLASH_IMAGE 1) $LOOPBACK_BOOT $FLASH_IMAGE
+    fi
 
 	echo "Formatting /boot"
 	mkfs.ext2 -F -L boot $LOOPBACK_BOOT
@@ -123,17 +142,22 @@ prepare_flash_fs() {
 free_loopbacks() {
 	step "Free loopback"
 
-        #Let's clean the loopback devices
+    #Let's clean the loopback devices
 	if [ "$LOOPBACK_BOOT" != "NONE" ]; then
 	        losetup -d $LOOPBACK_BOOT
 	fi
+
+    if [ "$LOOPBACK_DATA" != "NONE" ]; then
+	        losetup -d $LOOPBACK_DATA
+	fi
+
 }
 
 mount_flash_fs() {
 	step "Mount flash fs"
 
-        mkdir -p $BOOT_MOUNT_POINT
-        mount $LOOPBACK_BOOT $BOOT_MOUNT_POINT
+    mkdir -p $BOOT_MOUNT_POINT
+    mount $LOOPBACK_BOOT $BOOT_MOUNT_POINT
 
 	if [ ! `grep $BOOT_MOUNT_POINT /proc/mounts | wc -l` ]; then
 		die "Flash Sytem isn't mounted !"
@@ -208,6 +232,9 @@ install_bootloader() {
 check_binary losetup
 check_binary sfdisk
 check_binary mkfs.ext2
+if [ "$MODE" = "health" ]; then
+    check_binary mkfs.vfat
+fi
 check_binary tune2fs
 
 prepare_flash_image

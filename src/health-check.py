@@ -54,6 +54,12 @@ def get_value(hw, level1, level2, level3):
             return entry[3]
     return None
 
+def get_mac(hw, level1, level2):
+    for entry in hw:
+        if (level1==entry[0] and level2==entry[2]):
+            return entry[3]
+    return None
+
 def search_cpuinfo(cpu_nb, item):
     f=open('/proc/cpuinfo','r')
     found=False
@@ -235,6 +241,27 @@ def run_fio(hw,disks_list,mode,io_size,time):
              except:
                 sys.stderr.write('Failed at detecting iops pattern with %s'%line)
 
+def get_output_filename(hw):
+    sysname=''
+
+    sysprodname=get_value(hw,'system', 'product', 'name')
+    if sysprodname:
+        sysname=re.sub(r'\W+', '', sysprodname) + '-'
+
+    sysprodvendor=get_value(hw,'system', 'product', 'vendor')
+    if sysprodvendor:
+        sysname += re.sub(r'\W+', '', sysprodvendor) + '-'
+
+    sysprodserial=get_value(hw,'system', 'product', 'serial')
+    if sysprodserial:
+        sysname += re.sub(r'\W+', '', sysprodserial)
+
+    mac=get_mac(hw,'network', 'serial')
+    if mac:
+        sysname += mac.replace(':', '-')
+
+    return sysname+".hw"
+
 def storage_perf(hw,allow_destructive):
     'Reporting disk performance'
     mode="non destructive"
@@ -269,6 +296,12 @@ def _main():
     cpu_perf(hrdw)
     mem_perf(hrdw)
     storage_perf(hrdw,allow_destructive)
+
+    # Saving result to stdout but also to a filename based on the hw properties
+    output_filename=get_output_filename(hrdw)
+    sys.stderr.write("Saving results in %s\n"%output_filename)
+    with open(output_filename, 'w') as state_file:
+                pprint.pprint(hrdw, stream=state_file)
     pprint.pprint(hrdw)
 
 if __name__ == "__main__":

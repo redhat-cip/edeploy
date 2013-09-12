@@ -322,12 +322,10 @@ def main():
         except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
             return default
 
-    cfg_dir = config_get(
-        'SERVER', 'CONFIGDIR',
-        os.path.normpath(
+    cfg_dir = os.path.normpath(config_get('SERVER', 'CONFIGDIR',
             os.path.join(os.path.dirname(os.path.realpath(__file__)),
                          '..',
-                         'config')) + '/')
+                         'config'))) + '/'
 
     # parse hw file given in argument or passed to cgi script
     if len(sys.argv) == 3 and sys.argv[1] == '-f':

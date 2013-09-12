@@ -107,15 +107,17 @@ def run_sysbench(hw, max_time, cpu_count, processor_num=-1):
                  else:
                      hw.append(('cpu', 'logical_%d'%processor_num, 'loops_per_sec', int(perf)/max_time))
 
-def cpu_perf(hw):
+def cpu_perf(hw,testing_time=5):
     ' Detect the cpu speed'
     result=get_value(hw,'cpu','logical','number')
+
     if result is not None:
+        sys.stderr.write('CPU Performance: %d logical CPU to test (ETA: %d seconds)\n'%(int(result),(int(result)+1)*testing_time))
         for cpu_nb in range(int(result)):
             get_bogomips(hw,cpu_nb)
             get_cache_size(hw,cpu_nb)
-            run_sysbench(hw,5, 1, cpu_nb)
-    run_sysbench(hw,5, int(result))
+            run_sysbench(hw,testing_time, 1, cpu_nb)
+    run_sysbench(hw, testing_time, int(result))
 
 def run_memtest(hw, max_time, block_size, cpu_count, processor_num=-1):
     'Running memtest on a processor'
@@ -126,16 +128,36 @@ def run_memtest(hw, max_time, block_size, cpu_count, processor_num=-1):
         sys.stderr.write('Benchmarking memory @%s from CPU %d for %d seconds (%d threads)\n' % (block_size, processor_num,max_time,cpu_count))
         taskset='taskset %s' % hex(1 << processor_num)
 
-    cmd = subprocess.Popen('%s sysbench --max-time=%d --max-requests=1000000 --num-threads=1 --test=memory --memory-block-size=%s run' %(taskset, max_time,block_size),
+    cmd = subprocess.Popen('%s sysbench --max-time=%d --max-requests=1000000 --num-threads=%d --test=memory --memory-block-size=%s run' %(taskset, max_time,cpu_count, block_size),
              shell=True, stdout=subprocess.PIPE)
     for line in cmd.stdout:
              if "transferred" in line:
                  title,right = line.rstrip('\n').replace(' ','').split('(')
                  perf,useless = right.split('.')
                  if processor_num==-1:
-                     hw.append(('cpu', 'logical', 'bandwidth_%s'%block_size, perf))
+                     hw.append(('cpu', 'logical', 'threaded_bandwidth_%s'%block_size, perf))
                  else:
                      hw.append(('cpu', 'logical_%d'%processor_num, 'bandwidth_%s'%block_size, perf))
+
+def run_forked_memtest(hw, max_time, block_size, cpu_count):
+    'Running forked memtest on a processor'
+    sys.stderr.write('Benchmarking memory @%s from all CPUs for %d seconds (%d processes)\n' % (block_size, max_time,cpu_count))
+    cmd='('
+    for cpu in range(cpu_count):
+        cmd +='sysbench --max-time=%d --max-requests=1000000 --num-threads=1 --test=memory --memory-block-size=%s run &' %(max_time, block_size)
+
+    cmd.rstrip('&')
+    cmd+=')'
+
+    global_perf=0
+    process=subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+    for line in process.stdout:
+             if "transferred" in line:
+                 title,right = line.rstrip('\n').replace(' ','').split('(')
+                 perf,useless = right.split('.')
+                 global_perf+=int(perf)
+
+    hw.append(('cpu', 'logical', 'forked_bandwidth_%s'%block_size, global_perf))
 
 def get_ddr_timing(hw):
     'Report the DDR timings'
@@ -182,17 +204,22 @@ def get_ddr_timing(hw):
                 hw.append(('memory', 'DDR_%s'%ddr_channel, 'B2B', B2B))
 
 
-def mem_perf(hw):
+def mem_perf(hw, testing_time=3):
     'Report the memory performance'
+    all_cpu_testing_time=10
     block_size_list=['1K', '4K', '1M', '16M', '128M', '1G']
     result=get_value(hw,'cpu','logical','number')
     if result is not None:
+        sys.stderr.write('Memory Performance: %d logical CPU to test (ETA: %d seconds)\n'%(int(result),(int(result))*len(block_size_list)*testing_time+2*all_cpu_testing_time*len(block_size_list)))
         for cpu_nb in range(int(result)):
             for block_size in block_size_list:
-                run_memtest(hw, 3, block_size, 1, cpu_nb)
+                run_memtest(hw, testing_time, block_size, 1, cpu_nb)
 
-    for block_size in block_size_list:
-        run_memtest(hw, 3, block_size, int(result))
+        for block_size in block_size_list:
+            run_memtest(hw, all_cpu_testing_time, block_size, int(result))
+
+        for block_size in block_size_list:
+            run_forked_memtest(hw, all_cpu_testing_time, block_size, int(result))
 
     get_ddr_timing(hw)
 

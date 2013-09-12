@@ -45,7 +45,7 @@ def get_disks_name(hw,without_bootable=False):
     disks=[]
     for entry in hw:
         if (entry[0]=='disk' and entry[2]=='size'):
-            if (without_bootable and is_booted_storage_device(entry[1]))
+            if without_bootable and is_booted_storage_device(entry[1]):
                 sys.stderr.write("Skipping disk %s in destructive mode, this is the booted device !"%entry[1])
             else:
                 disks.append(entry[1])

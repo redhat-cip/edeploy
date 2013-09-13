@@ -22,6 +22,7 @@ from commands import getstatusoutput as cmd
 import pprint
 import sys
 import xml.etree.ElementTree as ET
+import subprocess
 
 import diskinfo
 import hpacucli
@@ -78,6 +79,14 @@ def detect_disks(hw_lst):
                     hw_lst.append(('disk', name,my_item,f.readline().rstrip('\n').strip()))
             except:
                 sys.stderr.write('Failed at getting disk information at /sys/block/%s/device/%s'%(name,my_item))
+
+        item_list=['WCE','RCD']
+        item_def={'WCE':'Write Cache Enable', 'RCD':'Read Cache Disable'}
+        for my_item in item_list:
+            cmd = subprocess.Popen("sdparm -q --get=%s /dev/%s | awk '{print $2}'"%(my_item,name),
+                                    shell=True, stdout=subprocess.PIPE)
+            for line in cmd.stdout:
+                 hw_lst.append(('disk', name,item_def.get(my_item),line.rstrip('\n').strip()))
 
 def modprobe(module):
     'Load a kernel module using modprobe.'

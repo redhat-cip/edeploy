@@ -142,6 +142,7 @@ create_edeploy_conf() {
 	cat > edeploy.conf << EOF
 [SERVER]
 
+HEALTHDIR=$PWD/../health/
 CONFIGDIR=$PWD/../config/
 LOCKFILE=$LOCKFILE
 USEPXEMNGR=False
@@ -150,6 +151,7 @@ EOF
 
 # Insure upload.py can create its lock file locally
 chmod a+rw .
+chmod a+rw $PWD/../health/
 chmod a+rw $PWD/../config/
 chmod a+rw $PWD/../config/*.hw
 chmod a+rw $PWD/../config/state
@@ -304,7 +306,11 @@ case "$MODE" in
         setup_pxe
         detect_kvm
         prepare_disk
+        start_httpd
+        create_edeploy_conf
+        detect_kvm
         run_kvm
+        stop_httpd
     ;;
     *)
         check_binary rsync

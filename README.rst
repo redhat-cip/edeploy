@@ -73,7 +73,8 @@ The CGI script is configured with ``/etc/edeploy.conf``::
 
  [SERVER]
 
- CONFIGDIR   = /var/lib/edeploy
+ HEALTHDIR   = /var/lib/edeploy/health/
+ CONFIGDIR   = /var/lib/edeploy/config/
  LOCKFILE    = /tmp/edeploy.lock
  USEPXEMNGR  = True
  PXEMNGRURL  = http://192.168.122.1:8000/
@@ -84,6 +85,9 @@ The CGI script is configured with ``/etc/edeploy.conf``::
 per hardware profile, a description of the hardware profile priorities
 (``state``). All those files must be readable by the user running the
 http server.
+
+``HEALTHDIR`` points to a directory where the automatic health check
+mode will upload its results.
 
 ``LOCKFILE`` points to a file used to lock the ``CONFIGDIR`` files
 that are read and written like ``*.cmdb`` and ``state``. These files

@@ -17,6 +17,8 @@
 # under the License.
 
 VERBOSE=0
+SAVE_TO_USB=0
+SAVE_TO_NETWORK=0
 
 . init.common
 exec 3>&1
@@ -27,6 +29,52 @@ exec > /log 2>&1
 tail -f /log > /dev/console &
 tpid=$!
 
+save_results() {
+if [ -d /ahcexport ]; then
+    step "Exporting benchmark results to local storage"
+    # Saving health-check output to the usb key
+    DATE=$(date +%Y_%m_%d-%Hh%M)
+    mkdir -p /ahcexport/$DATE/
+    mv /*.hw /ahcexport/$DATE
+fi
+
+################################################################################
+# Send the detected hardware to the server and receive a configuration script
+# if there is a match on the server else stop.
+################################################################################
+
+step "Saving benchmark results via server ${SERV}"
+curl -s -S -F file=@/health.py http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload-health.py &
+#Saving curl's PID
+PID="$!"
+
+log_n "Awaiting eDeploy server :"
+while [ ! -z "$(pidof curl)" ]
+    do log_n "."
+    sleep 1
+done
+log "done"
+
+SAVE_TO_USB=0
+# Let's save the log status to the usb key
+if [ -d /ahcexport ]; then
+    cp /log /ahcexport/$DATE
+    SAVE_TO_USB=1
+fi
+
+#Let's grab curl's return code based on it's pid
+wait $PID
+RET_CODE=$?
+if [ "$RET_CODE" != "0" ]; then
+    log "Curl exited as failed ($RET_CODE). Cannot get a configuration from http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload-health.py'"
+    SAVE_TO_NETWORK=0
+    if [ "$SAVE_TO_USB" = "0" ]; then
+        give_up "Both network & USB file saving failed... No result exported."
+    fi
+else
+    SAVE_TO_NETWORK=1
+fi
+}
 
 ################################################################################
 
@@ -108,8 +156,6 @@ eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^[HR]?SERV=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^[HR]?SERV_PORT=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^HTTP_PORT=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^HTTP_PATH=")
-eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^DURATION=")
-eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^SMOKE_TEST")
 
 if [ -z "$RSERV" ]; then
     RSERV="$SERV"
@@ -129,46 +175,42 @@ show_kernel_modules
 step "Benchmarking system"
 ./health-check.py hw.py > /health.py
 
-if [ -d /ahcexport ]; then
-    # Saving health-check output to the usb key
-    DATE=$(date +%Y_%m_%d-%Hh%M)
-    mkdir -p /ahcexport/$DATE/
-    cp /*.hw /ahcexport/$DATE
-fi
+save_results
 
-################################################################################
-# Send the detected hardware to the server and receive a configuration script
-# if there is a match on the server else stop.
-################################################################################
+if [ ! -z "$SMOKE" ]; then
+    step "Entering Smoke Test for $SMOKE minutes"
+    (while true; do
+        ./health-check.py hw.py storage-burn >/dev/null;
+    done
+    ) &
+    PID_STORAGE="$!"
+    PID_CPU="$!"
+    (while true; do
+        ./health-check.py hw.py memory-burn >/dev/null;
+    done
+    ) &
+    PID_MEMORY="$!"
+    (while true; do
+        ./health-check.py hw.py cpu-burn >/dev/null;
+    done
+    ) &
+    PID_CPU="$!"
 
-step "Configuring system via server ${SERV}"
-curl -s -S -F file=@/health.py http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload-health.py &
-#Saving curl's PID
-PID="$!"
+    sleep ${SMOKE}m
 
-log_n "Awaiting eDeploy server :"
-while [ ! -z "$(pidof curl)" ]
-    do log_n "."
-    sleep 1
-done
-log "done"
+    step "Cleaning Smoke test"
+    kill -9 $PID_CPU
+    kill -9 $PID_MEMORY
+    kill -9 $PID_STORAGE
+    killall -9 sysbench
+    killall -9 fio
+    killall -9 health-check.py
 
-SAVE_TO_USB=0
-# Let's save the log status to the usb key
-if [ -d /ahcexport ]; then
-    cp /log /ahcexport/$DATE
-    umount /ahcexport
-    SAVE_TO_USB=1
-fi
+    step "Benchmarking after Smoke test"
+    sleep 10
+    ./health-check.py hw.py > /health.py
 
-#Let's grab curl's return code based on it's pid
-wait $PID
-RET_CODE=$?
-if [ "$RET_CODE" != "0" ]; then
-    log "Curl exited as failed ($RET_CODE). Cannot get a configuration from http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload-health.py'"
-    if [ "$SAVE_TO_USB" = "0" ]; then
-        give_up "Both network & USB file saving failed... No result exported."
-    fi
+    save_results
 fi
 
 log "#############################################################################"
@@ -182,6 +224,7 @@ if [ "$RET_CODE" = "0" ]; then
 fi
 log "#############################################################################"
 
+umount /ahcexport
 save_log
 
 if [ "$DEBUG" = 1 ]; then

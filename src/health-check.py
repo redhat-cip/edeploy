@@ -112,16 +112,21 @@ def run_sysbench(hw, max_time, cpu_count, processor_num=-1):
                  else:
                      hw.append(('cpu', 'logical_%d'%processor_num, 'loops_per_sec', int(perf)/max_time))
 
-def cpu_perf(hw,testing_time=5):
+def cpu_perf(hw,testing_time=5,burn_test=False):
     ' Detect the cpu speed'
     result=get_value(hw,'cpu','logical','number')
 
-    if result is not None:
-        sys.stderr.write('CPU Performance: %d logical CPU to test (ETA: %d seconds)\n'%(int(result),(int(result)+1)*testing_time))
-        for cpu_nb in range(int(result)):
-            get_bogomips(hw,cpu_nb)
-            get_cache_size(hw,cpu_nb)
-            run_sysbench(hw,testing_time, 1, cpu_nb)
+    # Individual Test aren't useful for burn_test
+    if burn_test==False:
+        if result is not None:
+            sys.stderr.write('CPU Performance: %d logical CPU to test (ETA: %d seconds)\n'%(int(result),(int(result)+1)*testing_time))
+            for cpu_nb in range(int(result)):
+                get_bogomips(hw,cpu_nb)
+                get_cache_size(hw,cpu_nb)
+                run_sysbench(hw,testing_time, 1, cpu_nb)
+    else:
+        sys.stderr.write('CPU Burn: %d logical CPU to test (ETA: %d seconds)\n'%(int(result),testing_time))
+
     run_sysbench(hw, testing_time, int(result))
 
 def run_memtest(hw, max_time, block_size, cpu_count, processor_num=-1):
@@ -208,6 +213,12 @@ def get_ddr_timing(hw):
                 hw.append(('memory', 'DDR_%s'%ddr_channel, 'tFAW', tFAW))
                 hw.append(('memory', 'DDR_%s'%ddr_channel, 'B2B', B2B))
 
+def mem_perf_burn(hw, testing_time=10):
+    'Report the memory performance'
+    result=get_value(hw,'cpu','logical','number')
+    if result is not None:
+        sys.stderr.write('Memory Burn: %d logical CPU to test (ETA: %d seconds)\n'%(int(result),testing_time))
+        run_memtest(hw, testing_time, '128M', int(result))
 
 def mem_perf(hw, testing_time=3):
     'Report the memory performance'
@@ -314,6 +325,20 @@ def is_booted_storage_device(disk):
             return True
     return False
 
+def storage_perf_burn(hw,allow_destructive,running_time=10):
+    mode="non destructive"
+    if allow_destructive:
+        mode='destructive'
+        running_time=running_time / 2
+    disks=get_disks_name(hw)
+    sys.stderr.write('Running storage burn on %d disks in %s mode for %d seconds\n'%(len(disks),mode,2*running_time))
+
+    run_fio(hw,disks,"randread","4k",running_time)
+    run_fio(hw,disks,"read","1M",running_time)
+    if allow_destructive:
+        run_fio(hw, get_disks_name(hw, True),"randwrite","4k",running_time)
+        run_fio(hw, get_disks_name(hw, True),"write","1M",running_time)
+
 def storage_perf(hw,allow_destructive,running_time=10):
     'Reporting disk performance'
     mode="non destructive"
@@ -340,8 +365,8 @@ def storage_perf(hw,allow_destructive,running_time=10):
                 run_fio(hw, ['%s'%disk],"write","1M",running_time)
 
     if (len(disks)>1):
-        run_fio(hw,get_disks_name(hw),"randread","4k",running_time)
-        run_fio(hw,get_disks_name(hw),"read","1M",running_time)
+        run_fio(hw,disks,"randread","4k",running_time)
+        run_fio(hw,disks,"read","1M",running_time)
         if allow_destructive:
             run_fio(hw, get_disks_name(hw, True),"randwrite","4k",running_time)
             run_fio(hw, get_disks_name(hw, True),"write","1M",running_time)
@@ -357,9 +382,26 @@ def _main():
 
     hrdw = eval(open(sys.argv[1]).read(-1))
 
-    cpu_perf(hrdw)
-    mem_perf(hrdw)
-    storage_perf(hrdw,allow_destructive)
+    mode='cpu,memory,storage'
+    try:
+        mode=sys.argv[2]
+    except:
+        True
+
+    if 'cpu-burn' in mode:
+        cpu_perf(hrdw,60,True)
+    elif 'cpu' in mode:
+        cpu_perf(hrdw)
+
+    if 'memory-burn' in mode:
+        mem_perf_burn(hrdw,60)
+    elif 'memory' in mode:
+        mem_perf(hrdw)
+
+    if 'storage-burn' in mode:
+        storage_perf_burn(hrdw,allow_destructive,30)
+    elif 'storage' in mode:
+        storage_perf(hrdw,allow_destructive)
 
     # Saving result to stdout but also to a filename based on the hw properties
     output_filename=get_output_filename(hrdw)

@@ -177,16 +177,16 @@ setup_bootloader() {
 	mkdir $1/extlinux
     if [ "$MODE" = "health" ]; then
 cat << EOF >> $1/extlinux/extlinux.conf
-TOTALTIMEOUT 100
 TIMEOUT 100
 PROMPT 1
 UI menu.c32
 DEFAULT SAFE
 MENU TITLE Automatic Health Check ($VER)
+MENU ROWS 13
 
 LABEL SAFE
         MENU DEFAULT
-        MENU LABEL Run Benchmark in safe mode
+        MENU LABEL Run Benchmark in safe mode ( No Smoke Test)
         TEXT HELP
          Run a series of test to estimate system's performance.
          CPU, MEMORY and STORAGE will be benchmarked.
@@ -196,8 +196,65 @@ LABEL SAFE
         INITRD /initrd.pxe
         APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG
 
+LABEL SAFE1H
+        MENU LABEL Run Benchmark in safe mode ( 1H Smoke Test)
+        TEXT HELP
+         Run a series of test to estimate system's performance.
+         CPU, MEMORY and STORAGE will be benchmarked.
+         Test duration will vary regarding the hardware setup.
+        ENDTEXT
+        KERNEL /vmlinuz
+        INITRD /initrd.pxe
+        APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG SMOKE=60
+
+LABEL SAFE12H
+        MENU LABEL Run Benchmark in safe mode (12H Smoke Test)
+        TEXT HELP
+         Run a series of test to estimate system's performance.
+         CPU, MEMORY and STORAGE will be benchmarked.
+         Test duration will vary regarding the hardware setup.
+        ENDTEXT
+        KERNEL /vmlinuz
+        INITRD /initrd.pxe
+        APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG SMOKE=720
+
+LABEL SAFE24H
+        MENU LABEL Run Benchmark in safe mode (24H Smoke Test)
+        TEXT HELP
+         Run a series of test to estimate system's performance.
+         CPU, MEMORY and STORAGE will be benchmarked.
+         Test duration will vary regarding the hardware setup.
+        ENDTEXT
+        KERNEL /vmlinuz
+        INITRD /initrd.pxe
+        APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG SMOKE=1440
+
+LABEL SAFE48H
+        MENU LABEL Run Benchmark in safe mode (48H Smoke Test)
+        TEXT HELP
+         Run a series of test to estimate system's performance.
+         CPU, MEMORY and STORAGE will be benchmarked.
+         Test duration will vary regarding the hardware setup.
+        ENDTEXT
+        KERNEL /vmlinuz
+        INITRD /initrd.pxe
+        APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG SMOKE=2880
+
+LABEL SAFE72H
+        MENU LABEL Run Benchmark in safe mode (72H Smoke Test)
+        TEXT HELP
+         Run a series of test to estimate system's performance.
+         CPU, MEMORY and STORAGE will be benchmarked.
+         Test duration will vary regarding the hardware setup.
+        ENDTEXT
+        KERNEL /vmlinuz
+        INITRD /initrd.pxe
+        APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG SMOKE=4320
+
+MENU SEPARATOR
+
 LABEL DESTRUCTIVE
-        MENU LABEL Run Benchmark in destructive mode
+        MENU LABEL Run Benchmark in destructive mode ( No Smoke Test)
         TEXT HELP
          Run a destructive write test to storage device in addition of safe mode
                       !!! EXISTING DATA ON STORAGE DEVICE !!!
@@ -206,6 +263,62 @@ LABEL DESTRUCTIVE
         KERNEL /vmlinuz
         INITRD /initrd.pxe
         APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG DESTRUCTIVE_MODE=1
+
+LABEL DESTRUCTIVE1H
+        MENU LABEL Run Benchmark in destructive mode ( 1H Smoke Test)
+        TEXT HELP
+         Run a destructive write test to storage device in addition of safe mode
+                      !!! EXISTING DATA ON STORAGE DEVICE !!!
+                      !!!  WILL BE DESTROYED PERMANENTLY  !!!
+        ENDTEXT
+        KERNEL /vmlinuz
+        INITRD /initrd.pxe
+        APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG DESTRUCTIVE_MODE=1 SMOKE=60
+
+LABEL DESTRUCTIVE12H
+        MENU LABEL Run Benchmark in destructive mode (12H Smoke Test)
+        TEXT HELP
+         Run a destructive write test to storage device in addition of safe mode
+                      !!! EXISTING DATA ON STORAGE DEVICE !!!
+                      !!!  WILL BE DESTROYED PERMANENTLY  !!!
+        ENDTEXT
+        KERNEL /vmlinuz
+        INITRD /initrd.pxe
+        APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG DESTRUCTIVE_MODE=1 SMOKE=720
+
+LABEL DESTRUCTIVE24H
+        MENU LABEL Run Benchmark in destructive mode (24h Smoke Test)
+        TEXT HELP
+         Run a destructive write test to storage device in addition of safe mode
+                      !!! EXISTING DATA ON STORAGE DEVICE !!!
+                      !!!  WILL BE DESTROYED PERMANENTLY  !!!
+        ENDTEXT
+        KERNEL /vmlinuz
+        INITRD /initrd.pxe
+        APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG DESTRUCTIVE_MODE=1 SMOKE=1440
+
+LABEL DESTRUCTIVE48H
+        MENU LABEL Run Benchmark in destructive mode (48h Smoke Test)
+        TEXT HELP
+         Run a destructive write test to storage device in addition of safe mode
+                      !!! EXISTING DATA ON STORAGE DEVICE !!!
+                      !!!  WILL BE DESTROYED PERMANENTLY  !!!
+        ENDTEXT
+        KERNEL /vmlinuz
+        INITRD /initrd.pxe
+        APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG DESTRUCTIVE_MODE=1 SMOKE=2880
+
+LABEL DESTRUCTIVE72H
+        MENU LABEL Run Benchmark in destructive mode (72h Smoke Test)
+        TEXT HELP
+         Run a destructive write test to storage device in addition of safe mode
+                      !!! EXISTING DATA ON STORAGE DEVICE !!!
+                      !!!  WILL BE DESTROYED PERMANENTLY  !!!
+        ENDTEXT
+        KERNEL /vmlinuz
+        INITRD /initrd.pxe
+        APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG DESTRUCTIVE_MODE=1 SMOKE=4320
+
 EOF
     else
 cat << EOF >> $1/extlinux/extlinux.conf

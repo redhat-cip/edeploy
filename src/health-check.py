@@ -30,6 +30,8 @@ import diskinfo
 import hpacucli
 import os
 
+ramp_time=5
+DEBUG=0
 
 def is_included(dict1, dict2):
     'Test if dict1 is included in dict2.'
@@ -48,7 +50,8 @@ def get_disks_name(hw,without_bootable=False):
             if without_bootable and is_booted_storage_device(entry[1]):
                 sys.stderr.write("Skipping disk %s in destructive mode, this is the booted device !\n"%entry[1])
             elif 'I:' in entry[1]:
-                sys.stderr.write("Ignoring HP hidden disk %s\n"%entry[1])
+                if DEBUG:
+                    sys.stderr.write("Ignoring HP hidden disk %s\n"%entry[1])
             else:
                 disks.append(entry[1])
     return disks
@@ -229,12 +232,16 @@ def run_fio(hw,disks_list,mode,io_size,time):
     filelist = [ f for f in os.listdir(".") if f.endswith(".fio") ]
     for f in filelist:
         os.remove(f)
-    fio="fio --ioengine=libaio --invalidate=1 --ramp_time=5 --iodepth=32 --runtime=%d --time_based --direct=1 --bs=%s --rw=%s"%(time,io_size,mode)
+    fio="fio --ioengine=libaio --invalidate=1 --ramp_time=%d --iodepth=32 --runtime=%d --time_based --direct=1 --bs=%s --rw=%s"%(ramp_time, time,io_size,mode)
+    global_disk_list=''
     for disk in disks_list:
         if not '/dev/' in disk:
             disk='/dev/%s'%disk
         short_disk=disk.replace('/dev/','')
         fio="%s --name=MYJOB-%s --filename='%s'" %(fio,short_disk,disk)
+        global_disk_list+='%s,'%short_disk
+    global_disk_list=global_disk_list.rstrip(',')
+    sys.stderr.write('Benchmarking storage %s for %s seconds in %s mode with blocksize=%s\n'%(global_disk_list,time,mode,io_size))
     cmd = subprocess.Popen(fio,
                         shell=True, stdout=subprocess.PIPE)
     current_disk=''
@@ -307,29 +314,33 @@ def is_booted_storage_device(disk):
             return True
     return False
 
-def storage_perf(hw,allow_destructive):
+def storage_perf(hw,allow_destructive,running_time=10):
     'Reporting disk performance'
     mode="non destructive"
+    # Let's count the number of runs in safe mode
+    total_runtime=len(get_disks_name(hw))*(running_time+ramp_time)*2+2*(running_time+ramp_time)
+
     if allow_destructive:
+        total_runtime=total_runtime*2
         mode='destructive'
 
-    sys.stderr.write('Running storage bench in %s mode\n'%mode)
+    sys.stderr.write('Running storage bench in %s mode for %d seconds\n'%(mode,total_runtime))
     for disk in get_disks_name(hw):
         is_booted_storage_device(disk)
-        run_fio(hw, ['%s'%disk],"randread","4k",10)
-        run_fio(hw, ['%s'%disk],"read","1M",10)
+        run_fio(hw, ['%s'%disk],"randread","4k",running_time)
+        run_fio(hw, ['%s'%disk],"read","1M",running_time)
         if allow_destructive:
             if is_booted_storage_device(disk):
                 sys.stderr.write("Skipping disk %s in destructive mode, this is the booted device !"%disk)
             else:
-                run_fio(hw, ['%s'%disk],"randwrite","4k",10)
-                run_fio(hw, ['%s'%disk],"write","1M",10)
+                run_fio(hw, ['%s'%disk],"randwrite","4k",running_time)
+                run_fio(hw, ['%s'%disk],"write","1M",running_time)
 
-    run_fio(hw,get_disks_name(hw),"randread","4k",10)
-    run_fio(hw,get_disks_name(hw),"read","1M",10)
+    run_fio(hw,get_disks_name(hw),"randread","4k",running_time)
+    run_fio(hw,get_disks_name(hw),"read","1M",running_time)
     if allow_destructive:
-        run_fio(hw, get_disks_name(hw, True),"randwrite","4k",10)
-        run_fio(hw, get_disks_name(hw, True),"write","1M",10)
+        run_fio(hw, get_disks_name(hw, True),"randwrite","4k",running_time)
+        run_fio(hw, get_disks_name(hw, True),"write","1M",running_time)
 
 def _main():
     'Command line entry point.'

@@ -78,7 +78,7 @@ def detect_disks(hw_lst):
                 with open('/sys/block/%s/device/%s'%(name,my_item), 'r') as f:
                     hw_lst.append(('disk', name,my_item,f.readline().rstrip('\n').strip()))
             except:
-                sys.stderr.write('Failed at getting disk information at /sys/block/%s/device/%s'%(name,my_item))
+                sys.stderr.write('Failed at getting disk information at /sys/block/%s/device/%s\n'%(name,my_item))
 
         item_list=['WCE','RCD']
         item_def={'WCE':'Write Cache Enable', 'RCD':'Read Cache Disable'}

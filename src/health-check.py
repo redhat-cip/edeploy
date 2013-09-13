@@ -260,7 +260,7 @@ def run_fio(hw,disks_list,mode,io_size,time):
              try:
                  perf=re.search('bw=(.*?B/s),',line).group(1)
              except:
-                sys.stderr.write('Failed at detecting bwps pattern with %s'%line)
+                sys.stderr.write('Failed at detecting bwps pattern with %s\n'%line)
              else:
                  multiply=1
                  divide=1
@@ -279,7 +279,7 @@ def run_fio(hw,disks_list,mode,io_size,time):
              try:
                  hw.append(('disk',current_disk,mode_str+'_IOps', re.search('iops=(.*),',line).group(1)))
              except:
-                sys.stderr.write('Failed at detecting iops pattern with %s'%line)
+                sys.stderr.write('Failed at detecting iops pattern with %s\n'%line)
 
 def get_output_filename(hw):
     sysname=''

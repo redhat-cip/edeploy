@@ -153,18 +153,34 @@ while [ ! -z "$(pidof curl)" ]
 done
 log "done"
 
+SAVE_TO_USB=0
 # Let's save the log status to the usb key
 if [ -d /ahcexport ]; then
     cp /log /ahcexport/$DATE
     umount /ahcexport
+    SAVE_TO_USB=1
 fi
 
 #Let's grab curl's return code based on it's pid
 wait $PID
 RET_CODE=$?
 if [ "$RET_CODE" != "0" ]; then
-    give_up "Curl exited as failed ($RET_CODE). Cannot get a configuration from http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py'"
+    log "Curl exited as failed ($RET_CODE). Cannot get a configuration from http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload-health.py'"
+    if [ "$SAVE_TO_USB" = "0" ]; then
+        give_up "Both network & USB file saving failed... No result exported."
+    fi
 fi
+
+log "#############################################################################"
+log "Benchmarking Complete"
+log "Results got saved on :"
+if [ "$SAVE_TO_USB" = "1" ]; then
+    log " -> USB DEVICE"
+fi
+if [ "$RET_CODE" = "0" ]; then
+    log " -> NETWORK SERVER $SERV"
+fi
+log "#############################################################################"
 
 save_log
 

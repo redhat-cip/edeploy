@@ -318,14 +318,17 @@ def storage_perf(hw,allow_destructive,running_time=10):
     'Reporting disk performance'
     mode="non destructive"
     # Let's count the number of runs in safe mode
-    total_runtime=len(get_disks_name(hw))*(running_time+ramp_time)*2+2*(running_time+ramp_time)
+    total_runtime=len(get_disks_name(hw))*(running_time+ramp_time)*2
+    disks=get_disks_name(hw)
+    if (len(disks)>1):
+        total_runtime+=2*(running_time+ramp_time)
 
     if allow_destructive:
         total_runtime=total_runtime*2
         mode='destructive'
 
-    sys.stderr.write('Running storage bench in %s mode for %d seconds\n'%(mode,total_runtime))
-    for disk in get_disks_name(hw):
+    sys.stderr.write('Running storage bench on %d disks in %s mode for %d seconds\n'%(len(disks),mode,total_runtime))
+    for disk in disks:
         is_booted_storage_device(disk)
         run_fio(hw, ['%s'%disk],"randread","4k",running_time)
         run_fio(hw, ['%s'%disk],"read","1M",running_time)
@@ -336,11 +339,12 @@ def storage_perf(hw,allow_destructive,running_time=10):
                 run_fio(hw, ['%s'%disk],"randwrite","4k",running_time)
                 run_fio(hw, ['%s'%disk],"write","1M",running_time)
 
-    run_fio(hw,get_disks_name(hw),"randread","4k",running_time)
-    run_fio(hw,get_disks_name(hw),"read","1M",running_time)
-    if allow_destructive:
-        run_fio(hw, get_disks_name(hw, True),"randwrite","4k",running_time)
-        run_fio(hw, get_disks_name(hw, True),"write","1M",running_time)
+    if (len(disks)>1):
+        run_fio(hw,get_disks_name(hw),"randread","4k",running_time)
+        run_fio(hw,get_disks_name(hw),"read","1M",running_time)
+        if allow_destructive:
+            run_fio(hw, get_disks_name(hw, True),"randwrite","4k",running_time)
+            run_fio(hw, get_disks_name(hw, True),"write","1M",running_time)
 
 def _main():
     'Command line entry point.'

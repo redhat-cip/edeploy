@@ -202,9 +202,9 @@ if [ ! -z "$SMOKE" ]; then
     kill -9 $PID_CPU
     kill -9 $PID_MEMORY
     kill -9 $PID_STORAGE
-    killall -9 sysbench
-    killall -9 fio
-    killall -9 health-check.py
+    pkill -9 -f sysbench
+    pkill -9 -f fio
+    pkill -9 -f health-check.py
 
     step "Benchmarking after Smoke test"
     sleep 10

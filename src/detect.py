@@ -182,6 +182,10 @@ def detect_system(hw_lst, output=None):
             name = elt.find('physid')
             if name is not None:
                 hw_lst.append(('cpu', 'physical_%s'%(socket_count), 'physid', name.text))
+                find_element(elt, 'product', 'product', 'physical_%s'%(socket_count), 'cpu')
+                find_element(elt, 'vendor', 'vendor', 'physical_%s'%(socket_count), 'cpu')
+                find_element(elt, 'size', 'frequency', 'physical_%s'%(socket_count), 'cpu')
+                find_element(elt, 'clock', 'clock', 'physical_%s'%(socket_count), 'cpu')
                 find_element(elt,"configuration/setting[@id='cores']",
                              'cores', 'physical_%s'%(socket_count),'cpu', 'value')
                 find_element(elt,"configuration/setting[@id='enabledcores']",

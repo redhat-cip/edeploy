@@ -220,10 +220,10 @@ def mem_perf_burn(hw, testing_time=10):
         sys.stderr.write('Memory Burn: %d logical CPU to test (ETA: %d seconds)\n'%(int(result),testing_time))
         run_memtest(hw, testing_time, '128M', int(result))
 
-def mem_perf(hw, testing_time=3):
+def mem_perf(hw, testing_time=1):
     'Report the memory performance'
-    all_cpu_testing_time=10
-    block_size_list=['1K', '4K', '1M', '16M', '128M', '1G']
+    all_cpu_testing_time=5
+    block_size_list=['1K', '4K', '1M', '16M', '128M', '1G', '2G']
     result=get_value(hw,'cpu','logical','number')
     if result is not None:
         sys.stderr.write('Memory Performance: %d logical CPU to test (ETA: %d seconds)\n'%(int(result),(int(result))*len(block_size_list)*testing_time+2*all_cpu_testing_time*len(block_size_list)))

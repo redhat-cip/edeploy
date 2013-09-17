@@ -146,6 +146,14 @@ def detect_system(hw_lst, output=None):
         find_element(xml, "./node/product", 'name')
         find_element(xml, "./node/vendor", 'vendor')
         find_element(xml, "./node/version", 'version')
+
+        for elt in xml.findall(".//node[@id='firmware']"):
+            name = elt.find('physid')
+            if name is not None:
+                find_element(elt, 'version', 'version','bios', 'firmware')
+                find_element(elt, 'date', 'date','bios', 'firmware')
+                find_element(elt, 'vendor', 'vendor','bios', 'firmware')
+
         for elt in xml.findall(".//node[@id='memory']"):
             name = elt.find('physid')
             if name is not None:

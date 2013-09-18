@@ -231,11 +231,13 @@ def mem_perf(hw, testing_time=1):
             for block_size in block_size_list:
                 run_memtest(hw, testing_time, block_size, 1, cpu_nb)
 
-        for block_size in block_size_list:
-            run_memtest(hw, all_cpu_testing_time, block_size, int(result))
+        # There is not need to test fork vs thread if only a single logical cpu is present
+        if (int(result)>1):
+            for block_size in block_size_list:
+                run_memtest(hw, all_cpu_testing_time, block_size, int(result))
 
-        for block_size in block_size_list:
-            run_forked_memtest(hw, all_cpu_testing_time, block_size, int(result))
+            for block_size in block_size_list:
+                run_forked_memtest(hw, all_cpu_testing_time, block_size, int(result))
 
     get_ddr_timing(hw)
 

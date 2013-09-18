@@ -18,6 +18,8 @@
 
 from scatterplot import ScatterPlot
 from histogram import Histogram
+from boxplot import BoxPlot
 
 models = {'scatterplot': ScatterPlot,
-          'histogram' : Histogram}
+          'histogram' : Histogram,
+          'boxplot' : BoxPlot}

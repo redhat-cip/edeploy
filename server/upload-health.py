@@ -169,7 +169,13 @@ def main():
         fatal_error("'Invalid hardware file: %s'" % str(excpt))
 
     filename_and_macs = generate_filename_and_macs(hw_items)
-    save_hw(hw_items, filename_and_macs['sysname'], cfg_dir)
+    dirname=time.strftime("%Y_%m_%d-%Hh%M", time.localtime())
+    try:
+        os.mkdir(cfg_dir+'/'+dirname)
+    except:
+        fatal_error("Cannot create %s/%s directory" % (cfg_dir,dirname))
+
+    save_hw(hw_items, filename_and_macs['sysname'], cfg_dir+'/'+dirname)
 
     use_pxemngr = (config_get('SERVER', 'USEPXEMNGR', False) == 'True')
     pxemngr_url = config_get('SERVER', 'PXEMNGRURL', None)

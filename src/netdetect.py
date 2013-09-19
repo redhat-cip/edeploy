@@ -22,6 +22,8 @@ import struct
 import cPickle
 import time
 import threading
+from netaddr import *
+
 timestamp={}
 server_list={}
 semaphore=threading.Semaphore()
@@ -53,12 +55,22 @@ def get_cidr_from_eth(hw,eth):
             if (entry[0]=='network') and (entry[1]==eth) and (entry[2]=='ipv4-cidr'):
                 return entry[3]
 
+def get_network_from_eth(hw,eth):
+    if (eth):
+        for entry in hw:
+            if (entry[0]=='network') and (entry[1]==eth) and (entry[2]=='ipv4-network'):
+                return entry[3]
+
 def get_ip_list(hw):
     ''' Extract All IPV4 addresses from hw list '''
     ip_list=[]
     for entry in hw:
         if (entry[0]=='network') and (entry[2]=='ipv4'):
-            ip_list.append('%s/%s'%(entry[3],get_cidr_from_eth(hw,entry[1])))
+            ip_list.append('%s/%s/%s'%(entry[3],
+                                     get_cidr_from_eth(hw,entry[1]),
+                                     get_network_from_eth(hw,entry[1])
+                                    )
+                          )
     return ip_list
 
 ''' Server is made for receiving keepalives and manage them '''
@@ -146,6 +158,40 @@ def fatal_error(error):
     sys.stderr.write('%s\n' % error)
     sys.exit(1)
 
+def prepare_synthesis():
+    global server_list
+    network_list={}
+    new_server_list={}
+    for server in server_list.keys():
+        netaddrs = server_list[server]
+        for netaddr in netaddrs:
+            network="%s/%s"%(netaddr.split('/')[2],netaddr.split('/')[1])
+            if not network in network_list.keys():
+                 network_list[network]=1
+            else:
+                 network_list[network]+=1
+
+    count=0
+    selected_network=''
+    for key in network_list.keys():
+        if network_list[key] > count:
+            count=network_list[key]
+            selected_network=key
+
+    print "Selected network is %s"%(selected_network)
+
+    valid_ip_list=[str(ip) for ip in IPNetwork(selected_network).iter_hosts()]
+
+    for server in server_list.keys():
+        netaddrs = server_list[server]
+        for netaddr in netaddrs:
+            remote_ip=netaddr.split('/')[0]
+            if remote_ip in valid_ip_list:
+                new_server_list[server]=remote_ip
+
+    server_list=new_server_list
+    server_list['SYNTHESIS']=True
+
 ''' Scrubbing is made for deleting server that didn't sent keepalive on time '''
 def scrub_timestamp():
     global discovery
@@ -181,6 +227,9 @@ def scrub_timestamp():
             if current_time-previous_time >= DISCOVERY_TIME:
                 ''' We are no more in discovery, that will kill the client '''
                 discovery=False
+                if system_count == 0:
+                    sys.stderr.write("No system detected, exiting\n")
+                    return
                 sys.stderr.write("About to send the synthesis\n")
                 ''' We need to wait two keep alive to insure client completed his task '''
                 time.sleep(2*KEEP_ALIVE)
@@ -193,7 +242,9 @@ def scrub_timestamp():
                 ''' It's time to send the synthesis to the other nodes '''
                 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
                 sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
-                server_list['SYNTHESIS']=True
+
+                prepare_synthesis()
+
                 sock.sendto(cPickle.dumps(server_list), (MCAST_GRP, MCAST_PORT))
                 sys.stderr.write("End of Discovery with %d systems!\n"%system_count)
                 return
@@ -205,8 +256,7 @@ def print_result():
     sys.stderr.write("Synthesis result\n")
     for key in server_list:
         sys.stderr.write("Server %s -> "%key)
-        for ip in server_list[key]:
-            sys.stderr.write("%s "%ip)
+        sys.stderr.write("%s "%server_list[key])
         sys.stderr.write("\n")
 
 

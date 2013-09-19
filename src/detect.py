@@ -26,6 +26,7 @@ import subprocess
 import socket
 import fcntl
 import struct
+from netaddr import *
 
 import diskinfo
 import hpacucli
@@ -153,10 +154,12 @@ def detect_system(hw_lst, output=None):
             if attrib:
                 hw_lst.append((sys_cls, sys_type, sys_subtype,
                                elt[0].attrib[attrib]))
+		return elt[0].attrib[attrib]
             else:
                 hw_lst.append((sys_cls, sys_type, sys_subtype, elt[0].text))
-            return True
-        return False
+                return elt[0].text
+        return None
+
     # handle output injection for testing purpose
     if output:
         status = 0
@@ -208,14 +211,17 @@ def detect_system(hw_lst, output=None):
                 find_element(elt, 'vendor', 'vendor', name.text, 'network')
                 find_element(elt, 'product', 'product', name.text, 'network')
                 find_element(elt, 'size', 'size', name.text, 'network')
-                if find_element(elt, "configuration/setting[@id='ip']", 'ipv4',
-                             name.text, 'network', 'value'):
+                ipv4=find_element(elt, "configuration/setting[@id='ip']", 'ipv4',
+                             name.text, 'network', 'value')
+		if ipv4 is not None:
                     SIOCGIFNETMASK = 0x891b
                     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                     try:
                         netmask = socket.inet_ntoa(fcntl.ioctl(s, SIOCGIFNETMASK, struct.pack('256s', name.text))[20:24])
                         hw_lst.append(('network',name.text,'ipv4-netmask', netmask))
-                        hw_lst.append(('network',name.text,'ipv4-cidr',get_CIDR(netmask.split('.'))))
+			cidr=get_CIDR(netmask.split('.'))
+                        hw_lst.append(('network',name.text,'ipv4-cidr',cidr))
+			hw_lst.append(('network',name.text,'ipv4-network',"%s"%IPNetwork('%s/%s'%(ipv4,cidr)).network))
                     except:
                         True
                 find_element(elt, "configuration/setting[@id='link']", 'link',

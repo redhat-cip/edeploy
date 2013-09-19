@@ -47,12 +47,18 @@ def get_mac(hw, level1, level2):
             return entry[3]
     return None
 
+def get_cidr_from_eth(hw,eth):
+    if (eth):
+        for entry in hw:
+            if (entry[0]=='network') and (entry[1]==eth) and (entry[2]=='ipv4-cidr'):
+                return entry[3]
+
 def get_ip_list(hw):
     ''' Extract All IPV4 addresses from hw list '''
     ip_list=[]
     for entry in hw:
         if (entry[0]=='network') and (entry[2]=='ipv4'):
-           ip_list.append(entry[3])
+            ip_list.append('%s/%s'%(entry[3],get_cidr_from_eth(hw,entry[1])))
     return ip_list
 
 ''' Server is made for receiving keepalives and manage them '''

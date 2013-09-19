@@ -141,6 +141,11 @@ RET_CODE=$?
 if [ "$RET_CODE" != "0" ]; then
     give_up "Curl exited as failed ($RET_CODE). Cannot get a configuration from http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py'"
 fi
+
+if [ ! -f /configure ]; then
+    give_up "edeploy server ${SERV} didn't provide any answer, looks like something is wrong on server side !"
+fi
+
 chmod +x /configure
 
 d=/chroot
@@ -149,10 +154,7 @@ p=/post_rsync
 mkdir -p $d
 mkdir -p $p/etc/{init,network,default}
 
-if [ ! -x /configure ]; then
-    log "No match on the server"
-
-elif /configure; then
+if /configure; then
 
     . /vars
 
@@ -179,7 +181,7 @@ elif /configure; then
 	if [ -n "${METADATA_URL}" ]; then
 	    sed -i -e "s@GRUB_CMDLINE_LINUX_DEFAULT=.*@GRUB_CMDLINE_LINUX_DEFAULT=\"ds=nocloud-net\\\\;s=${METADATA_URL}\"@" $d/etc/default/grub
 	fi
-	
+
 	mount -obind /dev $d/dev
 	mount -obind /proc $d/proc
 	mount -obind /sys $d/sys

@@ -23,6 +23,9 @@ import pprint
 import sys
 import xml.etree.ElementTree as ET
 import subprocess
+import socket
+import fcntl
+import struct
 
 import diskinfo
 import hpacucli
@@ -131,6 +134,11 @@ def detect_ipmi(hw_lst):
             sys.stderr.write('Info: No IPMI device found\n')
             return False
 
+def get_CIDR(netmask):
+    binary_str = ''
+    for octet in netmask:
+        binary_str += bin(int(octet))[2:].zfill(8)
+    return str(len(binary_str.rstrip('0')))
 
 def detect_system(hw_lst, output=None):
     'Detect system characteristics from the output of lshw.'
@@ -147,6 +155,8 @@ def detect_system(hw_lst, output=None):
                                elt[0].attrib[attrib]))
             else:
                 hw_lst.append((sys_cls, sys_type, sys_subtype, elt[0].text))
+            return True
+        return False
     # handle output injection for testing purpose
     if output:
         status = 0
@@ -198,8 +208,16 @@ def detect_system(hw_lst, output=None):
                 find_element(elt, 'vendor', 'vendor', name.text, 'network')
                 find_element(elt, 'product', 'product', name.text, 'network')
                 find_element(elt, 'size', 'size', name.text, 'network')
-                find_element(elt, "configuration/setting[@id='ip']", 'ipv4',
-                             name.text, 'network', 'value')
+                if find_element(elt, "configuration/setting[@id='ip']", 'ipv4',
+                             name.text, 'network', 'value'):
+                    SIOCGIFNETMASK = 0x891b
+                    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                    try:
+                        netmask = socket.inet_ntoa(fcntl.ioctl(s, SIOCGIFNETMASK, struct.pack('256s', name.text))[20:24])
+                        hw_lst.append(('network',name.text,'ipv4-netmask', netmask))
+                        hw_lst.append(('network',name.text,'ipv4-cidr',get_CIDR(netmask.split('.'))))
+                    except:
+                        True
                 find_element(elt, "configuration/setting[@id='link']", 'link',
                              name.text, 'network', 'value')
                 find_element(elt, "configuration/setting[@id='driver']",

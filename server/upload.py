@@ -219,10 +219,10 @@ var is also augmented with the cmdb entry found.'''
                     break
                 idx += 1
             else:
-                log("No more entry in the CMDB, aborting.")
+                warning_error("No more entry in the CMDB, aborting.")
                 return False
         else:
-            log("No entry matched in the CMDB, aborting.")
+            warning_error("No entry matched in the CMDB, aborting.")
             return False
     return True
 
@@ -294,7 +294,7 @@ def generate_filename_and_macs(items):
     return sysvars
 
 
-def fatal_error(error):
+def warning_error(error):
     '''Report a shell script with the error message and log
     the message on stderr.'''
     print('''#!/bin/sh
@@ -306,6 +306,11 @@ EOF
 exit 1
 ''' % error)
     sys.stderr.write('%s\n' % error)
+
+def fatal_error(error):
+    '''Report a shell script with the error message and log
+    the message on stderr.'''
+    warning_error(error)
     sys.exit(1)
 
 

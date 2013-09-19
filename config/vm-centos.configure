@@ -1,0 +1,34 @@
+
+# -*- python -*-
+
+disk1 = '/dev/' + var['disk']
+
+for disk, path in ((disk1, '/chroot'), ):
+    run('parted -s %s mklabel msdos' % disk)
+    run('parted -s %s mkpart primary ext2 0%% 100%%' % disk)
+    run('mkfs.ext4 %s1' % disk)
+    run('mkdir -p %s; mount %s1 %s' % (path, disk, path))
+
+run('mkdir -p /post_rsync/etc/sysconfig/network-scripts')
+run('mkdir -p /post_rsync/boot/grub')
+
+fstab = open('/post_rsync/etc/fstab', 'w').write('''
+/%s1 /               ext4    errors=remount-ro 0       1
+''' % disk1)
+
+open('/post_rsync/etc/sysconfig/network-scripts/ifcfg-%s' % var['eth'], 'w').write('''
+DEVICE=%(eth)s
+BOOTPROTO=none
+ONBOOT=yes
+IPADDR=%(ip)s
+NETMASK=%(netmask)s
+GATEWAY=%(gateway)s
+HWADDR=%(mac)s
+''' % var)
+
+open('/post_rsync/etc/sysconfig/network', 'w').write('''
+NETWORKING=yes
+HOSTNAME=centos64
+''')
+
+set_role('base', 'C64-F.1.0.0', disk1)

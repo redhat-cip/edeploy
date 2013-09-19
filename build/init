@@ -200,14 +200,41 @@ elif /configure; then
 	echo  "# Installing grub  on device ${DISK} which is a $MODEL from $VENDOR with SN=$SER"
 	echo  "################################################################################################"
 	sleep 3
-	if chroot $d /bin/bash -c "/usr/sbin/grub-install ${DISK}"; then
-            chroot $d /bin/bash -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"
-	    umount $d/sys
-	    umount $d/dev
-	    umount $d/proc
-	    save_log
-	    sync
-	    if [ "$DEBUG" != 1 ]; then
+	if [ -e "${d}/etc/redhat-release" ]; then
+		chroot $d /bin/bash -c "cat /proc/mounts > /etc/mtab"
+		chroot $d /bin/bash -c "/sbin/grub-install ${DISK}"
+		ROOT_DEVICE=`mount | grep /chroot | awk '{print $1}'`
+		eval `blkid $ROOT_DEVICE -o export`
+		echo "default=0"  > ${d}/boot/grub/grub.conf
+		echo "timeout=5" >> ${d}/boot/grub/grub.conf
+		echo "hiddenmenu">> ${d}/boot/grub/grub.conf
+		for kernel in ${d}/boot/vmlinuz-*; do
+			kversion=`echo $kernel | awk -F'vmlinuz-' '{print $NF}'`;
+			KERNEL="/boot/vmlinuz-${kversion}"
+			INITRD="/boot/initramfs-${kversion}.img"
+			TITLE="CentOS (${kversion})"
+			echo "title $TITLE" >> ${d}/boot/grub/grub.conf
+			echo "	root (hd0,0)" >> ${d}/boot/grub/grub.conf
+			echo "	kernel $KERNEL root=UUID=$UUID nomodeset quiet" >> ${d}/boot/grub/grub.conf
+			echo "	initrd $INITRD" >> ${d}/boot/grub/grub.conf
+		done
+		umount $d/sys
+		umount $d/dev
+		umount $d/proc
+		save_log
+		sync
+		if [ "$DEBUG" != 1 ]; then
+			umount -a
+			reboot -f
+		fi
+	elif chroot $d /bin/bash -c "/usr/sbin/grub-install ${DISK}"; then
+			chroot $d /bin/bash -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"
+		umount $d/sys
+		umount $d/dev
+		umount $d/proc
+		save_log
+		sync
+		if [ "$DEBUG" != 1 ]; then
 		if [ "$NOREBOOT" = 1 ]; then
 		    if type -p kexec; then
 			echo "Trying kexec..."

@@ -97,8 +97,11 @@ mount -obind /dev ${dir}/dev
 mount -obind /proc ${dir}/proc
 
 if [ -z "$DEB" ]; then
-    rpm -ivh --root "$dir" ftp://fr2.rpmfind.net/linux/centos/6.4/os/x86_64/Packages/centos-release-6-4.el6.centos.10.x86_64.rpm
-    yum --installroot "$dir" --nogpgcheck install -y yum base
+    wget -O"${dir}/centos-release.rpm" ftp://fr2.rpmfind.net/linux/centos/6.4/os/x86_64/Packages/centos-release-6-4.el6.centos.10.x86_64.rpm
+    rpm -ivh --root "$dir" "${dir}/centos-release.rpm"
+    yum --installroot "$dir" --nogpgcheck install -y yum basesystem
+    chroot "$dir" rpm -ivh /centos-release.rpm
+    rm "${dir}/centos-release.rpm"
 fi
 
 PACKAGES="pciutils rsyslog"
@@ -147,9 +150,9 @@ if [ -n "$DEB" ]; then
 chroot "$dir" apt-get update
 chroot "$dir" apt-get dist-upgrade -y
 
-chroot "$dir" apt-get install -y --force-yes openssh-server parted $PACKAGES net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase net-tools dmidecode bash curl hdparm xfsprogs acpid ifenslave kexec-tools
+chroot "$dir" apt-get install -y --force-yes openssh-server parted $PACKAGES net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase dmidecode bash curl hdparm xfsprogs acpid ifenslave kexec-tools
 else
-    yum --installroot "$dir" --nogpgcheck install -y openssh-server parted  $PACKAGES net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase net-tools dmidecode bash curl hdparm xfsprogs acpid ifenslave
+    chroot "$dir" yum --nogpgcheck install -y openssh-server parted coreutils basesystem $PACKAGES e2fsprogs net-tools initscripts upstart vconfig dhclient grub grubby kbd rsync ifupdown lshw dmidecode bash curl hdparm xfsprogs acpid
 fi
 
 rm -f "${dir}"/etc/default/grub.d/edeploy.cfg
@@ -171,7 +174,7 @@ if [ -n "$DEB" ]; then
     chroot "$dir" apt-get clean
 else
     cp hpacucli-9.40-12.0.x86_64.rpm $dir/tmp
-    #chroot $dir rpm -ivh /tmp/hpacucli-9.40-12.0.x86_64.rpm
+    chroot $dir rpm -ivh /tmp/hpacucli-9.40-12.0.x86_64.rpm
     rm -f $dir/tmp/hpacucli-9.40-12.0.x86_64.rpm
 fi
 

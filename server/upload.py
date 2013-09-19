@@ -219,10 +219,10 @@ var is also augmented with the cmdb entry found.'''
                     break
                 idx += 1
             else:
-                log("No more entry in the CMDB, aborting.")
+                fatal_error("No more entry in the CMDB, aborting.")
                 return False
         else:
-            log("No entry matched in the CMDB, aborting.")
+            fatal_error("No entry matched in the CMDB, aborting.")
             return False
     return True
 

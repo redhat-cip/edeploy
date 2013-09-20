@@ -22,26 +22,35 @@ import struct
 import cPickle
 import time
 import threading
+import collections
 from netaddr import *
+from commands import getstatusoutput as cmd
 
 timestamp={}
 server_list={}
 semaphore=threading.Semaphore()
 synthesis=False
 discovery=True
+leader=False
+ready_to_bench=True
+my_mac_addr=''
+hw=[]
+wait_go=None
 
 ''' How many seconds between sending a keep alive message '''
 KEEP_ALIVE=2
 
 ''' Amount of seconds no system shall {dis]appear '''
-DISCOVERY_TIME=5*KEEP_ALIVE
+DISCOVERY_TIME=2*KEEP_ALIVE
 
 ''' Multicast Address used to communicate '''
 MCAST_GRP = '224.1.1.1'
 
 ''' Mutlicast Port used to communicate '''
 MCAST_PORT = 10987
+MCAST_PORT_GO = 10988
 
+BENCH_PORT_BASE = 10000
 def get_mac(hw, level1, level2):
     ''' Extract a Mac Address from an hw list '''
     for entry in hw:
@@ -74,7 +83,30 @@ def get_ip_list(hw):
     return ip_list
 
 ''' Server is made for receiving keepalives and manage them '''
-def start_server():
+def start_sync_bench_server():
+    global server_list
+    ''' Let's bind a server to the Multicast group '''
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.bind((MCAST_GRP, MCAST_PORT))
+    mreq = struct.pack("4sl", socket.inet_aton(MCAST_GRP), socket.INADDR_ANY)
+    sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+    servers_ready_to_bench={}
+    while len(servers_ready_to_bench) != len(server_list):
+        answer={}
+        ''' Let's get keepalives from servers '''
+        answer=cPickle.loads(sock.recv(10240))
+        ''' If the keepalive is Synthesis, we shall only consider this list '''
+        if 'READY_TO_BENCH' in answer.keys():
+            if answer['READY_TO_BENCH'] not in servers_ready_to_bench.keys():
+                servers_ready_to_bench[answer['READY_TO_BENCH']]=True
+            sys.stderr.write("Received Ready_to_bench from %s\n"%answer['READY_TO_BENCH'])
+
+    sys.stderr.write('All servers are now ready to bench\n')
+
+
+''' Server is made for receiving keepalives and manage them '''
+def start_discovery_server():
     global server_list
     global timestamp
     global synthesis
@@ -99,7 +131,7 @@ def start_server():
       ''' If the keepalive is Synthesis, we shall only consider this list '''
       if 'SYNTHESIS' in answer.keys():
           sys.stderr.write("Received Synthesis\n")
-          server_list={}
+          server_list=collections.OrderedDict()
           timestamp={}
           synthesis=True
           ''' We are no more in a discovery phase, that will kill client '''
@@ -129,28 +161,50 @@ def start_server():
     sys.stderr.write("Exiting server\n")
 
 ''' Client is made for generating keepalives'''
-def start_client(hw):
+def start_client(mode):
+    global hw
     global discovery
-    ''' Let's find all IPV4 addresses we know about the system '''
-    my_ip_list=get_ip_list(hw)
-
-    ''' Let's find our mac address '''
-    mac_addr='%s'%get_mac(hw,'network', 'serial')
-
-    ''' Let's prepare a host entry '''
-    host_info={}
-    host_info[mac_addr]=my_ip_list
+    global ready_to_bench
+    global my_mac_addr
 
     ''' Let's prepare the socket '''
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
 
-    ''' While we are in discovery mode, let's send keepalives '''
-    while discovery:
-        sys.stderr.write("Sending keepalive for %s\n"%mac_addr)
-        sock.sendto(cPickle.dumps(host_info), (MCAST_GRP, MCAST_PORT))
-        time.sleep(KEEP_ALIVE)
-    sys.stderr.write("Exiting Client, end of discovery\n")
+    if mode=='DISCOVERY':
+        ''' Let's find all IPV4 addresses we know about the system '''
+        my_ip_list=get_ip_list(hw)
+
+        ''' Let's find our mac address '''
+        my_mac_addr='%s'%get_mac(hw,'network', 'serial')
+
+        ''' Let's prepare a host entry '''
+        host_info={}
+        host_info[my_mac_addr]=my_ip_list
+        ''' While we are in discovery mode, let's send keepalives '''
+        while discovery:
+            sys.stderr.write("Sending keepalive for %s\n"%my_mac_addr)
+            sock.sendto(cPickle.dumps(host_info), (MCAST_GRP, MCAST_PORT))
+            time.sleep(KEEP_ALIVE)
+        sys.stderr.write("Exiting Client, end of discovery\n")
+
+    elif mode=='READY_TO_BENCH':
+        host_info={}
+        host_info['READY_TO_BENCH']=my_mac_addr
+        ready_to_bench=True
+        while ready_to_bench:
+            sys.stderr.write("Sending Ready To Bench for %s\n"%my_mac_addr)
+            sock.sendto(cPickle.dumps(host_info), (MCAST_GRP, MCAST_PORT))
+            time.sleep(KEEP_ALIVE)
+        sys.stderr.write("Exiting Client, end of ready to bench\n")
+    elif mode=='GO':
+        host_info={}
+        host_info['GO']=my_mac_addr
+        sys.stderr.write("Sending Go !\n")
+        sock.sendto(cPickle.dumps(host_info), (MCAST_GRP, MCAST_PORT_GO))
+    else:
+        sys.stderr.write("start_client: Invalide mode : %s\n"%mode)
+        return
 
 def fatal_error(error):
     '''Report a shell script with the error message and log
@@ -197,6 +251,7 @@ def scrub_timestamp():
     global discovery
     global timestamp
     global server_list
+    global leader
     previous_system_count=0
     previous_time=time.time()
     system_count=0
@@ -231,6 +286,9 @@ def scrub_timestamp():
                     sys.stderr.write("No system detected, exiting\n")
                     return
                 sys.stderr.write("About to send the synthesis\n")
+
+                prepare_synthesis()
+
                 ''' We need to wait two keep alive to insure client completed his task '''
                 time.sleep(2*KEEP_ALIVE)
 
@@ -242,9 +300,7 @@ def scrub_timestamp():
                 ''' It's time to send the synthesis to the other nodes '''
                 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
                 sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
-
-                prepare_synthesis()
-
+                leader=True
                 sock.sendto(cPickle.dumps(server_list), (MCAST_GRP, MCAST_PORT))
                 sys.stderr.write("End of Discovery with %d systems!\n"%system_count)
                 return
@@ -260,25 +316,123 @@ def print_result():
         sys.stderr.write("\n")
 
 
+def get_port_list():
+    global server_list
+    port_list=[]
+    for server_count in range(len(server_list)):
+        if server_count == server_list.keys().index(my_mac_addr):
+            continue
+        port_list.append(BENCH_PORT_BASE + server_count)
+    return port_list
+
+def start_bench_server(port):
+    sys.stderr.write('Spawning netserver on port %d\n'%port)
+    status, output = cmd('netserver -D -p %d'%port)
+
+
+def spawn_bench_servers(port_list):
+    threads={}
+    for port in port_list:
+        threads[port]=threading.Thread(target = start_bench_server, args = tuple([port]))
+        threads[port].start()
+
+def stop_bench_servers():
+    cmd('killall netserver')
+
+def start_bench_client(ip,port):
+    sys.stderr.write("Starting bench client on server %s:%s\n"%(ip,port))
+    status, output = cmd('netperf -H %s -p %d -f M'%(ip,port))
+    # Parsing to be implemented
+
+def spawn_bench_client():
+    port=BENCH_PORT_BASE+server_list.keys().index(my_mac_addr)
+    threads={}
+    nb=0
+    for server in server_list:
+        if my_mac_addr in server:
+            continue
+        threads[nb]=threading.Thread(target = start_bench_client, args = [server_list[server],port])
+        threads[nb].start()
+        nb+=1
+
+    sys.stderr.write('Waiting bench clients to finish\n')
+    for i in range(nb):
+        threads[i].join()
+
+    sys.stderr.write('Benchmmark completed !\n')
+
+def wait_for_go():
+    global ready_to_bench
+    ''' Let's bind a server to the Multicast group '''
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.bind((MCAST_GRP, MCAST_PORT_GO))
+    mreq = struct.pack("4sl", socket.inet_aton(MCAST_GRP), socket.INADDR_ANY)
+    sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+    while ready_to_bench:
+        answer={}
+        ''' Let's get keepalives from servers '''
+        answer=cPickle.loads(sock.recv(10240))
+        ''' If the keepalive is Synthesis, we shall only consider this list '''
+        if 'GO' in answer.keys():
+            sys.stderr.write("Received GO from %s\n"%answer['GO'])
+            ready_to_bench=False
+
+def spawn_bench_synchronize():
+    global server_list
+    global wait_go
+    wait_go=threading.Thread(target = wait_for_go, args = ())
+    wait_go.start()
+
+    send_ready_to_bench=threading.Thread(target = start_client, args = tuple(['READY_TO_BENCH']))
+    send_ready_to_bench.start()
+
+def send_bench_start():
+    sys.stderr.write("Sending start signal\n")
+    start_sync_bench_server()
+    start_client('GO')
+
 def _main():
+    global hw
     hw = eval(open(sys.argv[1]).read(-1))
 
     ''' Let's start the client '''
-    client = threading.Thread(target = start_client, args = tuple([hw]))
+    client = threading.Thread(target = start_client, args = tuple(['DISCOVERY']))
     client.start()
 
     ''' Let's start scrubbing the server list '''
     scrub = threading.Thread(target = scrub_timestamp)
     scrub.start()
 
-    ''' Let's start the server side '''
-    start_server()
+    ''' Let's start the discovery server side '''
+    start_discovery_server()
 
     ''' Let's wait scrub & client completed '''
     scrub.join()
     client.join()
 
     print_result()
+
+    if not my_mac_addr in server_list:
+        sys.stderr.write("Local mac address %s is not part of the final list, let's exit"%my_mac_addr)
+        sys.exit(0)
+
+    sys.stderr.write("I'm server no %d\n" %server_list.keys().index(my_mac_addr))
+    if leader:
+        sys.stderr.write("I'm also the leader !")
+
+    spawn_bench_servers(get_port_list())
+
+    spawn_bench_synchronize()
+
+    if leader:
+        send_bench_start()
+
+    wait_go.join()
+
+    spawn_bench_client()
+
+    stop_bench_servers()
 
 if __name__ == "__main__":
     _main()

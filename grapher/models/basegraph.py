@@ -26,7 +26,9 @@ localpath = os.path.dirname(path)
 class BaseGraph(object):
     def __init__(self, template, data, keys):
         """@param template: a gnuplot template file used to draw the data.
-           @param data: the data 
+           @param data: the data, as formatted by the eDeploy bench tool.
+           It is expected to be a list of tuples of the following form:
+           (file, hardware type, hardware name, metric, value)
            @param keys: the keys to look for in the data handed over by eDeploy
            formatted as an "ordered" list (meaning order matters).
            Every entry matching the beginning of the keys will be used for
@@ -41,7 +43,9 @@ class BaseGraph(object):
         
     def prepare_data(self, data, keys):
         """Format data to a usable form, if needed."""
-        return data
+        if all(len(d) == 4 for d in data):
+            clean_data = [('',) + d for d in data]
+        return clean_data
     
     def __call__(self):
         """returns a gnuplot file that can be used to draw the graph."""

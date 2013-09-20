@@ -34,7 +34,7 @@ class ScatterPlot(BaseGraph):
 #        xcounter = 0
         for element in data:
             if all(map(lambda x,y: x.startswith(y),
-                       element[:-1],
+                       element[1:-1],
                        keys)):
 #                if ' '.join(element[:-1]) not in xaxis:
 #                    xcounter +=1

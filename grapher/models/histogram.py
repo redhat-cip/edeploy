@@ -32,30 +32,36 @@ class Histogram(ScatterPlot):
         dic = {}
         for element in data:
             if all(map(lambda x,y: x.startswith(y),
-                       element[:-1],
+                       element[1:-1],
                        keys)):
-#TODO Assuming elements always have 4 elements. This sucks and should be
+#TODO Assuming elements always have 5 elements. This sucks and should be
 # generalized.
-                dic[element[1]] = dic.get(element[1], {})
-                dic[element[1]][element[2]] = element[-1]
+# reminder: element0: file name | element1: hardware name | element2: metric
+                metric = '"%s"' % (element[2]+ ' ' + element[3])
+                dic[metric] = dic.get(metric, {})
+                dic[metric][element[0]] = element[-1]
         tmp_dict = {}
         for v in dic:
-            tmp_dict.update(dict([(u,0) for u in dic[v].keys()]))
+            tmp_dict.update(dict([(w,0) for w in dic[v].keys()]))
         columns = tmp_dict.keys()
-        clean_data = [ ['"%s"' % ' '.join(keys),] + columns ]
+        clean_data = [ ["metric", ] + columns ]
         for u in dic.keys():
-            clean_data.append([u,] + [dic[u][c] for c in columns])
+            clean_data.append([u, ] + [dic[u][c] for c in columns])
         
         return clean_data        
         
     def __call__(self):
-        values = "\n".join(" ".join(u) for u in self.data)
+        columns = self.data[0]
+        value_set = "\n".join(" ".join(u) for u in self.data)
+        # There is something wrong in the way gnuplot handles inline data
+        # when used multiple times, the easy fix is to repeat the data as needed
+        
+        values = '\nEOF\n'.join(value_set for i in columns[1:])
+        col_count = 3
         dic = {'title': ' '.join(self.keys),
                'extras': '',
                'values' : values}
-        columns = self.data[0]
-        col_count = 3
         for i in columns[2:]:
-            dic['extras'] += ", '' u %i ti col" % col_count
+            dic['extras'] += ", '-' u %i ti col" % col_count
             col_count += 1
         return self.template % dic

@@ -43,12 +43,13 @@ class BoxPlot(ScatterPlot):
         clean_data = []
         for element in data:
             if all(map(lambda x,y: x.startswith(y),
-                       element[:-1],
+                       element[1:-1],
                        keys)):
-#TODO Assuming elements always have 4 elements. This sucks and should be
+#TODO Assuming elements always have 5 elements. This sucks and should be
 # generalized.
                 clean_data.append(('"%s"' % element[-2],
-                                   element[-1]))        
+                                   element[-1],
+                                   element[0]))        
         return clean_data        
         
     def __call__(self):

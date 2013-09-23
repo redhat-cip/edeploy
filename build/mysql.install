@@ -23,10 +23,15 @@ version="$3"
 ROLE=mysql
 
 ORIG=$(cd $(dirname $0); pwd)
-
 . ${ORIG}/functions
 
-chroot ${dir} debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password password your_password'
-chroot ${dir} debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password_again password your_password'
 
-chroot ${dir} apt-get install -y mysql-server
+if [ -f ${dir}/etc/debian_version ]; then
+	chroot ${dir} debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password password your_password'
+	chroot ${dir} debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password_again password your_password'
+	
+	chroot ${dir} apt-get install -y mysql-server
+else
+	chroot ${dir} yum  --nogpgcheck install -y mysql-server
+	chroot ${dir} chkconfig --level 2345 mysqld on
+fi

@@ -51,7 +51,7 @@ set -e				# abort on failure
 set -x				# print commands
 
 case $dist in
-    centos)
+    centos*)
 	DEB=
 	;;
     *)
@@ -97,11 +97,13 @@ mount -obind /dev ${dir}/dev
 mount -obind /proc ${dir}/proc
 
 if [ -z "$DEB" ]; then
-    wget -O"${dir}/centos-release.rpm" ftp://fr2.rpmfind.net/linux/centos/6.4/os/x86_64/Packages/centos-release-6-4.el6.centos.10.x86_64.rpm
-    rpm -ivh --root "$dir" "${dir}/centos-release.rpm"
-    yum --installroot "$dir" --nogpgcheck install -y yum basesystem
-    chroot "$dir" rpm -ivh /centos-release.rpm
-    rm "${dir}/centos-release.rpm"
+    rpm -ivh --root "$dir" "http://mirror.centos.org/centos/6.4/os/x86_64/Packages/centos-release-6-4.el6.centos.10.x86_64.rpm"
+    sed -i 's/$releasever/6/g' ${dir}/etc/yum.repos.d/* 
+    cp -f /etc/resolv.conf "$dir/etc/"
+    yum --installroot "$dir" -y --nogpgcheck install yum
+    chroot "$dir" yum --nogpgcheck install -y yum basesystem
+    cp ${dir}/etc/skel/.bashrc ${dir}/root
+    cp ${dir}/etc/skel/.bash_profile ${dir}/root
 fi
 
 PACKAGES="pciutils rsyslog"
@@ -126,8 +128,8 @@ deb http://security.debian.org/ wheezy/updates main
 deb http://ftp.debian.org/debian/ wheezy-updates main
 EOF
 	;;
-    centos)
-	PACKAGES="$PACKAGES passwd kernel"
+    centos*)
+	PACKAGES="$PACKAGES passwd kernel sdparm"
 	;;
     *)
 	echo "unsupported distribution: $dist" 2>&1
@@ -152,7 +154,9 @@ chroot "$dir" apt-get dist-upgrade -y
 
 chroot "$dir" apt-get install -y --force-yes openssh-server parted $PACKAGES net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase dmidecode bash curl hdparm xfsprogs acpid ifenslave kexec-tools
 else
-    chroot "$dir" yum --nogpgcheck install -y openssh-server parted coreutils basesystem $PACKAGES e2fsprogs net-tools initscripts upstart vconfig dhclient grub grubby kbd rsync ifupdown lshw dmidecode bash curl hdparm xfsprogs acpid
+    chroot "$dir" yum --nogpgcheck install -y openssh-server parted coreutils perl $PACKAGES e2fsprogs net-tools initscripts upstart vconfig dhclient grub grubby kbd rsync ifupdown dmidecode bash curl hdparm xfsprogs acpid
+    # bring lshw from epel
+    chroot "$dir" rpm -ivh "https://dl.fedoraproject.org/pub/epel/6/x86_64/lshw-B.02.14-3.el6.x86_64.rpm"
 fi
 
 rm -f "${dir}"/etc/default/grub.d/edeploy.cfg
@@ -173,6 +177,7 @@ if [ -n "$DEB" ]; then
 
     chroot "$dir" apt-get clean
 else
+    chroot "$dir" yum --nogpgcheck install -y pexpect 
     cp hpacucli-9.40-12.0.x86_64.rpm $dir/tmp
     chroot $dir rpm -ivh /tmp/hpacucli-9.40-12.0.x86_64.rpm
     rm -f $dir/tmp/hpacucli-9.40-12.0.x86_64.rpm
@@ -182,6 +187,10 @@ fi
 if [ $dist = precise ]; then
     sed -i 's/#GRUB_TERMINAL=console/GRUB_TERMINAL=console/' ${dir}/etc/default/grub
     sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT=/' ${dir}/etc/default/grub
+fi
+
+if [ -z "$DEB" ]; then
+    rm -rf "$dir/var/cache/yum"
 fi
 
 # let the key be generated on first boot

@@ -233,5 +233,15 @@ class TestMatcher(unittest.TestCase):
             self.assert_(matcher.match_all(lines, specs, arr, {}))
             self.assertEqual(arr['eth'], 'eth0')
 
+    def test_le_var(self):
+        specs = [('disk', '$disk', 'size', '$size=le(20)')]
+        lines = [
+            ('disk', 'vda', 'size', '20'),
+            ]
+        arr = {}
+        self.assert_(matcher.match_all(lines, specs, arr, {}))
+        self.assertEqual(arr['disk'], 'vda')
+        self.assertEqual(arr['size'], '20')
+
 if __name__ == "__main__":
     unittest.main()

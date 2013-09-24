@@ -76,31 +76,49 @@ def match_spec(spec, lines, arr, adder=_adder):
         if lines[idx] == spec:
             del lines[idx]
             return True
-    # match a line with a variable
+    # match a line with a variable, a function or both
     for lidx in range(len(lines)):
         line = lines[lidx]
         varidx = []
         for idx in range(4):
-            # Match a variable
+            # try to split the variable and function parts if we have both
             if spec[idx][0] == '$':
-                if adder == _adder and spec[idx][1:] in arr:
-                    if arr[spec[idx][1:]] != line[idx]:
-                        break
-                varidx.append(idx)
+                parts = spec[idx].split('=')
+                if len(parts) == 2:
+                    var, func = parts
+                    matched = False
+                else:
+                    var = func = spec[idx]
+            else:
+                var = func = spec[idx]
             # Match a function
-            elif spec[idx][-1] == ')':
-                res = _FUNC_REGEXP.search(spec[idx])
+            if func[-1] == ')':
+                res = _FUNC_REGEXP.search(func)
                 if res:
                     func_name = '_' + res.group(1)
-                    if not (func_name in globals() and
-                            globals()[func_name](line[idx], res.group(2))):
+                    if func_name in globals():
+                        if not globals()[func_name](line[idx], res.group(2)):
+                            if var == func:
+                                break
+                        else:
+                            if var == func:
+                                continue
+                            matched = True
+                    else:
+                        if var == func:
+                            break
+            # Match a variable
+            if ((var == func) or (var != func and matched)) and var[0] == '$':
+                if adder == _adder and var[1:] in arr:
+                    if arr[var[1:]] != line[idx]:
                         break
+                varidx.append((idx, var[1:]))
             # Match the full string
             elif line[idx] != spec[idx]:
                 break
         else:
-            for i in varidx:
-                adder(arr, spec[i][1:], line[i])
+            for i, var in varidx:
+                adder(arr, var, line[i])
             del lines[lidx]
             return True
     return False

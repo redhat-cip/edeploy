@@ -157,6 +157,9 @@ defined to be used in these configure scripts: ``run`` to execute
 commands and abort on error, ``set_role`` to define the software
 profile and version to install in the next step.
 
+You can also combine a variable and a function on the same expression
+like this ``$size=gt(20)``.
+
 CMDB files are optional and used to add extra information to the
 ``var`` dictionary before configuration. To associate a CMDB entry,
 the ``upload.py`` script tries to find a matching entry for the
@@ -168,11 +171,11 @@ A CMDB file manages a set of settings to use (i.e. IPv4 addresses or
 host names), it can be like that::
 
  [
-  {'ip': '192.168.122.3', 'hostname': 'host3'},
-  {'ip': '192.168.122.4', 'hostname': 'host4'},
-  {'ip': '192.168.122.5', 'hostname': 'host5'},
-  {'ip': '192.168.122.6', 'hostname': 'host6'},
-  {'ip': '192.168.122.7', 'hostname': 'host7'}
+  {'ip': '192.168.122.3', 'hostname': 'host03'},
+  {'ip': '192.168.122.4', 'hostname': 'host04'},
+  {'ip': '192.168.122.5', 'hostname': 'host05'},
+  {'ip': '192.168.122.6', 'hostname': 'host06'},
+  {'ip': '192.168.122.7', 'hostname': 'host07'}
  ]
 
 Once an entry has been used, the CMDB file will be like that::
@@ -184,16 +187,16 @@ Once an entry has been used, the CMDB file will be like that::
    'ip': '192.168.122.3',
    'mac': '52:54:00:88:17:3c',
    'used': 1},
-  {'ip': '192.168.122.4', 'hostname': 'host4'},
-  {'ip': '192.168.122.5', 'hostname': 'host5'},
-  {'ip': '192.168.122.6', 'hostname': 'host6'},
-  {'ip': '192.168.122.7', 'hostname': 'host7'}
+  {'ip': '192.168.122.4', 'hostname': 'host04'},
+  {'ip': '192.168.122.5', 'hostname': 'host05'},
+  {'ip': '192.168.122.6', 'hostname': 'host06'},
+  {'ip': '192.168.122.7', 'hostname': 'host07'}
  ]
 
 There is also an helper function that can be used like that to avoid
 to create long list of entries::
 
- generate({'ip': '192.168.122.3-7', 'hostname': 'host3-7'})
+ generate({'ip': '192.168.122.3-7', 'hostname': 'host03-07'})
 
 The first time the ``upload.py`` script reads it, it expands the list
 and stores it in the regular form.

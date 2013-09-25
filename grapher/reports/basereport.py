@@ -21,6 +21,7 @@ sys.path.append('../models')
 import os
 from tempfile import mkstemp
 import subprocess
+import atexit
 
 from models import models
 
@@ -39,6 +40,7 @@ class BaseReport:
             item = self.items[i]
             output = output_prefix + "_%i.png" % i
             self._generate_graph(item, output)
+
         
     def _generate_graph(self, item, output):
         """generates a single graph"""
@@ -54,4 +56,8 @@ class BaseReport:
         cmd = subprocess.Popen('gnuplot %s' % filename,
                                shell=True,
                                stdout=subprocess.PIPE)
-        #os.unlink(filename)
+        while True:
+            cmd.poll()
+            if cmd.returncode is not None:
+                os.unlink(filename)
+                break

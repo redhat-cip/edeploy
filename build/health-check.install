@@ -64,7 +64,7 @@ rsync -au --delete-excluded --delete --exclude /boot/ \
     --exclude '*.pyc' \
     ${SRC}/ ${DST}
 
-cp -p init.common ${PYDIR}/detect.py ${PYDIR}/health-check.py ${PYDIR}/hpacucli.py ${PYSERVERDIR}/matcher.py ${PYDIR}/diskinfo.py ${PYDIR}/ipmi.py ${DST}/
+cp -p init.common ${PYDIR}/detect.py ${PYDIR}/netdetect.py ${PYDIR}/health-check.py ${PYDIR}/hpacucli.py ${PYSERVERDIR}/matcher.py ${PYDIR}/diskinfo.py ${PYDIR}/ipmi.py ${DST}/
 cp -p init.health ${DST}/init
 
 gcc -static -Os sources/timings.c -o ${DST}/usr/sbin/ddr-timings-$(uname -m)

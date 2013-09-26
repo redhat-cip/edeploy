@@ -297,6 +297,9 @@ def scrub_timestamp():
                 if system_count == 0:
                     sys.stderr.write("No system detected, exiting\n")
                     return
+                if system_count == 1:
+                    sys.stderr.write("No remote system detected, exiting\n")
+                    return
                 sys.stderr.write("About to send the synthesis\n")
 
                 prepare_synthesis()

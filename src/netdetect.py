@@ -25,6 +25,7 @@ import threading
 import collections
 from netaddr import *
 from commands import getstatusoutput as cmd
+import subprocess
 
 timestamp={}
 server_list={}
@@ -51,6 +52,9 @@ MCAST_PORT = 10987
 MCAST_PORT_GO = 10988
 
 BENCH_PORT_BASE = 10000
+
+BENCH_DURATION=30
+
 def get_mac(hw, level1, level2):
     ''' Extract a Mac Address from an hw list '''
     for entry in hw:
@@ -341,8 +345,22 @@ def stop_bench_servers():
 
 def start_bench_client(ip,port):
     sys.stderr.write("Starting bench client on server %s:%s\n"%(ip,port))
-    status, output = cmd('netperf -H %s -p %d -f M'%(ip,port))
-    # Parsing to be implemented
+    cmd = subprocess.Popen('netperf -l %d -H %s -f M -t TCP_STREAM'%(int(BENCH_DURATION),ip),
+            shell=True, stdout=subprocess.PIPE)
+
+#    [root@localhost ~]# netperf -l 10 -H localhost  -f M -t TCP_STREAM
+#    MIGRATED TCP STREAM TEST from 0.0.0.0 (0.0.0.0) port 0 AF_INET to localhost.localdomain (127.0.0.1) port 0 AF_INET
+#    Recv   Send    Send                          
+#    Socket Socket  Message  Elapsed              
+#    Size   Size    Size     Time     Throughput  
+#    bytes  bytes   bytes    secs.    MBytes/sec  
+#
+#     87380  16384  16384    10.00    4882.51
+    for line in cmd.stdout:
+        if "%s.00"%(BENCH_DURATION) in line:
+            recv_sock_size, send_sock_size, send_msg_size, time, bw = line.rstrip('\n').split()
+            hw.append(('network', 'tcp_bench', 'conf', '%s/%s/%s'%(recv_sock_size,send_sock_size,send_msg_size)))
+            hw.append(('network', 'tcp_bench', 'bw', '%s'%bw))
 
 def spawn_bench_client():
     port=BENCH_PORT_BASE+server_list.keys().index(my_mac_addr)

@@ -352,7 +352,7 @@ def spawn_bench_servers(port_list):
         threads[port].start()
 
 def stop_bench_servers():
-    cmd('killall netserver')
+    cmd('pkill -9 netserver')
 
 def start_bench_client(ip,port):
     sys.stderr.write("Starting bench client on server %s:%s\n"%(ip,port))

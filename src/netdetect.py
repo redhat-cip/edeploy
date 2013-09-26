@@ -342,7 +342,7 @@ def get_port_list():
 
 def start_bench_server(port):
     sys.stderr.write('Spawning netserver on port %d\n'%port)
-    status, output = cmd('netserver -D -p %d'%port)
+    status, output = cmd('netserver -p %d'%port)
 
 
 def spawn_bench_servers(port_list):

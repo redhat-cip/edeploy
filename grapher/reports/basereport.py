@@ -56,8 +56,8 @@ class BaseReport:
         cmd = subprocess.Popen('gnuplot %s' % filename,
                                shell=True,
                                stdout=subprocess.PIPE)
-        while True:
-            cmd.poll()
-            if cmd.returncode is not None:
-                os.unlink(filename)
-                break
+#        while True:
+#            cmd.poll()
+#            if cmd.returncode is not None:
+#                os.unlink(filename)
+#                break

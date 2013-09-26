@@ -20,6 +20,8 @@
 
 from scatterplot import ScatterPlot
 from basegraph import localpath
+from basegraph import prettify_keys as p_k
+from basegraph import comp_fnc
 
 
 template = localpath + '/gnuplot_templates/histogram.template'
@@ -37,7 +39,7 @@ class Histogram(ScatterPlot):
 #TODO Assuming elements always have 5 elements. This sucks and should be
 # generalized.
 # reminder: element0: file name | element1: hardware name | element2: metric
-                metric = '"%s"' % (element[2]+ ' ' + element[3])
+                metric = '"%s"' % (element[2]+ ' ' + p_k(element[3]))
                 dic[metric] = dic.get(metric, {})
                 dic[metric][element[0]] = element[-1]
         tmp_dict = {}
@@ -45,7 +47,7 @@ class Histogram(ScatterPlot):
             tmp_dict.update(dict([(w,0) for w in dic[v].keys()]))
         columns = tmp_dict.keys()
         clean_data = [ ["metric", ] + columns ]
-        for u in dic.keys():
+        for u in sorted(dic.keys(), key=comp_fnc):
             clean_data.append([u, ] + [dic[u][c] for c in columns])
         
         return clean_data        

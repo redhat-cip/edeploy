@@ -22,6 +22,29 @@ import os
 path = os.path.abspath(__file__)
 localpath = os.path.dirname(path)
 
+import re
+
+def prettify_keys(string):
+    """Utility function used to clean keys with numerical values, so that
+       they can be ordered alphabetically the way they should be."""
+    r = re.compile("bandwidth_([0-9]{1,3})")
+    def replacer(match):
+        m = match.groups()[0]
+        return "bandwidth " + m
+    return r.sub(replacer, string)
+       
+def comp_fnc(x):
+    """Comparison function between keys."""
+    r = re.compile("[0-9]+[KMG]")
+    units = {"G": 10**9,
+             "M": 10**6,
+             "K": 10**3}
+    if r.search(x):
+        size = x.split(" ")[-1]
+        prefix = " ".join(x.split(" ")[:-1])
+        x_size = int(size[:-2]) * units.get(size[-2], 1)
+        return prefix + str(x_size).rjust(10,"0")
+    return x            
 
 class BaseGraph(object):
     def __init__(self, template, data, keys):

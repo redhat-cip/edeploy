@@ -31,6 +31,7 @@ are drawn individually."""
 
 from scatterplot import ScatterPlot
 from basegraph import localpath
+from basegraph import prettify_keys as p_k
 
 
 template = localpath + '/gnuplot_templates/boxplot.template'

@@ -38,7 +38,7 @@ set -e
 cp -f /etc/resolv.conf ${SRC}/etc
 
 chroot ${SRC} apt-get update
-chroot ${SRC} apt-get install -y --force-yes sysbench fio python-psutil netperf python-netaddr
+chroot ${SRC} apt-get install -y --force-yes sysbench fio python-psutil netperf python-netaddr ethtool
 chroot ${SRC} apt-get clean
 
 rsync -au --delete-excluded --delete --exclude /boot/ \

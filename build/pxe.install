@@ -36,7 +36,7 @@ set -x
 set -e
 
 chroot ${SRC} apt-get update
-chroot ${SRC} apt-get install -y --force-yes python-netaddr
+chroot ${SRC} apt-get install -y --force-yes python-netaddr ethtool
 chroot ${SRC} apt-get clean
 
 rsync -au --delete-excluded --delete --exclude /boot/ \

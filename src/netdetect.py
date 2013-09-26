@@ -356,7 +356,7 @@ def stop_bench_servers():
 
 def start_bench_client(ip,port):
     sys.stderr.write("Starting bench client on server %s:%s\n"%(ip,port))
-    cmd = subprocess.Popen('netperf -l %d -H %s -f M -t TCP_STREAM'%(int(BENCH_DURATION),ip),
+    cmd = subprocess.Popen('netperf -l %d -H %s -p %s -f M -t TCP_STREAM'%(int(BENCH_DURATION),ip,port),
             shell=True, stdout=subprocess.PIPE)
 
 #    [root@localhost ~]# netperf -l 10 -H localhost  -f M -t TCP_STREAM

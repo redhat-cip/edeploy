@@ -26,6 +26,8 @@ import collections
 from netaddr import *
 from commands import getstatusoutput as cmd
 import subprocess
+import re
+import pprint
 
 timestamp={}
 server_list={}
@@ -59,6 +61,12 @@ def get_mac(hw, level1, level2):
     ''' Extract a Mac Address from an hw list '''
     for entry in hw:
         if (level1==entry[0] and level2==entry[2]):
+            return entry[3]
+    return None
+
+def get_value(hw, level1, level2, level3):
+    for entry in hw:
+        if (level1==entry[0] and level2==entry[1] and level3==entry[2]):
             return entry[3]
     return None
 
@@ -396,6 +404,28 @@ def wait_for_go():
             sys.stderr.write("Received GO from %s\n"%answer['GO'])
             ready_to_bench=False
 
+def get_output_filename(hw):
+    sysname=''
+
+    sysprodname=get_value(hw,'system', 'product', 'name')
+    if sysprodname:
+        sysname=re.sub(r'\W+', '', sysprodname) + '-'
+
+    sysprodvendor=get_value(hw,'system', 'product', 'vendor')
+    if sysprodvendor:
+        sysname += re.sub(r'\W+', '', sysprodvendor) + '-'
+
+    sysprodserial=get_value(hw,'system', 'product', 'serial')
+    if sysprodserial:
+        sysname += re.sub(r'\W+', '', sysprodserial)
+
+    mac=get_mac(hw,'network', 'serial')
+    if mac:
+        sysname += mac.replace(':', '-')
+
+    return sysname+".perf.hw"
+
+
 def spawn_bench_synchronize():
     global server_list
     global wait_go
@@ -451,6 +481,13 @@ def _main():
     spawn_bench_client()
 
     stop_bench_servers()
+
+    # Saving result to stdout but also to a filename based on the hw properties
+    output_filename=get_output_filename(hw)
+    sys.stderr.write("Saving results in %s\n"%output_filename)
+    with open(output_filename, 'w') as state_file:
+        pprint.pprint(hw, stream=state_file)
+        pprint.pprint(hw)
 
 if __name__ == "__main__":
     _main()

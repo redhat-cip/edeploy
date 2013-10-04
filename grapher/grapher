@@ -23,9 +23,7 @@ grapher [-r all][-o XXX] healthcheck_result_file|"POSIX filter"
 
 options:
 
--r, --report (cpu|memory|disk|all) : generate a standard report, default is all
-OR
--g --graph (histogram|scatterplot) : generate a specific graph
+-g --graph (histogram) : generate a specific graph
 -k --keys key1,...,keyN : filter by the given keys
 
 -o --output-prefix OUTPUT: output directory will be named after this value,

@@ -16,10 +16,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from scatterplot import ScatterPlot
 from histogram import Histogram
 from boxplot import BoxPlot
 
-models = {'scatterplot': ScatterPlot,
-          'histogram' : Histogram,
+models = {'histogram' : Histogram,
           'boxplot' : BoxPlot}

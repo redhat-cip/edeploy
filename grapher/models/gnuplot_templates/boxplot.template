@@ -8,6 +8,7 @@ set rmargin 12
 set bmargin 10
 #set terminal x11
 set xtics rotate by -30 
+set yrange [0:]
 set title "%(title)s" 
 plot '-' using (1):2:(0):1 notitle
 %(values)s

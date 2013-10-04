@@ -106,6 +106,10 @@ docker $(INST)/docker.done: docker.install $(INST)/base.done
 	./docker.install $(INST)/base $(INST)/docker $(VERS)
 	touch $(INST)/docker.done
 
+puppet-master $(INST)/puppet-master.done: puppet-master.install $(INST)/base.done
+	./puppet-master.install $(INST)/base $(INST)/puppet-master $(VERS)
+	touch $(INST)/puppet-master.done
+
 health-test: health-check
 	cd ../tests/tftpboot/; ln -sf $(INST)/base/boot/vmlinuz* vmlinuz; ln -sf $(INST)/initrd.pxe initrd;
 	cd ../tests; ./run_kvm.sh $(TOP) health

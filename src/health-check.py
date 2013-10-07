@@ -48,7 +48,8 @@ def get_disks_name(hw,without_bootable=False):
     for entry in hw:
         if (entry[0]=='disk' and entry[2]=='size'):
             if without_bootable and is_booted_storage_device(entry[1]):
-                sys.stderr.write("Skipping disk %s in destructive mode, this is the booted device !\n"%entry[1])
+                sys.stderr.write("Skipping disk %s in destructive mode, "
+                        "this is the booted device !\n" % entry[1])
             elif 'I:' in entry[1]:
                 if DEBUG:
                     sys.stderr.write("Ignoring HP hidden disk %s\n"%entry[1])
@@ -85,32 +86,38 @@ def get_bogomips(hw,cpu_nb):
 #    print "Getting Bogomips for CPU %d" % cpu_nb
     bogo=search_cpuinfo(cpu_nb, "bogomips")
     if bogo is not None:
-           hw.append(('cpu', 'logical_%d'%cpu_nb, 'bogomips', bogo))
+        hw.append(('cpu', 'logical_%d'%cpu_nb, 'bogomips', bogo))
 
 def get_cache_size(hw,cpu_nb):
 #    print "Getting CacheSize for CPU %d" % cpu_nb
     cache_size=search_cpuinfo(cpu_nb, "cache size")
     if cache_size is not None:
-           hw.append(('cpu', 'logical_%d'%cpu_nb, 'cache_size', cache_size))
+        hw.append(('cpu', 'logical_%d'%cpu_nb, 'cache_size', cache_size))
 
 def run_sysbench(hw, max_time, cpu_count, processor_num=-1):
     'Running sysbench cpu stress of a give amount of logical cpu'
     taskset=''
     if (processor_num < 0):
-        sys.stderr.write('Benchmarking all CPUs for %d seconds (%d threads)\n' % (max_time,cpu_count))
+        sys.stderr.write('Benchmarking all CPUs for'
+        '%d seconds (%d threads)\n' % (max_time, cpu_count))
     else:
-        sys.stderr.write('Benchmarking CPU %d for %d seconds (%d threads)\n' % (processor_num,max_time,cpu_count))
+        sys.stderr.write('Benchmarking CPU %d for %d seconds (%d threads)\n'
+                % (processor_num, max_time, cpu_count))
         taskset='taskset %s' % hex(1 << processor_num)
 
-    cmd = subprocess.Popen('%s sysbench --max-time=%d --max-requests=1000000 --num-threads=%d --test=cpu --cpu-max-prime=15000 run' %(taskset, max_time,cpu_count),
-             shell=True, stdout=subprocess.PIPE)
+    cmd = subprocess.Popen('%s sysbench --max-time=%d --max-requests=1000000'
+            '--num-threads=%d --test=cpu --cpu-max-prime=15000 run'
+            %(taskset, max_time, cpu_count),
+            shell=True, stdout=subprocess.PIPE)
     for line in cmd.stdout:
-             if "total number of events" in line:
-                 title,perf = line.rstrip('\n').replace(' ','').split(':')
-                 if processor_num==-1:
-                     hw.append(('cpu', 'logical', 'loops_per_sec', int(perf)/max_time))
-                 else:
-                     hw.append(('cpu', 'logical_%d'%processor_num, 'loops_per_sec', int(perf)/max_time))
+        if "total number of events" in line:
+            title,perf = line.rstrip('\n').replace(' ','').split(':')
+            if processor_num == -1:
+                hw.append(('cpu', 'logical', 'loops_per_sec',
+                    int(perf)/max_time))
+            else:
+                hw.append(('cpu', 'logical_%d'%processor_num, 'loops_per_sec',
+                    int(perf)/max_time))
 
 def cpu_perf(hw,testing_time=5,burn_test=False):
     ' Detect the cpu speed'
@@ -119,13 +126,16 @@ def cpu_perf(hw,testing_time=5,burn_test=False):
     # Individual Test aren't useful for burn_test
     if burn_test==False:
         if result is not None:
-            sys.stderr.write('CPU Performance: %d logical CPU to test (ETA: %d seconds)\n'%(int(result),(int(result)+1)*testing_time))
+            sys.stderr.write('CPU Performance: %d logical '
+                    'CPU to test (ETA: %d seconds)\n'
+                    % (int(result), (int(result)+1)*testing_time))
             for cpu_nb in range(int(result)):
                 get_bogomips(hw,cpu_nb)
                 get_cache_size(hw,cpu_nb)
                 run_sysbench(hw,testing_time, 1, cpu_nb)
     else:
-        sys.stderr.write('CPU Burn: %d logical CPU to test (ETA: %d seconds)\n'%(int(result),testing_time))
+        sys.stderr.write('CPU Burn: %d logical'
+                ' CPU to test (ETA: %d seconds)\n'%(int(result),testing_time))
 
     run_sysbench(hw, testing_time, int(result))
 
@@ -133,28 +143,40 @@ def run_memtest(hw, max_time, block_size, cpu_count, processor_num=-1):
     'Running memtest on a processor'
     taskset=''
     if (processor_num < 0):
-        sys.stderr.write('Benchmarking memory @%s from all CPUs for %d seconds (%d threads)\n' % (block_size, max_time,cpu_count))
+        sys.stderr.write('Benchmarking memory @%s from all CPUs'
+                'for %d seconds (%d threads)\n'
+                % (block_size, max_time, cpu_count))
     else:
-        sys.stderr.write('Benchmarking memory @%s from CPU %d for %d seconds (%d threads)\n' % (block_size, processor_num,max_time,cpu_count))
+        sys.stderr.write('Benchmarking memory @%s from CPU %d'
+                ' for %d seconds (%d threads)\n'
+                % (block_size, processor_num,max_time, cpu_count))
         taskset='taskset %s' % hex(1 << processor_num)
 
-    cmd = subprocess.Popen('%s sysbench --max-time=%d --max-requests=1000000 --num-threads=%d --test=memory --memory-block-size=%s run' %(taskset, max_time,cpu_count, block_size),
+    cmd = subprocess.Popen('%s sysbench --max-time=%d --max-requests=1000000'
+            ' --num-threads=%d --test=memory --memory-block-size=%s run'
+            % (taskset, max_time, cpu_count, block_size),
              shell=True, stdout=subprocess.PIPE)
+
     for line in cmd.stdout:
-             if "transferred" in line:
-                 title,right = line.rstrip('\n').replace(' ','').split('(')
-                 perf,useless = right.split('.')
-                 if processor_num==-1:
-                     hw.append(('cpu', 'logical', 'threaded_bandwidth_%s'%block_size, perf))
-                 else:
-                     hw.append(('cpu', 'logical_%d'%processor_num, 'bandwidth_%s'%block_size, perf))
+        if "transferred" in line:
+            title,right = line.rstrip('\n').replace(' ','').split('(')
+            perf,useless = right.split('.')
+            if processor_num==-1:
+                hw.append(('cpu', 'logical', 'threaded_bandwidth_%s'
+                    % (block_size, perf)))
+            else:
+                hw.append(('cpu', 'logical_%d'%processor_num, 'bandwidth_%s'
+                    % (block_size, perf)))
 
 def run_forked_memtest(hw, max_time, block_size, cpu_count):
     'Running forked memtest on a processor'
-    sys.stderr.write('Benchmarking memory @%s from all CPUs for %d seconds (%d processes)\n' % (block_size, max_time,cpu_count))
+    sys.stderr.write('Benchmarking memory @%s from all CPUs'
+            ' for %d seconds (%d processes)\n'
+            % (block_size, max_time, cpu_count))
     cmd='('
     for cpu in range(cpu_count):
-        cmd +='sysbench --max-time=%d --max-requests=1000000 --num-threads=1 --test=memory --memory-block-size=%s run &' %(max_time, block_size)
+        cmd +='sysbench --max-time=%d --max-requests=1000000 --num-threads=1'
+        ' --test=memory --memory-block-size=%s run &' %(max_time, block_size)
 
     cmd.rstrip('&')
     cmd+=')'
@@ -162,10 +184,10 @@ def run_forked_memtest(hw, max_time, block_size, cpu_count):
     global_perf=0
     process=subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
     for line in process.stdout:
-             if "transferred" in line:
-                 title,right = line.rstrip('\n').replace(' ','').split('(')
-                 perf,useless = right.split('.')
-                 global_perf+=int(perf)
+        if "transferred" in line:
+            title,right = line.rstrip('\n').replace(' ','').split('(')
+            perf,useless = right.split('.')
+            global_perf+=int(perf)
 
     hw.append(('cpu', 'logical', 'forked_bandwidth_%s'%block_size, global_perf))
 
@@ -179,26 +201,26 @@ def get_ddr_timing(hw):
 # #0 |  11    15    15    31     7   511    11    31    15    63    31
 
     for line in cmd.stdout:
-             if 'is a Triple' in line:
-                hw.append(('memory', 'DDR', 'type', '3'))
-                continue
+        if 'is a Triple' in line:
+            hw.append(('memory', 'DDR', 'type', '3'))
+            continue
 
-             if 'is a Dual' in line:
-                hw.append(('memory', 'DDR', 'type', '2'))
-                continue
+        if 'is a Dual' in line:
+            hw.append(('memory', 'DDR', 'type', '2'))
+            continue
 
-             if 'is a Single' in line:
-                hw.append(('memory', 'DDR', 'type', '1'))
-                continue
+        if 'is a Single' in line:
+            hw.append(('memory', 'DDR', 'type', '1'))
+            continue
 
-             if 'is a Zero' in line:
-                hw.append(('memory', 'DDR', 'type', '0'))
-                continue
+        if 'is a Zero' in line:
+            hw.append(('memory', 'DDR', 'type', '0'))
+            continue
 
-             if "DDR" in line:
-                found=True
-                continue;
-             if (found):
+        if "DDR" in line:
+            found=True
+            continue
+            if (found):
                 ddr_channel,tCL,tRCD,tRP,tRAS,tRRD,tRFC,tWR,tWTPr,tRTPr,tFAW,B2B = line.rstrip('\n').replace('|',' ').split()
                 ddr_channel=ddr_channel.replace('#','')
                 hw.append(('memory', 'DDR_%s'%ddr_channel, 'tCL', tCL))
@@ -217,7 +239,8 @@ def mem_perf_burn(hw, testing_time=10):
     'Report the memory performance'
     result=get_value(hw,'cpu','logical','number')
     if result is not None:
-        sys.stderr.write('Memory Burn: %d logical CPU to test (ETA: %d seconds)\n'%(int(result),testing_time))
+        sys.stderr.write('Memory Burn: %d logical CPU'
+                ' to test (ETA: %d seconds)\n'%( int(result), testing_time))
         run_memtest(hw, testing_time, '128M', int(result))
 
 def mem_perf(hw, testing_time=1):
@@ -226,18 +249,22 @@ def mem_perf(hw, testing_time=1):
     block_size_list=['1K', '4K', '1M', '16M', '128M', '1G', '2G']
     result=get_value(hw,'cpu','logical','number')
     if result is not None:
-        sys.stderr.write('Memory Performance: %d logical CPU to test (ETA: %d seconds)\n'%(int(result),(int(result))*len(block_size_list)*testing_time+2*all_cpu_testing_time*len(block_size_list)))
+        sys.stderr.write('Memory Performance: %d logical CPU'
+                ' to test (ETA: %d seconds)\n'
+                %(int(result), (int(result))*len(block_size_list)*testing_time+2*all_cpu_testing_time*len(block_size_list)))
         for cpu_nb in range(int(result)):
             for block_size in block_size_list:
                 run_memtest(hw, testing_time, block_size, 1, cpu_nb)
 
-        # There is not need to test fork vs thread if only a single logical cpu is present
+        # There is not need to test fork vs thread
+        #  if only a single logical cpu is present
         if (int(result)>1):
             for block_size in block_size_list:
                 run_memtest(hw, all_cpu_testing_time, block_size, int(result))
 
             for block_size in block_size_list:
-                run_forked_memtest(hw, all_cpu_testing_time, block_size, int(result))
+                run_forked_memtest(hw, all_cpu_testing_time,
+                        block_size, int(result))
 
     get_ddr_timing(hw)
 

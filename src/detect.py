@@ -72,28 +72,31 @@ def detect_disks(hw_lst):
     sizes = diskinfo.disksizes(names)
     for name in [name for name, size in sizes.items() if size > 0]:
         hw_lst.append(('disk', name, 'size', str(sizes[name])))
-        item_list=['vendor','model','rev']
+        item_list = ['vendor', 'model', 'rev']
         for my_item in item_list:
             try:
-                with open('/sys/block/%s/device/%s'%(name,my_item), 'r') as f:
-                    hw_lst.append(('disk', name,my_item,f.readline().rstrip('\n').strip()))
-            except:
-                sys.stderr.write('Failed at getting disk information at /sys/block/%s/device/%s\n'%(name,my_item))
+                with open('/sys/block/%s/device/%s' % (name, my_item), 'r') as f:
+                    hw_lst.append(('disk', name, my_item,
+                        f.readline().rstrip('\n').strip()))
+            except Exception, excpt:
+                sys.stderr.write('Failed at getting disk information '
+                    'at /sys/block/%s/device/%s\n' % (name, my_item))
 
-        item_list=['WCE','RCD']
-        item_def={'WCE':'Write Cache Enable', 'RCD':'Read Cache Disable'}
+        item_list = ['WCE', 'RCD']
+        item_def = {'WCE':'Write Cache Enable', 'RCD':'Read Cache Disable'}
         for my_item in item_list:
-            cmd = subprocess.Popen("sdparm -q --get=%s /dev/%s | awk '{print $2}'"%(my_item,name),
-                                    shell=True, stdout=subprocess.PIPE)
-            for line in cmd.stdout:
-                 hw_lst.append(('disk', name,item_def.get(my_item),line.rstrip('\n').strip()))
+            sdparm_cmd = subprocess.Popen("sdparm -q --get=%s /dev/%s | "
+                    "awk '{print $2}'" % (my_item, name), shell=True,
+                    stdout=subprocess.PIPE)
+            for line in sdparm_cmd.stdout:
+                hw_lst.append(('disk', name, item_def.get(my_item),
+                     line.rstrip('\n').strip()))
 
 def modprobe(module):
     'Load a kernel module using modprobe.'
     status, _ = cmd('modprobe %s' % module)
     if status == 0:
         sys.stderr.write('Info: Probing %s failed\n' % module)
-
 
 def detect_ipmi(hw_lst):
     'Detect IPMI interfaces.'
@@ -124,7 +127,7 @@ def detect_ipmi(hw_lst):
 def detect_system(hw_lst, output=None):
     'Detect system characteristics from the output of lshw.'
 
-    socket_count=0
+    socket_count = 0
     def find_element(xml, xml_spec, sys_subtype,
                      sys_type='product', sys_cls='system', attrib=None):
         'Lookup an xml element and populate hw_lst when found.'
@@ -150,25 +153,32 @@ def detect_system(hw_lst, output=None):
         for elt in xml.findall(".//node[@id='firmware']"):
             name = elt.find('physid')
             if name is not None:
-                find_element(elt, 'version', 'version','bios', 'firmware')
-                find_element(elt, 'date', 'date','bios', 'firmware')
-                find_element(elt, 'vendor', 'vendor','bios', 'firmware')
+                find_element(elt, 'version', 'version', 'bios', 'firmware')
+                find_element(elt, 'date', 'date', 'bios', 'firmware')
+                find_element(elt, 'vendor', 'vendor', 'bios', 'firmware')
 
         for elt in xml.findall(".//node[@id='memory']"):
             name = elt.find('physid')
             if name is not None:
-                find_element(elt, 'size', 'size','total', 'memory')
-                bank_count=0
+                find_element(elt, 'size', 'size', 'total', 'memory')
+                bank_count = 0
                 for bank_list in elt.findall(".//node[@id]"):
                     if ('bank:') in bank_list.get('id'):
-                        bank_count=bank_count+1
-                        for bank in elt.findall(".//node[@id='%s']"%(bank_list.get('id'))):
-                            find_element(bank, 'size', 'size', bank_list.get('id'), 'memory')
-                            find_element(bank, 'clock', 'clock', bank_list.get('id'), 'memory')
-                            find_element(bank, 'description', 'description', bank_list.get('id'), 'memory')
-                            find_element(bank, 'vendor', 'vendor', bank_list.get('id'), 'memory')
-                            find_element(bank, 'serial', 'serial', bank_list.get('id'), 'memory')
-                            find_element(bank, 'slot', 'slot', bank_list.get('id'), 'memory')
+                        bank_count = bank_count+1
+                        for bank in elt.findall(".//node[@id='%s']" %
+                                (bank_list.get('id'))):
+                            find_element(bank, 'size', 'size',
+                                    bank_list.get('id'), 'memory')
+                            find_element(bank, 'clock', 'clock',
+                                    bank_list.get('id'), 'memory')
+                            find_element(bank, 'description', 'description',
+                                    bank_list.get('id'), 'memory')
+                            find_element(bank, 'vendor', 'vendor',
+                                    bank_list.get('id'), 'memory')
+                            find_element(bank, 'serial', 'serial',
+                                    bank_list.get('id'), 'memory')
+                            find_element(bank, 'slot', 'slot',
+                                    bank_list.get('id'), 'memory')
                 if bank_count > 0:
                     hw_lst.append(('memory', 'banks', 'count', bank_count))
 
@@ -189,18 +199,26 @@ def detect_system(hw_lst, output=None):
         for elt in xml.findall(".//node[@class='processor']"):
             name = elt.find('physid')
             if name is not None:
-                hw_lst.append(('cpu', 'physical_%s'%(socket_count), 'physid', name.text))
-                find_element(elt, 'product', 'product', 'physical_%s'%(socket_count), 'cpu')
-                find_element(elt, 'vendor', 'vendor', 'physical_%s'%(socket_count), 'cpu')
-                find_element(elt, 'size', 'frequency', 'physical_%s'%(socket_count), 'cpu')
-                find_element(elt, 'clock', 'clock', 'physical_%s'%(socket_count), 'cpu')
-                find_element(elt,"configuration/setting[@id='cores']",
-                             'cores', 'physical_%s'%(socket_count),'cpu', 'value')
-                find_element(elt,"configuration/setting[@id='enabledcores']",
-                             'enabled_cores', 'physical_%s'%(socket_count),'cpu', 'value')
-                find_element(elt,"configuration/setting[@id='threads']",
-                             'threads', 'physical_%s'%(socket_count), 'cpu', 'value')
-                socket_count=socket_count+1
+                hw_lst.append(('cpu', 'physical_%s'%(socket_count),
+                    'physid', name.text))
+                find_element(elt, 'product', 'product',
+                        'physical_%s'%(socket_count), 'cpu')
+                find_element(elt, 'vendor', 'vendor',
+                        'physical_%s'%(socket_count), 'cpu')
+                find_element(elt, 'size', 'frequency',
+                        'physical_%s'%(socket_count), 'cpu')
+                find_element(elt, 'clock', 'clock',
+                        'physical_%s'%(socket_count), 'cpu')
+                find_element(elt, "configuration/setting[@id='cores']",
+                             'cores', 'physical_%s'
+                             %(socket_count),'cpu', 'value')
+                find_element(elt, "configuration/setting[@id='enabledcores']",
+                             'enabled_cores', 'physical_%s' % (socket_count),
+                             'cpu', 'value')
+                find_element(elt, "configuration/setting[@id='threads']",
+                             'threads', 'physical_%s'%(socket_count), 'cpu',
+                             'value')
+                socket_count = socket_count+1
     else:
         sys.stderr.write("Unable to run lshw: %s\n" % output)
 

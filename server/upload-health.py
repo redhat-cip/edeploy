@@ -30,12 +30,10 @@ On the to be configured host, it is usally called like that:
 $ curl -i -F name=test -F file=@/tmp/hw.lst http://localhost/cgi-bin/upload.py
 '''
 
-import atexit
 import ConfigParser
 import cgi
 import cgitb
 import commands
-import errno
 import os
 import pprint
 import re
@@ -169,11 +167,11 @@ def main():
         fatal_error("'Invalid hardware file: %s'" % str(excpt))
 
     filename_and_macs = generate_filename_and_macs(hw_items)
-    dirname=time.strftime("%Y_%m_%d-%Hh%M", time.localtime())
+    dirname = time.strftime("%Y_%m_%d-%Hh%M", time.localtime())
     try:
         os.mkdir(cfg_dir+'/'+dirname)
-    except:
-        fatal_error("Cannot create %s/%s directory" % (cfg_dir,dirname))
+    except Exception, excpt:
+        fatal_error("Cannot create %s/%s directory" % (cfg_dir, dirname))
 
     save_hw(hw_items, filename_and_macs['sysname'], cfg_dir+'/'+dirname)
 

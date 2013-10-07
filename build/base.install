@@ -47,6 +47,14 @@ check_binary debootstrap
 check_binary chroot
 check_binary sed
 
+uname -m | grep -q 'i[3-6]86'
+if [ $? -eq 0 ]; then
+    echo "eDeploy is not supported on 32bit OS"
+    echo "Exiting"
+    exit 1
+fi
+
+
 set -e				# abort on failure
 set -x				# print commands
 
@@ -177,7 +185,7 @@ if [ -n "$DEB" ]; then
 
     chroot "$dir" apt-get clean
 else
-    chroot "$dir" yum --nogpgcheck install -y pexpect 
+    chroot "$dir" yum --nogpgcheck install -y pexpect
     cp hpacucli-9.40-12.0.x86_64.rpm $dir/tmp
     chroot $dir rpm -ivh /tmp/hpacucli-9.40-12.0.x86_64.rpm
     rm -f $dir/tmp/hpacucli-9.40-12.0.x86_64.rpm

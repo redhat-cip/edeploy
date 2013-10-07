@@ -1,0 +1,12 @@
+set terminal pngcairo enhanced font "arial,9" fontscale 1.0 size 1366, 768
+#set terminal png nocrop enhanced font arial 14
+#set output 'out.png'
+set rmargin 12
+set bmargin 10
+#set terminal x11
+set xtics rotate by -30 
+set title "%(title)s" 
+plot '-' using 2:xticlabels(1) title "%(plot_title)s" with points
+%(values)s
+EOF
+

@@ -1,0 +1,16 @@
+set terminal pngcairo enhanced font "arial,9" fontscale 1.0 size 1366, 768
+#set terminal png nocrop enhanced font arial 14
+#set output 'out.png'
+set pointsize 0.5
+set style data boxplot
+set style fill   solid 0.25 border lt -1
+set rmargin 12
+set bmargin 10
+#set terminal x11
+set xtics rotate by -30 
+set yrange [0:]
+set title "%(title)s" 
+plot '-' using (1):2:(0):1 notitle
+%(values)s
+EOF
+

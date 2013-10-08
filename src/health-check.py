@@ -29,9 +29,11 @@ import re
 import diskinfo
 import hpacucli
 import os
+import psutil
 
 RAMP_TIME = 5
 DEBUG = 0
+available_memory=0
 
 def is_included(dict1, dict2):
     'Test if dict1 is included in dict2.'
@@ -98,7 +100,7 @@ def run_sysbench(hw_, max_time, cpu_count, processor_num=-1):
     'Running sysbench cpu stress of a give amount of logical cpu'
     taskset = ''
     if (processor_num < 0):
-        sys.stderr.write('Benchmarking all CPUs for'
+        sys.stderr.write('Benchmarking all CPUs for '
         '%d seconds (%d threads)\n' % (max_time, cpu_count))
     else:
         sys.stderr.write('Benchmarking CPU %d for %d seconds (%d threads)\n'
@@ -139,14 +141,42 @@ def cpu_perf(hw_, testing_time=5, burn_test=False):
 
     run_sysbench(hw_, testing_time, int(result))
 
+def check_mem_size(block_size, cpu_count):
+    dsplit = re.compile(r'\d+')
+    ssplit = re.compile(r'[A-Z]+')
+    unit = ssplit.findall(block_size)
+    unit_in_bytes = 1
+    if unit[0] == 'K':
+        unit_in_bytes = 1024
+    elif unit[0] == 'M':
+        unit_in_bytes = 1024 * 1024
+    elif unit[0] == 'G':
+        unit_in_bytes = 1024 * 1024 * 1024
+
+    size_in_bytes = unit_in_bytes * int(dsplit.findall(block_size)[0]) * cpu_count
+    if (size_in_bytes > available_memory):
+        return False
+
+    return True
+
 def run_memtest(hw_, max_time, block_size, cpu_count, processor_num=-1):
     'Running memtest on a processor'
+    check_mem = check_mem_size(block_size, cpu_count)
     taskset = ''
     if (processor_num < 0):
-        sys.stderr.write('Benchmarking memory @%s from all CPUs'
+        if check_mem == False:
+            sys.stderr.write("Avoid Benchmarking memory @%s from all CPUs, not enough memory\n"
+                    % block_size)
+            return
+        sys.stderr.write('Benchmarking memory @%s from all CPUs '
                 'for %d seconds (%d threads)\n'
                 % (block_size, max_time, cpu_count))
     else:
+        if check_mem == False:
+            sys.stderr.write("Avoid Benchmarking memory @%s from CPU %d, not enough memory\n"
+                    % (block_size, processor_num))
+            return
+
         sys.stderr.write('Benchmarking memory @%s from CPU %d'
                 ' for %d seconds (%d threads)\n'
                 % (block_size, processor_num,max_time, cpu_count))
@@ -170,6 +200,10 @@ def run_memtest(hw_, max_time, block_size, cpu_count, processor_num=-1):
 
 def run_forked_memtest(hw_, max_time, block_size, cpu_count):
     'Running forked memtest on a processor'
+    if check_mem_size(block_size, cpu_count) == False:
+        sys.stderr.write('Avoid benchmarking memory @%s from all CPUs (%d processes), not enough memory'
+                % (block_size, cpu_count))
+        return
     sys.stderr.write('Benchmarking memory @%s from all CPUs'
             ' for %d seconds (%d processes)\n'
             % (block_size, max_time, cpu_count))
@@ -412,6 +446,7 @@ def storage_perf(hw_, allow_destructive, running_time=10):
                     running_time)
 
 def _main():
+    global available_memory
     'Command line entry point.'
     allow_destructive = False
     try:
@@ -421,6 +456,9 @@ def _main():
         True
 
     hrdw = eval(open(sys.argv[1]).read(-1))
+
+    available_memory=psutil.avail_phymem()
+    sys.stderr.write("Available memory before run = %s\n" % available_memory)
 
     mode = 'cpu,memory,storage'
     try:

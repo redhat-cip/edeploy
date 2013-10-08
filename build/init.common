@@ -1,3 +1,11 @@
+GIT_REV=""
+
+show_git_rev() {
+    if [ ! -z "$GIT_REV" ]; then
+       echo "Running eDeploy with git hash = $GIT_REV"
+    fi
+}
+
 show_network_cards() {
     # Let's search all devices that have "network" in their class or name
     lspci | grep -wi Network

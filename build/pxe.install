@@ -66,6 +66,10 @@ if [ -r ${DST}/etc/init.d/ssh ]; then
 fi
 
 sed -i "s/VERS=.*/VERS=${VERS}/" ${DST}/init
+GIT_REV=$(git rev-parse HEAD 2>/dev/null)
+if [ ! -z "$GIT_REV" ]; then
+    sed -i "s/GIT_REV=.*/GIT_REV=\"${GIT_REV}\"/g" ${DST}/init.common
+fi
 
 echo "Creating initrd and compressing with $COMPRESS"
 cd ${DST}; find . | cpio --quiet -R 0:0 -o -H newc | compress -9v > ../${IMG}

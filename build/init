@@ -123,6 +123,8 @@ show_kernel_modules
 # if there is a match on the server else stop.
 ################################################################################
 
+show_git_rev
+
 step "Configuring system via server ${SERV}"
 curl -s -S -o/configure -F file=@/hw.py http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py &
 #Saving curl's PID

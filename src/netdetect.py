@@ -28,6 +28,7 @@ from commands import getstatusoutput as cmd
 import subprocess
 import re
 import pprint
+import os
 
 timestamp={}
 server_list={}
@@ -39,6 +40,7 @@ ready_to_bench=True
 my_mac_addr=''
 hw=[]
 wait_go=None
+max_clients=0
 
 ''' How many seconds between sending a keep alive message '''
 KEEP_ALIVE=2
@@ -123,6 +125,7 @@ def start_discovery_server():
     global timestamp
     global synthesis
     global discovery
+    global max_clients
 
     ''' Let's bind a server to the Multicast group '''
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -130,6 +133,9 @@ def start_discovery_server():
     sock.bind((MCAST_GRP, MCAST_PORT))
     mreq = struct.pack("4sl", socket.inet_aton(MCAST_GRP), socket.INADDR_ANY)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+
+    if (max_clients > 0):
+        sys.stderr.write("Waiting endlessly for %d clients\n" % max_clients)
 
     ''' Until we got a synthesis list from another server '''
     while not synthesis:
@@ -139,6 +145,11 @@ def start_discovery_server():
 
       ''' Let's protect shared variables with the scrubbing '''
       semaphore.acquire()
+
+      ''' One client got a max_client information, let's consider the same '''
+      if ('MAX_CLIENTS' in answer.keys()) and (max_clients == 0):
+          max_clients=int(answer['MAX_CLIENTS'])
+          sys.stderr.write("Received max_clients = %d\n" % max_clients)
 
       ''' If the keepalive is Synthesis, we shall only consider this list '''
       if 'SYNTHESIS' in answer.keys():
@@ -157,6 +168,8 @@ def start_discovery_server():
 
       for key in answer.keys():
         if not key in server_list.keys():
+            if key == 'MAX_CLIENTS':
+                continue
             ''' Let's add the new server if we didn't knew it '''
             if not synthesis:
                 sys.stderr.write('Adding %s\n'%key)
@@ -167,13 +180,16 @@ def start_discovery_server():
             sys.stderr.write('Received Keepalive from %s\n'%key)
             timestamp[key]=time.time()
 
-      ''' No more concurrency with scrubbing, let's releae the semaphore '''
+      ''' No more concurrency with scrubbing, let's release the semaphore '''
       semaphore.release()
+
+      if (max_clients > 0):
+          sys.stderr.write("Found %d of %d servers\n" % (len(server_list),max_clients))
 
     sys.stderr.write("Exiting server\n")
 
 ''' Client is made for generating keepalives'''
-def start_client(mode):
+def start_client(mode, max_clients=0):
     global hw
     global discovery
     global ready_to_bench
@@ -193,6 +209,11 @@ def start_client(mode):
         ''' Let's prepare a host entry '''
         host_info={}
         host_info[my_mac_addr]=my_ip_list
+
+        ''' Let's inform other users we had a max_client setting '''
+        if (max_clients > 0):
+            host_info['MAX_CLIENTS']=max_clients
+
         ''' While we are in discovery mode, let's send keepalives '''
         while discovery:
             sys.stderr.write("Sending keepalive for %s\n"%my_mac_addr)
@@ -290,10 +311,17 @@ def scrub_timestamp():
             previous_system_count=system_count
             previous_time=current_time
         else:
-            ''' Let's wait until we didn't got any changes since DISCOVERY_TIME seconds '''
-            if current_time-previous_time >= DISCOVERY_TIME:
-                ''' We are no more in discovery, that will kill the client '''
-                discovery=False
+            ''' Let's wait until we didn't got any changes since DISCOVERY_TIME seconds
+                or if we reach the expect number of clients'''
+            if (max_clients > 0):
+                if (system_count == max_clients):
+                    ''' We are no more in discovery, that will kill the client '''
+                    discovery=False
+            elif current_time-previous_time >= DISCOVERY_TIME:
+                    ''' We are no more in discovery, that will kill the client '''
+                    discovery=False
+
+            if (discovery == False):
                 if system_count == 0:
                     sys.stderr.write("No system detected, exiting\n")
                     return
@@ -445,10 +473,17 @@ def send_bench_start():
 
 def _main():
     global hw
+    global max_clients
+
+    try:
+        max_clients=int(os.environ['MAX_CLIENTS'])
+    except:
+        max_clients=0
+
     hw = eval(open(sys.argv[1]).read(-1))
 
     ''' Let's start the client '''
-    client = threading.Thread(target = start_client, args = tuple(['DISCOVERY']))
+    client = threading.Thread(target = start_client, args = tuple(['DISCOVERY',max_clients]))
     client.start()
 
     ''' Let's start scrubbing the server list '''

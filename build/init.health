@@ -172,6 +172,8 @@ cd /
 
 show_kernel_modules
 
+show_git_rev
+
 step "Benchmarking system"
 ./health-check.py hw.py > /health.py
 

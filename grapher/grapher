@@ -41,9 +41,6 @@ from reports import reports, BaseReport
 
 def main():
     parser = argparse.ArgumentParser(add_help=True)
-    parser.add_argument('-r', '--report', type=str,
-                        metavar = '(%s|all)' % '|'.join(reports.keys()),
-                        help='generate a standard report')
     parser.add_argument('-g', '--graph', type=str,
                         metavar = '(%s)' % '|'.join(models.keys()),
                         help='Generate a specific graph,'

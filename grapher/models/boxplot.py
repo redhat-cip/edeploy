@@ -31,10 +31,10 @@ are drawn individually."""
 
 from scatterplot import ScatterPlot
 from basegraph import localpath
-from basegraph import prettify_keys as p_k
 
 
 template = localpath + '/gnuplot_templates/boxplot.template'
+
 
 class BoxPlot(ScatterPlot):
     def __init__(self, data, keys):
@@ -43,19 +43,19 @@ class BoxPlot(ScatterPlot):
     def prepare_data(self, data, keys):
         clean_data = []
         for element in data:
-            if all(map(lambda x,y: x.startswith(y),
+            if all(map(lambda x, y: x.startswith(y),
                        element[1:-1],
                        keys)):
 #TODO Assuming elements always have 5 elements. This sucks and should be
 # generalized.
                 clean_data.append(('"%s"' % element[-2],
                                    element[-1],
-                                   element[0]))        
-        return clean_data        
-        
+                                   element[0]))
+        return clean_data
+
     def __call__(self):
         values = "\n".join(" ".join(u) for u in self.data)
         dic = {'title': ' '.join(self.keys),
                'extras': '',
-               'values' : values}
+               'values': values}
         return self.template % dic

@@ -26,6 +26,7 @@ from basegraph import comp_fnc
 
 template = localpath + '/gnuplot_templates/histogram.template'
 
+
 class Histogram(ScatterPlot):
     def __init__(self, data, keys):
         super(ScatterPlot, self).__init__(template, data, keys)
@@ -33,36 +34,36 @@ class Histogram(ScatterPlot):
     def prepare_data(self, data, keys):
         dic = {}
         for element in data:
-            if all(map(lambda x,y: x.startswith(y),
+            if all(map(lambda x, y: x.startswith(y),
                        element[1:-1],
                        keys)):
 #TODO Assuming elements always have 5 elements. This sucks and should be
 # generalized.
 # reminder: element0: file name | element1: hardware name | element2: metric
-                metric = '"%s"' % (element[2]+ ' ' + p_k(element[3]))
+                metric = '"%s"' % (element[2] + ' ' + p_k(element[3]))
                 dic[metric] = dic.get(metric, {})
                 dic[metric][element[0]] = element[-1]
         tmp_dict = {}
         for v in dic:
-            tmp_dict.update(dict([(w,0) for w in dic[v].keys()]))
+            tmp_dict.update(dict([(w, 0) for w in dic[v].keys()]))
         columns = tmp_dict.keys()
-        clean_data = [ ["metric", ] + columns ]
+        clean_data = [["metric", ] + columns]
         for u in sorted(dic.keys(), key=comp_fnc):
             clean_data.append([u, ] + [dic[u][c] for c in columns])
-        
-        return clean_data        
-        
+
+        return clean_data
+
     def __call__(self):
         columns = self.data[0]
         value_set = "\n".join(" ".join(u) for u in self.data)
         # There is something wrong in the way gnuplot handles inline data
         # when used multiple times, the easy fix is to repeat the data as needed
-        
+
         values = '\nEOF\n'.join(value_set for i in columns[1:])
         col_count = 3
         dic = {'title': ' '.join(self.keys),
                'extras': '',
-               'values' : values}
+               'values': values}
         for i in columns[2:]:
             dic['extras'] += ", '-' u %i ti col" % col_count
             col_count += 1

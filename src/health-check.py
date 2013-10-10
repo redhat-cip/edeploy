@@ -122,10 +122,10 @@ def run_sysbench(hw_, max_time, cpu_count, processor_num=-1):
             title, perf = line.rstrip('\n').replace(' ', '').split(':')
             if processor_num == -1:
                 hw_.append(('cpu', 'logical', 'loops_per_sec',
-                    int(perf) / max_time))
+                    str(int(perf) / max_time)))
             else:
                 hw_.append(('cpu', 'logical_%d' % processor_num, 'loops_per_sec',
-                    int(perf) / max_time))
+                    str(int(perf) / max_time)))
 
 
 def cpu_perf(hw_, testing_time=5, burn_test=False):
@@ -232,7 +232,7 @@ def run_forked_memtest(hw_, max_time, block_size, cpu_count):
             perf, useless = right.split('.')
             global_perf += int(perf)
 
-    hw_.append(('cpu', 'logical', 'forked_bandwidth_%s' % (block_size), global_perf))
+    hw_.append(('cpu', 'logical', 'forked_bandwidth_%s' % (block_size), str(global_perf)))
 
 
 def get_ddr_timing(hw_):
@@ -366,7 +366,7 @@ def run_fio(hw_, disks_list, mode, io_size, time):
                 except:
                     True
                 hw_.append(('disk', current_disk, mode_str+'_KBps',
-                    int(float(float(iperf)*multiply/divide))))
+                    str(int(float(float(iperf)*multiply/divide)))))
 
             try:
                 hw_.append(('disk', current_disk, mode_str+'_IOps',

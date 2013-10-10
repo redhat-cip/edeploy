@@ -124,7 +124,7 @@ def detect_ipmi(hw_lst):
         status, _ = cmd('grep -qi FAKEIPMI /proc/cmdline')
         if status == 0:
             # Yes ! So let's create a fake entry
-            hw_lst.append(('system', 'ipmi-fake', 'channel', 0))
+            hw_lst.append(('system', 'ipmi-fake', 'channel', '0'))
             sys.stderr.write('Info: Added fake IPMI device\n')
             return True
         else:
@@ -231,10 +231,10 @@ def detect_system(hw_lst, output=None):
     else:
         sys.stderr.write("Unable to run lshw: %s\n" % output)
 
-    hw_lst.append(('cpu', 'physical', 'number', socket_count))
+    hw_lst.append(('cpu', 'physical', 'number', str(socket_count)))
     status, output = cmd('nproc')
     if status == 0:
-        hw_lst.append(('cpu', 'logical', 'number', output))
+        hw_lst.append(('cpu', 'logical', 'number', str(output)))
 
 
 def _main():

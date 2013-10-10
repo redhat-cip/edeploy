@@ -348,7 +348,7 @@ def run_fio(hw_, disks_list, mode, io_size, time):
                 elif "B/s" in perf:
                     divide = 1024
                 try:
-                    iperf = perf.replace('KB/s','').replace('B/s','').replace('MB/s','')
+                    iperf = perf.replace('KB/s','').replace('MB/s','').replace('B/s','')
                 except:
                     True
                 hw_.append(('disk', current_disk, mode_str+'_KBps',

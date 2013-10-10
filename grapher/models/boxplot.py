@@ -54,7 +54,10 @@ class BoxPlot(ScatterPlot):
         return clean_data
 
     def __call__(self):
-        values = "\n".join(" ".join(u) for u in self.data)
+        values_tmp = []
+        for u in self.data:
+            values_tmp.append(" ".join(str(v) for v in u))
+        values = "\n".join(values_tmp)
         dic = {'title': ' '.join(self.keys),
                'extras': '',
                'values': values}

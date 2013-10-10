@@ -55,7 +55,11 @@ class Histogram(ScatterPlot):
 
     def __call__(self):
         columns = self.data[0]
-        value_set = "\n".join(" ".join(u) for u in self.data)
+        values_tmp = []
+        for u in self.data:
+            values_tmp.append(" ".join(str(v) for v in u))
+        value_set = "\n".join(values_tmp)
+        #value_set = "\n".join(" ".join(u)for u in self.data)
         # There is something wrong in the way gnuplot handles inline data
         # when used multiple times, the easy fix is to repeat the data as needed
 

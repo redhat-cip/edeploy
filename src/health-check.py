@@ -402,12 +402,12 @@ def storage_perf_burn(hw_, allow_destructive, running_time=10):
     disks = get_disks_name(hw_)
     sys.stderr.write('Running storage burn on %d disks in'
             ' %s mode for %d seconds\n'%(len(disks), mode, 2*running_time))
-
-    run_fio(hw_, disks, "randread", "4k", running_time)
-    run_fio(hw_, disks, "read", "1M", running_time)
     if allow_destructive:
         run_fio(hw_, get_disks_name(hw_, True), "randwrite", "4k", running_time)
         run_fio(hw_, get_disks_name(hw_, True), "write", "1M", running_time)
+
+    run_fio(hw_, disks, "randread", "4k", running_time)
+    run_fio(hw_, disks, "read", "1M", running_time)
 
 def storage_perf(hw_, allow_destructive, running_time=10):
     'Reporting disk performance'
@@ -426,8 +426,6 @@ def storage_perf(hw_, allow_destructive, running_time=10):
             ' %s mode for %d seconds\n' % (len(disks), mode, total_runtime))
     for disk in disks:
         is_booted_storage_device(disk)
-        run_fio(hw_, ['%s'%disk], "randread", "4k", running_time)
-        run_fio(hw_, ['%s'%disk], "read", "1M", running_time)
         if allow_destructive:
             if is_booted_storage_device(disk):
                 sys.stderr.write("Skipping disk %s in destructive mode,"
@@ -436,14 +434,17 @@ def storage_perf(hw_, allow_destructive, running_time=10):
                 run_fio(hw_, ['%s'%disk], "randwrite", "4k", running_time)
                 run_fio(hw_, ['%s'%disk], "write", "1M", running_time)
 
+        run_fio(hw_, ['%s'%disk], "randread", "4k", running_time)
+        run_fio(hw_, ['%s'%disk], "read", "1M", running_time)
+
     if (len(disks)>1):
-        run_fio(hw_, disks, "randread", "4k", running_time)
-        run_fio(hw_, disks, "read", "1M", running_time)
         if allow_destructive:
             run_fio(hw_, get_disks_name(hw_, True), "randwrite", "4k",
                     running_time)
             run_fio(hw_, get_disks_name(hw_, True), "write", "1M",
                     running_time)
+        run_fio(hw_, disks, "randread", "4k", running_time)
+        run_fio(hw_, disks, "read", "1M", running_time)
 
 def _main():
     global available_memory

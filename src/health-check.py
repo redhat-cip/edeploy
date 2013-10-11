@@ -113,8 +113,7 @@ def run_sysbench(hw_, max_time, cpu_count, processor_num=-1):
                 % (processor_num, max_time, cpu_count))
         taskset = 'taskset %s' % hex(1 << processor_num)
 
-    sysbench_cmd = subprocess.Popen('%s sysbench --max-time=%d --max-requests=1000000'
-            '--num-threads=%d --test=cpu --cpu-max-prime=15000 run'
+    sysbench_cmd = subprocess.Popen('%s sysbench --max-time=%d --max-requests=1000000 --num-threads=%d --test=cpu --cpu-max-prime=15000 run'
             % (taskset, max_time, cpu_count),
             shell=True, stdout=subprocess.PIPE)
     for line in sysbench_cmd.stdout:
@@ -191,8 +190,7 @@ def run_memtest(hw_, max_time, block_size, cpu_count, processor_num=-1):
                 % (block_size, processor_num, max_time, cpu_count))
         taskset = 'taskset %s' % hex(1 << processor_num)
 
-    sysbench_cmd = subprocess.Popen('%s sysbench --max-time=%d --max-requests=1000000'
-            ' --num-threads=%d --test=memory --memory-block-size=%s run'
+    sysbench_cmd = subprocess.Popen('%s sysbench --max-time=%d --max-requests=1000000 --num-threads=%d --test=memory --memory-block-size=%s run'
             % (taskset, max_time, cpu_count, block_size),
                 shell=True, stdout=subprocess.PIPE)
 

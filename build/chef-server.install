@@ -1,0 +1,74 @@
+#!/bin/bash
+#
+# Copyright (C) 2013 eNovance SAS <licensing@enovance.com>
+#
+# Author: Pierre Rognant <emilien.macchi@enovance.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+src="$1"
+dir="$2"
+version="$3"
+ROLE=chef-server
+
+ORIG=$(cd $(dirname $0); pwd)
+
+. ${ORIG}/functions
+
+chroot ${dir} apt-get update
+chroot ${dir} apt-get install -y --force-yes lsb-release wget
+chroot ${dir} apt-get clean
+
+OS=$(chroot ${dir} lsb_release -i -s)
+RELEASE=$(chroot ${dir} lsb_release -r -s)
+
+if [ $OS == "Ubuntu" ]; then
+ chroot ${dir} wget "http://www.opscode.com/chef/download-server?p=ubuntu&pv=${RELEASE}&m=x86_64&v=latest" -O /tmp/chef-server.deb
+ chroot ${dir} dpkg -i /tmp/chef-server.deb
+ mkdir -p ${dir}/etc/chef-server
+ cat > ${dir}/etc/chef-server/chef-server.rb <<EOF
+server_name = node['ipaddress']
+api_fqdn = server_name
+nginx['url'] = "https://#{server_name}"
+nginx['server_name'] = server_name
+bookshelf['listen'] = '127.0.0.1'
+bookshelf['vip'] = server_name
+bookshelf['url'] = "https://#{server_name}"
+erchef['listen'] = '127.0.0.1'
+erchef['vip'] = '127.0.0.1'
+lb['fqdn'] = server_name
+postgresql['listen_address'] = '127.0.0.1'
+postgresql['vip'] = '127.0.0.1'
+chef_server_webui['vip'] = '127.0.0.1'
+chef_server_webui['listen'] = '127.0.0.1'
+EOF
+ cat > ${dir}/etc/first-boot.d/99-chef-server <<EOF
+#!/bin/bash
+# ensure local hostname if not stick hostname to 127.0.0.1
+HOSTNAME=\`hostname -s\`
+if ! \`python -c 'import socket; print socket.gethostbyname("\$HOSTNAME")' 2> /dev/null 1> /dev/null\`; then 
+ LINE=\`cat /etc/hosts | grep ^127.0.0.1\`
+ NEWLINE="\$LINE \$HOSTNAME"
+ sed "s/\${LINE}/\${NEWLINE}/g" -i /etc/hosts
+fi
+# login shell required
+su - -c '/usr/bin/chef-server-ctl reconfigure'
+EOF
+ chmod 755 ${dir}/etc/rc.local ${dir}/etc/first-boot.d/99-chef-server
+else
+ echo "OS or Release not supported"
+ exit 1
+fi
+
+echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
+echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

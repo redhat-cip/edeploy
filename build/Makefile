@@ -111,6 +111,10 @@ puppet-master $(INST)/puppet-master.done: puppet-master.install $(INST)/base.don
 	./puppet-master.install $(INST)/base $(INST)/puppet-master $(VERS)
 	touch $(INST)/puppet-master.done
 
+chef-server $(INST)/chef-server.done: chef-server.install $(INST)/base.done
+	./chef-server.install $(INST)/base $(INST)/chef-server $(VERS)
+	touch $(INST)/chef-server.done
+
 health-test: health-check
 	cd ../tests/tftpboot/; ln -sf $(INST)/base/boot/vmlinuz* vmlinuz; ln -sf $(INST)/initrd.pxe initrd;
 	cd ../tests; ./run_kvm.sh $(TOP) health

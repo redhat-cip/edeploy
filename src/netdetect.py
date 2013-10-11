@@ -153,6 +153,12 @@ def start_discovery_server():
             max_clients = int(answer['MAX_CLIENTS'])
             sys.stderr.write("Received max_clients = %d\n" % max_clients)
 
+        ''' If no clients got detected on time, let's kill the server '''
+        if 'NOTHING_TO_DO' in answer.keys():
+            sys.stderr.write("Nothing to do, let's exit server\n")
+            semaphore.release()
+            break;
+
         ''' If the keepalive is Synthesis, we shall only consider this list '''
         if 'SYNTHESIS' in answer.keys():
             sys.stderr.write("Received Synthesis\n")
@@ -332,11 +338,20 @@ def scrub_timestamp():
                     discovery = False
 
             if discovery is False:
+                sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+                sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+
                 if system_count == 0:
                     sys.stderr.write("No system detected, exiting\n")
+                    message = {}
+                    message['NOTHING_TO_DO'] = True
+                    sock.sendto(cPickle.dumps(server_list), (MCAST_GRP, MCAST_PORT))
                     return
                 if system_count == 1:
+                    message = {}
+                    message['NOTHING_TO_DO'] = True
                     sys.stderr.write("No remote system detected, exiting\n")
+                    sock.sendto(cPickle.dumps(message), (MCAST_GRP, MCAST_PORT))
                     return
                 sys.stderr.write("About to send the synthesis\n")
 
@@ -353,8 +368,6 @@ def scrub_timestamp():
                     return
 
                 ''' It's time to send the synthesis to the other nodes '''
-                sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-                sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
                 leader = True
                 sock.sendto(cPickle.dumps(server_list), (MCAST_GRP, MCAST_PORT))
                 sys.stderr.write("End of Discovery with %d systems!\n" % system_count)
@@ -518,35 +531,31 @@ def _main():
     scrub.join()
     client.join()
 
-    print_result()
+    if (len(server_list) > 1):
+        print_result()
 
-    if not my_mac_addr in server_list:
-        sys.stderr.write("Local mac address %s is not part of the final list, let's exit" % my_mac_addr)
-        sys.exit(0)
+        if not my_mac_addr in server_list:
+            sys.stderr.write("Local mac address %s is not part of the final list, let's exit" % my_mac_addr)
+            sys.exit(0)
 
-    sys.stderr.write("I'm server no %d\n" % server_list.keys().index(my_mac_addr))
-    if leader:
-        sys.stderr.write("I'm also the leader !\n")
+        sys.stderr.write("I'm server no %d\n" % server_list.keys().index(my_mac_addr))
+        if leader:
+            sys.stderr.write("I'm also the leader !\n")
 
-    spawn_bench_servers(get_port_list())
+        spawn_bench_servers(get_port_list())
 
-    spawn_bench_synchronize()
+        spawn_bench_synchronize()
 
-    if leader:
-        send_bench_start()
+        if leader:
+            send_bench_start()
 
-    wait_go.join()
+        wait_go.join()
 
-    spawn_bench_client()
+        spawn_bench_client()
 
-    stop_bench_servers()
+        stop_bench_servers()
 
-    # Saving result to stdout but also to a filename based on the hw properties
-    output_filename = get_output_filename(hw)
-    sys.stderr.write("Saving results in %s\n" % output_filename)
-    with open(output_filename, 'w') as state_file:
-        pprint.pprint(hw, stream=state_file)
-        pprint.pprint(hw)
+    pprint.pprint(hw)
 
 if __name__ == "__main__":
     _main()

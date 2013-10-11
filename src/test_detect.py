@@ -1202,7 +1202,7 @@ class TestDetect(unittest.TestCase):
             ('cpu', 'physical_1', 'vendor', 'Advanced Micro Devices [AMD]'),
             ('cpu', 'physical_1', 'frequency', '1000000000'),
             ('cpu', 'physical_1', 'clock', '200000000'),
-            ('cpu', 'physical', 'number', 2),
+            ('cpu', 'physical', 'number', '2'),
             ('cpu', 'logical', 'number', '4')]
             )
 
@@ -2079,7 +2079,7 @@ class TestDetect(unittest.TestCase):
              ('cpu', 'physical_0', 'cores', '2'),
              ('cpu', 'physical_0', 'enabled_cores', '2'),
              ('cpu', 'physical_0', 'threads', '4'),
-             ('cpu', 'physical', 'number', 1),
+             ('cpu', 'physical', 'number', '1'),
              ('cpu', 'logical', 'number', '4')]
             )
 
@@ -2147,7 +2147,7 @@ class TestDetect(unittest.TestCase):
              ('cpu', 'physical_3', 'vendor', 'Intel(R) Corporation'),
              ('cpu', 'physical_3', 'frequency', '800000000'),
              ('cpu', 'physical_3', 'clock', '25000000'),
-             ('cpu', 'physical', 'number', 4),
+             ('cpu', 'physical', 'number', '4'),
              ('cpu', 'logical', 'number', '7')]
             )
 

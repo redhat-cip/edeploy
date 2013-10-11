@@ -412,7 +412,7 @@ def start_bench_client(ip, port):
 #
 #     87380  16384  16384    10.00    4882.51
     for line in cmd_netperf.stdout:
-        if "%s." % (BENCH_DURATION) in line:
+        if "87380" in line:
             recv_sock_size, send_sock_size, send_msg_size, time, bw = line.rstrip('\n').split()
             hw.append(('network', 'tcp_bench', 'conf', '%s/%s/%s' % (recv_sock_size, send_sock_size, send_msg_size)))
             hw.append(('network', 'tcp_bench', 'bw', '%s' % bw))

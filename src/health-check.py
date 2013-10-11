@@ -264,21 +264,21 @@ def get_ddr_timing(hw_):
         if "DDR" in line:
             found = True
             continue
-            if (found):
-                ddr_channel, tCL, tRCD, tRP, tRAS, tRRD, tRFC, tWR, tWTPr, tRTPr, tFAW, B2B = line.rstrip('\n').replace('|', ' ').split()
-                ddr_channel = ddr_channel.replace('#', '')
-                hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tCL', tCL))
-                hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tRCD', tRCD))
-                hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tRP', tRP))
-                hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tRAS', tRAS))
-                hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tRRD', tRRD))
-                hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tRFC', tRFC))
-                hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tWR', tWR))
-                hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tWTPr', tWTPr))
-                hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tRTPr', tRTPr))
-                hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tFAW', tFAW))
-                hw_.append(('memory', 'DDR_%s' % ddr_channel, 'B2B', B2B))
 
+        if (found is True):
+            ddr_channel, tCL, tRCD, tRP, tRAS, tRRD, tRFC, tWR, tWTPr, tRTPr, tFAW, B2B = line.rstrip('\n').replace('|', ' ').split()
+            ddr_channel = ddr_channel.replace('#', '')
+            hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tCL', tCL))
+            hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tRCD', tRCD))
+            hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tRP', tRP))
+            hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tRAS', tRAS))
+            hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tRRD', tRRD))
+            hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tRFC', tRFC))
+            hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tWR', tWR))
+            hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tWTPr', tWTPr))
+            hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tRTPr', tRTPr))
+            hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tFAW', tFAW))
+            hw_.append(('memory', 'DDR_%s' % ddr_channel, 'B2B', B2B))
 
 def mem_perf_burn(hw_, testing_time=10):
     'Report the memory performance'

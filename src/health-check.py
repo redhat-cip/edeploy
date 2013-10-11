@@ -370,7 +370,7 @@ def run_fio(hw_, disks_list, mode, io_size, time):
 
             try:
                 hw_.append(('disk', current_disk, mode_str+'_IOps',
-                    re.search('iops=(.*),', line).group(1)))
+                    re.search('iops=(.*),', line).group(1).strip(' ')))
             except:
                 sys.stderr.write('Failed at detecting iops '
                         'pattern with %s\n' % line)

@@ -175,7 +175,8 @@ show_kernel_modules
 show_git_rev
 
 step "Benchmarking system"
-./health-check.py hw.py > /health.py
+./netdetect.py hw.py > /net.py
+./health-check.py /net.py > /health.py
 
 save_results
 

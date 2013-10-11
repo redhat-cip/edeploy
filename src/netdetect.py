@@ -232,7 +232,7 @@ def start_client(mode, max_clients=0):
             sys.stderr.write("Sending Ready To Bench for %s\n" % my_mac_addr)
             sock.sendto(cPickle.dumps(host_info), (MCAST_GRP, MCAST_PORT))
             time.sleep(KEEP_ALIVE)
-        sys.stderr.write("Exiting Client, end of ready to bench\n")
+        #sys.stderr.write("Exiting Client, end of ready to bench\n")
     elif mode == 'GO':
         host_info = {}
         host_info['GO'] = my_mac_addr
@@ -526,7 +526,7 @@ def _main():
 
     sys.stderr.write("I'm server no %d\n" % server_list.keys().index(my_mac_addr))
     if leader:
-        sys.stderr.write("I'm also the leader !")
+        sys.stderr.write("I'm also the leader !\n")
 
     spawn_bench_servers(get_port_list())
 

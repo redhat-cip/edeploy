@@ -231,6 +231,14 @@ def detect_system(hw_lst, output=None):
                              name.text, 'network', 'value')
                 find_element(elt, "configuration/setting[@id='driver']",
                              'driver', name.text, 'network', 'value')
+                find_element(elt, "configuration/setting[@id='duplex']",
+                             'duplex', name.text, 'network', 'value')
+                find_element(elt, "configuration/setting[@id='speed']",
+                             'speed', name.text, 'network', 'value')
+                find_element(elt, "configuration/setting[@id='latency']",
+                             'latency', name.text, 'network', 'value')
+                find_element(elt, "configuration/setting[@id='autonegotiation']",
+                             'autonegotiation', name.text, 'network', 'value')
 
         for elt in xml.findall(".//node[@class='processor']"):
             name = elt.find('physid')

@@ -468,6 +468,7 @@ def spawn_bench_client():
     hw.append(('network', 'tcp_bench', 'bw_stream_stddev', '%s' % numpy.std(arr)))
     hw.append(('network', 'tcp_bench', 'bw_stream_raw_values', '%s' % bw_results))
     hw.append(('network', 'tcp_bench', 'subnet', '%s' % selected_subnet))
+    hw.append(('network', 'tcp_bench', 'hosts_list', '%s' % server_list.items()))
     sys.stderr.write('Benchmmark completed !\n')
 
 

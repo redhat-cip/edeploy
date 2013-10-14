@@ -213,17 +213,18 @@ def detect_system(hw_lst, output=None):
                 find_element(elt, 'size', 'size', name.text, 'network')
                 ipv4=find_element(elt, "configuration/setting[@id='ip']", 'ipv4',
                              name.text, 'network', 'value')
-		if ipv4 is not None:
+    		    if ipv4 is not None:
                     SIOCGIFNETMASK = 0x891b
                     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                     try:
                         netmask = socket.inet_ntoa(fcntl.ioctl(s, SIOCGIFNETMASK, struct.pack('256s', name.text))[20:24])
                         hw_lst.append(('network',name.text,'ipv4-netmask', netmask))
-			cidr=get_CIDR(netmask.split('.'))
+                        cidr=get_CIDR(netmask.split('.'))
                         hw_lst.append(('network',name.text,'ipv4-cidr',cidr))
-			hw_lst.append(('network',name.text,'ipv4-network',"%s"%IPNetwork('%s/%s'%(ipv4,cidr)).network))
+                        hw_lst.append(('network',name.text,'ipv4-network',"%s"%IPNetwork('%s/%s'%(ipv4,cidr)).network))
                     except:
                         True
+
                 find_element(elt, "configuration/setting[@id='link']", 'link',
                              name.text, 'network', 'value')
                 find_element(elt, "configuration/setting[@id='driver']",

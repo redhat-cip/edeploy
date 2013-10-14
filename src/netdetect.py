@@ -44,6 +44,7 @@ wait_go = None
 max_clients = 0
 bw_results = []
 bw_results_semaphore = threading.Semaphore()
+selected_subnet = ''
 
 ''' How many seconds between sending a keep alive message '''
 KEEP_ALIVE = 2
@@ -131,6 +132,7 @@ def start_discovery_server():
     global synthesis
     global discovery
     global max_clients
+    global selected_subnet
 
     ''' Let's bind a server to the Multicast group '''
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -170,6 +172,10 @@ def start_discovery_server():
             synthesis = True
             ''' We are no more in a discovery phase, that will kill client '''
             discovery = False
+
+            ''' Let's save the selected subnet for later reporting '''
+            selected_subnet = answer['subnet']
+            del(answer['subnet'])
 
             ''' Remove Synthesis entry as it doesn't mean a server '''
             del(answer['SYNTHESIS'])
@@ -291,6 +297,7 @@ def prepare_synthesis():
                 new_server_list[server] = remote_ip
 
     server_list = new_server_list
+    server_list['subnet'] = selected_network
     server_list['SYNTHESIS'] = True
 
 
@@ -460,6 +467,7 @@ def spawn_bench_client():
     hw.append(('network', 'tcp_bench', 'bw_stream_median', '%s' % numpy.median(arr)))
     hw.append(('network', 'tcp_bench', 'bw_stream_stddev', '%s' % numpy.std(arr)))
     hw.append(('network', 'tcp_bench', 'bw_stream_raw_values', '%s' % bw_results))
+    hw.append(('network', 'tcp_bench', 'subnet', '%s' % selected_subnet))
     sys.stderr.write('Benchmmark completed !\n')
 
 

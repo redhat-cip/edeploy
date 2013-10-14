@@ -29,6 +29,7 @@ import subprocess
 import re
 import pprint
 import os
+import numpy
 
 timestamp = {}
 server_list = {}
@@ -41,6 +42,8 @@ my_mac_addr = ''
 hw = []
 wait_go = None
 max_clients = 0
+bw_results = []
+bw_results_semaphore = threading.Semaphore()
 
 ''' How many seconds between sending a keep alive message '''
 KEEP_ALIVE = 2
@@ -427,8 +430,9 @@ def start_bench_client(ip, port):
     for line in cmd_netperf.stdout:
         if "87380" in line:
             recv_sock_size, send_sock_size, send_msg_size, time, bw = line.rstrip('\n').split()
-            hw.append(('network', 'tcp_bench', 'conf', '%s/%s/%s' % (recv_sock_size, send_sock_size, send_msg_size)))
-            hw.append(('network', 'tcp_bench', 'bw', '%s' % bw))
+            bw_results_semaphore.acquire()
+            bw_results.append(float(bw))
+            bw_results_semaphore.release()
 
 
 def spawn_bench_client():
@@ -442,10 +446,20 @@ def spawn_bench_client():
         threads[nb].start()
         nb += 1
 
-    sys.stderr.write('Waiting bench clients to finish\n')
+    sys.stderr.write('Waiting %d bench clients to finish\n' % nb)
     for i in range(nb):
         threads[i].join()
 
+    arr = numpy.array(bw_results)
+
+    hw.append(('network', 'tcp_bench', 'bw_host', '%s' % numpy.sum(arr)))
+    hw.append(('network', 'tcp_bench', 'streams_count', '%d' % nb))
+    hw.append(('network', 'tcp_bench', 'bw_stream_min', '%s' % numpy.amin(arr)))
+    hw.append(('network', 'tcp_bench', 'bw_stream_max', '%s' % numpy.amax(arr)))
+    hw.append(('network', 'tcp_bench', 'bw_stream_average', '%s' % numpy.average(arr)))
+    hw.append(('network', 'tcp_bench', 'bw_stream_median', '%s' % numpy.median(arr)))
+    hw.append(('network', 'tcp_bench', 'bw_stream_stddev', '%s' % numpy.std(arr)))
+    hw.append(('network', 'tcp_bench', 'bw_stream_raw_values', '%s' % bw_results))
     sys.stderr.write('Benchmmark completed !\n')
 
 

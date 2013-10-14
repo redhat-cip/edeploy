@@ -121,7 +121,7 @@ def detect_ipmi(hw_lst):
             status, _ = cmd('ipmitool channel info %d 2>&1 | grep -sq Volatile'
                             % channel)
             if status == 0:
-                hw_lst.append(('system', 'ipmi', 'channel', channel))
+                hw_lst.append(('system', 'ipmi', 'channel', '%s' % channel))
                 break
     else:
         # do we need a fake ipmi device for testing purpose ?

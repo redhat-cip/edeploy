@@ -49,7 +49,7 @@ bw_results_semaphore = threading.Semaphore()
 KEEP_ALIVE = 2
 
 ''' Amount of seconds no system shall {dis]appear '''
-DISCOVERY_TIME = 45*KEEP_ALIVE
+DISCOVERY_TIME = 20*KEEP_ALIVE
 
 ''' Multicast Address used to communicate '''
 MCAST_GRP = '224.1.1.1'

@@ -285,7 +285,7 @@ def prepare_synthesis():
             count = network_list[key]
             selected_network = key
 
-    sys.stderr.write("Selected network is %s" % (selected_network))
+    sys.stderr.write("Selected network is %s\n" % (selected_network))
 
     valid_ip_list = [str(ip) for ip in IPNetwork(selected_network).iter_hosts()]
 
@@ -557,7 +557,7 @@ def _main():
         print_result()
 
         if not my_mac_addr in server_list:
-            sys.stderr.write("Local mac address %s is not part of the final list, let's exit" % my_mac_addr)
+            sys.stderr.write("Local mac address %s is not part of the final list, let's exit\n" % my_mac_addr)
             sys.exit(0)
 
         sys.stderr.write("I'm server no %d\n" % server_list.keys().index(my_mac_addr))

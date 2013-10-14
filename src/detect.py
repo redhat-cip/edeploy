@@ -135,11 +135,13 @@ def detect_ipmi(hw_lst):
             sys.stderr.write('Info: No IPMI device found\n')
             return False
 
+
 def get_CIDR(netmask):
     binary_str = ''
     for octet in netmask:
         binary_str += bin(int(octet))[2:].zfill(8)
     return str(len(binary_str.rstrip('0')))
+
 
 def detect_system(hw_lst, output=None):
     'Detect system characteristics from the output of lshw.'
@@ -154,7 +156,7 @@ def detect_system(hw_lst, output=None):
             if attrib:
                 hw_lst.append((sys_cls, sys_type, sys_subtype,
                                elt[0].attrib[attrib]))
-		return elt[0].attrib[attrib]
+                return elt[0].attrib[attrib]
             else:
                 hw_lst.append((sys_cls, sys_type, sys_subtype, elt[0].text))
                 return elt[0].text
@@ -213,15 +215,15 @@ def detect_system(hw_lst, output=None):
                 find_element(elt, 'size', 'size', name.text, 'network')
                 ipv4=find_element(elt, "configuration/setting[@id='ip']", 'ipv4',
                              name.text, 'network', 'value')
-    		    if ipv4 is not None:
+                if ipv4 is not None:
                     SIOCGIFNETMASK = 0x891b
                     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                     try:
                         netmask = socket.inet_ntoa(fcntl.ioctl(s, SIOCGIFNETMASK, struct.pack('256s', name.text))[20:24])
-                        hw_lst.append(('network',name.text,'ipv4-netmask', netmask))
-                        cidr=get_CIDR(netmask.split('.'))
-                        hw_lst.append(('network',name.text,'ipv4-cidr',cidr))
-                        hw_lst.append(('network',name.text,'ipv4-network',"%s"%IPNetwork('%s/%s'%(ipv4,cidr)).network))
+                        hw_lst.append(('network', name.text, 'ipv4-netmask', netmask))
+                        cidr = get_CIDR(netmask.split('.'))
+                        hw_lst.append(('network', name.text, 'ipv4-cidr', cidr))
+                        hw_lst.append(('network', name.text, 'ipv4-network', "%s" % IPNetwork('%s/%s' % (ipv4, cidr)).network))
                     except:
                         True
 

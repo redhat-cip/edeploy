@@ -160,7 +160,7 @@ def start_discovery_server():
         if 'NOTHING_TO_DO' in answer.keys():
             sys.stderr.write("Nothing to do, let's exit server\n")
             semaphore.release()
-            break;
+            break
 
         ''' If the keepalive is Synthesis, we shall only consider this list '''
         if 'SYNTHESIS' in answer.keys():

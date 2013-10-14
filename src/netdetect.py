@@ -279,7 +279,7 @@ def prepare_synthesis():
             count = network_list[key]
             selected_network = key
 
-    print "Selected network is %s" % (selected_network)
+    sys.stderr.write("Selected network is %s" % (selected_network))
 
     valid_ip_list = [str(ip) for ip in IPNetwork(selected_network).iter_hosts()]
 

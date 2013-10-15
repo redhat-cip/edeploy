@@ -282,7 +282,8 @@ def detect_system(hw_lst, output=None):
                             ('network', name.text, 'ipv4-network',
                              "%s" % IPNetwork('%s/%s' % (ipv4, cidr)).network))
                     except:
-                        True
+                        sys.stderr.write('unable to get info for %s\n'
+                                         % name.text)
 
                 find_element(elt, "configuration/setting[@id='link']", 'link',
                              name.text, 'network', 'value')

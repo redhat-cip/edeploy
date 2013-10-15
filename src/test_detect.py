@@ -15,6 +15,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import fcntl
+import socket
 import unittest
 
 import detect
@@ -34,17 +36,35 @@ class TestDetect(unittest.TestCase):
     def test_get_cidr(self):
         self.assertEqual(detect.get_cidr('255.255.0.0'), '16')
 
-    def test_detect_system_3(self):
-        l = []
+    def _save_functions(self, nbproc):
         # replace the call to nproc by a fake result
-        save = detect.cmd
+        self.save = detect.cmd
+        self.saved_ntoa = socket.inet_ntoa
+        self.saved_ioctl = fcntl.ioctl
 
         def fake(x):
-            return (0, "4")
+            return (0, nbproc)
+
+        def fake_ntoa(arg):
+            return '255.255.255.0'
+
+        def fake_ioctl(arg, arg2, arg3):
+            return []
 
         detect.cmd = fake
+        socket.inet_ntoa = fake_ntoa
+        fcntl.ioctl = fake_ioctl
+
+    def _restore_functions(self):
+        detect.cmd = self.save
+        socket.inet_ntoa = self.saved_ntoa
+        fcntl.ioctl = self.saved_ioctl
+
+    def test_detect_system_3(self):
+        l = []
+        self._save_functions("4")
         detect.detect_system(l, XML3)
-        detect.cmd = save
+        self._restore_functions()
         self.assertEqual(
             l,
             [('system', 'product', 'serial', 'Empty'),
@@ -71,15 +91,9 @@ class TestDetect(unittest.TestCase):
 
     def test_detect_system_2(self):
         l = []
-        # replace the call to nproc by a fake result
-        save = detect.cmd
-
-        def fake(x):
-            return (0, "4")
-
-        detect.cmd = fake
+        self._save_functions("4")
         detect.detect_system(l, XML2)
-        detect.cmd = save
+        self._restore_functions()
         self.assertEqual(
             l,
             [('system', 'product', 'serial', 'PB4F20N'),
@@ -141,16 +155,11 @@ class TestDetect(unittest.TestCase):
             )
 
     def test_detect_system(self):
+        self.maxDiff = None
         l = []
-        # replace the call to nproc by a fake result
-        save = detect.cmd
-
-        def fake(x):
-            return (0, "7")
-
-        detect.cmd = fake
+        self._save_functions("7")
         detect.detect_system(l, XML)
-        detect.cmd = save
+        self._restore_functions()
         self.assertEqual(
             l,
             [('system', 'product', 'serial', 'C02JR02WF57J'),
@@ -188,6 +197,9 @@ class TestDetect(unittest.TestCase):
              ('network', 'tap0', 'serial', 'e2:66:69:22:be:fb'),
              ('network', 'tap0', 'size', '10000000'),
              ('network', 'tap0', 'ipv4', '10.152.18.103'),
+             ('network', 'tap0', 'ipv4-netmask', '255.255.255.0'),
+             ('network', 'tap0', 'ipv4-cidr', '24'),
+             ('network', 'tap0', 'ipv4-network', '10.152.18.0'),
              ('network', 'tap0', 'link', 'yes'),
              ('network', 'tap0', 'driver', 'tun'),
              ('network', 'tap0', 'duplex', 'full'),

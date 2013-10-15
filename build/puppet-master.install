@@ -94,6 +94,7 @@ install_puppet () {
 
 OS=$(chroot ${dir} lsb_release -i -s)
 CODENAME=$(chroot ${dir} lsb_release -c -s)
+RELEASE=$(chroot ${dir} lsb_release -c -s)
 
 if [ $OS == "Debian" ] && [ $RELEASE == "wheezy" ]; then
     cat > ${dir}/etc/apt/sources.list.d/backport.list <<EOF

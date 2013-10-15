@@ -41,6 +41,8 @@ chroot ${SRC} apt-get update
 chroot ${SRC} apt-get install -y --force-yes sysbench fio python-psutil netperf python-netaddr ethtool python-numpy
 chroot ${SRC} apt-get clean
 
+install_ib_if_needed $ORIG $SRC
+
 rsync -au --delete-excluded --delete --exclude /boot/ \
     --exclude 'vmlinuz*' \
     --exclude 'initrd*' \

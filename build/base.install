@@ -116,12 +116,6 @@ fi
 
 PACKAGES="pciutils rsyslog"
 
-# Infinband packages
-if [ "$ENABLE_IB" = "y" ]; then
-  bash ${ORIG}/infiniband ${dir}
-  PACKAGES="$PACKAGES infiniband-diags"
-fi
-
 case $dist in
     precise)
 	PACKAGES="$PACKAGES linux-image-generic-lts-raring linux-headers-generic-lts-raring iputils-ping linux-firmware"

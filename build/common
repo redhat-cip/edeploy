@@ -5,3 +5,31 @@ compress() {
     fi
     $COMPRESS $@
 }
+
+is_deb_distro() {
+    case $dist in
+        centos*)
+        DEB=
+        ;;
+    *)
+        DEB=1
+    esac
+    return $DEB
+}
+
+
+install_ib_if_needed() {
+    ORIG=$1
+    CHROOT=$2
+    if [ "$ENABLE_IB" = "y" ]; then
+        bash ${ORIG}/infiniband $CHROOT
+        PACKAGES="infiniband-diags"
+        DEB=is_deb_distro
+        if [ -n "$DEB" ]; then
+            chroot "$CHROOT" apt-get -y install $PACKAGES
+        else
+            chroot "$CHROOT" yum --nogpgcheck install -y $PACKAGES
+        fi
+    fi
+}
+

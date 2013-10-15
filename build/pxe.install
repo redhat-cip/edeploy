@@ -39,6 +39,8 @@ chroot ${SRC} apt-get update
 chroot ${SRC} apt-get install -y --force-yes python-netaddr ethtool
 chroot ${SRC} apt-get clean
 
+install_ib_if_needed $ORIG $SRC
+
 rsync -au --delete-excluded --delete --exclude /boot/ \
     --exclude 'vmlinuz*' \
     --exclude 'initrd*' \

@@ -53,7 +53,7 @@ SET_IPOIB_CM=yes
 EOF
 
   # Mellanox OpenIB init script
-  wget http://www.cbp.ens-lyon.fr/emmanuel.quemener/software/OFED/Squeeze153/config/openibd -O ${dir}/etc/init.d/openibd
+  wget 'http://git.openfabrics.org/git?p=ofed_1_5/linux-2.6.git;a=blob_plain;f=ofed_scripts/openibd;h=4eab48c92292e9edbcc85abecd60558adad1e02d;hb=HEAD' -O ${dir}/etc/init.d/openibd
   chmod +x ${dir}/etc/init.d/openibd
 else
   chroot ${dir} yum  --nogpgcheck install -y ibutils infiniband-diags ibacm libibcommon libibmad libibumad libibverbs libmlx4 libmthca rdma srptools openib

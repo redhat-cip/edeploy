@@ -15,6 +15,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+# Exporting ALL variables to other childs
+.EXPORT_ALL_VARIABLES:
+
 SDIR=/root/edeploy
 TOP=/var/lib/debootstrap
 DVER=D7
@@ -34,6 +37,7 @@ HSERV:=10.66.6.10
 DEBUG=1
 PYDIR=../src
 PYSERVERDIR=../server
+export ENABLE_IB
 
 LOAD=5
 HTTP=
@@ -49,8 +53,8 @@ health-check: $(INST)/base.done init.health health-check.install $(PYDIR)/detect
 health-img: health-check
 	./img.install $(INST)/base $(HEALTH_IMG) $(VERS) $(INST) $(SERV) $(HSERV) $(DEBUG) health
 
-pxe $(INST)/$(IMG): $(INST)/base.done init pxe.install $(PYDIR)/detect.py $(PYDIR)/hpacucli.py $(PYSERVERDIR)/matcher.py $(PYDIR)/diskinfo.py $(PYDIR)/ipmi.py
-	./pxe.install $(INST)/base $(INST)/pxe $(IMG) $(VERS) $(DEBUG)
+pxe $(INST)/$(IMG): $(INST)/base.done init pxe.install $(PYDIR)/detect.py $(PYDIR)/hpacucli.py $(PYSERVERDIR)/matcher.py $(PYDIR)/diskinfo.py $(PYDIR)/ipmi.py $(PYDIR)/infiniband.py
+	ENABLE_IB=$(ENABLE_IB) ./pxe.install $(INST)/base $(INST)/pxe $(IMG) $(VERS) $(DEBUG)
 
 img: $(INST)/$(IMG)
 	./img.install $(INST)/base $(IMG) $(VERS) $(INST) $(SERV) $(HSERV) $(DEBUG)

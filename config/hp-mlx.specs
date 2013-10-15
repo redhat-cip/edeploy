@@ -14,9 +14,10 @@
     ('network', '$eth-pub0', 'vendor', 'Broadcom Corporation'),
     ('network', '$eth-pub0', 'link', 'yes'),
     ('network', '$eth-pub0', 'serial', '$mac-pub0'),
-    ('network', '$eth-ib0', 'vendor', 'Mellanox Technologies'),
-    ('infiniband', '$card0-port2', 'state', 'Active'),
-    ('infiniband', '$card0-port2', 'rate', '56'),
-    ('network', '$eth-ib0', 'serial', '$mac-ib0'),
+    ('network', '$ib-prod0', 'vendor', 'Mellanox Technologies'),
+    ('infiniband', '$ib-prod0', 'state', 'Active'),
+    ('infiniband', '$ib-prod0', 'rate', '56'),
+    ('infiniband', '$ib-prod0', 'sm_lid', '1')
+    ('network', '$ib-prod0', 'serial', '$mac-ib0'),
     ('system', 'ipmi', 'channel', '$ipmi-channel'),
 ]

@@ -106,7 +106,7 @@ mount -obind /proc ${dir}/proc
 
 if [ -z "$DEB" ]; then
     rpm -ivh --root "$dir" "http://mirror.centos.org/centos/6.4/os/x86_64/Packages/centos-release-6-4.el6.centos.10.x86_64.rpm"
-    sed -i 's/$releasever/6/g' ${dir}/etc/yum.repos.d/* 
+    sed -i 's/$releasever/6/g' ${dir}/etc/yum.repos.d/*
     cp -f /etc/resolv.conf "$dir/etc/"
     yum --installroot "$dir" -y --nogpgcheck install yum
     chroot "$dir" yum --nogpgcheck install -y yum basesystem

@@ -69,6 +69,21 @@ def _network(left, right):
         return False
 
 
+def _in(elt, _list):
+    'Helper for match_spec.'
+    # build a list from the string or return False
+    try:
+        lst = eval('(' + _list + ')')
+    except Exception:
+        return False
+    # cast into an int or do nothing
+    try:
+        elt = int(elt)
+    except ValueError:
+        pass
+    return elt in lst
+
+
 def match_spec(spec, lines, arr, adder=_adder):
     'Match a line according to a spec and store variables in <var>.'
     # match a line without variable

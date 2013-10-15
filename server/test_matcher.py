@@ -19,6 +19,7 @@ import unittest
 
 import matcher
 
+
 class TestMatcher(unittest.TestCase):
 
     def test_equal(self):
@@ -242,6 +243,24 @@ class TestMatcher(unittest.TestCase):
         self.assert_(matcher.match_all(lines, specs, arr, {}))
         self.assertEqual(arr['disk'], 'vda')
         self.assertEqual(arr['size'], '20')
+
+    def test_in(self):
+        specs = [('disk', '$disk', 'size', 'in(10, 20, 30)')]
+        lines = [
+            ('disk', 'vda', 'size', '20'),
+            ]
+        arr = {}
+        self.assert_(matcher.match_all(lines, specs, arr, {}))
+        self.assertEqual(arr['disk'], 'vda')
+
+    def test_in2(self):
+        specs = [('disk', '$disk=in("vda", "vdb")', 'size', '20')]
+        lines = [
+            ('disk', 'vda', 'size', '20'),
+            ]
+        arr = {}
+        self.assert_(matcher.match_all(lines, specs, arr, {}))
+        self.assertEqual(arr['disk'], 'vda')
 
 if __name__ == "__main__":
     unittest.main()

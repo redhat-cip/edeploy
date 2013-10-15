@@ -120,9 +120,10 @@ Each entry of the list is tuple of 4 entries that must be matched on
 the hardware profile detected on the system to install.
 
 If an element ends with ``)`` a function is used to match the
-value. Available functions are ``gt`` (greater than), ``ge`` (greater
-or equal), ``lt`` (lesser than), ``le`` (lesser or equal), and ``network``
-(match an IPv4 network).
+value. Available functions are ``in`` to check if an element is part
+of a list, ``gt`` (greater than), ``ge`` (greater or equal), ``lt``
+(lesser than), ``le`` (lesser or equal), and ``network`` (match an
+IPv4 network).
 
 If en element starts with a ``$``, it's a variable that will take the
 value of the detected system config. These variables will be passed to

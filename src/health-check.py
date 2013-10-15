@@ -278,6 +278,7 @@ def get_ddr_timing(hw_):
             hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tFAW', tFAW))
             hw_.append(('memory', 'DDR_%s' % ddr_channel, 'B2B', B2B))
 
+
 def mem_perf_burn(hw_, testing_time=10):
     'Report the memory performance'
     result = get_value(hw_, 'cpu', 'logical', 'number')

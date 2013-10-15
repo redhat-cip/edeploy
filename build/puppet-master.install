@@ -29,17 +29,86 @@ chroot ${dir} apt-get update
 chroot ${dir} apt-get install -y --force-yes lsb-release openssh-server iptables build-essential wget
 chroot ${dir} apt-get clean
 
-OS=$(chroot ${dir} lsb_release -i -s)
-CODENAME=$(chroot ${dir} lsb_release -c -s)
+configure_cloudinit () {
+    chroot ${dir} apt-get update
+    mkdir -p ${dir}/etc/cloud/cloud.cfg.d
+    rm -f ${dir}/etc/cloud/cloud.cfg
+    chroot ${dir} apt-get install -y cloud-init
 
-if [ $OS == "Debian" ] || [ $OS == "Ubuntu" ]; then
+    cat > ${dir}/etc/cloud/cloud.cfg.d/90_dpkg.cfg << EOF
+# to update this file, run dpkg-reconfigure cloud-init
+datasource_list: [ NoCloud ]
+EOF
+
+    cat > ${dir}/etc/cloud/cloud.cfg <<EOF
+user: root
+disable_root: 0
+preserve_hostname: False
+
+cloud_init_modules:
+ - bootcmd
+ - resizefs
+ - set_hostname
+ - update_hostname
+ - update_etc_hosts
+ - ca-certs
+ - rsyslog
+ - ssh
+
+cloud_config_modules:
+ - mounts
+ - ssh-import-id
+ - locale
+ - set-passwords
+ - grub-dpkg
+ - apt-pipelining
+ - apt-update-upgrade
+ - landscape
+ - timezone
+ - puppet
+ - chef
+ - salt-minion
+ - mcollective
+ - disable-ec2-metadata
+ - runcmd
+ - byobu
+
+cloud_final_modules:
+ - rightscale_userdata
+ - scripts-per-once
+ - scripts-per-boot
+ - scripts-per-instance
+ - scripts-user
+ - keys-to-console
+ - phone-home
+ - final-message
+EOF
+}
+
+install_puppet () {
  chroot ${dir} wget http://apt.puppetlabs.com/puppetlabs-release-$CODENAME.deb
  chroot ${dir} dpkg -i puppetlabs-release-$CODENAME.deb
  chroot ${dir} apt-get update
  chroot ${dir} apt-get install -y puppetmaster puppet augeas-tools mysql-server libmysql-ruby libactiverecord-ruby git
+}
+
+OS=$(chroot ${dir} lsb_release -i -s)
+CODENAME=$(chroot ${dir} lsb_release -c -s)
+
+if [ $OS == "Debian" ] && [ $RELEASE == "wheezy" ]; then
+    cat > ${dir}/etc/apt/sources.list.d/backport.list <<EOF
+deb http://ftp.debian.org/debian wheezy-backports main
+EOF
+configure_cloudinit
+install_puppet
+
+elif [ $OS == "Ubuntu" ] && [ $RELEASE == "precise" ]; then
+configure_cloudinit
+install_puppet
+
 else
- echo "OS or Release not supported"
- exit 1
+    echo "OS or Release not supported"
+    exit 1
 fi
 
 echo -e "\nVersion ${version}\n" > ${dir}/etc/motd

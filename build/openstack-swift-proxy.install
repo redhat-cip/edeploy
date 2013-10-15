@@ -123,7 +123,7 @@ else
     exit 1
 fi
 
-chroot ${dir} apt-get install -y swift-proxy memcached
+chroot ${dir} apt-get install -y swift-proxy memcached puppet augeas-tools
 
 echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
 echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

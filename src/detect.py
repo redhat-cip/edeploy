@@ -26,12 +26,15 @@ import subprocess
 import socket
 import fcntl
 import struct
-from netaddr import *
+from netaddr import IPNetwork
 
 import diskinfo
 import hpacucli
 import infiniband as ib
 import os
+
+
+SIOCGIFNETMASK = 0x891b
 
 
 def size_in_gb(size):
@@ -137,9 +140,10 @@ def detect_ipmi(hw_lst):
             return False
 
 
-def get_CIDR(netmask):
+def get_cidr(netmask):
+    'Convert a netmask to a CIDR.'
     binary_str = ''
-    for octet in netmask:
+    for octet in netmask.split('.'):
         binary_str += bin(int(octet))[2:].zfill(8)
     return str(len(binary_str.rstrip('0')))
 
@@ -154,36 +158,36 @@ def detect_infiniband(hw_lst):
             ib_infos = ib.ib_global_info(card_type)
             nb_ports = ib_infos['nb_ports']
             hw_lst.append(('infiniband', 'card%i' % ib_card,
-                            'card_type', card_type))
+                           'card_type', card_type))
             hw_lst.append(('infiniband', 'card%i' % ib_card,
-                            'device_type', ib_infos['device_type']))
+                           'device_type', ib_infos['device_type']))
             hw_lst.append(('infiniband', 'card%i' % ib_card,
-                            'fw_version', ib_infos['fw_ver']))
+                           'fw_version', ib_infos['fw_ver']))
             hw_lst.append(('infiniband', 'card%i' % ib_card,
-                            'hw_version', ib_infos['hw_ver']))
+                           'hw_version', ib_infos['hw_ver']))
             hw_lst.append(('infiniband', 'card%i' % ib_card,
-                            'nb_ports', nb_ports))
+                           'nb_ports', nb_ports))
             hw_lst.append(('infiniband', 'card%i' % ib_card,
-                            'sys_guid', ib_infos['sys_guid']))
+                           'sys_guid', ib_infos['sys_guid']))
             hw_lst.append(('infiniband', 'card%i' % ib_card,
-                            'node_guid', ib_infos['node_guid']))
+                           'node_guid', ib_infos['node_guid']))
             for port in range(1, int(nb_ports)+1):
                 ib_port_infos = ib.ib_port_info(card_type, port)
                 hw_lst.append(('infiniband', 'card%i_port%i' % (ib_card, port),
-                                'state', ib_port_infos['state']))
+                               'state', ib_port_infos['state']))
                 hw_lst.append(('infiniband', 'card%i_port%i' % (ib_card, port),
-                                'physical_state',
-                                ib_port_infos['physical_state']))
+                               'physical_state',
+                               ib_port_infos['physical_state']))
                 hw_lst.append(('infiniband', 'card%i_port%i' % (ib_card, port),
-                                'rate', ib_port_infos['rate']))
+                               'rate', ib_port_infos['rate']))
                 hw_lst.append(('infiniband', 'card%i_port%i' % (ib_card, port),
-                                'base_lid', ib_port_infos['base_lid']))
+                               'base_lid', ib_port_infos['base_lid']))
                 hw_lst.append(('infiniband', 'card%i_port%i' % (ib_card, port),
-                                'lmc', ib_port_infos['lmc']))
+                               'lmc', ib_port_infos['lmc']))
                 hw_lst.append(('infiniband', 'card%i_port%i' % (ib_card, port),
-                                'sm_lid', ib_port_infos['sm_lid']))
+                               'sm_lid', ib_port_infos['sm_lid']))
                 hw_lst.append(('infiniband', 'card%i_port%i' % (ib_card, port),
-                                'port_guid', ib_port_infos['port_guid']))
+                               'port_guid', ib_port_infos['port_guid']))
         return True
     else:
         sys.stderr.write('Info: No Infiniband device found\n')
@@ -260,17 +264,23 @@ def detect_system(hw_lst, output=None):
                 find_element(elt, 'vendor', 'vendor', name.text, 'network')
                 find_element(elt, 'product', 'product', name.text, 'network')
                 find_element(elt, 'size', 'size', name.text, 'network')
-                ipv4 = find_element(elt, "configuration/setting[@id='ip']", 'ipv4',
-                             name.text, 'network', 'value')
+                ipv4 = find_element(elt, "configuration/setting[@id='ip']",
+                                    'ipv4',
+                                    name.text, 'network', 'value')
                 if ipv4 is not None:
-                    SIOCGIFNETMASK = 0x891b
-                    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                     try:
-                        netmask = socket.inet_ntoa(fcntl.ioctl(s, SIOCGIFNETMASK, struct.pack('256s', name.text))[20:24])
-                        hw_lst.append(('network', name.text, 'ipv4-netmask', netmask))
-                        cidr = get_CIDR(netmask.split('.'))
-                        hw_lst.append(('network', name.text, 'ipv4-cidr', cidr))
-                        hw_lst.append(('network', name.text, 'ipv4-network', "%s" % IPNetwork('%s/%s' % (ipv4, cidr)).network))
+                        netmask = socket.inet_ntoa(
+                            fcntl.ioctl(sock, SIOCGIFNETMASK,
+                                        struct.pack('256s', name.text))[20:24])
+                        hw_lst.append(
+                            ('network', name.text, 'ipv4-netmask', netmask))
+                        cidr = get_cidr(netmask)
+                        hw_lst.append(
+                            ('network', name.text, 'ipv4-cidr', cidr))
+                        hw_lst.append(
+                            ('network', name.text, 'ipv4-network',
+                             "%s" % IPNetwork('%s/%s' % (ipv4, cidr)).network))
                     except:
                         True
 
@@ -284,7 +294,8 @@ def detect_system(hw_lst, output=None):
                              'speed', name.text, 'network', 'value')
                 find_element(elt, "configuration/setting[@id='latency']",
                              'latency', name.text, 'network', 'value')
-                find_element(elt, "configuration/setting[@id='autonegotiation']",
+                find_element(elt,
+                             "configuration/setting[@id='autonegotiation']",
                              'autonegotiation', name.text, 'network', 'value')
 
         for elt in xml.findall(".//node[@class='processor']"):

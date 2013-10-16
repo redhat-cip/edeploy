@@ -263,7 +263,14 @@ def detect_system(hw_lst, output=None):
         for elt in xml.findall(".//node[@class='network']"):
             name = elt.find('logicalname')
             if name is not None:
-                find_element(elt, 'serial', 'serial', name.text, 'network')
+                ''' lshw is not able to get the complete mac addr for ib devices '''
+                ''' Let's workaround it with an ip command '''
+                if name.text.startswith('ib'):
+                    status_ip, output_ip = cmd("ip addr show %s | grep link | awk '{print $2}'" % name.text)
+                    hw_lst.append(('network', name.text, 'serial', output_ip.split('\n')[0]))
+                else:
+                    find_element(elt, 'serial', 'serial', name.text, 'network')
+
                 find_element(elt, 'vendor', 'vendor', name.text, 'network')
                 find_element(elt, 'product', 'product', name.text, 'network')
                 find_element(elt, 'size', 'size', name.text, 'network')

@@ -150,6 +150,9 @@ def get_cidr(netmask):
 
 def detect_infiniband(hw_lst):
     'Detect Infiniband devinces.'
+    'To detect if an IB device is present, we search for a pci device'
+    'This pci device shall be from vendor Mellanox (15b3) form class 0280'
+    'Class 280 stands for a Network Controller while ethernet device are 0200'
     status, _ = cmd("lspci -d 15b3: -n|awk '{print $2}'|grep -q '0280'")
     if status == 0:
         ib_card = 0

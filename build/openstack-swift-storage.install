@@ -15,6 +15,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+#
+# This role is a Storage node for object storage infrastructure.
+# It installs Swift Storage services and are managed by Puppet.
+#
 
 src="$1"
 dir="$2"
@@ -27,19 +31,80 @@ ORIG=$(cd $(dirname $0); pwd)
 
 chroot ${dir} apt-get update
 chroot ${dir} apt-get install -y --force-yes lsb-release openssh-server
+chroot ${dir} apt-key adv --recv-keys --keyserver keyserver.ubuntu.com E52660B15D964F0B
 chroot ${dir} apt-get clean
 
 OS=$(chroot ${dir} lsb_release -i -s)
 RELEASE=$(chroot ${dir} lsb_release -c -s)
 
+configure_cloudinit () {
+    chroot ${dir} apt-get update
+    mkdir -p ${dir}/etc/cloud/cloud.cfg.d
+    rm -f ${dir}/etc/cloud/cloud.cfg
+    chroot ${dir} apt-get install -y cloud-init
+
+    cat > ${dir}/etc/cloud/cloud.cfg.d/90_dpkg.cfg << EOF
+# to update this file, run dpkg-reconfigure cloud-init
+datasource_list: [ NoCloud ]
+EOF
+
+    cat > ${dir}/etc/cloud/cloud.cfg <<EOF
+user: root
+disable_root: 0
+preserve_hostname: False
+
+cloud_init_modules:
+ - bootcmd
+ - resizefs
+ - set_hostname
+ - update_hostname
+ - update_etc_hosts
+ - ca-certs
+ - rsyslog
+ - ssh
+
+cloud_config_modules:
+ - mounts
+ - ssh-import-id
+ - locale
+ - set-passwords
+ - grub-dpkg
+ - apt-pipelining
+ - apt-update-upgrade
+ - landscape
+ - timezone
+ - puppet
+ - chef
+ - salt-minion
+ - mcollective
+ - disable-ec2-metadata
+ - runcmd
+ - byobu
+
+cloud_final_modules:
+ - rightscale_userdata
+ - scripts-per-once
+ - scripts-per-boot
+ - scripts-per-instance
+ - scripts-user
+ - keys-to-console
+ - phone-home
+ - final-message
+EOF
+}
+
 if [ $OS == "Debian" ] && [ $RELEASE == "wheezy" ]; then
     cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
-deb [trusted=1] http://cloud.pkgs.enovance.com/wheezy-grizzly/ grizzly main 
+deb http://cloud.pkgs.enovance.com/wheezy-havana/ havana main
 EOF
+    cat > ${dir}/etc/apt/sources.list.d/backport.list <<EOF
+deb http://ftp.debian.org/debian wheezy-backports main
+EOF
+configure_cloudinit
 
 elif [ $OS == "Ubuntu" ] && [ $RELEASE == "precise" ]; then
     cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
-deb [trusted=1] http://cloud.pkgs.enovance.com/precise-grizzly/ grizzly main 
+deb http://cloud.pkgs.enovance.com/precise-havana/ havana main
 EOF
     cat > ${dir}/etc/apt/sources.list <<EOF
 deb http://archive.ubuntu.com/ubuntu precise main
@@ -55,15 +120,14 @@ deb-src http://security.ubuntu.com/ubuntu precise-security main
 deb http://security.ubuntu.com/ubuntu precise-security universe
 deb-src http://security.ubuntu.com/ubuntu precise-security universe
 EOF
+configure_cloudinit
 
 else
- echo "OS or Release not supported"
- exit 1
-
+    echo "OS or Release not supported"
+    exit 1
 fi
 
-chroot ${dir} apt-get update
-chroot ${dir} apt-get install -y swift-account swift-container swift-object xfsprogs
+chroot ${dir} apt-get install -y swift-account swift-container swift-object xfsprogs puppet augeas-tools
 
 echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
 echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

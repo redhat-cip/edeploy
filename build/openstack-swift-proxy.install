@@ -15,6 +15,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+#
+# This role is a Cloud controller for object storage infrastructure.
+# It installs Swift Proxy, Keystone, Ceilometer, MySQL and MongoDB
+# where services are configured by Puppet.
+#
 
 src="$1"
 dir="$2"
@@ -123,7 +128,7 @@ else
     exit 1
 fi
 
-chroot ${dir} apt-get install -y swift-proxy memcached puppet augeas-tools
+chroot ${dir} apt-get install -y swift-proxy memcached puppet augeas-tools keystone ceilometer-api ceilometer-agent-central ceilometer-collector mysql-server mongodb-server
 
 echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
 echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

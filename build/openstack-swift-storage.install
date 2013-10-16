@@ -127,7 +127,7 @@ else
     exit 1
 fi
 
-chroot ${dir} apt-get install -y swift-account swift-container swift-object xfsprogs puppet augeas-tools
+chroot ${dir} apt-get install -y --force-yes swift-account swift-container swift-object xfsprogs puppet augeas-tools
 
 echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
 echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

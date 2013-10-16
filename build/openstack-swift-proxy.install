@@ -128,7 +128,7 @@ else
     exit 1
 fi
 
-chroot ${dir} apt-get install -y swift-proxy memcached puppet augeas-tools keystone ceilometer-api ceilometer-agent-central ceilometer-collector mysql-server mongodb-server
+chroot ${dir} apt-get install -y --force-yes swift-proxy memcached puppet augeas-tools keystone ceilometer-api ceilometer-agent-central ceilometer-collector mysql-server mongodb-server
 
 echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
 echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

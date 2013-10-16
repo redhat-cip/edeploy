@@ -15,9 +15,9 @@
     ('network', '$eth-pub0', 'link', 'yes'),
     ('network', '$eth-pub0', 'serial', '$mac-pub0'),
     ('network', '$ib-prod0', 'vendor', 'Mellanox Technologies'),
-    ('infiniband', '$ib-prod0', 'state', 'Active'),
-    ('infiniband', '$ib-prod0', 'rate', '56'),
-    ('infiniband', '$ib-prod0', 'sm_lid', '1')
     ('network', '$ib-prod0', 'serial', '$mac-ib0'),
+    ('infiniband', '$ib-prod0-port1', 'state', 'Active'),
+    ('infiniband', '$ib-prod0-port1', 'rate', '56'),
+    ('infiniband', '$ib-prod0-port1', 'sm_lid', '1')
     ('system', 'ipmi', 'channel', '$ipmi-channel'),
 ]

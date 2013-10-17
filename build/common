@@ -27,6 +27,17 @@ install_ib_if_needed() {
         DEB=is_deb_distro
         if [ -n "$DEB" ]; then
             chroot "$CHROOT" apt-get -y install $PACKAGES
+            grep -q "DISTRIB_CODENAME=precise" $CHROOT/etc/lsb-release
+            if [ $? = 0 ]; then
+                # as per https://bugs.launchpad.net/ubuntu/+source/libmlx4/+bug/1037107
+                # ubuntu precise needs a package to be backported
+                LIBMLX=libmlx4-1_1.0.4-1_amd64.deb
+                cd $CHROOT;
+                    wget http://us.archive.ubuntu.com/ubuntu/ubuntu/pool/universe/libm/libmlx4/$LIBMLX
+                cd -
+                chroot "$CHROOT" dpkg -i /$LIBMLX
+                rm -rf $CHROOT/$LIBMLX
+            fi
         else
             chroot "$CHROOT" yum --nogpgcheck install -y $PACKAGES
         fi

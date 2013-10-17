@@ -24,8 +24,8 @@ if [ -f ${dir}/etc/debian_version ]; then
   chroot ${dir} apt-get install -y infiniband-diags ibutils ibverbs-utils qlvnictools srptools sdpnetstat rds-tools rdmacm-utils perftest libmthca1 libmlx4-1 libipathverbs1
 
   # Mellanox OpenIB configuration script for Debian based hosts
-  mkdir -p ${dir}/etc/infinband
-  cat > ${dir}/etc/infinband/openib.conf <<EOF
+  mkdir -p ${dir}/etc/infiniband
+  cat > ${dir}/etc/infiniband/openib.conf <<EOF
 # Start HCA driver upon boot
 ONBOOT=yes
 # Load UCM module

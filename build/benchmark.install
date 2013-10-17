@@ -27,7 +27,7 @@ ORIG=$(cd $(dirname $0); pwd)
 . ${ORIG}/functions
 
 chroot ${dir} apt-get update
-chroot ${dir} apt-get install -y --force-yes wget lsb-release openssh-server
+chroot ${dir} apt-get install -y --force-yes wget openssh-server
 chroot ${dir} apt-get clean
 
 install_ib_if_needed $ORIG $dir

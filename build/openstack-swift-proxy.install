@@ -36,7 +36,7 @@ if [ -z "$OS_VERS" ]; then
 fi
 
 chroot ${dir} apt-get update
-chroot ${dir} apt-get install -y --force-yes lsb-release openssh-server
+chroot ${dir} apt-get install -y --force-yes openssh-server
 chroot ${dir} apt-key adv --recv-keys --keyserver keyserver.ubuntu.com E52660B15D964F0B
 chroot ${dir} apt-get clean
 

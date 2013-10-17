@@ -53,4 +53,4 @@ fi
 
 chroot ${dir} apt-get update
 chroot ${dir} apt-get dist-upgrade -y --force-yes
-chroot ${dir} apt-get install -y --force-yes puppet-common openssh-server mcollective-client wget lsb-release git cloud-init wget
+chroot ${dir} apt-get install -y --force-yes puppet-common openssh-server mcollective-client wget git cloud-init wget

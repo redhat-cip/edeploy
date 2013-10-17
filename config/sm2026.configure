@@ -69,6 +69,7 @@ for idx in range(2, 6):
     disks_name = '%s /dev/%s' % (disks_name, var[disk_name])
     print
 
+run('dmsetup remove_all || /bin/true')
 run('vgcreate -f -y --dataalignment 512k data %s' % (disks_name))
 run('lvcreate data -n var -L 1500G')
 run('mkfs.ext4 -L var -m 0 %s' % ('/dev/mapper/data-var'))

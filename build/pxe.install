@@ -36,7 +36,7 @@ set -x
 set -e
 
 chroot ${SRC} apt-get update
-chroot ${SRC} apt-get install -y --force-yes python-netaddr ethtool
+chroot ${SRC} apt-get install -y --force-yes python-netaddr ethtool sdparm
 chroot ${SRC} apt-get clean
 
 install_ib_if_needed $ORIG $SRC

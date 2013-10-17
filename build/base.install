@@ -127,7 +127,7 @@ deb http://archive.ubuntu.com/ubuntu precise-updates universe
 EOF
 	;;
     wheezy)
-	PACKAGES="$PACKAGES linux-image-amd64 ipmitool sdparm htop acpi-support-base inetutils-ping firmware-bnx2"
+	PACKAGES="$PACKAGES linux-image-amd64 ipmitool htop acpi-support-base inetutils-ping firmware-bnx2"
 	cat > ${dir}/etc/apt/sources.list.d/nonfree.list <<EOF
 deb http://ftp.debian.org/debian/ wheezy non-free
 EOF
@@ -137,7 +137,7 @@ deb http://ftp.debian.org/debian/ wheezy-updates main
 EOF
 	;;
     centos*)
-	PACKAGES="$PACKAGES passwd kernel sdparm"
+	PACKAGES="$PACKAGES passwd kernel"
 	;;
     *)
 	echo "unsupported distribution: $dist" 2>&1

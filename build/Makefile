@@ -130,6 +130,9 @@ test: $(INST)/$(IMG)
 stress-http:
 	cd ../tests; ./run_kvm.sh $(TOP) stress-http $(LOAD) $(HTTP)
 
+benchmark $(INST)/benchmark.done: benchmark.install $(INST)/base.done
+	./benchmark.install $(INST)/base $(INST)/benchmark $(VERS)
+	touch $(INST)/benchmark.done
 
 dist:
 	tar zcvf ../edeploy.tgz Makefile init init.common README.rst *.install edeploy update-scenario.sh *.py

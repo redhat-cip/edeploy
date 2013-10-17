@@ -38,6 +38,7 @@ fi
 chroot ${dir} apt-get update
 chroot ${dir} apt-get install -y --force-yes openssh-server
 chroot ${dir} apt-key adv --recv-keys --keyserver keyserver.ubuntu.com E52660B15D964F0B
+chroot ${dir} apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
 chroot ${dir} apt-get clean
 
 OS=$(chroot ${dir} lsb_release -i -s)
@@ -103,6 +104,9 @@ if [ $OS == "Debian" ] && [ $RELEASE == "wheezy" ]; then
     cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
 deb http://cloud.pkgs.enovance.com/wheezy-${OS_VERS}/ ${OS_VERS} main
 EOF
+    cat > ${dir}/etc/apt/sources.list.d/mongodb.list <<EOF
+deb http://downloads-distro.mongodb.org/repo/debian-sysvinit dist 10gen
+EOF
     cat > ${dir}/etc/apt/sources.list.d/backport.list <<EOF
 deb http://ftp.debian.org/debian wheezy-backports main
 EOF
@@ -111,6 +115,9 @@ configure_cloudinit
 elif [ $OS == "Ubuntu" ] && [ $RELEASE == "precise" ]; then
     cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
 deb http://cloud.pkgs.enovance.com/precise-${OS_VERS}/ ${OS_VERS} main
+EOF
+    cat > ${dir}/etc/apt/sources.list.d/mongodb.list <<EOF
+deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen
 EOF
     cat > ${dir}/etc/apt/sources.list <<EOF
 deb http://archive.ubuntu.com/ubuntu precise main
@@ -133,7 +140,7 @@ else
     exit 1
 fi
 
-chroot ${dir} apt-get install -y --force-yes swift-proxy memcached puppet augeas-tools keystone ceilometer-api ceilometer-agent-central ceilometer-collector mysql-server mongodb-server
+chroot ${dir} apt-get install -y --force-yes swift-proxy memcached puppet augeas-tools keystone ceilometer-api ceilometer-agent-central ceilometer-collector mysql-server mongodb-10gen
 
 echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
 echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

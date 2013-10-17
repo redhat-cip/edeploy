@@ -160,7 +160,8 @@ if [ -n "$DEB" ]; then
 chroot "$dir" apt-get update
 chroot "$dir" apt-get dist-upgrade -y
 
-chroot "$dir" apt-get install -y --force-yes openssh-server parted $PACKAGES net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase dmidecode bash curl hdparm xfsprogs acpid ifenslave kexec-tools
+chroot "$dir" apt-get install -y --force-yes locales openssh-server parted $PACKAGES net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase dmidecode bash curl hdparm xfsprogs acpid ifenslave kexec-tools
+chroot "$dir" locale-gen en_US.UTF-8
 else
     chroot "$dir" yum --nogpgcheck install -y openssh-server parted coreutils perl $PACKAGES e2fsprogs net-tools initscripts upstart vconfig dhclient grub grubby kbd rsync ifupdown dmidecode bash curl hdparm xfsprogs acpid
     # bring lshw from epel

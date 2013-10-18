@@ -45,7 +45,6 @@ OS=$(chroot ${dir} lsb_release -i -s)
 RELEASE=$(chroot ${dir} lsb_release -c -s)
 
 configure_cloudinit () {
-    chroot ${dir} apt-get update
     mkdir -p ${dir}/etc/cloud/cloud.cfg.d
     rm -f ${dir}/etc/cloud/cloud.cfg
     chroot ${dir} apt-get install -y cloud-init
@@ -140,6 +139,7 @@ else
     exit 1
 fi
 
+chroot ${dir} apt-get update
 chroot ${dir} apt-get install -y --force-yes swift-proxy memcached puppet augeas-tools keystone ceilometer-api ceilometer-agent-central ceilometer-collector mysql-server mongodb-10gen
 
 echo -e "\nVersion ${version}\n" > ${dir}/etc/motd

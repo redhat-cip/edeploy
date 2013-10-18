@@ -161,7 +161,9 @@ chroot "$dir" apt-get update
 chroot "$dir" apt-get dist-upgrade -y
 
 chroot "$dir" apt-get install -y --force-yes locales openssh-server parted $PACKAGES net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase dmidecode bash curl hdparm xfsprogs acpid ifenslave kexec-tools
-chroot "$dir" echo "en_US.utf8 UTF-8" >> /etc/locale.gen
+cat >> $dir/etc/locale.gen <<EOF
+en_US.utf8 UTF-8
+EOF
 chroot "$dir" locale-gen
 
 else

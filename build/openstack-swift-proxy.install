@@ -69,6 +69,7 @@ cloud_init_modules:
  - ca-certs
  - rsyslog
  - ssh
+ - users-groups
 
 cloud_config_modules:
  - mounts

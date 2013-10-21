@@ -35,4 +35,4 @@ flake8:
 	flake8 $(PYSRC)
 
 pylint:
-	pylint -f parseable $(PYSRC)
+	-pylint -f parseable $(PYSRC)

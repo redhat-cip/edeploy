@@ -231,12 +231,12 @@ network interface in the CMDB::
 HTTP server
 ++++++++++++
 If required, an HTTP server can be used to get the OS images.
-Setting up the ``HSERV`` and optionally ``HSERV_PORT``` variables to
+Setting up the ``HSERV`` and optionally ``HSERV_PORT`` variables to
 target the appropriate server. An ``install`` directory shall be available
-from the root directory to get .edeploy files.
+from the root directory to get ``.edeploy`` files.
 
-eDeploy will try to get the image file by using the following command ::
- http://${HSERV}:${HSERV_PORT}//install/${ROLE}-${VERS}.edeploy
+eDeploy dowloads the image files by using the following URL:
+  ``http://${HSERV}:${HSERV_PORT}//install/${ROLE}-${VERS}.edeploy``
 
 Rsync server
 ++++++++++++

@@ -75,7 +75,8 @@ The CGI script is configured with ``/etc/edeploy.conf``::
 
  HEALTHDIR   = /var/lib/edeploy/health/
  CONFIGDIR   = /var/lib/edeploy/config/
- LOCKFILE    = /tmp/edeploy.lock
+ HWDIR       = /var/lib/edeploy/hw/
+ LOCKFILE    = /var/lock/apache2/edeploy.lock
  USEPXEMNGR  = True
  PXEMNGRURL  = http://192.168.122.1:8000/
  METADATAURL = http://192.168.122.1/
@@ -88,6 +89,10 @@ http server.
 
 ``HEALTHDIR`` points to a directory where the automatic health check
 mode will upload its results.
+
+``HWDIR`` points to a directory where the hardware profiles are
+stored. The directory must be writable by the user running the http
+server.
 
 ``LOCKFILE`` points to a file used to lock the ``CONFIGDIR`` files
 that are read and written like ``*.cmdb`` and ``state``. These files
@@ -316,17 +321,44 @@ and after the synchro for example to restart stopped services. The
 ``post`` script can report that a reboot is needed by exiting with a
 return code of 100.
 
+Provisionning using ansible
+---------------------------
+
+Create an ``hosts`` INI file in the ``ansible`` sub-directory using an
+``[edeployservers]`` section where you specify the name for the
+server you want to provision::
+
+  [edeployservers]
+
+  edeploy	ansible_ssh_host=192.168.122.9
+
+Then in the ``ansible`` directory, just issue the following command::
+
+  ansible-playbook -i hosts edeploy-install.yml
+
+You can alternatively activate the support of pxemngr using the
+following command line::
+
+   ansible-playbook -i hosts edeploy-install.yml --extra-vars pxemngr=true
+
 How to contribute
 -----------------
 
 - Pull requests please.
 - Bonus points for feature branches.
 
-Run tests
-+++++++++
+Run unit tests
+++++++++++++++
 
 On debian-based hosts, install ``python-pexpect``, ``python-mock`` and ``python-nose``
-packages and run ``make test``.
+packages and then run ``make test``.
+
+Quality
++++++++
+
+We use ``flake8`` and ``pylint`` to help us develop using a common
+style. You can run them by hand or use the ``make quality`` command in
+the top directory of the project.
 
 Debug
 +++++
@@ -335,4 +367,4 @@ For ``specs`` debug
 
 - On eDeploy server ``multitail /var/log/apache2/{error,access}.log /var/log/syslog``
 - And on booted but unmatch profile vm ``curl -s -S -F file=@/hw.py http://<ip-edeploy-srv>:80/cgi-bin/upload.py``
-- Or see uploaded ``hw`` files eDeploy server
+- Or see uploaded ``.hw`` files on the eDeploy server (in ``HWDIR`` directory)

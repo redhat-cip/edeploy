@@ -307,6 +307,7 @@ exit 1
 ''' % error)
     sys.stderr.write('%s\n' % error)
 
+
 def fatal_error(error):
     '''Report a shell script with the error message and log
     the message on stderr.'''
@@ -327,10 +328,14 @@ def main():
         except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
             return default
 
-    cfg_dir = os.path.normpath(config_get('SERVER', 'CONFIGDIR',
+    cfg_dir = os.path.normpath(config_get(
+            'SERVER', 'CONFIGDIR',
             os.path.join(os.path.dirname(os.path.realpath(__file__)),
                          '..',
                          'config'))) + '/'
+
+    hw_dir = os.path.normpath(config_get(
+            'SERVER', 'HWDIR', cfg_dir)) + '/'
 
     # parse hw file given in argument or passed to cgi script
     if len(sys.argv) == 3 and sys.argv[1] == '-f':
@@ -365,7 +370,7 @@ def main():
     atexit.register(cleanup)
 
     filename_and_macs = generate_filename_and_macs(hw_items)
-    save_hw(hw_items, filename_and_macs['sysname'], cfg_dir)
+    save_hw(hw_items, filename_and_macs['sysname'], hw_dir)
 
     use_pxemngr = (config_get('SERVER', 'USEPXEMNGR', False) == 'True')
     pxemngr_url = config_get('SERVER', 'PXEMNGRURL', None)

@@ -181,8 +181,8 @@ if /configure; then
 	fi
 
 	if [ -n "${METADATA_URL}" ]; then
-	    sed -i -e "s@GRUB_CMDLINE_LINUX_DEFAULT=.*@GRUB_CMDLINE_LINUX_DEFAULT=\"ds=nocloud-net\\\\;s=${METADATA_URL}\"@" $d/etc/default/grub
-	    BOOT_ARG=" ds=nocloud-net;s=${METADATA_URL}"
+        sed -i -e "s@GRUB_CMDLINE_LINUX_DEFAULT=\(.*\)@GRUB_CMDLINE_LINUX_DEFAULT=\1 \"ds=nocloud-net\\\\;s=${METADATA_URL}\"@" $d/etc/default/gru
+        BOOT_ARG=" ds=nocloud-net;s=${METADATA_URL}"
 	fi
 
 	mount -obind /dev $d/dev

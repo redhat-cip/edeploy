@@ -32,7 +32,65 @@ chroot ${dir} apt-get clean
 OS=$(chroot ${dir} lsb_release -i -s)
 RELEASE=$(chroot ${dir} lsb_release -r -s)
 
+configure_cloudinit () {
+    mkdir -p ${dir}/etc/cloud/cloud.cfg.d
+    rm -f ${dir}/etc/cloud/cloud.cfg
+    chroot ${dir} apt-get update
+    chroot ${dir} apt-get install -y cloud-init
+
+    cat > ${dir}/etc/cloud/cloud.cfg.d/90_dpkg.cfg << EOF
+# to update this file, run dpkg-reconfigure cloud-init
+datasource_list: [ NoCloud ]
+EOF
+
+    cat > ${dir}/etc/cloud/cloud.cfg <<EOF
+user: root
+disable_root: 0
+preserve_hostname: False
+
+cloud_init_modules:
+ - bootcmd
+ - resizefs
+ - set_hostname
+ - update_hostname
+ - update_etc_hosts
+ - ca-certs
+ - rsyslog
+ - ssh
+ - users-groups
+
+cloud_config_modules:
+ - mounts
+ - ssh-import-id
+ - locale
+ - set-passwords
+ - grub-dpkg
+ - apt-pipelining
+ - apt-update-upgrade
+ - landscape
+ - timezone
+ - puppet
+ - chef
+ - salt-minion
+ - mcollective
+ - disable-ec2-metadata
+ - runcmd
+ - byobu
+
+cloud_final_modules:
+ - rightscale_userdata
+ - scripts-per-once
+ - scripts-per-boot
+ - scripts-per-instance
+ - scripts-user
+ - keys-to-console
+ - phone-home
+ - final-message
+EOF
+}
+
 if [ $OS == "Ubuntu" ]; then
+ configure_cloudinit
  chroot ${dir} wget "http://www.opscode.com/chef/download-server?p=ubuntu&pv=${RELEASE}&m=x86_64&v=latest" -O /tmp/chef-server.deb
  chroot ${dir} dpkg -i /tmp/chef-server.deb
  mkdir -p ${dir}/etc/chef-server

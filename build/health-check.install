@@ -18,6 +18,7 @@
 
 SRC="$1"
 DST="$2"
+DST2="$2.tmp"
 IMG="$3"
 VERS="$4"
 
@@ -32,16 +33,20 @@ if [ ! -d "$SRC" -o -z "$DST" -o -z "$IMG" -o -z "$VERS" ]; then
    exit 1
 fi
 
+mkdir -p $DST2
+
 set -x
 set -e
 
-cp -f /etc/resolv.conf ${SRC}/etc
+rsync -aH --delete-before ${SRC}/ ${DST2}/
 
-chroot ${SRC} apt-get update
-chroot ${SRC} apt-get install -y --force-yes sysbench fio python-psutil netperf python-netaddr ethtool python-numpy sdparm
-chroot ${SRC} apt-get clean
+cp -f /etc/resolv.conf ${DST2}/etc
 
-install_ib_if_needed $ORIG $SRC
+chroot ${DST2} apt-get update
+chroot ${DST2} apt-get install -y --force-yes sysbench fio python-psutil netperf python-netaddr ethtool python-numpy sdparm
+chroot ${DST2} apt-get clean
+
+install_ib_if_needed $ORIG $DST2
 
 rsync -au --delete-excluded --delete --exclude /boot/ \
     --exclude 'vmlinuz*' \
@@ -64,7 +69,9 @@ rsync -au --delete-excluded --delete --exclude /boot/ \
     --exclude 'lib/modules/*/kernel/drivers/net/wireless/' \
     --exclude 'ocfs2*.ko' \
     --exclude '*.pyc' \
-    ${SRC}/ ${DST}
+    ${DST2/ ${DST}
+
+rm -rf ${DST2}
 
 cp -p init.common ${PYDIR}/detect.py ${PYDIR}/netdetect.py ${PYDIR}/health-check.py ${PYDIR}/hpacucli.py ${PYSERVERDIR}/matcher.py ${PYDIR}/diskinfo.py ${PYDIR}/ipmi.py ${PYDIR}/infiniband.py ${DST}/
 cp -p init.health ${DST}/init

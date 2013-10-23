@@ -49,7 +49,7 @@ MLX4_EN_LOAD=yes
 # Load IPoIB
 IPOIB_LOAD=yes
 # Enable IPoIB Connected Mode
-SET_IPOIB_CM=yes
+SET_IPOIB_CM=no
 # Enable Tuning
 RUN_SYSCTL=y
 EOF

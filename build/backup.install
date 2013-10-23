@@ -1,0 +1,18 @@
+#!/bin/bash
+
+src="$1"
+dir="$2"
+version="$3"
+
+ROLE=backup
+
+ORIG=$(cd $(dirname $0); pwd)
+
+. ${ORIG}/functions
+
+chroot ${dir} apt-get update
+chroot ${dir} apt-get install -y --force-yes wget openssh-server vlan bridge-utils vim
+chroot ${dir} apt-get clean
+
+echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
+echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

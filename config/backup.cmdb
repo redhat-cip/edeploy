@@ -1,0 +1,8 @@
+generate({'gateway': 'gateway',
+        'ip': 'ip',
+        'netmask': 'netmask',
+        'gateway-ipmi': 'gateway-ipmi',
+        'ip-ipmi': 'ip-ipmi',
+        'netmask-ipmi' : 'netmask-ipmi',
+        'hostname' : 'backup-X'
+})

@@ -1,0 +1,143 @@
+
+# -*- python -*-
+
+cli = hpacucli.Cli(debug=True)
+cli.launch()
+
+run('dmsetup remove_all || /bin/true')
+
+disk1 = var['disk1']
+disk2 = var['disk2']
+disk3 = var['disk3']
+disk4 = var['disk4']
+disk5 = var['disk5']
+disk6 = var['disk6']
+disk7 = var['disk7']
+disk8 = var['disk8']
+disk9 = var['disk9']
+disk10 = var['disk10']
+disk11 = var['disk11']
+disk12 = var['disk12']
+disk13 = var['disk13']
+disk14 = var['disk14']
+
+slot = 'slot=' + var['slot1']
+
+try:
+    print '# Removing disks'
+    cli.ctrl_delete(slot)
+except:
+    print 'Failed to delete array, maybe none already existing'
+    print 'We can continue to see if we can create everything else'
+
+print '# Creating System Array'
+sys = cli.ctrl_create_ld(slot, (disk1, disk2), raid='1')
+print "# -> %s" % sys
+print "Creating Partitions"
+run('dd if=/dev/zero of=%s bs=1M count=100' % sys)
+
+print '# Creating Data Array'
+data = cli.ctrl_create_ld(slot, (disk3, disk4, disk5, disk6, disk7, disk8, disk9, disk10, disk11, disk12, disk13, disk14), raid='1+0')
+print "# -> %s" % data
+print "Creating Partitions"
+run('dd if=/dev/zero of=%s bs=1M count=100' % data)
+
+run('hdparm -z %s' % sys)
+run('hdparm -z %s' % data)
+
+run('parted -a optimal --script %s mktable gpt' % sys)
+run('parted -a optimal --script %s mkpart primary 0%% 10' % sys)
+
+run('parted --script %s set 1 boot on' % sys)
+run('parted --script %s set 1 bios_grub on' % sys)
+
+run('parted -a optimal --script %s mkpart primary ext4 10 512 ' % sys)
+run('parted -a optimal --script %s mkpart primary ext4 513 24000 ' % sys)
+run('parted -a optimal --script %s mkpart primary ext4 24001 100%%' % sys)
+
+run('parted --script %s align-check optimal 1' % sys)
+run('parted --script %s align-check optimal 2' % sys)
+run('parted --script %s align-check optimal 3' % sys)
+run('parted --script %s align-check optimal 4' % sys)
+
+print "Creating FS"
+run('mkfs.ext4 -L boot -m 0 %s%d' % (sys,2))
+run('mkswap -f %s%d' % (sys,3))
+run('mkfs.ext4 -L slash -m 0 -O extent -E stride=32,stripe_width=32 %s%d' % (sys,4))
+run('mount LABEL=slash /chroot')
+run('mkdir /chroot/etc /chroot/boot')
+run('mount LABEL=boot /chroot/boot')
+fstab = open('/post_rsync/etc/fstab', 'a')
+fstab.write('''
+LABEL=boot /boot ext4 defaults 0 1
+/dev/sda3 none swap sw 0 0
+LABEL=slash / ext4 defaults 0 2
+''')
+
+open('/post_rsync/etc/network/interfaces', 'w').write('''
+auto lo
+iface lo inet loopback
+
+auto %(eth-pub2)s
+iface %(eth-pub2)s inet static
+    address %(ip)s
+    netmask %(netmask)s
+    gateway %(gateway)s
+''' % var)
+
+open('/post_rsync/etc/hostname','w').write('''
+%(hostname)s
+''' % var)
+
+open('/post_rsync/etc/init/ttyS1.conf', 'w').write('''
+# ttyS1 - getty
+#
+# This service maintains a getty on ttyS1 from the point the system is
+# started until it is shut down again.
+
+start on stopped rc or RUNLEVEL=[2345]
+stop on runlevel [!2345]
+
+respawn
+exec /sbin/getty -L 115200 ttyS1 vt102
+''')
+
+open('/post_rsync/etc/default/grub', 'w').write('''
+# If you change this file, run 'update-grub' afterwards to update
+# /boot/grub/grub.cfg.
+# For full documentation of the options in this file, see:
+#   info -f grub -n 'Simple configuration'
+
+GRUB_DEFAULT=0
+#GRUB_HIDDEN_TIMEOUT=0
+#GRUB_HIDDEN_TIMEOUT_QUIET=true
+GRUB_TIMEOUT=10
+GRUB_DISTRIBUTOR=`lsb_release -i -s 2> /dev/null || echo Debian`
+GRUB_CMDLINE_LINUX_DEFAULT=
+GRUB_CMDLINE_LINUX="console=tty0 console=ttyS1,115200n8"
+
+# Uncomment to enable BadRAM filtering, modify to suit your needs
+# This works with Linux (no patch required) and with any kernel that obtains
+# the memory map information from GRUB (GNU Mach, kernel of FreeBSD ...)
+#GRUB_BADRAM="0x01234567,0xfefefefe,0x89abcdef,0xefefefef"
+
+# Uncomment to disable graphical terminal (grub-pc only)
+GRUB_TERMINAL="console serial"
+GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=0 --word=8 --parity=no --stop=1"
+
+# The resolution used on graphical terminal
+# note that you can use only modes which your graphic card supports via VBE
+# you can see them in real GRUB with the command `vbeinfo'
+#GRUB_GFXMODE=640x480
+
+# Uncomment if you don't want GRUB to pass "root=UUID=xxx" parameter to Linux
+#GRUB_DISABLE_LINUX_UUID=true
+
+# Uncomment to disable generation of recovery mode menu entries
+#GRUB_DISABLE_RECOVERY="true"
+
+# Uncomment to get a beep at grub start
+#GRUB_INIT_TUNE="480 440 1"
+''')
+
+set_role('backup', 'D7-1.0.1', sys)

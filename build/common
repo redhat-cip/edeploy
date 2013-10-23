@@ -17,29 +17,137 @@ is_deb_distro() {
     return $DEB
 }
 
+prevent_services_to_run() {
+    if [ x"$2" = x"on" ]; then
+cat > ${1}/usr/sbin/policy-rc.d <<EOF
+#!/bin/sh
+exit 101
+EOF
+        chmod 755 ${1}/usr/sbin/policy-rc.d || exiting
+    else
+        if [ x"$1" = x"off" ]; then
+            rm -f $$1/usr/sbin/policy-rc.d || exiting
+        fi
+    fi
+}
+
+install_mellanox() {
+RELEASE=$1
+CHROOT=$2
+URL=http://www.mellanox.com/downloads/ofed/MLNX_OFED-2.0-3.0.0/
+FILE=
+KVER=
+PACKAGES=
+case $RELEASE in
+    precise)
+    KVER=3.5.0-42
+    FILE="MLNX_OFED_LINUX-2.0-3.0.0-ubuntu12.04-x86_64.tgz"
+    URL="$URL/$FILE"
+    # Thoses packages will be installed by mellanox but one by one ....
+    # Let's install them at once to save time
+    PACKAGES="autotools-dev autoconf libtool automake1.10 automake dkms debhelper tcl tcl8.4 chrpath swig graphviz tcl-dev tcl8.4-dev tk-dev tk8.4-dev bison flex dpatch libcurl4-gnutls-dev python-libxml2 libvirt-bin"
+    PACKAGES="$PACKAGES linux-image-$KVER-generic linux-headers-$KVER"
+    ;;
+    *)
+    ;;
+esac
+
+# As we are chroot, we have to prevent some services to be restarted by packages
+# This prevent failures
+prevent_services_to_run $CHROOT on
+
+for dir in /proc /dev /sys /dev/pts /run; do
+    mount $dir $CHROOT/$dir -o bind || echo "Failed at binding $dir"
+done
+chroot $CHROOT apt-get -y --force-yes install $PACKAGES
+
+wget -q -N $URL
+cp $FILE $CHROOT
+cd $CHROOT
+tar -xf $FILE
+cd -
+
+# we need to patch the install script not to check if kernel modules are installed
+# at boot time dkms will recompile them on the real host
+cp sources/mlnx.patch $CHROOT
+
+# We need to perform many task in the chroot, let's make a script for that
+cat > $CHROOT/doit.sh << EOF
+# To avoid dkms from failing, let's insure we have the headers well installed
+cd /lib/modules/*$KVER*
+ln -sf /usr/src/linux-headers-$KVER/ build
+cd -
+
+# Let's prevent dkms from building modules right now
+sed -i 's/^build_modules().*{.*/build_modules() { return/g' /usr/sbin/dkms
+
+DIRNAME=$(echo $FILE | sed -e 's/\.tgz//g')
+cd \$DIRNAME
+patch -p1 < /mlnx.patch
+rm /mlnx.patch
+# Let's fake the kernel version to make mlnxo happy
+sed -i 's/\`uname -r\`/"$KVER-generic"/' ./mlnxofedinstall
+# Let's install mellanox stuff
+echo y | ./mlnxofedinstall
+cd -
+
+rm -rf \$DIRNAME*
+#revert dkms changes to let building occuring are reboot time
+sed -i 's/^build_modules().*{.*/build_modules() {/g' /usr/sbin/dkms
+EOF
+
+chmod +x $CHROOT/doit.sh
+chroot "$CHROOT" /doit.sh
+# Let's revert our change, we now can run services
+prevent_services_to_run $CHROOT off
+
+#Let's tweak the grub setup to boot the proper kernel (3.5) with intel_iommu for SR_IOV
+#Grub will be updates/installed when eDeploy will install it on the real server
+sed -i 's/GRUB_DEFAULT=.*/GRUB_DEFAULT=2/' $CHROOT/etc/default/grub
+sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="intel_iommu=on"' $CHROOT/etc/default/grub
+
+for dir in /proc /dev/pts /sys /dev/ /run; do
+    umount $CHROOT/$dir
+done
+
+rm -f $CHROOT/doit.sh
+}
+
 
 install_ib_if_needed() {
     ORIG=$1
     CHROOT=$2
+    RELEASE=$(chroot "$CHROOT" lsb_release -sc)
     if [ "$ENABLE_IB" = "y" ]; then
-        bash ${ORIG}/infiniband $CHROOT
-        PACKAGES="infiniband-diags"
-        DEB=is_deb_distro
-        if [ -n "$DEB" ]; then
-            chroot "$CHROOT" apt-get -y install $PACKAGES
-            RELEASE=$(chroot "$CHROOT" lsb_release -sc)
-            if [ "$RELEASE" = "precise" ]; then
-                # as per https://bugs.launchpad.net/ubuntu/+source/libmlx4/+bug/1037107
-                # ubuntu precise needs a package to be backported
-                LIBMLX=libmlx4-1_1.0.4-1_amd64.deb
-                cd $CHROOT;
-                    wget http://us.archive.ubuntu.com/ubuntu/ubuntu/pool/universe/libm/libmlx4/$LIBMLX
-                cd -
-                chroot "$CHROOT" dpkg -i /$LIBMLX
-                rm -rf $CHROOT/$LIBMLX
-            fi
+        if [ "$ENABLE_MELLANOX" = "y" ]; then
+            case $RELEASE in
+                precise)
+                    install_mellanox $RELEASE $CHROOT
+                ;;
+                *)
+                echo "Mellanox configuraiton is not available yet for $RELEASE"
+                return
+                ;;
+            esac
         else
-            chroot "$CHROOT" yum --nogpgcheck install -y $PACKAGES
+            bash ${ORIG}/infiniband $CHROOT
+            PACKAGES="infiniband-diags"
+            DEB=is_deb_distro
+            if [ -n "$DEB" ]; then
+                chroot "$CHROOT" apt-get -y install $PACKAGES
+               if [ "$RELEASE" = "precise" ]; then
+                    # as per https://bugs.launchpad.net/ubuntu/+source/libmlx4/+bug/1037107
+                    # ubuntu precise needs a package to be backported
+                    LIBMLX=libmlx4-1_1.0.4-1_amd64.deb
+                    cd $CHROOT;
+                        wget http://us.archive.ubuntu.com/ubuntu/ubuntu/pool/universe/libm/libmlx4/$LIBMLX
+                    cd -
+                    chroot "$CHROOT" dpkg -i /$LIBMLX
+                    rm -rf $CHROOT/$LIBMLX
+                fi
+            else
+                chroot "$CHROOT" yum --nogpgcheck install -y $PACKAGES
+            fi
         fi
     fi
 }

@@ -42,6 +42,7 @@ import time
 
 import matcher
 
+
 def log(msg):
     'Error Logging.'
     sys.stderr.write('eDeploy: ' + msg + '\n')

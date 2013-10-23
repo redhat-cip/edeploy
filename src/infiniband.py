@@ -20,9 +20,11 @@
 from commands import getoutput as cmd
 import re
 
+
 def ib_card_drv():
     '''Return an array of IB device (ex: ['mlx4_0']).'''
     return [cmd('ibstat -l')]
+
 
 # {'node_guid': '0x0002c90300ea6840', 'sys_guid': '0x0002c90300ea6843',
 # 'fw_ver': '2.11.500', 'device_type': 'MT4099', 'hw_ver': '0', 'nb_ports': '2'}
@@ -30,7 +32,7 @@ def ib_global_info(card_drv):
     '''Return global info of a IB card in a python dict. (take in argument a
     card_drv (ex: mlx4_0)).'''
     global_card_info = {}
-    global_info = cmd('ibstat %s -s' %card_drv)
+    global_info = cmd('ibstat %s -s' % card_drv)
     for line in global_info.split('\n'):
         re_dev = re.search('CA type: (.*)', line)
         if re_dev is not None:
@@ -51,6 +53,7 @@ def ib_global_info(card_drv):
         if re_sys_guid is not None:
             global_card_info['sys_guid'] = re_sys_guid.group(1)
     return global_card_info
+
 
 # {'base_lid': '0', 'port_guid': '0x0002c90300ea6841', 'rate': '40',
 # 'physical_state': 'Down', 'sm_lid': '0', 'state': 'Down', 'lmc': '0'}

@@ -132,7 +132,7 @@ stress-http:
 	cd ../tests; ./run_kvm.sh $(TOP) stress-http $(LOAD) $(HTTP)
 
 benchmark $(INST)/benchmark.done: benchmark.install $(INST)/base.done
-	./benchmark.install $(INST)/base $(INST)/benchmark $(VERS)
+	ENABLE_IB=y ENABLE_MELLANOX=$(ENABLE_MELLANOX) ./benchmark.install $(INST)/base $(INST)/benchmark $(VERS)
 	touch $(INST)/benchmark.done
 
 dist:

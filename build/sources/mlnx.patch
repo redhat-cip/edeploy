@@ -1,0 +1,26 @@
+--- MLNX_OFED_LINUX-2.0-3.0.0-ubuntu12.04-x86_64/mlnxofedinstall.orig	2013-10-23 20:13:28.000000000 +0000
++++ MLNX_OFED_LINUX-2.0-3.0.0-ubuntu12.04-x86_64/mlnxofedinstall	2013-10-23 20:17:49.713574998 +0000
+@@ -811,23 +811,6 @@
+ 				ex "$DPKG -i $DPKG_FLAGS $utils_deb" if ($utils_deb);
+ 			}
+ 		}
+-		# verify that kernel packages were successfuly installed
+-		if ($kernel_packages{"$name"}) {
+-			for my $object (@{$kernel_packages{"$name"}{"ko"}}) {
+-				my $file = `$MODINFO $object 2> /dev/null | grep filename | cut -d ":" -f 2 | sed -s 's/\\s//g'`;
+-				chomp $file;
+-				my $origin;
+-				if (-f $file) {
+-					$origin = `$DPKG -S $file 2> /dev/null | cut -d ":" -f 1`;
+-					chomp $origin;
+-				}
+-				if (not $file or $origin =~ /$kernel/) {
+-					print_red "\n$name installation failed!\nRemoving newly installed packages...";
+-					ex "/usr/sbin/ofed_uninstall.sh --force";
+-					exit 1;
+-				}
+-			}
+-		}
+ 	}
+ }
+ 

@@ -141,7 +141,8 @@ else
     echo "OS or Release not supported"
     exit 1
 fi
-
+chroot ${dir} wget http://apt.puppetlabs.com/puppetlabs-release-$RELEASE.deb
+chroot ${dir} dpkg -i puppetlabs-release-$RELEASE.deb
 chroot ${dir} apt-get update
 chroot ${dir} apt-get install -y --force-yes swift-proxy memcached puppet augeas-tools keystone ceilometer-api ceilometer-agent-central ceilometer-collector mysql-server mongodb-10gen
 

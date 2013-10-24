@@ -90,7 +90,10 @@ install_puppet () {
  chroot ${dir} wget http://apt.puppetlabs.com/puppetlabs-release-$CODENAME.deb
  chroot ${dir} dpkg -i puppetlabs-release-$CODENAME.deb
  chroot ${dir} apt-get update
- chroot ${dir} apt-get install -y puppetmaster puppet augeas-tools mysql-server libmysql-ruby libactiverecord-ruby git
+ chroot ${dir} apt-get install -y puppetmaster puppetmaster-passenger puppet augeas-tools mysql-server libmysql-ruby libactiverecord-ruby git
+ chroot ${dir} a2dissite puppetmaster
+ chroot ${dir} service apache2 reload
+ chroot ${dir} service puppetmaster restart
 }
 
 OS=$(chroot ${dir} lsb_release -i -s)

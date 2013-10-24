@@ -134,6 +134,8 @@ else
     exit 1
 fi
 
+chroot ${dir} wget http://apt.puppetlabs.com/puppetlabs-release-$RELEASE.deb
+chroot ${dir} dpkg -i puppetlabs-release-$RELEASE.deb
 chroot ${dir} apt-get update
 chroot ${dir} apt-get install -y --force-yes swift-account swift-container swift-object xfsprogs puppet augeas-tools
 

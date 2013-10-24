@@ -56,8 +56,8 @@ esac
 # This prevent failures
 prevent_services_to_run $CHROOT on
 
-for dir in /proc /dev /sys /dev/pts /run; do
-    mount $dir $CHROOT/$dir -o bind || echo "Failed at binding $dir"
+for mydir in /proc /dev /sys /dev/pts /run; do
+    mount $mydir $CHROOT/$mydir -o bind || echo "Failed at binding $mydir"
 done
 chroot $CHROOT apt-get -y --force-yes install $PACKAGES
 
@@ -106,8 +106,8 @@ prevent_services_to_run $CHROOT off
 sed -i 's/GRUB_DEFAULT=.*/GRUB_DEFAULT=2/g' $CHROOT/etc/default/grub
 sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="intel_iommu=on"/g' $CHROOT/etc/default/grub
 
-for dir in /proc /dev/pts /sys /dev/ /run; do
-    umount $CHROOT/$dir
+for mydir in /proc /dev/pts /sys /dev/ /run; do
+    umount $CHROOT/$mydir
 done
 
 rm -f $CHROOT/doit.sh

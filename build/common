@@ -37,16 +37,20 @@ CHROOT=$2
 URL=http://www.mellanox.com/downloads/ofed/MLNX_OFED-2.0-3.0.0/
 FILE=
 KVER=
+KVER_TO_REMOVE=
 PACKAGES=
 case $RELEASE in
     precise)
     KVER=3.5.0-42
+    KVER_TO_REMOVE=3.8.0-32
     FILE="MLNX_OFED_LINUX-2.0-3.0.0-ubuntu12.04-x86_64.tgz"
     URL="$URL/$FILE"
     # Thoses packages will be installed by mellanox but one by one ....
     # Let's install them at once to save time
-    PACKAGES="autotools-dev autoconf libtool automake1.10 automake dkms debhelper tcl tcl8.4 chrpath swig graphviz tcl-dev tcl8.4-dev tk-dev tk8.4-dev bison flex dpatch libcurl4-gnutls-dev python-libxml2 libvirt-bin"
-    PACKAGES="$PACKAGES linux-image-$KVER-generic linux-headers-$KVER"
+    PACKAGES="autotools-dev autoconf libtool automake1.10 automake debhelper tcl tcl8.4 chrpath swig graphviz tcl-dev tcl8.4-dev tk-dev tk8.4-dev bison flex dpatch libcurl4-gnutls-dev python-libxml2 libvirt-bin"
+    PACKAGES="$PACKAGES linux-image-$KVER-generic linux-headers-$KVER-generic"
+    # We shall only keep the final kernel unless kernel-mft-dkms fails at compiling
+    PACKAGES_TO_REMOVE="linux-image-$KVER_TO_REMOVE-generic linux-headers-$KVER_TO_REMOVE-generic linux-headers-$KVER_TO_REMOVE"
     ;;
     *)
     ;;
@@ -59,6 +63,7 @@ prevent_services_to_run $CHROOT on
 for mydir in /proc /dev /sys /dev/pts /run; do
     mount $mydir $CHROOT/$mydir -o bind || echo "Failed at binding $mydir"
 done
+chroot $CHROOT apt-get  -y --force-yes purge $PACKAGES_TO_REMOVE
 chroot $CHROOT apt-get -y --force-yes install $PACKAGES
 
 wget -q -N $URL
@@ -67,33 +72,35 @@ cd $CHROOT
 tar -xf $FILE
 cd -
 
-# we need to patch the install script not to check if kernel modules are installed
-# at boot time dkms will recompile them on the real host
-cp sources/mlnx.patch $CHROOT
-
 # We need to perform many task in the chroot, let's make a script for that
 cat > $CHROOT/doit.sh << EOF
 # To avoid dkms from failing, let's insure we have the headers well installed
-cd /lib/modules/*$KVER*
-ln -sf /usr/src/linux-headers-$KVER/ build
+cd /lib/modules/
+    ln -sf $KVER* `uname -r`
+    rm -rf $KVER_TO_REMOVE*
 cd -
 
-# Let's prevent dkms from building modules right now
-sed -i 's/^build_modules().*{.*/build_modules() { return/g' /usr/sbin/dkms
+cd /lib/modules/$KVER*
+    ln -sf build source
+    ln -sf x86 build/arch/amd64
+cd -
 
 DIRNAME=$(echo $FILE | sed -e 's/\.tgz//g')
 cd \$DIRNAME
-patch -p1 < /mlnx.patch
-rm /mlnx.patch
-# Let's fake the kernel version to make mlnxo happy
-sed -i 's/\`uname -r\`/"$KVER-generic"/' ./mlnxofedinstall
+# Avoid any failure as we are not interactive
+export DEBIAN_FRONTEND=noninteractive
+export LANG=en_US.UTF-8
+export LC_ALL=C
+unset ARCH
+
+# Disable uninstall to ease debugging
+#sed -i 's|.*ex "/usr/sbin/ofed_uninstall.sh --force"*|#ex "/usr/sbin/ofed_uninstall.sh --force";|g' ./mlnxofedinstall
+
 # Let's install mellanox stuff
-echo y | ./mlnxofedinstall
+echo y | ./mlnxofedinstall --basic -vvv
 cd -
 
 rm -rf \$DIRNAME*
-#revert dkms changes to let building occuring are reboot time
-sed -i 's/^build_modules().*{.*/build_modules() {/g' /usr/sbin/dkms
 EOF
 
 chmod +x $CHROOT/doit.sh
@@ -101,9 +108,8 @@ chroot "$CHROOT" /doit.sh
 # Let's revert our change, we now can run services
 prevent_services_to_run $CHROOT off
 
-#Let's tweak the grub setup to boot the proper kernel (3.5) with intel_iommu for SR_IOV
+#Let's tweak the grub setup to boot the proper kernel with intel_iommu for SR_IOV
 #Grub will be updates/installed when eDeploy will install it on the real server
-sed -i 's/GRUB_DEFAULT=.*/GRUB_DEFAULT=2/g' $CHROOT/etc/default/grub
 sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="intel_iommu=on"/g' $CHROOT/etc/default/grub
 
 for mydir in /proc /dev/pts /sys /dev/ /run; do

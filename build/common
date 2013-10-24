@@ -103,8 +103,8 @@ prevent_services_to_run $CHROOT off
 
 #Let's tweak the grub setup to boot the proper kernel (3.5) with intel_iommu for SR_IOV
 #Grub will be updates/installed when eDeploy will install it on the real server
-sed -i 's/GRUB_DEFAULT=.*/GRUB_DEFAULT=2/' $CHROOT/etc/default/grub
-sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="intel_iommu=on"' $CHROOT/etc/default/grub
+sed -i 's/GRUB_DEFAULT=.*/GRUB_DEFAULT=2/g' $CHROOT/etc/default/grub
+sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="intel_iommu=on"/g' $CHROOT/etc/default/grub
 
 for dir in /proc /dev/pts /sys /dev/ /run; do
     umount $CHROOT/$dir

@@ -72,9 +72,9 @@ devstack $(INST)/devstack.done: devstack.install $(INST)/cloud.done
 	./devstack.install $(INST)/cloud $(INST)/devstack $(DIST) $(VERS)
 	touch $(INST)/devstack.done
 
-openstack $(INST)/openstack.done: openstack.install $(INST)/base.done
-	./openstack.install $(INST)/base $(INST)/openstack $(VERS)
-	touch $(INST)/openstack.done
+openstack-common $(INST)/cloud.done: openstack-common.install $(INST)/base.done
+	./openstack-common.install $(INST)/base $(INST)/openstack-common $(VERS)
+	touch $(INST)/openstack-common.done
 
 openstack-controller $(INST)/openstack-controller.done: openstack-controller.install $(INST)/base.done
 	./openstack-controller.install $(INST)/base $(INST)/openstack-controller $(VERS)
@@ -84,12 +84,12 @@ openstack-compute $(INST)/openstack-compute.done: openstack-compute.install $(IN
 	./openstack-compute.install $(INST)/base $(INST)/openstack-compute $(VERS)
 	touch $(INST)/openstack-compute.done
 
-openstack-swift-proxy $(INST)/openstack-swift-proxy.done: openstack-swift-proxy.install $(INST)/base.done
-	./openstack-swift-proxy.install $(INST)/base $(INST)/openstack-swift-proxy $(VERS)
+openstack-swift-proxy $(INST)/openstack-swift-proxy.done: openstack-swift-proxy.install $(INST)/openstack-common.done
+	./openstack-swift-proxy.install $(INST)/openstack-common $(INST)/openstack-swift-proxy $(VERS)
 	touch $(INST)/openstack-swift-proxy.done
 
-openstack-swift-storage $(INST)/openstack-swift-storage.done: openstack-swift-storage.install $(INST)/base.done
-	./openstack-swift-storage.install $(INST)/base $(INST)/openstack-swift-storage $(VERS)
+openstack-swift-storage $(INST)/openstack-swift-storage.done: openstack-swift-storage.install $(INST)/openstack-common.done
+	./openstack-swift-storage.install $(INST)/openstack-common $(INST)/openstack-swift-storage $(VERS)
 	touch $(INST)/openstack-swift-storage.done
 
 mysql $(INST)/mysql.done: mysql.install $(INST)/base.done

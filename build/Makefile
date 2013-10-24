@@ -72,7 +72,7 @@ devstack $(INST)/devstack.done: devstack.install $(INST)/cloud.done
 	./devstack.install $(INST)/cloud $(INST)/devstack $(DIST) $(VERS)
 	touch $(INST)/devstack.done
 
-openstack-common $(INST)/cloud.done: openstack-common.install $(INST)/base.done
+openstack-common $(INST)/openstack-common.done: openstack-common.install $(INST)/base.done
 	./openstack-common.install $(INST)/base $(INST)/openstack-common $(VERS)
 	touch $(INST)/openstack-common.done
 

@@ -101,6 +101,8 @@ echo y | ./mlnxofedinstall --basic -vvv
 cd -
 
 rm -rf \$DIRNAME*
+# we dont' need to keep this hack persistent
+rm -f /lib/modules/`uname -r`
 EOF
 
 chmod +x $CHROOT/doit.sh

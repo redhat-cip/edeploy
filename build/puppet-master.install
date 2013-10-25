@@ -35,8 +35,8 @@ CODENAME=$(chroot ${dir} lsb_release -r -s)
 install_puppet () {
 
 if [ $OS == "Debian" ] || [ $RELEASE == "wheezy" ]; then
-  chroot ${dir} wget http://apt.puppetlabs.com/puppetlabs-release-$CODENAME.deb
-  chroot ${dir} dpkg -i puppetlabs-release-$CODENAME.deb
+  chroot ${dir} wget http://apt.puppetlabs.com/puppetlabs-release-$RELEASE.deb
+  chroot ${dir} dpkg -i puppetlabs-release-$RELEASE.deb
   chroot ${dir} apt-get update
   chroot ${dir} apt-get install -y puppetmaster puppetmaster-passenger puppet augeas-tools mysql-server libmysql-ruby libactiverecord-ruby git cloud-init
   chroot ${dir} a2dissite puppetmaster

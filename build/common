@@ -41,14 +41,14 @@ KVER_TO_REMOVE=
 PACKAGES=
 case $RELEASE in
     precise)
-    KVER=3.5.0-42
+    KVER=3.5.0-42-generic
     KVER_TO_REMOVE=3.8.0-32
     FILE="MLNX_OFED_LINUX-2.0-3.0.0-ubuntu12.04-x86_64.tgz"
     URL="$URL/$FILE"
     # Thoses packages will be installed by mellanox but one by one ....
     # Let's install them at once to save time
     PACKAGES="autotools-dev autoconf libtool automake1.10 automake debhelper tcl tcl8.4 chrpath swig graphviz tcl-dev tcl8.4-dev tk-dev tk8.4-dev bison flex dpatch libcurl4-gnutls-dev python-libxml2 libvirt-bin"
-    PACKAGES="$PACKAGES linux-image-$KVER-generic linux-headers-$KVER-generic"
+    PACKAGES="$PACKAGES linux-image-$KVER linux-headers-$KVER"
     # We shall only keep the final kernel unless kernel-mft-dkms fails at compiling
     PACKAGES_TO_REMOVE="linux-image-$KVER_TO_REMOVE-generic linux-headers-$KVER_TO_REMOVE-generic linux-headers-$KVER_TO_REMOVE"
     ;;
@@ -76,11 +76,17 @@ cd -
 cat > $CHROOT/doit.sh << EOF
 # To avoid dkms from failing, let's insure we have the headers well installed
 cd /lib/modules/
-    ln -sf $KVER* `uname -r`
+    ln -sf $KVER `uname -r`
     rm -rf $KVER_TO_REMOVE*
+
+    #Mellanox is installing dkms drivers but they do conflict
+    #with the existing ones. So let's get them out of the tree.
+    mkdir -p $KVER-obsolete/kernel/drivers/net/ethernet/mellanox
+    mv $KVER/kernel/drivers/infiniband $KVER-obsolete/kernel/drivers
+    mv $KVER/kernel/drivers/net/ethernet/mellanox/ $KVER-obsolete/kernel/drivers/net/ethernet/mellanox/
 cd -
 
-cd /lib/modules/$KVER*
+cd /lib/modules/$KVER
     ln -sf build source
     ln -sf x86 build/arch/amd64
 cd -
@@ -103,6 +109,8 @@ cd -
 rm -rf \$DIRNAME*
 # we dont' need to keep this hack persistent
 rm -f /lib/modules/`uname -r`
+# Be sure that the modules dependencies are well computed
+depmod -a $KVER
 EOF
 
 chmod +x $CHROOT/doit.sh

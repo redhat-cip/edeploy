@@ -29,6 +29,8 @@ chroot ${dir} apt-get update
 chroot ${dir} apt-get install -y --force-yes openssh-server iptables build-essential wget
 chroot ${dir} apt-get clean
 
+install_ib_if_needed $ORIG $dir
+
 OS=$(chroot ${dir} lsb_release -i -s)
 RELEASE=$(chroot ${dir} lsb_release -c -s)
 

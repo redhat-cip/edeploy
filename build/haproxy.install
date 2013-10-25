@@ -31,6 +31,8 @@ chroot ${dir} apt-get install -y --force-yes wget openssh-server python-software
 chroot ${dir} apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db
 chroot ${dir} apt-get clean
 
+install_ib_if_needed $ORIG $dir
+
 OS=$(chroot ${dir} lsb_release -i -s)
 RELEASE=$(chroot ${dir} lsb_release -c -s)
 

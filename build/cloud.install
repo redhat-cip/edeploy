@@ -26,6 +26,8 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
+install_ib_if_needed $ORIG $dir
+
 if grep -q debian.org ${dir}/etc/apt/sources.list; then
     # for cloud-init
     cat > ${dir}/etc/apt/sources.list.d/backport.list <<EOF

@@ -65,47 +65,47 @@ base $(INST)/base.done: base.install policy-rc.d edeploy
 	touch $(INST)/base.done
 
 cloud $(INST)/cloud.done: cloud.install $(INST)/base.done
-	./cloud.install $(INST)/base $(INST)/cloud $(VERS)
+	ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ./cloud.install $(INST)/base $(INST)/cloud $(VERS)
 	touch $(INST)/cloud.done
 
 devstack $(INST)/devstack.done: devstack.install $(INST)/cloud.done
-	./devstack.install $(INST)/cloud $(INST)/devstack $(DIST) $(VERS)
+	ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ./devstack.install $(INST)/cloud $(INST)/devstack $(DIST) $(VERS)
 	touch $(INST)/devstack.done
 
 openstack-common $(INST)/openstack-common.done: openstack-common.install $(INST)/base.done
-	./openstack-common.install $(INST)/base $(INST)/openstack-common $(VERS)
+	ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ./openstack-common.install $(INST)/base $(INST)/openstack-common $(VERS)
 	touch $(INST)/openstack-common.done
 
 openstack-controller $(INST)/openstack-controller.done: openstack-controller.install $(INST)/base.done
-	./openstack-controller.install $(INST)/base $(INST)/openstack-controller $(VERS)
+	ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ./openstack-controller.install $(INST)/base $(INST)/openstack-controller $(VERS)
 	touch $(INST)/openstack-controller.done
 
 openstack-compute $(INST)/openstack-compute.done: openstack-compute.install $(INST)/base.done
-	./openstack-compute.install $(INST)/base $(INST)/openstack-compute $(VERS)
+	ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ./openstack-compute.install $(INST)/base $(INST)/openstack-compute $(VERS)
 	touch $(INST)/openstack-compute.done
 
 openstack-swift-proxy $(INST)/openstack-swift-proxy.done: openstack-swift-proxy.install $(INST)/openstack-common.done
-	./openstack-swift-proxy.install $(INST)/openstack-common $(INST)/openstack-swift-proxy $(VERS)
+	ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ./openstack-swift-proxy.install $(INST)/openstack-common $(INST)/openstack-swift-proxy $(VERS)
 	touch $(INST)/openstack-swift-proxy.done
 
 openstack-swift-storage $(INST)/openstack-swift-storage.done: openstack-swift-storage.install $(INST)/openstack-common.done
-	./openstack-swift-storage.install $(INST)/openstack-common $(INST)/openstack-swift-storage $(VERS)
+	ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ./openstack-swift-storage.install $(INST)/openstack-common $(INST)/openstack-swift-storage $(VERS)
 	touch $(INST)/openstack-swift-storage.done
 
 mysql $(INST)/mysql.done: mysql.install $(INST)/base.done
-	./mysql.install $(INST)/base $(INST)/mysql $(VERS)
+	ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ./mysql.install $(INST)/base $(INST)/mysql $(VERS)
 	touch $(INST)/mysql.done
 
 galera $(INST)/galera.done: galera.install $(INST)/base.done
-	./galera.install $(INST)/base $(INST)/galera $(VERS)
+	ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ./galera.install $(INST)/base $(INST)/galera $(VERS)
 	touch $(INST)/galera.done
 
 haproxy $(INST)/haproxy.done: haproxy.install $(INST)/base.done
-	./haproxy.install $(INST)/base $(INST)/haproxy $(VERS)
+	ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ./haproxy.install $(INST)/base $(INST)/haproxy $(VERS)
 	touch $(INST)/haproxy.done
 
 ceph $(INST)/ceph.done: ceph.install $(INST)/base.done
-	./ceph.install $(INST)/base $(INST)/ceph $(VERS)
+	ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ./ceph.install $(INST)/base $(INST)/ceph $(VERS)
 	touch $(INST)/ceph.done
 
 docker $(INST)/docker.done: docker.install $(INST)/base.done

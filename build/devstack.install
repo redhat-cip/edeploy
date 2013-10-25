@@ -27,6 +27,8 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
+install_ib_if_needed $ORIG $dir
+
 echo "Preparing package sources for $dist"
 
 if [ $dist == "wheezy" ]; then

@@ -15,32 +15,68 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+#
+# Puppetmaster node (passenger ready)
+#
 
 src="$1"
 dir="$2"
 version="$3"
-ROLE=puppet-master
+ROLE=openstack-common
 
 ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
-chroot ${dir} apt-get update
-chroot ${dir} apt-get install -y --force-yes openssh-server iptables build-essential wget
-chroot ${dir} apt-get clean
+OS=$(chroot ${dir} lsb_release -i -s)
+RELEASE=$(chroot ${dir} lsb_release -c -s)
+CODENAME=$(chroot ${dir} lsb_release -r -s)
+
+install_puppet () {
+
+if [ $OS == "Debian" ] || [ $RELEASE == "wheezy" ]; then
+  chroot ${dir} wget http://apt.puppetlabs.com/puppetlabs-release-$CODENAME.deb
+  chroot ${dir} dpkg -i puppetlabs-release-$CODENAME.deb
+  chroot ${dir} apt-get update
+  chroot ${dir} apt-get install -y puppetmaster puppetmaster-passenger puppet augeas-tools mysql-server libmysql-ruby libactiverecord-ruby git cloud-init
+  chroot ${dir} a2dissite puppetmaster
+  chroot ${dir} service apache2 reload
+  chroot ${dir} service puppetmaster restart
+
+elif [ $OS == "CentOS" ] && [ $CODENAME == "6.4" ]; then
+  chroot ${dir} rpm -ivh http://yum.puppetlabs.com/el/6/products/i386/puppetlabs-release-6-7.noarch.rpm
+  chroot ${dir} yum install -y http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+  chroot ${dir} yum install -y puppet-server mysql-server git cloud-init augeas
+  chroot ${dir} yum remove puppetlabs-release-6-7.noarch
+
+else
+  echo "OS or Release not supported"
+  exit 1
+fi
+
+}
 
 configure_cloudinit () {
-    chroot ${dir} apt-get update
-    mkdir -p ${dir}/etc/cloud/cloud.cfg.d
-    rm -f ${dir}/etc/cloud/cloud.cfg
-    chroot ${dir} apt-get install -y cloud-init
 
-    cat > ${dir}/etc/cloud/cloud.cfg.d/90_dpkg.cfg << EOF
-# to update this file, run dpkg-reconfigure cloud-init
+mkdir -p ${dir}/etc/cloud/cloud.cfg.d
+rm -f ${dir}/etc/cloud/cloud.cfg
+
+if [ $OS == "Debian" ] || [ $OS == "Ubuntu" ]; then
+  chroot ${dir} apt-get install cloud-init
+
+elif [ $OS == "CentOS" ] && [ $CODENAME == "6.4" ]; then
+  chroot ${dir} yum install -y cloud-init
+
+else
+  echo "OS or Release not supported"
+  exit 1
+fi
+
+cat > ${dir}/etc/cloud/cloud.cfg.d/90_dpkg.cfg << EOF
 datasource_list: [ NoCloud ]
 EOF
 
-    cat > ${dir}/etc/cloud/cloud.cfg <<EOF
+cat > ${dir}/etc/cloud/cloud.cfg <<EOF
 user: root
 disable_root: 0
 preserve_hostname: False
@@ -86,35 +122,8 @@ cloud_final_modules:
 EOF
 }
 
-install_puppet () {
- chroot ${dir} wget http://apt.puppetlabs.com/puppetlabs-release-$CODENAME.deb
- chroot ${dir} dpkg -i puppetlabs-release-$CODENAME.deb
- chroot ${dir} apt-get update
- chroot ${dir} apt-get install -y puppetmaster puppetmaster-passenger puppet augeas-tools mysql-server libmysql-ruby libactiverecord-ruby git
- chroot ${dir} a2dissite puppetmaster
- chroot ${dir} service apache2 reload
- chroot ${dir} service puppetmaster restart
-}
-
-OS=$(chroot ${dir} lsb_release -i -s)
-CODENAME=$(chroot ${dir} lsb_release -c -s)
-RELEASE=$(chroot ${dir} lsb_release -c -s)
-
-if [ $OS == "Debian" ] && [ $RELEASE == "wheezy" ]; then
-    cat > ${dir}/etc/apt/sources.list.d/backport.list <<EOF
-deb http://ftp.debian.org/debian wheezy-backports main
-EOF
-configure_cloudinit
 install_puppet
-
-elif [ $OS == "Ubuntu" ] && [ $RELEASE == "precise" ]; then
 configure_cloudinit
-install_puppet
-
-else
-    echo "OS or Release not supported"
-    exit 1
-fi
 
 echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
 echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

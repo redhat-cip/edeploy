@@ -30,9 +30,9 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
-
 OS=$(chroot ${dir} lsb_release -i -s)
 RELEASE=$(chroot ${dir} lsb_release -c -s)
+CODENAME=$(chroot ${dir} lsb_release -r -s)
 
 if [ $OS == "Debian" ] && [ $RELEASE == "wheezy" ]; then
     cat > ${dir}/etc/apt/sources.list.d/mongodb.list <<EOF
@@ -44,15 +44,31 @@ elif [ $OS == "Ubuntu" ] && [ $RELEASE == "precise" ]; then
 deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen
 EOF
 
+elif [ $OS == "CentOS" ] && [ $CODENAME == "6.4" ]; then
+    cat > ${dir}/etc/yum.repos.d/mongodb.repo <<EOF
+[mongodb]
+name=MongoDB Repository
+baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64/
+gpgcheck=0
+enabled=1
+EOF
+
 else
     echo "OS or Release not supported"
     exit 1
 fi
 
+if [ $OS == "Debian" ] || [ $OS == "Ubuntu" ]; then
 chroot ${dir} apt-get update
 chroot ${dir} apt-get install -y --force-yes swift-proxy memcached keystone ceilometer-api ceilometer-agent-central ceilometer-collector mysql-server mongodb-10gen
 
+elif [ $OS == "CentOS" ] && [ $CODENAME == "6.4" ]; then
+  chroot ${dir} yum install -y openstack-swift-proxy memcached openstack-keystone openstack-ceilometer-api openstack-ceilometer-agent-central openstack-ceilometer-collector mysql-server mongo-10gen mongo-10gen-server
+
+else
+  echo "OS or Release not supported"
+  exit 1
+fi
+
 echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
 echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf
-
-chroot ${dir} apt-get install -y --force-yes swift-account swift-container swift-object xfsprogs puppet augeas-tools

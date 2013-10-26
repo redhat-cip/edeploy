@@ -22,7 +22,7 @@
 src="$1"
 dir="$2"
 version="$3"
-ROLE=openstack-common
+ROLE=puppet-master
 
 ORIG=$(cd $(dirname $0); pwd)
 

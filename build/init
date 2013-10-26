@@ -127,7 +127,7 @@ show_git_rev
 
 step "Configuring system via server ${SERV}"
 curl -s -S -o/configure -F file=@/hw.py http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py &
-#Saving curl's PID
+# Saving curl's PID
 PID="$!"
 
 log_n "Awaiting eDeploy server :"
@@ -137,7 +137,7 @@ while [ ! -z "$(pidof curl)" ]
 done
 log "done"
 
-#Let's grab curl's return code based on it's pid
+# Let's grab curl's return code based on it's pid
 wait $PID
 RET_CODE=$?
 if [ "$RET_CODE" != "0" ]; then
@@ -181,8 +181,8 @@ if /configure; then
 	fi
 
 	if [ -n "${METADATA_URL}" ]; then
-        sed -i -e "s@GRUB_CMDLINE_LINUX_DEFAULT=\(.*\)@GRUB_CMDLINE_LINUX_DEFAULT=\1 \"ds=nocloud-net\\\\;s=${METADATA_URL}\"@" $d/etc/default/grub
-        BOOT_ARG=" ds=nocloud-net;s=${METADATA_URL}"
+	    sed -i -e "s@GRUB_CMDLINE_LINUX_DEFAULT=\"\(.*\)\"@GRUB_CMDLINE_LINUX_DEFAULT=\"\1 ds=nocloud-net\\\\;s=${METADATA_URL}\"@" $d/etc/default/grub
+	    BOOT_ARG=" ds=nocloud-net;s=${METADATA_URL}"
 	fi
 
 	mount -obind /dev $d/dev
@@ -194,7 +194,7 @@ if /configure; then
 	    cp -p /vars /hw.py $d/var/log/
 	fi
 
-	#If the disk name doesn't have any /dev/ naming let's add it
+	# If the disk name doesn't have any /dev/ naming let's add it
 	echo "$DISK" | grep '^/dev/' || DISK="/dev/$DISK"
 	export DISK
 	DISK_BASE=$(basename $DISK)
@@ -221,22 +221,29 @@ if /configure; then
 		TITLE="CentOS (${kversion})"
 		echo "title $TITLE" >> ${d}/boot/grub/grub.conf
 		echo "	root (hd0,0)" >> ${d}/boot/grub/grub.conf
-		echo "	kernel $KERNEL root=UUID=$UUID nomodeset quiet" >> ${d}/boot/grub/grub.conf
+		echo "	kernel $KERNEL root=UUID=$UUID nomodeset quiet$BOOT_ARG" >> ${d}/boot/grub/grub.conf
 		echo "	initrd $INITRD" >> ${d}/boot/grub/grub.conf
 	    done
+	# grub 2
 	elif chroot $d /bin/bash -c "/usr/sbin/grub-install ${DISK}"; then
 	    chroot $d /bin/bash -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"
 	    ret=$?
 	else
 	    ret=1
 	fi
-	
+
+	# Bootloader successfully installed
 	if [ $ret -eq 0 ]; then
 	    umount $d/sys
 	    umount $d/dev
 	    umount $d/proc
 	    save_log
 	    sync
+
+	    if [ -n "$PXEMNGR_URL" ]; then
+		curl -s ${PXEMNGR_URL}localboot/
+	    fi
+	    
 	    if [ "$DEBUG" != 1 ]; then
 		if [ "$NOREBOOT" = 1 ]; then
 		    if type -p kexec; then

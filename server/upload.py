@@ -444,9 +444,9 @@ var = ''')
 
     sys.stdout.write(cfg)
 
-    if use_pxemngr:
+    if use_pxemngr and pxemngr_url:
         print '''
-run('curl -s %slocalboot/')
+run('echo "PXEMNGR_URL=%s"')
 ''' % pxemngr_url
 
     if metadata_url:

@@ -92,8 +92,11 @@ configure_cloudinit () {
 mkdir -p ${dir}/etc/cloud/cloud.cfg.d
 rm -f ${dir}/etc/cloud/cloud.cfg
 
-if [ $OS == "Debian" ] || [ $OS == "Ubuntu" ]; then
-  chroot ${dir} apt-get install cloud-init
+if [ $OS == "Debian" ]; then
+  chroot ${dir} apt-get install -t wheezy-backports cloud-init
+
+elif[ $OS == "Ubuntu" ]; then
+  chroot ${dir} apt-get install -t precise-updates cloud-init
 
 elif [ $OS == "CentOS" ] && [ $CODENAME == "6.4" ]; then
   chroot ${dir} yum install -y cloud-init
@@ -156,10 +159,10 @@ EOF
 install_packages () {
 if [ $OS == "Debian" ] || [ $OS == "Ubuntu" ]; then
   chroot ${dir} apt-get update
-  chroot ${dir} apt-get install -y --force-yes puppet augeas-tools openssh-server cloud-init wget iptables build-essential
+  chroot ${dir} apt-get install -y --force-yes puppet augeas-tools openssh-server wget iptables build-essential
 
 elif [ $OS == "CentOS" ] && [ $CODENAME == "6.4" ]; then
-  chroot ${dir} yum install -y augeas openssh-server cloud-init wget
+  chroot ${dir} yum install -y augeas openssh-server wget
 
 else
   echo "OS or Release not supported"

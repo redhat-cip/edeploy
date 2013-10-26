@@ -93,10 +93,10 @@ mkdir -p ${dir}/etc/cloud/cloud.cfg.d
 rm -f ${dir}/etc/cloud/cloud.cfg
 
 if [ $OS == "Debian" ]; then
-  chroot ${dir} apt-get install -t wheezy-backports cloud-init
+  chroot ${dir} apt-get install -y -t wheezy-backports cloud-init
 
 elif [ $OS == "Ubuntu" ]; then
-  chroot ${dir} apt-get install -t precise-updates cloud-init
+  chroot ${dir} apt-get install -y -t precise-updates cloud-init
 
 elif [ $OS == "CentOS" ] && [ $CODENAME == "6.4" ]; then
   chroot ${dir} yum install -y cloud-init

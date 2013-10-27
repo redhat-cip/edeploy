@@ -41,37 +41,37 @@ CODENAME=$(chroot ${dir} lsb_release -r -s)
 
 prepare_packages () {
 
-if [ $OS == "Debian" ] && [ $RELEASE == "wheezy" ]; then
+if [ $OS == "Debian" ]; then
   chroot ${dir} wget http://apt.puppetlabs.com/puppetlabs-release-$RELEASE.deb
   chroot ${dir} dpkg -i puppetlabs-release-$RELEASE.deb
   chroot ${dir} apt-key adv --recv-keys --keyserver keyserver.ubuntu.com E52660B15D964F0B
-  cat > ${dir}/etc/apt/sources.list.d/backport.list <<EOF
-deb http://ftp.debian.org/debian wheezy-backports main
+  cat > ${dir}/etc/apt/sources.list.d/$RELEASE-backport.list <<EOF
+deb http://ftp.debian.org/debian ${RELEASE}-backports main
 EOF
-  cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
-deb http://cloud.pkgs.enovance.com/wheezy-${OS_VERS}/ ${OS_VERS} main
+  cat > ${dir}/etc/apt/sources.list.d/openstack-$RELEASE-$OS-VERS.list <<EOF
+deb http://cloud.pkgs.enovance.com/${RELEASE}-${OS_VERS}/ ${OS_VERS} main
 EOF
 
-elif [ $OS == "Ubuntu" ] && [ $RELEASE == "precise" ]; then
+elif [ $OS == "Ubuntu" ]; then
   chroot ${dir} wget http://apt.puppetlabs.com/puppetlabs-release-$RELEASE.deb
   chroot ${dir} dpkg -i puppetlabs-release-$RELEASE.deb
   chroot ${dir} apt-key adv --recv-keys --keyserver keyserver.ubuntu.com E52660B15D964F0B
   cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
-deb http://cloud.pkgs.enovance.com/precise-${OS_VERS}/ ${OS_VERS} main
+deb http://cloud.pkgs.enovance.com/${RELEASE}-${OS_VERS}/ ${OS_VERS} main
 EOF
   cat > ${dir}/etc/apt/sources.list <<EOF
-deb http://archive.ubuntu.com/ubuntu precise main
-deb-src http://archive.ubuntu.com/ubuntu precise main
-deb http://archive.ubuntu.com/ubuntu precise-updates main
-deb-src http://archive.ubuntu.com/ubuntu precise-updates main
-deb http://archive.ubuntu.com/ubuntu precise universe
-deb-src http://archive.ubuntu.com/ubuntu precise universe
-deb http://archive.ubuntu.com/ubuntu precise-updates universe
-deb-src http://archive.ubuntu.com/ubuntu precise-updates universe
-deb http://security.ubuntu.com/ubuntu precise-security main
-deb-src http://security.ubuntu.com/ubuntu precise-security main
-deb http://security.ubuntu.com/ubuntu precise-security universe
-deb-src http://security.ubuntu.com/ubuntu precise-security universe
+deb http://archive.ubuntu.com/ubuntu ${RELEASE} main
+deb-src http://archive.ubuntu.com/ubuntu ${RELEASE} main
+deb http://archive.ubuntu.com/ubuntu ${RELEASE}-updates main
+deb-src http://archive.ubuntu.com/ubuntu ${RELEASE}-updates main
+deb http://archive.ubuntu.com/ubuntu ${RELEASE} universe
+deb-src http://archive.ubuntu.com/ubuntu ${RELEASE} universe
+deb http://archive.ubuntu.com/ubuntu ${RELEASE}-updates universe
+deb-src http://archive.ubuntu.com/ubuntu ${RELEASE}-updates universe
+deb http://security.ubuntu.com/ubuntu ${RELEASE}-security main
+deb-src http://security.ubuntu.com/ubuntu ${RELEASE}-security main
+deb http://security.ubuntu.com/ubuntu ${RELEASE}-security universe
+deb-src http://security.ubuntu.com/ubuntu ${RELEASE}-security universe
 EOF
 
 elif [ $OS == "CentOS" ] && [ $CODENAME == "6.4" ]; then
@@ -93,10 +93,10 @@ mkdir -p ${dir}/etc/cloud/cloud.cfg.d
 rm -f ${dir}/etc/cloud/cloud.cfg
 
 if [ $OS == "Debian" ]; then
-  chroot ${dir} apt-get install -y -t wheezy-backports cloud-init
+  chroot ${dir} apt-get install -y -t $RELEASE-backports cloud-init
 
 elif [ $OS == "Ubuntu" ]; then
-  chroot ${dir} apt-get install -y -t precise-updates cloud-init
+  chroot ${dir} apt-get install -y -t $RELEASE-updates cloud-init
 
 elif [ $OS == "CentOS" ] && [ $CODENAME == "6.4" ]; then
   chroot ${dir} yum install -y cloud-init

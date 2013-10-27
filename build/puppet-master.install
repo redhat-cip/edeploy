@@ -59,6 +59,7 @@ fi
 if [ $OS == "Debian" ] || [ $OS == "Ubuntu" ]; then
   chroot ${dir} wget http://apt.puppetlabs.com/puppetlabs-release-$RELEASE.deb
   chroot ${dir} dpkg -i puppetlabs-release-$RELEASE.deb
+  chroot ${dir} rm puppetlabs-release-$RELEASE.deb
   chroot ${dir} apt-get update
   chroot ${dir} apt-get install -y puppetmaster puppetmaster-passenger puppet augeas-tools mysql-server libmysql-ruby libactiverecord-ruby git cloud-init
   chroot ${dir} a2dissite puppetmaster

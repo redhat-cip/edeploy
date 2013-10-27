@@ -44,6 +44,7 @@ prepare_packages () {
 if [ $OS == "Debian" ]; then
   chroot ${dir} wget http://apt.puppetlabs.com/puppetlabs-release-$RELEASE.deb
   chroot ${dir} dpkg -i puppetlabs-release-$RELEASE.deb
+  chroot ${dir} rm puppetlabs-release-$RELEASE.deb
   chroot ${dir} apt-key adv --recv-keys --keyserver keyserver.ubuntu.com E52660B15D964F0B
   cat > ${dir}/etc/apt/sources.list.d/$RELEASE-backport.list <<EOF
 deb http://ftp.debian.org/debian ${RELEASE}-backports main
@@ -55,6 +56,7 @@ EOF
 elif [ $OS == "Ubuntu" ]; then
   chroot ${dir} wget http://apt.puppetlabs.com/puppetlabs-release-$RELEASE.deb
   chroot ${dir} dpkg -i puppetlabs-release-$RELEASE.deb
+  chroot ${dir} rm puppetlabs-release-$RELEASE.deb
   chroot ${dir} apt-key adv --recv-keys --keyserver keyserver.ubuntu.com E52660B15D964F0B
   cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
 deb http://cloud.pkgs.enovance.com/${RELEASE}-${OS_VERS}/ ${OS_VERS} main

@@ -238,7 +238,8 @@ def save_hw(items, name, hwdir):
 
 def register_pxemngr(sysvars):
     'Register the system in pxemngr.'
-    macs = ' '.join(sysvars['serial'])
+    # only use Ethernet mac addresses with pxemngr
+    macs = ' '.join(filter(lambda x: len(x) == 17, sysvars['serial']))
     cmd = 'pxemngr addsystem %s %s' % (sysvars['sysname'],
                                        macs)
     status, output = commands.getstatusoutput(cmd)

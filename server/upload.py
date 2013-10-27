@@ -330,13 +330,13 @@ def main():
             return default
 
     cfg_dir = os.path.normpath(config_get(
-            'SERVER', 'CONFIGDIR',
-            os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                         '..',
-                         'config'))) + '/'
+        'SERVER', 'CONFIGDIR',
+        os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                     '..',
+                     'config'))) + '/'
 
     hw_dir = os.path.normpath(config_get(
-            'SERVER', 'HWDIR', cfg_dir)) + '/'
+        'SERVER', 'HWDIR', cfg_dir)) + '/'
 
     # parse hw file given in argument or passed to cgi script
     if len(sys.argv) == 3 and sys.argv[1] == '-f':
@@ -447,7 +447,7 @@ var = ''')
 
     if use_pxemngr and pxemngr_url:
         print '''
-run('echo "PXEMNGR_URL=%s"')
+run('echo "PXEMNGR_URL=%s" >> /vars')
 ''' % pxemngr_url
 
     if metadata_url:

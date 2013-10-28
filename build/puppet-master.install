@@ -89,12 +89,12 @@ if [ $OS == "Debian" ];then
 
 elif [ $OS == "Ubuntu" ]; then
   # Todo(EmilienM): Move cloud-init into backports repo to have last release properly
-  chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/c/cloud-init/cloud-init_0.7.3-0ubuntu2_all.deb || true
-  chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/p/python-json-patch/python-json-patch_1.0-2_all.deb || true
-  chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/p/python-json-pointer/python-json-pointer_1.0-1ubuntu2_all.deb || true
-  chroot ${dir} dpkg -i cloud-init_0.7.3-0ubuntu2_all.deb
-  chroot ${dir} dpkg -i python-json-patch_1.0-2_all.deb
-  chroot ${dir} dpkg -i python-json-pointer_1.0-1ubuntu2_all.deb
+  chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/c/cloud-init/cloud-init_0.7.3-0ubuntu2_all.deb
+  chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/p/python-json-patch/python-json-patch_1.0-2_all.deb
+  chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/p/python-json-pointer/python-json-pointer_1.0-1ubuntu2_all.deb
+  chroot ${dir} dpkg -i cloud-init_0.7.3-0ubuntu2_all.deb  || true
+  chroot ${dir} dpkg -i python-json-patch_1.0-2_all.deb  || true
+  chroot ${dir} dpkg -i python-json-pointer_1.0-1ubuntu2_all.deb  || true
   chroot ${dir} apt-get -f install -y -o Dpkg::Options::="--force-confold"
   chroot ${dir} rm cloud-init_0.7.3-0ubuntu2_all.deb python-json-patch_1.0-2_all.deb python-json-pointer_1.0-1ubuntu2_all.deb
 

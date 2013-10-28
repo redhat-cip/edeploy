@@ -247,14 +247,19 @@ if /configure; then
 	    if [ "$DEBUG" != 1 ]; then
 	    	if [ "$NOREBOOT" = 1 ]; then
 		        if type -p kexec; then
-    		    	echo "Trying kexec..."
+    		    	log_n "Trying kexec..."
     		    	cp $d/boot/vmlinuz* /tmp/vmlinuz
     		    	cp $d/boot/initrd.img* /tmp/initrd.img
     		    	eval $(grep root=UUID= $d/boot/grub/grub.cfg|head -1|tr ' ' '\n'|grep '^root=UUID=')
-    		    	umount $d
+    		    	umount $d/boot
+                    umount $d
+                    log "on root device '$root'"
     		    	if [ -z "$root" ]; then
-    		    	    echo "unable to detect root device"
+    		    	    log "unable to detect root device"
+                        log "kexec will not be executed"
+                        sleep 5
     		    	else
+                        log "About to run kexec with append=root=${root}${BOOT_ARG}"
     		    	    kexec -l /tmp/vmlinuz --initrd=/tmp/initrd.img --append="root=${root}${BOOT_ARG}"
     		    	    kexec -e
     		    fi

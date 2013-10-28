@@ -162,6 +162,8 @@ install_packages () {
 if [ $OS == "Debian" ] || [ $OS == "Ubuntu" ]; then
   chroot ${dir} apt-get update
   chroot ${dir} apt-get install -y --force-yes puppet augeas-tools openssh-server wget iptables build-essential
+  chroot ${dir} sed -e 's/START=yes/START=no/' -i /etc/default/puppet
+  chroot ${dir} rm -rf /var/lib/puppet/ssl/*
 
 elif [ $OS == "CentOS" ] && [ $CODENAME == "6.4" ]; then
   chroot ${dir} yum install -y augeas openssh-server wget

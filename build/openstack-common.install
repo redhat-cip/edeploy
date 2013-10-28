@@ -99,12 +99,11 @@ if [ $OS == "Debian" ]; then
 
 elif [ $OS == "Ubuntu" ]; then
   # Todo(EmilienM): Move cloud-init into backports repo to have last release properly
-  chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/c/cloud-init/cloud-init_0.7.3-0ubuntu2_all.deb
-  chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/p/python-json-patch/python-json-patch_1.0-2_all.deb
-  chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/p/python-json-pointer/python-json-pointer_1.0-1ubuntu2_all.deb
-  chroot ${dir} dpkg -i *.deb
+  wget --quiet --output-document=- http://security.ubuntu.com/ubuntu/pool/main/c/cloud-init/cloud-init_0.7.3-0ubuntu2_all.deb | dpkg --install -
+  wget --quiet --output-document=- http://security.ubuntu.com/ubuntu/pool/main/p/python-json-patch/python-json-patch_1.0-2_all.deb | dpkg --install -
+  wget --quiet --output-document=- http://security.ubuntu.com/ubuntu/pool/main/p/python-json-pointer/python-json-pointer_1.0-1ubuntu2_all.deb | dpkg --install -
   chroot ${dir} apt-get -f install -y
-  chroot ${dir} rm *.deb
+  chroot ${dir} rm cloud-init_0.7.3-0ubuntu2_all.deb python-json-patch_1.0-2_all.deb python-json-pointer_1.0-1ubuntu2_all.deb
 
 elif [ $OS == "CentOS" ] && [ $CODENAME == "6.4" ]; then
   chroot ${dir} yum install -y cloud-init

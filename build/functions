@@ -51,6 +51,12 @@ echo -n "Copying tree ${src}/ to ${dir}/"
 rsync -a --delete ${src}/ ${dir}/
 echo done
 
+# Resolv.conf got setup during the initial deboostrap
+# But since, you might have change your host to another network (office vs home vs mobile vs ...)
+# In such case, the resolv.conf is wrong and prevents apt (and all networking-depedent stuff from working)
+# So let's copy the current one to insure the setup is good
+cp -f /etc/resolv.conf "$dir/etc/"
+
 set -x
 
 echo ${ROLE} > ${dir}/etc/hostname

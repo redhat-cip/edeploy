@@ -251,10 +251,14 @@ if /configure; then
     		    	cp $d/boot/vmlinuz* /tmp/vmlinuz
     		    	cp $d/boot/initrd.img* /tmp/initrd.img
     		    	eval $(grep root=UUID= $d/boot/grub/grub.cfg|head -1|tr ' ' '\n'|grep '^root=UUID=')
+       		    	if [ -z "$root" ]; then
+                        log_n "using alternative root detection"
+                        root=$(grep 'root=' $d/boot/grub/grub.cfg | grep vmlinuz | head -1 | sed -e 's/.*root=\(.*\)/\1/g' | awk '{print $1}')
+                    fi
     		    	umount $d/boot
                     umount $d
-                    log "on root device '$root'"
-    		    	if [ -z "$root" ]; then
+                    log "."
+       		    	if [ -z "$root" ]; then
     		    	    log "unable to detect root device"
                         log "kexec will not be executed"
                         sleep 5

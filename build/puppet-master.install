@@ -84,8 +84,17 @@ configure_cloudinit () {
 mkdir -p ${dir}/etc/cloud/cloud.cfg.d
 rm -f ${dir}/etc/cloud/cloud.cfg
 
-if [ $OS == "Debian" ] || [ $OS == "Ubuntu" ]; then
+if [ $OS == "Debian" ];then
   chroot ${dir} apt-get install cloud-init
+
+elif [ $OS == "Ubuntu" ]; then
+  # Todo(EmilienM): Move cloud-init into backports repo to have last release properly
+  chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/c/cloud-init/cloud-init_0.7.3-0ubuntu2_all.deb
+  chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/p/python-json-patch/python-json-patch_1.0-2_all.deb
+  chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/p/python-json-pointer/python-json-pointer_1.0-1ubuntu2_all.deb
+  chroot ${dir} dpkg -i *.deb
+  chroot ${dir} apt-get -f install -y
+  chroot ${dir} rm *.deb
 
 elif [ $OS == "CentOS" ] && [ $CODENAME == "6.4" ]; then
   chroot ${dir} yum install -y cloud-init

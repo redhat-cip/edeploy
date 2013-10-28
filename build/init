@@ -243,10 +243,10 @@ if /configure; then
 	    if [ -n "$PXEMNGR_URL" ]; then
 		curl -s ${PXEMNGR_URL}localboot/
 	    fi
-	    
+
 	    if [ "$DEBUG" != 1 ]; then
-		if [ "$NOREBOOT" = 1 ]; then
-		    if type -p kexec; then
+	    	if [ "$NOREBOOT" = 1 ]; then
+		        if type -p kexec; then
     		    	echo "Trying kexec..."
     		    	cp $d/boot/vmlinuz* /tmp/vmlinuz
     		    	cp $d/boot/initrd.img* /tmp/initrd.img
@@ -257,8 +257,8 @@ if /configure; then
     		    	else
     		    	    kexec -l /tmp/vmlinuz --initrd=/tmp/initrd.img --append="root=${root}${BOOT_ARG}"
     		    	    kexec -e
-    		    	fi
     		    fi
+    		fi
 		fi
 		umount -a
 		reboot -f

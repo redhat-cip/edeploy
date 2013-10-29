@@ -144,6 +144,7 @@ create_edeploy_conf() {
 
 HEALTHDIR=$PWD/../health/
 CONFIGDIR=$PWD/../config/
+HWDIR=$PWD/../config/hw
 LOGDIR=$PWD/../config/logs
 LOCKFILE=$LOCKFILE
 USEPXEMNGR=False

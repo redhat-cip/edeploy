@@ -31,6 +31,11 @@ save_log() {
     fi
 }
 
+do_reboot() {
+    upload_log
+    reboot -f
+}
+
 step() {
     echo "################################################################"
     echo "$@"
@@ -43,6 +48,18 @@ log() {
 
 log_n() {
     echo -n "$@"
+}
+
+upload_log() {
+    if [ "$UPLOAD_LOG" != "1" ]; then
+        return
+    fi
+    vendor=$(dmidecode -s system-manufacturer | tr ' ' '-' | tr -d '\n')
+    product=$(dmidecode -s system-product-name | tr ' ' '-' | tr -d '\n')
+    serial=$(dmidecode -s system-serial-number | tr ' ' '-' | tr -d '\n')
+    log_file="${vendor}-${product}-${serial}.log"
+    ln -sf /log /${log_file}
+    curl -s -S -o/log.stats -F file=@/${log_file} http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py || true
 }
 
 ################################################################################
@@ -116,7 +133,10 @@ create_keys() {
 
 give_up() {
     log "$@"
+    upload_log
+    if [ "$DEBUG" = 1 ]; then
         exec /bin/bash -i
+    fi
 }
 
 create_main_directories() {
@@ -284,7 +304,7 @@ while true; do
     log "!! NO DHCP FOUND after $RUN tries. Rebooting in 10 seconds !!"
     log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
     if [ "$DEBUG" != 1 ]; then
-        reboot -f
+        do_reboot
     else
             show_kernel_modules
         give_up "!! DEBUG mode is set, let's give up as no DHCP server found"

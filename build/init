@@ -260,7 +260,7 @@ if /configure; then
                         log "."
                         if [ -z "$root" ]; then
                             log "unable to detect root device"
-                            log "kexec will not be executed"
+                            give_up "kexec will not be executed"
                             sleep 5
                         else
                             log "About to run kexec with append=root=${root}${BOOT_ARG}"
@@ -270,17 +270,17 @@ if /configure; then
                     fi
                 fi
                 umount -a
-                reboot -f
+                do_reboot
             fi
         else
-            log "Install of grub failed"
+            give_up "Install of grub failed"
         fi
     else
-        log "No role or version defined..."
+        give_up "No role or version defined..."
     fi
 else
-    log "Problem during system configuration"
     grep '<!-- ' /configure -A 40 >> /log
+    give_up "Problem during system configuration"
 fi
 
 save_log

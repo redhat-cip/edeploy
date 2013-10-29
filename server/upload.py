@@ -349,6 +349,26 @@ def main():
         print "Content-Type: text/x-python"     # HTML is following
         print                                   # blank line, end of headers
 
+        # If the filename ends with a .log, we need to process it as a log file
+        if ('file' in form) and (form['file'].filename.endswith('.log')):
+            logitem = form['file']
+            logfile = logitem.file
+            try:
+                # Let's save the file in LOGDIR directory
+                log_dir = os.path.normpath(config_get('SERVER', 'LOGDIR', cfg_dir)) + '/'
+                filename = os.path.join(log_dir, logitem.filename)
+                output_file = open(filename, 'w')
+                output_file.write(logfile.read(-1))
+                output_file.close()
+            except Exception, xcpt:
+                # If we fails at saving, let's exit
+                fatal_error("exception while saving log file: %s" % str(xcpt))
+                sys.exit(1)
+            # If the succeed at saving log file, let's also exit
+            # In fact we have nothing more to do once its saved.
+            log('Log file %s saved' % logitem.filename)
+            sys.exit(0)
+
         if not 'file' in form:
             fatal_error('No file passed to the CGI')
 

@@ -33,7 +33,7 @@ Configure the PXE boot like that::
 
  LABEL eDeploy
  	KERNEL vmlinuz
- 	INITRD initrd.pxe SERV=10.0.2.2 DEBUG=1 VERBOSE=1 RSERV_PORT=1515 HTTP_PORT=9000 HTTP_PATH=/cgi-bin/edeploy/
+ 	INITRD initrd.pxe SERV=10.0.2.2 DEBUG=1 VERBOSE=1 RSERV_PORT=1515 HTTP_PORT=9000 HTTP_PATH=/cgi-bin/edeploy/ UPLOAD_LOG=1
 
  LABEL eDeploy-http
  	KERNEL vmlinuz
@@ -46,6 +46,9 @@ The ``DEBUG`` variable if set to ``1`` on the kernel command line, it
 enables more debugging, the start of an ssh server on the configured
 system and the launch of an interactive shell at the end of the
 installation.
+
+The ``UPLOAD_LOG`` variable if set to ``1`` on the kernel command line, it
+upload the log file on edeploy's server if the deploiement fails.
 
 The ``VERBOSE`` variable if set to ``1`` on the kernel command line, it turns on
 the -x of bash to ease the understanding of faulty commands
@@ -75,6 +78,7 @@ The CGI script is configured with ``/etc/edeploy.conf``::
 
  HEALTHDIR   = /var/lib/edeploy/health/
  CONFIGDIR   = /var/lib/edeploy/config/
+ LOGDIR      = /var/lib/edeploy/config/logs
  HWDIR       = /var/lib/edeploy/hw/
  LOCKFILE    = /var/lock/apache2/edeploy.lock
  USEPXEMNGR  = True
@@ -86,6 +90,8 @@ The CGI script is configured with ``/etc/edeploy.conf``::
 per hardware profile, a description of the hardware profile priorities
 (``state``). All those files must be readable by the user running the
 http server.
+
+``LOGDIR`` points to a directory where uploaded log file will be saved.
 
 ``HEALTHDIR`` points to a directory where the automatic health check
 mode will upload its results.

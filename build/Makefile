@@ -35,6 +35,7 @@ export PATH := /sbin:/bin::$(PATH)
 SERV:=10.66.6.10
 HSERV:=10.66.6.10
 DEBUG=1
+UPLOAD_LOG:=0
 PYDIR=../src
 PYSERVERDIR=../server
 export ENABLE_IB
@@ -52,13 +53,13 @@ health-check: $(INST)/base.done init.health health-check.install $(PYDIR)/detect
 	ENABLE_IB=y ENABLE_MELLANOX=n ./health-check.install $(INST)/base $(INST)/health-check $(HEALTH_IMG) $(VERS) $(DEBUG)
 
 health-img: health-check
-	./img.install $(INST)/base $(HEALTH_IMG) $(VERS) $(INST) $(SERV) $(HSERV) $(DEBUG) health
+	UPLOAD_LOG=$(UPLOAD_LOG) ./img.install $(INST)/base $(HEALTH_IMG) $(VERS) $(INST) $(SERV) $(HSERV) $(DEBUG) health
 
 pxe $(INST)/$(IMG): $(INST)/base.done init pxe.install $(PYDIR)/detect.py $(PYDIR)/hpacucli.py $(PYSERVERDIR)/matcher.py $(PYDIR)/diskinfo.py $(PYDIR)/ipmi.py $(PYDIR)/infiniband.py
 	ENABLE_IB=y ENABLE_MELLANOX=n ./pxe.install $(INST)/base $(INST)/pxe $(IMG) $(VERS) $(DEBUG)
 
 img: $(INST)/$(IMG)
-	./img.install $(INST)/base $(IMG) $(VERS) $(INST) $(SERV) $(HSERV) $(DEBUG)
+	UPLOAD_LOG=$(UPLOAD_LOG) ./img.install $(INST)/base $(IMG) $(VERS) $(INST) $(SERV) $(HSERV) $(DEBUG)
 
 base $(INST)/base.done: base.install policy-rc.d edeploy
 	ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ARCH=$(ARCH) ./base.install $(INST)/base $(DIST) $(VERS)

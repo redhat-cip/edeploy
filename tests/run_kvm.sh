@@ -144,6 +144,7 @@ create_edeploy_conf() {
 
 HEALTHDIR=$PWD/../health/
 CONFIGDIR=$PWD/../config/
+LOGDIR=$PWD/../config/logs
 LOCKFILE=$LOCKFILE
 USEPXEMNGR=False
 PXEMNGRURL=http://192.168.122.1:8000/

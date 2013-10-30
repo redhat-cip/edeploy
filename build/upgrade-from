@@ -85,11 +85,11 @@ set -x
 
 if [ ! -d ${TDIR} ]; then
     mkdir -p ${TDIR}
-
-    echo -n "Syncing ${FDIR} to ${TDIR}..."
-    rsync -a --delete ${FDIR}/ ${TDIR}/
-    echo "done"
 fi
+
+echo -n "Syncing ${FDIR} to ${TDIR}..."
+rsync -a --delete-before ${FDIR}/ ${TDIR}/
+echo "done"
 
 cleanup() {
     umount ${TDIR}/dev

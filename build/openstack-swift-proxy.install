@@ -29,6 +29,7 @@ ROLE=openstack-swift-proxy
 ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
+. ${ORIG}/common
 
 install_ib_if_needed $ORIG $dir
 
@@ -61,11 +62,11 @@ else
 fi
 
 if [ $OS == "Debian" ] || [ $OS == "Ubuntu" ]; then
-chroot ${dir} apt-get update
-chroot ${dir} apt-get install -y --force-yes swift-proxy memcached keystone ceilometer-api ceilometer-agent-central ceilometer-collector mysql-server mongodb-10gen
+    do_chroot ${dir} apt-get update
+    do_chroot ${dir} apt-get install -y --force-yes swift-proxy memcached keystone ceilometer-api ceilometer-agent-central ceilometer-collector mysql-server mongodb-10gen
 
 elif [ $OS == "CentOS" ] && [ $CODENAME == "6.4" ]; then
-  chroot ${dir} yum install -y openstack-swift-proxy memcached openstack-keystone openstack-ceilometer-api openstack-ceilometer-agent-central openstack-ceilometer-collector mysql-server mongo-10gen mongo-10gen-server
+    do_chroot ${dir} yum install -y openstack-swift-proxy memcached openstack-keystone openstack-ceilometer-api openstack-ceilometer-agent-central openstack-ceilometer-collector mysql-server mongo-10gen mongo-10gen-server
 
 else
   echo "OS or Release not supported"

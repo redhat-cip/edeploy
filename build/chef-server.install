@@ -24,10 +24,11 @@ ROLE=chef-server
 ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
+. ${ORIG}/common
 
-chroot ${dir} apt-get update
-chroot ${dir} apt-get install -y --force-yes wget
-chroot ${dir} apt-get clean
+do_chroot ${dir} apt-get update
+do_chroot ${dir} apt-get install -y --force-yes wget
+do_chroot ${dir} apt-get clean
 
 OS=$(chroot ${dir} lsb_release -i -s)
 RELEASE=$(chroot ${dir} lsb_release -r -s)
@@ -35,8 +36,8 @@ RELEASE=$(chroot ${dir} lsb_release -r -s)
 configure_cloudinit () {
     mkdir -p ${dir}/etc/cloud/cloud.cfg.d
     rm -f ${dir}/etc/cloud/cloud.cfg
-    chroot ${dir} apt-get update
-    chroot ${dir} apt-get install -y cloud-init
+    do_chroot ${dir} apt-get update
+    do_chroot ${dir} apt-get install -y cloud-init
 
     cat > ${dir}/etc/cloud/cloud.cfg.d/90_dpkg.cfg << EOF
 # to update this file, run dpkg-reconfigure cloud-init
@@ -91,8 +92,8 @@ EOF
 
 if [ $OS == "Ubuntu" ]; then
  configure_cloudinit
- chroot ${dir} wget "http://www.opscode.com/chef/download-server?p=ubuntu&pv=${RELEASE}&m=x86_64&v=latest" -O /tmp/chef-server.deb
- chroot ${dir} dpkg -i /tmp/chef-server.deb
+ do_chroot ${dir} wget "http://www.opscode.com/chef/download-server?p=ubuntu&pv=${RELEASE}&m=x86_64&v=latest" -O /tmp/chef-server.deb
+ do_chroot ${dir} dpkg -i /tmp/chef-server.deb
  mkdir -p ${dir}/etc/chef-server
  cat > ${dir}/etc/chef-server/chef-server.rb <<EOF
 server_name = node['ipaddress']

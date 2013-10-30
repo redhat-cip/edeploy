@@ -27,16 +27,17 @@ ROLE=openstack-swift-storage
 ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
+. ${ORIG}/common
 
 OS=$(chroot ${dir} lsb_release -i -s)
 RELEASE=$(chroot ${dir} lsb_release -c -s)
 CODENAME=$(chroot ${dir} lsb_release -r -s)
 
 if [ $OS == "Debian" ] || [ $OS == "Ubuntu" ]; then
-    chroot ${dir} apt-get update
-    chroot ${dir} apt-get install -y --force-yes swift-account swift-container swift-object xfsprogs
+    do_chroot ${dir} apt-get update
+    do_chroot ${dir} apt-get install -y --force-yes swift-account swift-container swift-object xfsprogs
 elif [ $OS == "CentOS" ] && [ $CODENAME == "6.4" ]; then
-    chroot ${dir} yum install -y openstack-swift-account openstack-swift-container openstack-swift-object xfsprogs
+    do_chroot ${dir} yum install -y openstack-swift-account openstack-swift-container openstack-swift-object xfsprogs
 else
     echo "OS or Release not supported"
     exit 1

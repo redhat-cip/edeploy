@@ -26,6 +26,7 @@ ROLE=devstack
 ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
+. ${ORIG}/common
 
 install_ib_if_needed $ORIG $dir
 
@@ -66,9 +67,9 @@ else
 
 fi
 
-chroot ${dir} apt-get update
+do_chroot ${dir} apt-get update
 
-chroot ${dir} apt-get install -y bridge-utils curl dnsmasq-base dnsmasq-utils ebtables euca2ools gawk gcc genisoimage git iptables iputils-arping iputils-ping kpartx libjs-jquery-tablesorter libldap2-dev libsasl2-dev libxml2-dev locate lsof lvm2 msgpack-python nbd-client nodejs open-iscsi openssh-server openssl parted psmisc pylint python-anyjson python-beautifulsoup python-boto python-carrot python-cheetah python-cherrypy3 python-cmd2 python-coverage python-dateutil python-dev python-eventlet python-feedparser python-gflags python-greenlet python-iso8601 python-kombu python-libxml2 python-lockfile python-lxml python-m2crypto python-migrate python-mox python-mysqldb python-netaddr python-nose python-numpy python-paste python-pastedeploy python-pastescript python-pip python-pysqlite2 python-qpid python-routes python-setuptools python-sphinx python-sqlalchemy python-suds python-tempita python-unittest2 python-virtualenv python-webob python-wsgiref python-xattr qemu-utils screen sg3-utils socat sqlite3 sudo sysfsutils tar tcpdump tgt unzip vim-nox vlan wget $PKGS 
+do_chroot ${dir} apt-get install -y bridge-utils curl dnsmasq-base dnsmasq-utils ebtables euca2ools gawk gcc genisoimage git iptables iputils-arping iputils-ping kpartx libjs-jquery-tablesorter libldap2-dev libsasl2-dev libxml2-dev locate lsof lvm2 msgpack-python nbd-client nodejs open-iscsi openssh-server openssl parted psmisc pylint python-anyjson python-beautifulsoup python-boto python-carrot python-cheetah python-cherrypy3 python-cmd2 python-coverage python-dateutil python-dev python-eventlet python-feedparser python-gflags python-greenlet python-iso8601 python-kombu python-libxml2 python-lockfile python-lxml python-m2crypto python-migrate python-mox python-mysqldb python-netaddr python-nose python-numpy python-paste python-pastedeploy python-pastescript python-pip python-pysqlite2 python-qpid python-routes python-setuptools python-sphinx python-sqlalchemy python-suds python-tempita python-unittest2 python-virtualenv python-webob python-wsgiref python-xattr qemu-utils screen sg3-utils socat sqlite3 sudo sysfsutils tar tcpdump tgt unzip vim-nox vlan wget $PKGS
 
 USER=stack
 
@@ -86,7 +87,7 @@ echo SERVICE_PASSWORD=password >> localrc
 echo SERVICE_TOKEN=tokentoken >> localrc
 EOF
 chmod a+x ${dir}/tmp/script
-chroot ${dir} useradd -G sudo -s /bin/bash $USER
+do_chroot ${dir} useradd -G sudo -s /bin/bash $USER
 mkdir -p ${dir}/home/$USER
-chroot ${dir} chown $USER:$USER /home/$USER
-chroot ${dir} su - $USER -c "/tmp/script"
+do_chroot ${dir} chown $USER:$USER /home/$USER
+do_chroot ${dir} su - $USER -c "/tmp/script"

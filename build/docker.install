@@ -26,13 +26,14 @@ ORIG=$(cd $(dirname $0); pwd)
 
 # Add the PPA sources to your apt sources list.
 . ${ORIG}/functions
+. ${ORIG}/common
 
 if grep -q debian.org ${dir}/etc/apt/sources.list; then
     echo "Docker only supported under Ubuntu"
     exit 1
 fi
 
-chroot ${dir} cat > ${dir}/etc/apt/sources.list << EOF
+cat > ${dir}/etc/apt/sources.list << EOF
 deb http://archive.ubuntu.com/ubuntu precise main
 deb http://archive.ubuntu.com/ubuntu precise-updates main
 deb http://archive.ubuntu.com/ubuntu precise universe
@@ -40,16 +41,16 @@ deb http://archive.ubuntu.com/ubuntu precise-updates universe
 EOF
 
 # NOTE (leseb): Docker's installation won't finish properly if we don't use this workaround
-chroot ${dir} dpkg-divert --local --rename --add /sbin/initctl
-chroot ${dir} ln -s /bin/true /sbin/initctl
+do_chroot ${dir} dpkg-divert --local --rename --add /sbin/initctl
+do_chroot ${dir} ln -s /bin/true /sbin/initctl
 
-chroot ${dir} apt-get update
-chroot ${dir} apt-get install -y --force-yes python-software-properties linux-image-generic-lts-raring linux-headers-generic-lts-raring
-chroot ${dir} add-apt-repository -y ppa:dotcloud/lxc-docker
-chroot ${dir} apt-get update
-chroot ${dir} apt-get install -y --force-yes lxc-docker
+do_chroot ${dir} apt-get update
+do_chroot ${dir} apt-get install -y --force-yes python-software-properties linux-image-generic-lts-raring linux-headers-generic-lts-raring
+do_chroot ${dir} add-apt-repository -y ppa:dotcloud/lxc-docker
+do_chroot ${dir} apt-get update
+do_chroot ${dir} apt-get install -y --force-yes lxc-docker
 
 # NOTE (leseb): at some point this seems to break the boot sequence
 # so it's better remove it as soon as Docker is properly installed
-chroot ${dir} rm /sbin/initctl
-chroot ${dir} rm /sbin/initctl.distrib
+do_chroot ${dir} rm /sbin/initctl
+do_chroot ${dir} rm /sbin/initctl.distrib

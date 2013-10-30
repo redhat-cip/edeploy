@@ -25,11 +25,12 @@ ROLE=haproxy
 ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
+. ${ORIG}/common
 
-chroot ${dir} apt-get update
-chroot ${dir} apt-get install -y --force-yes wget openssh-server python-software-properties
-chroot ${dir} apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db
-chroot ${dir} apt-get clean
+do_chroot ${dir} apt-get update
+do_chroot ${dir} apt-get install -y --force-yes wget openssh-server python-software-properties
+do_chroot ${dir} apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db
+do_chroot ${dir} apt-get clean
 
 install_ib_if_needed $ORIG $dir
 
@@ -37,7 +38,7 @@ OS=$(chroot ${dir} lsb_release -i -s)
 RELEASE=$(chroot ${dir} lsb_release -c -s)
 
 if [ $OS == "Debian" ] && [ $RELEASE == "wheezy" ]; then
-   chroot ${dir} add-apt-repository 'deb http://ftp2.fr.debian.org/debian wheezy-backports main'
+    do_chroot ${dir} add-apt-repository 'deb http://ftp2.fr.debian.org/debian wheezy-backports main'
 
 elif [ $OS == "Ubuntu" ] && [ $RELEASE == "precise" ]; then
    cat > ${dir}/etc/apt/sources.list <<EOF
@@ -61,7 +62,8 @@ else
 
 fi
 
-chroot ${dir} sudo apt-get update &&  apt-get install -y haproxy
+do_chroot ${dir} apt-get update
+do_chroot ${dir} apt-get install -y haproxy
 
 
 echo -e "\nVersion ${version}\n" > ${dir}/etc/motd

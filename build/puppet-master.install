@@ -27,6 +27,7 @@ ROLE=puppet-master
 ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
+. ${ORIG}/common
 
 OS=$(chroot ${dir} lsb_release -i -s)
 RELEASE=$(chroot ${dir} lsb_release -c -s)
@@ -57,20 +58,20 @@ EOF
 fi
 
 if [ $OS == "Debian" ] || [ $OS == "Ubuntu" ]; then
-  chroot ${dir} wget http://apt.puppetlabs.com/puppetlabs-release-$RELEASE.deb
-  chroot ${dir} dpkg -i puppetlabs-release-$RELEASE.deb
-  chroot ${dir} rm puppetlabs-release-$RELEASE.deb
-  chroot ${dir} apt-get update
-  chroot ${dir} apt-get install -y puppetmaster puppetmaster-passenger puppet augeas-tools mysql-server libmysql-ruby libactiverecord-ruby git cloud-init
-  chroot ${dir} a2dissite puppetmaster
-  chroot ${dir} service apache2 reload
-  chroot ${dir} service puppetmaster restart
+    do_chroot ${dir} wget http://apt.puppetlabs.com/puppetlabs-release-$RELEASE.deb
+    do_chroot ${dir} dpkg -i puppetlabs-release-$RELEASE.deb
+    do_chroot ${dir} rm puppetlabs-release-$RELEASE.deb
+    do_chroot ${dir} apt-get update
+    do_chroot ${dir} apt-get install -y puppetmaster puppetmaster-passenger puppet augeas-tools mysql-server libmysql-ruby libactiverecord-ruby git cloud-init
+    do_chroot ${dir} a2dissite puppetmaster
+    do_chroot ${dir} service apache2 reload
+    do_chroot ${dir} service puppetmaster restart
 
 elif [ $OS == "CentOS" ] && [ $CODENAME == "6.4" ]; then
-  chroot ${dir} rpm -ivh http://yum.puppetlabs.com/el/6/products/i386/puppetlabs-release-6-7.noarch.rpm
-  chroot ${dir} yum install -y http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-  chroot ${dir} yum install -y puppet-server mysql-server git cloud-init augeas
-  chroot ${dir} yum remove puppetlabs-release-6-7.noarch
+    do_chroot ${dir} rpm -ivh http://yum.puppetlabs.com/el/6/products/i386/puppetlabs-release-6-7.noarch.rpm
+    do_chroot ${dir} yum install -y http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+    do_chroot ${dir} yum install -y puppet-server mysql-server git cloud-init augeas
+    do_chroot ${dir} yum remove puppetlabs-release-6-7.noarch
 
 else
   echo "OS or Release not supported"
@@ -85,21 +86,21 @@ mkdir -p ${dir}/etc/cloud/cloud.cfg.d
 rm -f ${dir}/etc/cloud/cloud.cfg
 
 if [ $OS == "Debian" ];then
-  chroot ${dir} apt-get install cloud-init
+    do_chroot ${dir} apt-get install cloud-init
 
 elif [ $OS == "Ubuntu" ]; then
   # Todo(EmilienM): Move cloud-init into backports repo to have last release properly
-  chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/c/cloud-init/cloud-init_0.7.3-0ubuntu2_all.deb
-  chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/p/python-json-patch/python-json-patch_1.0-2_all.deb
-  chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/p/python-json-pointer/python-json-pointer_1.0-1ubuntu2_all.deb
-  chroot ${dir} dpkg -i cloud-init_0.7.3-0ubuntu2_all.deb  || true
-  chroot ${dir} dpkg -i python-json-patch_1.0-2_all.deb  || true
-  chroot ${dir} dpkg -i python-json-pointer_1.0-1ubuntu2_all.deb  || true
-  chroot ${dir} apt-get -f install -y -o Dpkg::Options::="--force-confold"
-  chroot ${dir} rm cloud-init_0.7.3-0ubuntu2_all.deb python-json-patch_1.0-2_all.deb python-json-pointer_1.0-1ubuntu2_all.deb
+  do_chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/c/cloud-init/cloud-init_0.7.3-0ubuntu2_all.deb
+  do_chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/p/python-json-patch/python-json-patch_1.0-2_all.deb
+  do_chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/p/python-json-pointer/python-json-pointer_1.0-1ubuntu2_all.deb
+  do_chroot ${dir} dpkg -i cloud-init_0.7.3-0ubuntu2_all.deb  || true
+  do_chroot ${dir} dpkg -i python-json-patch_1.0-2_all.deb  || true
+  do_chroot ${dir} dpkg -i python-json-pointer_1.0-1ubuntu2_all.deb  || true
+  do_chroot ${dir} apt-get -f install -y -o Dpkg::Options::="--force-confold"
+  do_chroot ${dir} rm cloud-init_0.7.3-0ubuntu2_all.deb python-json-patch_1.0-2_all.deb python-json-pointer_1.0-1ubuntu2_all.deb
 
 elif [ $OS == "CentOS" ] && [ $CODENAME == "6.4" ]; then
-  chroot ${dir} yum install -y cloud-init
+    do_chroot ${dir} yum install -y cloud-init
 
 else
   echo "OS or Release not supported"

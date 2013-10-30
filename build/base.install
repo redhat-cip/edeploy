@@ -74,7 +74,7 @@ if [ ! -d "$dir" ]; then
 
 	# workaround no signature downloaded
 	rm -f "$dir"/var/lib/apt/lists/*[es]
-	chroot "$dir" apt-get update
+    do_chroot "$dir" apt-get update
     else
 	mkdir -p "$dir/dev" "$dir/proc"
     fi
@@ -109,7 +109,7 @@ if [ -z "$DEB" ]; then
     sed -i 's/$releasever/6/g' ${dir}/etc/yum.repos.d/*
     cp -f /etc/resolv.conf "$dir/etc/"
     yum --installroot "$dir" -y --nogpgcheck install yum
-    chroot "$dir" yum --nogpgcheck install -y yum basesystem
+    do_chroot "$dir" yum --nogpgcheck install -y yum basesystem
     cp ${dir}/etc/skel/.bashrc ${dir}/root
     cp ${dir}/etc/skel/.bash_profile ${dir}/root
 fi
@@ -157,19 +157,19 @@ export DEBIAN_FRONTEND=noninteractive
 cp -f /etc/resolv.conf "$dir/etc/"
 
 if [ -n "$DEB" ]; then
-chroot "$dir" apt-get update
-chroot "$dir" apt-get dist-upgrade -y
+do_chroot "$dir" apt-get update
+do_chroot "$dir" apt-get dist-upgrade -y
 
-chroot "$dir" apt-get install -y --force-yes wget sudo locales openssh-server parted $PACKAGES net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase dmidecode bash curl hdparm xfsprogs acpid ifenslave kexec-tools
+do_chroot "$dir" apt-get install -y --force-yes wget sudo locales openssh-server parted $PACKAGES net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase dmidecode bash curl hdparm xfsprogs acpid ifenslave kexec-tools
 cat >> $dir/etc/locale.gen <<EOF
 en_US.utf8 UTF-8
 EOF
-chroot "$dir" locale-gen
+do_chroot "$dir" locale-gen
 
 else
-    chroot "$dir" yum --nogpgcheck install -y wget sudo openssh-server parted coreutils perl $PACKAGES e2fsprogs net-tools initscripts upstart vconfig dhclient grub grubby kbd rsync ifupdown dmidecode bash curl hdparm xfsprogs acpid
+    do_chroot "$dir" yum --nogpgcheck install -y wget sudo openssh-server parted coreutils perl $PACKAGES e2fsprogs net-tools initscripts upstart vconfig dhclient grub grubby kbd rsync ifupdown dmidecode bash curl hdparm xfsprogs acpid
     # bring lshw from epel
-    chroot "$dir" rpm -ivh "https://dl.fedoraproject.org/pub/epel/6/x86_64/lshw-B.02.14-3.el6.x86_64.rpm"
+    do_chroot "$dir" rpm -ivh "https://dl.fedoraproject.org/pub/epel/6/x86_64/lshw-B.02.14-3.el6.x86_64.rpm"
 fi
 
 rm -f "${dir}"/etc/default/grub.d/edeploy.cfg
@@ -184,15 +184,15 @@ if [ -n "$DEB" ]; then
 	alien hpacucli-9.40-12.0.x86_64.rpm
     fi
     cp hpacucli_9.40-13_amd64.deb "$dir"/tmp/hpacucli.deb
-    chroot "$dir" apt-get -y install lib32gcc1 lib32stdc++6 python-pexpect lvm2 vim-tiny bsdmainutils
-    chroot "$dir" dpkg -i /tmp/hpacucli.deb
+    do_chroot "$dir" apt-get -y install lib32gcc1 lib32stdc++6 python-pexpect lvm2 vim-tiny bsdmainutils
+    do_chroot "$dir" dpkg -i /tmp/hpacucli.deb
     rm "$dir"/tmp/hpacucli.deb
 
-    chroot "$dir" apt-get clean
+    do_chroot "$dir" apt-get clean
 else
-    chroot "$dir" yum --nogpgcheck install -y pexpect
+    do_chroot "$dir" yum --nogpgcheck install -y pexpect
     cp hpacucli-9.40-12.0.x86_64.rpm $dir/tmp
-    chroot $dir rpm -ivh /tmp/hpacucli-9.40-12.0.x86_64.rpm
+    do_chroot $dir rpm -ivh /tmp/hpacucli-9.40-12.0.x86_64.rpm
     rm -f $dir/tmp/hpacucli-9.40-12.0.x86_64.rpm
 fi
 

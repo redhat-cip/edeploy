@@ -27,9 +27,9 @@ function upgrade() {
     TARGET="$1"
 
     if [ -z "$TARGET" ]; then
-	echo "Usage: $progname upgrade <target version>" 1>&2
-	echo "Missing <target version> ! Exiting !"
-	exit 1
+        echo "Usage: $progname upgrade <target version>" 1>&2
+        echo "Missing <target version> ! Exiting !"
+        exit 1
     fi
 
     set -e
@@ -42,7 +42,7 @@ function upgrade() {
     cd /var/lib/edeploy/${TARGET}/
 
     if [ -x pre ]; then
-	./pre
+        ./pre
     fi
 
     rsync -av --delete-after --exclude-from=exclude rsync://${RSERV}:${RSERV_PORT}/install/${TARGET}/${ROLE}/ / > /var/lib/edeploy/rsync_${VERS}_${TARGET}.out
@@ -50,20 +50,20 @@ function upgrade() {
     set +e
 
     if [ -x post ]; then
-	./post
-	RET=$?
+        ./post
+        RET=$?
     fi
 
-   echo -e "\nVersion ${TARGET}\n" > /etc/motd
+    echo -e "\nVersion ${TARGET}\n" > /etc/motd
     echo -e "VERS=${TARGET}\nROLE=${ROLE}\nRSERV=${RSERV}\nRSERV_PORT=${RSERV_PORT}\n" > /var/lib/edeploy/conf
 
     echo "Upgraded to $TARGET"
 
     if [ $RET = 100 ]; then
-	echo "Reboot requested by the upgrade process..."
-	sync
-	sleep 2
-	reboot
+        echo "Reboot requested by the upgrade process..."
+        sync
+        sleep 2
+        reboot
     fi
 }
 
@@ -73,9 +73,9 @@ function list() {
 
 function verify() {
     if [ -r /var/lib/edeploy/$VERS/exclude ]; then
-	EXCLUDE=--exclude-from=/var/lib/edeploy/$VERS/exclude
+        EXCLUDE=--exclude-from=/var/lib/edeploy/$VERS/exclude
     else
-	EXCLUDE=" --exclude /proc --exclude /dev --exclude /sys --exclude /var/log --exclude /tmp --exclude /run --exclude /var/tmp"
+        EXCLUDE=" --exclude /proc --exclude /dev --exclude /sys --exclude /var/log --exclude /tmp --exclude /run --exclude /var/tmp"
     fi
 
     rsync --dry-run -av --delete-after $EXCLUDE rsync://${RSERV}:${RSERV_PORT}/install/${VERS}/${ROLE}/ /
@@ -83,8 +83,8 @@ function verify() {
 
 function check_args() {
     if [ -z "$VERS" -o -z "$ROLE" -o -z "$RSERV" -o -z "$RSERV_PORT" ]; then
-	echo "/var/lib/edeploy/conf must contain RSERV, VERS, ROLE and RSERV_PORT" 1>&2
-	exit 1
+        echo "/var/lib/edeploy/conf must contain RSERV, VERS, ROLE and RSERV_PORT" 1>&2
+        exit 1
     fi
 
 }

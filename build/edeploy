@@ -59,7 +59,7 @@ function upgrade() {
 
     echo "Upgraded to $TARGET"
 
-    if [ $RET = 100 ]; then
+    if [ "$RET" = "100" ]; then
         echo "Reboot requested by the upgrade process..."
         sync
         sleep 2

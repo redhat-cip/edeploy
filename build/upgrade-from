@@ -25,6 +25,39 @@ DEST="$4"
 ORIG=$(cd $(dirname $0); pwd)
 FDIR=${DEST}/install/${FROM}/${ROLE}
 TDIR=${DEST}/install/${TO}/${ROLE}
+METADATA_DIR=${DEST}/metadata/${FROM}/${ROLE}/${TO}
+EXCLUDE_FILE=${METADATA_DIR}/exclude
+setup_metadata() {
+    if [ ! -d $METADATA_DIR ]; then
+        mkdir -p $METADATA_DIR
+    fi
+
+    if [ ! -f $EXCLUDE_FILE ]; then
+        echo "No exclude file found, creating a default one"
+        echo "Please check that $EXCLUDE file is featuring all directories or files to ignore during rsync"
+        echo "Any mistake in this file could lead to a bad upgrade path and damage setup"
+        touch $EXCLUDE_FILE
+        cat >> $EXCLUDE_FILE << EOF
+/dev/
+/proc/
+/sys/
+/mnt/
+/run/
+/tmp/
+/home/
+/var/
+/root/
+/etc/
+/boot/grub/*.mod
+/boot/grub/locale/
+/boot/grub/*lst
+/boot/grub/*img
+/boot/grub/*.o
+/boot/grub/grubenv
+/lost+found
+EOF
+    fi
+}
 
 if [ $# != 4 ]; then
     echo "Usage: $0 <role> <base version> <new version> <top dir>" 1>&2
@@ -73,3 +106,5 @@ rm -f ${TDIR}/etc/default/grub.d/edeploy.cfg
 
 chroot ${TDIR} apt-get clean
 chroot ${TDIR} dpkg -l > ${TDIR}/../${ROLE}.dpkg
+
+setup_metadata

@@ -33,7 +33,7 @@ setup_metadata() {
     fi
 
     if [ ! -f $EXCLUDE_FILE ]; then
-        PRIOR_EXCLUDE=$(find ${DEST}/metadata/*/${ROLE}/${FROM}/exclude)
+        PRIOR_EXCLUDE=$(find ${DEST}/metadata/*/${ROLE}/${FROM}/exclude || true)
         if [ ! -z $PRIOR_EXCLUDE ]; then
             echo "Found an exclude file for release ${FROM}"
             echo "Let's use it as default for this version too"

@@ -67,7 +67,7 @@ run_kvm() {
 		-device virtio-net,netdev=net0,mac=52:54:12:34:00:01 \
 		-device virtio-net,netdev=net1,mac=52:54:12:34:00:02 \
 		-device virtio-net,netdev=net2,mac=52:54:12:34:00:03 \
-		-drive file=$DISK,if=virtio,id=drive-virtio-disk0,format=qcow2,cache=none,media=disk,index=0 \
+		-drive file=$DISK,if=virtio,id=drive-virtio-disk0,format=qcow2,cache=writeback,aio=native,media=disk,index=0 \
 		-boot $BOOT_DEVICE \
 		-serial stdio \
 		-smbios type=1,manufacturer=kvm,product=edeploy_test_vm

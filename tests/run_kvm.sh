@@ -326,8 +326,8 @@ case "$MODE" in
         detect_kvm
         prepare_disk
         run_kvm
+        run_kvm local
         stop_httpd
         stop_rsyncd
-        run_kvm local
     ;;
 esac

@@ -69,7 +69,3 @@ fi
 do_chroot ${dir} sh -c "curl -k 'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc' | apt-key add -"
 do_chroot ${dir} apt-get update
 do_chroot ${dir} apt-get install ceph -y --force-yes
-
-
-echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
-echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

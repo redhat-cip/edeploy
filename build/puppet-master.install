@@ -159,6 +159,3 @@ EOF
 
 install_puppet
 configure_cloudinit
-
-echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
-echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

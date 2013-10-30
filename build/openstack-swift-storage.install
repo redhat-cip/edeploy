@@ -44,6 +44,3 @@ else
 fi
 
 install_ib_if_needed $ORIG $dir
-
-echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
-echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

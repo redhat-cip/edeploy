@@ -64,7 +64,3 @@ fi
 
 do_chroot ${dir} apt-get update
 do_chroot ${dir} apt-get install -y haproxy
-
-
-echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
-echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

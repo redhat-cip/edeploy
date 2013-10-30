@@ -72,6 +72,3 @@ else
   echo "OS or Release not supported"
   exit 1
 fi
-
-echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
-echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

@@ -216,8 +216,6 @@ echo -e "root\nroot"|chroot "$dir" passwd
 mkdir -p "$dir/var/lib/edeploy/${version}"
 cp -p ${ORIG}/edeploy ${dir}/usr/sbin/
 
-echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
-echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf
 cp ${ORIG}/base.exclude "$dir/var/lib/edeploy/${version}/exclude"
 
 [ -f ${dir}/etc/rc.local.REAL ] || cp -p ${dir}/etc/rc.local ${dir}/etc/rc.local.REAL

@@ -48,6 +48,3 @@ EOF
 fi
 
 do_chroot ${dir} apt-get install -y --force-yes $PACKAGES
-
-echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
-echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf

@@ -41,6 +41,12 @@ function upgrade() {
 
     cd /var/lib/edeploy/${TARGET}/
 
+    if [ ! -f exclude ]; then
+        echo "No exclude file found, trying to updgrade would destroy your setup by rsyncing empty directories"
+        echo "Canceling upgrade"
+        exit 1
+    fi
+
     if [ -x pre ]; then
         ./pre
     fi
@@ -74,8 +80,6 @@ function list() {
 function verify() {
     if [ -r /var/lib/edeploy/$VERS/exclude ]; then
         EXCLUDE=--exclude-from=/var/lib/edeploy/$VERS/exclude
-    else
-        EXCLUDE=" --exclude /proc --exclude /dev --exclude /sys --exclude /var/log --exclude /tmp --exclude /run --exclude /var/tmp"
     fi
 
     rsync --dry-run -av --delete-after $EXCLUDE rsync://${RSERV}:${RSERV_PORT}/install/${VERS}/${ROLE}/ /

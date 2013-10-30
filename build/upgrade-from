@@ -33,6 +33,15 @@ setup_metadata() {
     fi
 
     if [ ! -f $EXCLUDE_FILE ]; then
+        PRIOR_EXCLUDE=$(find ${DEST}/metadata/*/${ROLE}/${FROM}/exclude)
+        if [ ! -z $PRIOR_EXCLUDE ]; then
+            echo "Found an exclude file for release ${FROM}"
+            echo "Let's use it as default for this version too"
+            echo "Using $PRIOR_EXCLUDE as exclude file"
+            cp $PRIOR_EXCLUDE $EXCLUDE_FILE
+            return
+        fi
+
         echo "No exclude file found, creating a default one"
         echo "Please check that $EXCLUDE file is featuring all directories or files to ignore during rsync"
         echo "Any mistake in this file could lead to a bad upgrade path and damage setup"

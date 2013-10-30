@@ -62,7 +62,7 @@ img: $(INST)/$(IMG)
 	UPLOAD_LOG=$(UPLOAD_LOG) ./img.install $(INST)/base $(IMG) $(VERS) $(INST) $(SERV) $(HSERV) $(DEBUG)
 
 base $(INST)/base.done: base.install policy-rc.d edeploy
-	ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ARCH=$(ARCH) ./base.install $(INST)/base $(DIST) $(VERS)
+	REPOSITORY=$(REPOSITORY) ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ARCH=$(ARCH) ./base.install $(INST)/base $(DIST) $(VERS)
 	touch $(INST)/base.done
 
 cloud $(INST)/cloud.done: cloud.install $(INST)/base.done

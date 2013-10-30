@@ -70,7 +70,7 @@ if [ ! -d "$dir" ]; then
     mkdir -p "$dir"
 
     if [ -n "$DEB" ]; then
-	debootstrap --arch ${ARCH:=amd64} --variant=minbase $dist "$dir"
+	debootstrap --arch ${ARCH:=amd64} --variant=minbase $dist "$dir" $REPOSITORY
 
 	# workaround no signature downloaded
 	rm -f "$dir"/var/lib/apt/lists/*[es]

@@ -17,15 +17,28 @@
 # under the License.
 
 progname="$0"
+TEST_UPGRADE=0
+EDEPLOY_DIR=/var/lib/edeploy
 
-if [ -r /var/lib/edeploy/conf ]; then
-    . /var/lib/edeploy/conf
+if [ -r ${EDEPLOY_DIR}/conf ]; then
+    . ${EDEPLOY_DIR}/conf
 fi
 
+function test-upgrade() {
+    TEST_UPGRADE=1
+    upgrade $@
+}
+
+function update_metadata() {
+    ROLE_TO_UPDATE=$1
+    if [ ! -d ${EDEPLOY_DIR} ]; then
+        mkdir -p ${EDEPLOY_DIR}
+    fi
+    rsync -a rsync://${RSERV}:${RSERV_PORT}/metadata/${VERS}/${ROLE}/${TARGET}/ ${EDEPLOY_DIR}/${ROLE_TO_UPDATE}/
+}
+
 function upgrade() {
-
     TARGET="$1"
-
     if [ -z "$TARGET" ]; then
         echo "Usage: $progname upgrade <target version>" 1>&2
         echo "Missing <target version> ! Exiting !"
@@ -35,23 +48,27 @@ function upgrade() {
     set -e
     set -x
 
-    mkdir -p /var/lib/edeploy
+    update_metadata $TARGET
 
-    rsync -a rsync://${RSERV}:${RSERV_PORT}/metadata/${VERS}/${ROLE}/${TARGET}/ /var/lib/edeploy/${TARGET}/
-
-    cd /var/lib/edeploy/${TARGET}/
+    cd ${EDEPLOY_DIR}/${TARGET}/
 
     if [ ! -f exclude ]; then
-        echo "No exclude file found, trying to updgrade would destroy your setup by rsyncing empty directories"
+        echo "No exclude file found, trying to upgrade would destroy your setup by rsyncing empty directories"
         echo "Canceling upgrade"
         exit 1
+    fi
+
+    # If we run a test upgrade, let's just show what the rsync would have change on the server
+    if [ "$TEST_UPGRADE" = "1" ]; then
+        rsync --dry-run -av --delete-after --exclude-from=exclude rsync://${RSERV}:${RSERV_PORT}/install/${TARGET}/${ROLE}/ /
+        return 0
     fi
 
     if [ -x pre ]; then
         ./pre
     fi
 
-    rsync -av --delete-after --exclude-from=exclude rsync://${RSERV}:${RSERV_PORT}/install/${TARGET}/${ROLE}/ / > /var/lib/edeploy/rsync_${VERS}_${TARGET}.out
+    rsync -av --delete-after --exclude-from=exclude rsync://${RSERV}:${RSERV_PORT}/install/${TARGET}/${ROLE}/ / > ${EDEPLOY_DIR}/rsync_${VERS}_${TARGET}.out
 
     set +e
 
@@ -61,7 +78,7 @@ function upgrade() {
     fi
 
     echo -e "\nVersion ${TARGET}\n" > /etc/motd
-    echo -e "VERS=${TARGET}\nROLE=${ROLE}\nRSERV=${RSERV}\nRSERV_PORT=${RSERV_PORT}\n" > /var/lib/edeploy/conf
+    echo -e "VERS=${TARGET}\nROLE=${ROLE}\nRSERV=${RSERV}\nRSERV_PORT=${RSERV_PORT}\n" > ${EDEPLOY_DIR}/conf
 
     echo "Upgraded to $TARGET"
 
@@ -78,8 +95,10 @@ function list() {
 }
 
 function verify() {
-    if [ -r /var/lib/edeploy/$VERS/exclude ]; then
-        EXCLUDE=--exclude-from=/var/lib/edeploy/$VERS/exclude
+    update_metadata $VERS
+
+    if [ -r ${EDEPLOY_DIR}/$VERS/exclude ]; then
+        EXCLUDE=--exclude-from=${EDEPLOY_DIR}/$VERS/exclude
     fi
 
     rsync --dry-run -av --delete-after $EXCLUDE rsync://${RSERV}:${RSERV_PORT}/install/${VERS}/${ROLE}/ /
@@ -87,7 +106,7 @@ function verify() {
 
 function check_args() {
     if [ -z "$VERS" -o -z "$ROLE" -o -z "$RSERV" -o -z "$RSERV_PORT" ]; then
-        echo "/var/lib/edeploy/conf must contain RSERV, VERS, ROLE and RSERV_PORT" 1>&2
+        echo "${EDEPLOY_DIR}/conf must contain RSERV, VERS, ROLE and RSERV_PORT" 1>&2
         exit 1
     fi
 
@@ -99,6 +118,8 @@ function help() {
 
     upgrade: launch the upgrade process to version <target version>.
 
+    test-upgrade: launch a dry run of the upgrade process to version <target version>.
+
     list: list the available target versions on the server.
 
     verify: verify the modified files regarding the version on the server.
@@ -109,7 +130,7 @@ EOF
 }
 
 function usage() {
-    echo "Usage: $progname (upgrade <target version>|list|verify|help)"
+    echo "Usage: $progname ({test-}upgrade <target version>|list|verify|help)"
 }
 
 command="$1"
@@ -119,7 +140,7 @@ case "$command" in
 	help)
 		help
 	;;
-	upgrade|list|verify)
+	test-upgrade|upgrade|list|verify)
 		check_args
 		"$command" "$@"
 	;;

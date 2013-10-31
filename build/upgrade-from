@@ -27,11 +27,31 @@ FDIR=${DEST}/install/${FROM}/${ROLE}
 TDIR=${DEST}/install/${TO}/${ROLE}
 METADATA_DIR=${DEST}/metadata/${FROM}/${ROLE}/${TO}
 EXCLUDE_FILE=${METADATA_DIR}/exclude
-setup_metadata() {
-    if [ ! -d $METADATA_DIR ]; then
-        mkdir -p $METADATA_DIR
-    fi
+ADD_ONLY_FILE=${METADATA_DIR}/add_only
 
+setup_add_only() {
+    if [ ! -f $ADD_ONLY_FILE ]; then
+        PRIOR_ADD=$(find ${DEST}/metadata/*/${ROLE}/${FROM}/add_only || true)
+        if [ ! -z $PRIOR_ADD ]; then
+            echo "Found an add_only file for release ${FROM}"
+            echo "Let's use it as default for this version too"
+            echo "Using $PRIOR_ADD as add_only file"
+            cp $PRIOR_ADD $ADD_ONLY_FILE
+            return
+        fi
+
+        echo "No add_only file found, creating a default one"
+        echo "Please check that $ADD_ONLY_FILE file is featuring all directories or files that need to only added"
+        echo "Any mistake in this file could lead to a bad upgrade path and damage setup"
+        touch $ADD_ONLY_FILE
+        cat >> $ADD_ONLY_FILE << EOF
++ /var/
++ /var/**
+- *
+EOF
+    fi
+}
+setup_exclude() {
     if [ ! -f $EXCLUDE_FILE ]; then
         PRIOR_EXCLUDE=$(find ${DEST}/metadata/*/${ROLE}/${FROM}/exclude || true)
         if [ ! -z $PRIOR_EXCLUDE ]; then
@@ -43,7 +63,7 @@ setup_metadata() {
         fi
 
         echo "No exclude file found, creating a default one"
-        echo "Please check that $EXCLUDE file is featuring all directories or files to ignore during rsync"
+        echo "Please check that $EXCLUDE_FILE file is featuring all directories or files to ignore during rsync"
         echo "Any mistake in this file could lead to a bad upgrade path and damage setup"
         touch $EXCLUDE_FILE
         cat >> $EXCLUDE_FILE << EOF
@@ -54,8 +74,11 @@ setup_metadata() {
 /run/
 /tmp/
 /home/
-/var/
 /root/
++ /var
+- /var/lib/edeploy/*
+- /var/log/
+- /var/cache/
 /boot/grub/
 /lost+found
 /etc/hostname
@@ -74,6 +97,14 @@ setup_metadata() {
 /etc/udev/rules.d/*persistent*
 EOF
     fi
+}
+
+setup_metadata() {
+    if [ ! -d $METADATA_DIR ]; then
+        mkdir -p $METADATA_DIR
+    fi
+    setup_exclude
+    setup_add_only
 }
 
 if [ $# != 4 ]; then

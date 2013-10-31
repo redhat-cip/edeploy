@@ -81,10 +81,6 @@ openstack-controller $(INST)/openstack-controller.done: openstack-controller.ins
 	ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ./openstack-controller.install $(INST)/base $(INST)/openstack-controller $(VERS)
 	touch $(INST)/openstack-controller.done
 
-openstack-compute $(INST)/openstack-compute.done: openstack-compute.install $(INST)/base.done
-	ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ./openstack-compute.install $(INST)/base $(INST)/openstack-compute $(VERS)
-	touch $(INST)/openstack-compute.done
-
 openstack-swift-proxy $(INST)/openstack-swift-proxy.done: openstack-swift-proxy.install $(INST)/openstack-common.done
 	ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ./openstack-swift-proxy.install $(INST)/openstack-common $(INST)/openstack-swift-proxy $(VERS)
 	touch $(INST)/openstack-swift-proxy.done

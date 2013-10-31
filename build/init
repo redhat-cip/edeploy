@@ -16,6 +16,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+# Default behavior if install succeed
+ONSUCCESS="reboot"
 VERBOSE=0
 
 . init.common
@@ -41,6 +43,13 @@ mount_virtual_fs
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^DEBUG=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^VERBOSE=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^NOREBOOT=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^ONSUCCESS=")
+
+#compatibilty module
+if [ "$NOREBOOT" = "1" ]; then
+    log "NOREBOOT option is deprecated, please use ONSUCCESS='kexec'"
+    ONSUCCESS="kexec"
+fi
 
 if [ "$VERBOSE" = 1 ]; then
     set -x			# show commands
@@ -244,8 +253,9 @@ if /configure; then
                 curl -s ${PXEMNGR_URL}localboot/
             fi
 
-            if [ "$DEBUG" != 1 ]; then
-                if [ "$NOREBOOT" = 1 ]; then
+            case "$ONSUCCESS" in
+                "kexec")
+                    log "Booting with kexec as required by ONSUCCESS"
                     if type -p kexec; then
                         log_n "Trying kexec..."
                         cp $d/boot/vmlinuz* /tmp/vmlinuz
@@ -267,11 +277,29 @@ if /configure; then
                             kexec -l /tmp/vmlinuz --initrd=/tmp/initrd.img --append="root=${root}${BOOT_ARG}"
                             kexec -e
                         fi
+                    else
+                        give_up "ONSUCCESS=kexec but no kexec found !"
                     fi
-                fi
-                umount -a
-                do_reboot
-            fi
+                    ;;
+                "reboot")
+                    log "Automatic rebooting as required by ONSUCCESS"
+                    umount -a
+                    do_reboot
+                    ;;
+                "halt")
+                    log "Automatic poweroff as required by ONSUCCESS"
+                    umount -a
+                    sync
+                    poweroff -f
+                    ;;
+                "console")
+                    log "ONSUCCESS=console, launching an interactive shell"
+                    exec /bin/bash -i
+                    ;;
+                *)
+                    give_up "Unsupported ONSUCCESS=$ONSUCCESS value"
+                    ;;
+            esac
         else
             give_up "Install of grub failed"
         fi

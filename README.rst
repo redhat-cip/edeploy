@@ -33,7 +33,7 @@ Configure the PXE boot like that::
 
  LABEL eDeploy
  	KERNEL vmlinuz
- 	INITRD initrd.pxe SERV=10.0.2.2 DEBUG=1 VERBOSE=1 RSERV_PORT=1515 HTTP_PORT=9000 HTTP_PATH=/cgi-bin/edeploy/ UPLOAD_LOG=1
+ 	INITRD initrd.pxe SERV=10.0.2.2 DEBUG=1 VERBOSE=1 RSERV_PORT=1515 HTTP_PORT=9000 HTTP_PATH=/cgi-bin/edeploy/ UPLOAD_LOG=1 ONSUCCESS=kexec
 
  LABEL eDeploy-http
  	KERNEL vmlinuz
@@ -52,6 +52,13 @@ upload the log file on edeploy's server if the deploiement fails.
 
 The ``VERBOSE`` variable if set to ``1`` on the kernel command line, it turns on
 the -x of bash to ease the understanding of faulty commands
+
+The ``ONSUCCESS`` variable defines what shall be edeploy behavior
+if the installed succeed. Four possible values :
+``kexec`` mode will use kexec to boot immediately the installed OS.
+``reboot`` mode will reboot the server once installed.
+``halt`` mode will turn the server off once installed.
+``console`` mode will offer a console on the server once installed.
 
 Please note that ``RSERV_PORT``, ``HTTP_PORT`` are given here as an
 example to override the default settings 831 & 80 respectively.

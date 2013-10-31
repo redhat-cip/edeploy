@@ -57,12 +57,7 @@ setup_metadata() {
 /var/
 /root/
 /etc/
-/boot/grub/*.mod
-/boot/grub/locale/
-/boot/grub/*lst
-/boot/grub/*img
-/boot/grub/*.o
-/boot/grub/grubenv
+/boot/grub/
 /lost+found
 EOF
     fi

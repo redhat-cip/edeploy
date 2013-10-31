@@ -78,6 +78,8 @@ else
   exit 1
 fi
 
+do_chroot ${dir} rm -rf /var/lib/puppet/ssl/* || true
+
 }
 
 configure_cloudinit () {

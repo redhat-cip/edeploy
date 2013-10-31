@@ -172,7 +172,6 @@ if [ $OS == "Debian" ] || [ $OS == "Ubuntu" ]; then
     do_chroot ${dir} apt-get update
     do_chroot ${dir} apt-get install -y --force-yes puppet augeas-tools openssh-server wget iptables build-essential
     do_chroot ${dir} sed -e 's/START=yes/START=no/' -i /etc/default/puppet
-    do_chroot ${dir} rm -rf /var/lib/puppet/ssl/*
 
 elif [ $OS == "CentOS" ] && [ $CODENAME == "6.4" ]; then
     do_chroot ${dir} yum install -y augeas openssh-server wget
@@ -181,6 +180,9 @@ else
   echo "OS or Release not supported"
   exit 1
 fi
+
+do_chroot ${dir} rm -rf /var/lib/puppet/ssl/* || true
+
 }
 
 prepare_packages

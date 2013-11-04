@@ -35,192 +35,135 @@ check_binary() {
 	type -p $1 || fatal_error "$1 is missing"
 }
 
-if [ -z "$1" -o -z "$dist" -o -z "$version" ]; then
-   echo "Usage: $0 <directory name> <distro name>" 1>&2
-   exit 1
-fi
+bootstrap() {
+    target=$1
+    mkdir -p "$target/dev" "$target/proc"
+    mount -obind /dev ${target}/dev
+    mount -obind /proc ${target}/proc
+    # Use debootstrap for debian based distribution
+    if [ -n "$DEB" ]; then
+        debootstrap --arch ${ARCH:=amd64} --variant=minbase $dist "$target" $REPOSITORY
+        # workaround no signature downloaded
+        rm -f "$target"/var/lib/apt/lists/*[es]
+        do_chroot "$target" apt-get update
+        cp -p ${ORIG}/policy-rc.d ${target}/usr/sbin/
+        echo 'APT::Install-Recommends "0" ;' >> "$target/etc/apt/apt.conf"
+        echo 'APT::Install-Suggests "0" ;' >> "$target/etc/apt/apt.conf"
+    else # Centos
+        check_binary yum
+        check_binary rpm
+        rpm -ivh --root "$target" "http://mirror.centos.org/centos/6.4/os/x86_64/Packages/centos-release-6-4.el6.centos.10.x86_64.rpm"
+        sed -i 's/$releasever/6/g' ${target}/etc/yum.repos.d/*
+        cp -f /etc/resolv.conf "$target/etc/"
+        yum --installroot "$target" -y --nogpgcheck install yum
+        do_chroot "$target" yum --nogpgcheck install -y yum basesystem
+        cp ${target}/etc/skel/.bashrc ${target}/root
+        cp ${target}/etc/skel/.bash_profile ${target}/root
+    fi
+    umount -lf ${target}/dev || true
+    umount -lf ${target}/proc || true
+}
 
-check_binary dh_testdir
-check_binary alien
-check_binary wget
-check_binary debootstrap
-check_binary chroot
-check_binary sed
+install_base_packages() {
+    target=$1
+    mount -obind /dev ${target}/dev
+    mount -obind /proc ${target}/proc
+    # Resolv.conf got setup during the initial deboostrap
+    # But since, you might have change your host to another network (office vs home vs mobile vs ...)
+    # In such case, the resolv.conf is wrong and prevents apt (and all networking-depedent stuff from working)
+    # So let's copy the current one to insure the setup is good
+    cp -f /etc/resolv.conf "$target/etc/"
+    PACKAGES="pciutils rsyslog lsb-release"
+    DEB_PKG=" wget sudo locales openssh-server parted net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase dmidecode bash curl hdparm xfsprogs acpid ifenslave kexec-tools"
+    case $dist in
+        precise)
+            PACKAGES="$PACKAGES linux-image-generic-lts-raring linux-headers-generic-lts-raring iputils-ping linux-firmware grub2 $DEB_PKG"
+            echo "deb http://archive.ubuntu.com/ubuntu precise main" > ${target}/etc/apt/sources.list
+            echo "deb http://archive.ubuntu.com/ubuntu precise-updates main" >> ${target}/etc/apt/sources.list
+            echo "deb http://archive.ubuntu.com/ubuntu precise universe" >> ${target}/etc/apt/sources.list
+            echo "deb http://archive.ubuntu.com/ubuntu precise-updates universe" >> ${target}/etc/apt/sources.list
+            ;;
+        wheezy)
+            PACKAGES="$PACKAGES linux-image-amd64 ipmitool htop acpi-support-base inetutils-ping firmware-bnx2 $DEB_PKG"
+            echo "deb http://ftp.debian.org/debian/ wheezy non-free" > ${target}/etc/apt/sources.list.d/nonfree.list
+            echo "deb http://security.debian.org/ wheezy/updates main" >  ${target}/etc/apt/sources.list.d/updates.list
+            echo "deb http://ftp.debian.org/debian/ wheezy-updates main" >> ${target}/etc/apt/sources.list.d/updates.list
+            ;;
+        centos*)
+            PACKAGES="$PACKAGES passwd kernel redhat-lsb-core wget sudo openssh-server parted coreutils perl e2fsprogs net-tools initscripts upstart vconfig dhclient grub grubby kbd rsync ifupdown dmidecode bash curl hdparm xfsprogs acpid"
+            ;;
+        *)
+            echo "unsupported distribution: $dist" 2>&1
+            exit 1
+            ;;
+    esac
+    if [ -n "$DEB" ]; then
+        do_chroot "$target" apt-get update
+        do_chroot "$target" apt-get dist-upgrade -y
+        mkdir -p "${target}"/etc/default/grub.d
+        echo 'exit 0' > "${target}"/etc/default/grub.d/edeploy.cfg
+        do_chroot "$target" apt-get install -y --force-yes $PACKAGES
+        echo  "en_US.utf8 UTF-8" >> $target/etc/locale.gen
+        do_chroot "$target" locale-gen
+        rm -f "${target}"/etc/default/grub.d/edeploy.cfg
+    else
+        mount -obind /dev ${target}/dev
+        do_chroot "$target" yum --nogpgcheck install -y $PACKAGES
+        # bring lshw from epel
+        do_chroot "$target" rpm -ivh "https://dl.fedoraproject.org/pub/epel/6/x86_64/lshw-B.02.14-3.el6.x86_64.rpm"
+        umount -lf ${target}/dev
+    fi
+    umount -lf ${target}/dev || true
+    umount -lf ${target}/proc || true
+}
 
-uname -m | grep -q 'i[3-6]86'
-if [ $? -eq 0 ]; then
-    echo "eDeploy is not supported on 32bit OS"
-    echo "Exiting"
-    exit 1
-fi
-
-
-set -e				# abort on failure
-set -x				# print commands
-
-case $dist in
-    centos*)
-	DEB=
-	;;
-    *)
-	DEB=1
-esac
-
-if [ ! -d "$dir" ]; then
-    mkdir -p "$dir"
+install_hp_raid_cli_tool() {
+    target=$1
+    # Inject HP RAID CLI tool
+    if [ ! -r hpacucli-9.40-12.0.x86_64.rpm ]; then
+        wget http://downloads.linux.hp.com/SDR/downloads/ServicePackforProLiant/2013.02.0/hp/swpackages/hpacucli-9.40-12.0.x86_64.rpm
+    fi
 
     if [ -n "$DEB" ]; then
-	debootstrap --arch ${ARCH:=amd64} --variant=minbase $dist "$dir" $REPOSITORY
+        if [ ! -r hpacucli_9.40-13_amd64.deb  ]; then
+        alien hpacucli-9.40-12.0.x86_64.rpm
+        fi
+        cp hpacucli_9.40-13_amd64.deb "$target"/tmp/hpacucli.deb
+        do_chroot "$target" apt-get -y install lib32gcc1 lib32stdc++6 python-pexpect lvm2 vim-tiny bsdmainutils
+        do_chroot "$target" dpkg -i /tmp/hpacucli.deb
+        rm "$target"/tmp/hpacucli.deb
 
-	# workaround no signature downloaded
-	rm -f "$dir"/var/lib/apt/lists/*[es]
-    do_chroot "$dir" apt-get update
+        do_chroot "$target" apt-get clean
     else
-	mkdir -p "$dir/dev" "$dir/proc"
-    fi
-fi
-
-if [ -n "$DEB" ] ;then
-    cp -p ${ORIG}/policy-rc.d ${dir}/usr/sbin/
-
-    cat >> "$dir/etc/apt/apt.conf" <<EOF
-APT::Install-Recommends "0" ;
-APT::Install-Suggests "0" ;
-EOF
-fi
-
-cleanup() {
-    rc=$?
-    umount ${dir}/dev
-    umount ${dir}/proc
-    if [ $rc = 0 ]; then
-	cd ${dir}
-	tar c . | compress -9v > ../../${ROLE}-${version}.edeploy
+        mount -obind /dev ${target}/dev
+        do_chroot "$target" yum --nogpgcheck install -y pexpect
+        cp hpacucli-9.40-12.0.x86_64.rpm $dir/tmp
+        do_chroot $dir rpm -ivh /tmp/hpacucli-9.40-12.0.x86_64.rpm
+        rm -f $dir/tmp/hpacucli-9.40-12.0.x86_64.rpm
+        umount -lf ${target}/dev
     fi
 }
 
-trap cleanup 0
-
-mount -obind /dev ${dir}/dev
-mount -obind /proc ${dir}/proc
-
-if [ -z "$DEB" ]; then
-    rpm -ivh --root "$dir" "http://mirror.centos.org/centos/6.4/os/x86_64/Packages/centos-release-6-4.el6.centos.10.x86_64.rpm"
-    sed -i 's/$releasever/6/g' ${dir}/etc/yum.repos.d/*
-    cp -f /etc/resolv.conf "$dir/etc/"
-    yum --installroot "$dir" -y --nogpgcheck install yum
-    do_chroot "$dir" yum --nogpgcheck install -y yum basesystem
-    cp ${dir}/etc/skel/.bashrc ${dir}/root
-    cp ${dir}/etc/skel/.bash_profile ${dir}/root
-fi
-
-PACKAGES="pciutils rsyslog lsb-release"
-
-case $dist in
-    precise)
-	PACKAGES="$PACKAGES linux-image-generic-lts-raring linux-headers-generic-lts-raring iputils-ping linux-firmware lsb-release"
-	cat > ${dir}/etc/apt/sources.list << EOF
-deb http://archive.ubuntu.com/ubuntu precise main
-deb http://archive.ubuntu.com/ubuntu precise-updates main
-deb http://archive.ubuntu.com/ubuntu precise universe
-deb http://archive.ubuntu.com/ubuntu precise-updates universe
-EOF
-	;;
-    wheezy)
-	PACKAGES="$PACKAGES linux-image-amd64 ipmitool htop acpi-support-base inetutils-ping firmware-bnx2 lsb-release"
-	cat > ${dir}/etc/apt/sources.list.d/nonfree.list <<EOF
-deb http://ftp.debian.org/debian/ wheezy non-free
-EOF
-        cat > ${dir}/etc/apt/sources.list.d/updates.list <<EOF
-deb http://security.debian.org/ wheezy/updates main
-deb http://ftp.debian.org/debian/ wheezy-updates main
-EOF
-	;;
-    centos*)
-	PACKAGES="$PACKAGES passwd kernel redhat-lsb-core"
-	;;
-    *)
-	echo "unsupported distribution: $dist" 2>&1
-	exit 1
-	;;
-esac
-
-mkdir -p "${dir}"/etc/default/grub.d
-echo 'exit 0' > "${dir}"/etc/default/grub.d/edeploy.cfg
+ssh_fix() {
+    target=$1
+    # let the key be generated on first boot
+    rm -f "$target"/etc/ssh/*key*
+    if [ -n "$DEB" ]; then
+        cat > ${target}/etc/first-boot.d/01-ssh <<EOF
+#!/bin/bash
 
 export DEBIAN_FRONTEND=noninteractive
-
-# Resolv.conf got setup during the initial deboostrap
-# But since, you might have change your host to another network (office vs home vs mobile vs ...)
-# In such case, the resolv.conf is wrong and prevents apt (and all networking-depedent stuff from working)
-# So let's copy the current one to insure the setup is good
-cp -f /etc/resolv.conf "$dir/etc/"
-
-if [ -n "$DEB" ]; then
-do_chroot "$dir" apt-get update
-do_chroot "$dir" apt-get dist-upgrade -y
-
-do_chroot "$dir" apt-get install -y --force-yes wget sudo locales openssh-server parted $PACKAGES net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase dmidecode bash curl hdparm xfsprogs acpid ifenslave kexec-tools
-cat >> $dir/etc/locale.gen <<EOF
-en_US.utf8 UTF-8
+dpkg-reconfigure openssh-server
 EOF
-do_chroot "$dir" locale-gen
-
-else
-    do_chroot "$dir" yum --nogpgcheck install -y wget sudo openssh-server parted coreutils perl $PACKAGES e2fsprogs net-tools initscripts upstart vconfig dhclient grub grubby kbd rsync ifupdown dmidecode bash curl hdparm xfsprogs acpid
-    # bring lshw from epel
-    do_chroot "$dir" rpm -ivh "https://dl.fedoraproject.org/pub/epel/6/x86_64/lshw-B.02.14-3.el6.x86_64.rpm"
-fi
-
-rm -f "${dir}"/etc/default/grub.d/edeploy.cfg
-
-# Inject HP RAID CLI tool
-if [ ! -r hpacucli-9.40-12.0.x86_64.rpm ]; then
-    wget http://downloads.linux.hp.com/SDR/downloads/ServicePackforProLiant/2013.02.0/hp/swpackages/hpacucli-9.40-12.0.x86_64.rpm
-fi
-
-if [ -n "$DEB" ]; then
-    if [ ! -r hpacucli_9.40-13_amd64.deb  ]; then
-	alien hpacucli-9.40-12.0.x86_64.rpm
+        chmod 755 ${target}/etc/first-boot.d/01-ssh
     fi
-    cp hpacucli_9.40-13_amd64.deb "$dir"/tmp/hpacucli.deb
-    do_chroot "$dir" apt-get -y install lib32gcc1 lib32stdc++6 python-pexpect lvm2 vim-tiny bsdmainutils
-    do_chroot "$dir" dpkg -i /tmp/hpacucli.deb
-    rm "$dir"/tmp/hpacucli.deb
+}
 
-    do_chroot "$dir" apt-get clean
-else
-    do_chroot "$dir" yum --nogpgcheck install -y pexpect
-    cp hpacucli-9.40-12.0.x86_64.rpm $dir/tmp
-    do_chroot $dir rpm -ivh /tmp/hpacucli-9.40-12.0.x86_64.rpm
-    rm -f $dir/tmp/hpacucli-9.40-12.0.x86_64.rpm
-fi
-
-# Ubuntu specific
-if [ $dist = precise ]; then
-    sed -i 's/#GRUB_TERMINAL=console/GRUB_TERMINAL=console/' ${dir}/etc/default/grub
-    sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT=/' ${dir}/etc/default/grub
-fi
-
-if [ -z "$DEB" ]; then
-    rm -rf "$dir/var/cache/yum"
-fi
-
-# let the key be generated on first boot
-rm -f "$dir"/etc/ssh/*key*
-
-rm -f ${dir}/var/tmp/* ${dir}/tmp/*
-
-echo -e "root\nroot"|chroot "$dir" passwd
-
-mkdir -p "$dir/var/lib/edeploy/${version}"
-cp -p ${ORIG}/edeploy ${dir}/usr/sbin/
-
-cp ${ORIG}/base.exclude "$dir/var/lib/edeploy/${version}/exclude"
-
-[ -f ${dir}/etc/rc.local.REAL ] || cp -p ${dir}/etc/rc.local ${dir}/etc/rc.local.REAL
-
-cat > ${dir}/etc/rc.local <<EOF
+set_firstboot() {
+    target=$1
+    mkdir -p ${target}/etc/first-boot.d
+    [ -f ${target}/etc/rc.local.REAL ] || cp -p ${target}/etc/rc.local ${target}/etc/rc.local.REAL
+    cat > ${target}/etc/rc.local <<EOF
 #!/bin/bash
 
 set -e
@@ -236,14 +179,79 @@ echo done
 
 exit 0
 EOF
+    chmod 755 ${target}/etc/rc.local
+}
 
-mkdir -p ${dir}/etc/first-boot.d
+clean_tmp_dir() {
+    target=$1
+    rm -rf ${target}/var/tmp/* ${target}/tmp/*
+    if [ -z "$DEB" ]; then
+        rm -rf "$target/var/cache/yum"
+    fi
+}
 
-cat > ${dir}/etc/first-boot.d/01-ssh <<EOF
-#!/bin/bash
+install_edeploy_bin() {
+    target=$1
+    mkdir -p "$target/var/lib/edeploy/${version}"
+    cp -p ${ORIG}/edeploy ${target}/usr/sbin/
+    cp ${ORIG}/base.exclude "$target/var/lib/edeploy/${version}/exclude"
+}
 
-export DEBIAN_FRONTEND=noninteractive
-dpkg-reconfigure openssh-server
-EOF
+cleanup() {
+    rc=$?
+    umount ${dir}/dev || true
+    umount ${dir}/proc || true
+    if [ $rc = 0 ]; then
+    cd ${dir}
+    tar c . | compress -9v > ../../${ROLE}-${version}.edeploy
+    fi
+}
 
-chmod 755 ${dir}/etc/rc.local ${dir}/etc/first-boot.d/01-ssh
+if [ -z "$1" -o -z "$dist" -o -z "$version" ]; then
+   echo "Usage: $0 <directory name> <distro name>" 1>&2
+   exit 1
+fi
+
+set -e              # abort on failure
+set -x              # print commands
+
+check_binary dh_testdir
+check_binary alien
+check_binary wget
+check_binary debootstrap
+check_binary chroot
+check_binary sed
+
+uname -m | grep -q 'i[3-6]86'
+if [ $? -eq 0 ]; then
+    echo "eDeploy is not supported on 32bit OS"
+    echo "Exiting"
+    exit 1
+fi
+
+case $dist in
+    centos*)
+        DEB=
+        ;;
+    *)
+        DEB=1
+        export DEBIAN_FRONTEND=noninteractive
+esac
+
+trap cleanup 0
+
+bootstrap $dir
+install_base_packages $dir
+install_hp_raid_cli_tool $dir
+set_firstboot $dir
+ssh_fix $dir
+install_edeploy_bin $dir
+clean_tmp_dir
+
+echo -e "root\nroot"|chroot "$dir" passwd
+
+# Ubuntu specific
+if [ $dist = precise ]; then
+    sed -i 's/#GRUB_TERMINAL=console/GRUB_TERMINAL=console/' ${dir}/etc/default/grub
+    sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT=/' ${dir}/etc/default/grub
+fi

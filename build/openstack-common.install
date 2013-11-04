@@ -35,10 +35,6 @@ fi
 
 install_ib_if_needed $ORIG $dir
 
-OS=$(chroot ${dir} lsb_release -i -s)
-RELEASE=$(chroot ${dir} lsb_release -c -s)
-CODENAME=$(chroot ${dir} lsb_release -r -s)
-
 prepare_packages () {
 
 if [ $OS == "Debian" ]; then

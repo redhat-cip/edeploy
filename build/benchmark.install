@@ -32,9 +32,6 @@ do_chroot ${dir} apt-get clean
 
 install_ib_if_needed $ORIG $dir
 
-OS=$(chroot ${dir} lsb_release -i -s)
-RELEASE=$(chroot ${dir} lsb_release -c -s)
-
 PACKAGES="netperf netpipe fio cpuburn"
 
 if [ "$OS" = "Ubuntu" ]; then

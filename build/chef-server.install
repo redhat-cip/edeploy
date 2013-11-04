@@ -29,9 +29,6 @@ do_chroot ${dir} apt-get update
 do_chroot ${dir} apt-get install -y --force-yes wget
 do_chroot ${dir} apt-get clean
 
-OS=$(chroot ${dir} lsb_release -i -s)
-RELEASE=$(chroot ${dir} lsb_release -r -s)
-
 configure_cloudinit () {
     mkdir -p ${dir}/etc/cloud/cloud.cfg.d
     rm -f ${dir}/etc/cloud/cloud.cfg

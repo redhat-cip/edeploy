@@ -28,10 +28,6 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
-OS=$(chroot ${dir} lsb_release -i -s)
-RELEASE=$(chroot ${dir} lsb_release -c -s)
-CODENAME=$(chroot ${dir} lsb_release -r -s)
-
 if [ $OS == "Debian" ] || [ $OS == "Ubuntu" ]; then
     do_chroot ${dir} apt-get update
     do_chroot ${dir} apt-get install -y --force-yes swift-account swift-container swift-object xfsprogs

@@ -33,9 +33,6 @@ do_chroot ${dir} apt-get clean
 
 install_ib_if_needed $ORIG $dir
 
-OS=$(chroot ${dir} lsb_release -i -s)
-RELEASE=$(chroot ${dir} lsb_release -c -s)
-
 if [ $OS == "Debian" ] && [ $RELEASE == "wheezy" ]; then
     do_chroot ${dir} add-apt-repository 'deb http://ftp2.fr.debian.org/debian wheezy-backports main'
 

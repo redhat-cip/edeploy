@@ -218,7 +218,7 @@ common_setup() {
     export OS=$(chroot ${dir} lsb_release -i -s)
     export RELEASE=$(chroot ${dir} lsb_release -c -s)
     export CODENAME=$(chroot ${dir} lsb_release -r -s)
-    
+
     # Resolv.conf got setup during the initial deboostrap
     # But since, you might have change your host to another network (office vs home vs mobile vs ...)
     # In such case, the resolv.conf is wrong and prevents apt (and all networking-depedent stuff from working)

@@ -26,7 +26,6 @@ ORIG=$(cd $(dirname $0); pwd)
 
 # Add the PPA sources to your apt sources list.
 . ${ORIG}/functions
-. ${ORIG}/common
 
 if grep -q debian.org ${dir}/etc/apt/sources.list; then
     echo "Docker only supported under Ubuntu"

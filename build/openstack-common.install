@@ -27,7 +27,6 @@ ROLE=openstack-common
 ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
-. ${ORIG}/common
 
 if [ -z "$OS_VERS" ]; then
     echo "OS_VERS is not set, Havana will be built by default"

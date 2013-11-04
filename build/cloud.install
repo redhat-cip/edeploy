@@ -25,7 +25,6 @@ ROLE=cloud
 ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
-. ${ORIG}/common
 
 install_ib_if_needed $ORIG $dir
 

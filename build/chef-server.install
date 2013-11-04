@@ -24,7 +24,6 @@ ROLE=chef-server
 ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
-. ${ORIG}/common
 
 do_chroot ${dir} apt-get update
 do_chroot ${dir} apt-get install -y --force-yes wget

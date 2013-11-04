@@ -27,7 +27,6 @@ ROLE=openstack-swift-storage
 ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
-. ${ORIG}/common
 
 OS=$(chroot ${dir} lsb_release -i -s)
 RELEASE=$(chroot ${dir} lsb_release -c -s)

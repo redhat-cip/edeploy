@@ -23,12 +23,15 @@ version="$3"
 ROLE=mysql
 
 ORIG=$(cd $(dirname $0); pwd)
+
 . ${ORIG}/functions
-. ${ORIG}/common
 
 install_ib_if_needed $ORIG $dir
 
 if [ -f ${dir}/etc/debian_version ]; then
+    # trick to allow to test and demo updates: remove the update source for this role
+    rm -f ${dir}/etc/apt/sources.list.d/updates.list
+    chroot ${dir} apt-get update
     do_chroot ${dir} debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password password your_password'
     do_chroot ${dir} debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password_again password your_password'
 

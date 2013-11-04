@@ -18,9 +18,9 @@
 
 set -x
 
-make
+make DIST=wheezy VERS=D7-F.1.0.0 pxe mysql
 ./upgrade-from mysql D7-F.1.0.0 D7-F.1.0.1 /var/lib/debootstrap
 ./upgrade-from mysql D7-F.1.0.1 D7-F.1.0.2 /var/lib/debootstrap
 
-make DIST=precise VERS=U12.04-F.1.0.0
+make DIST=precise VERS=U12.04-F.1.0.0 pxe mysql
 ./upgrade-from mysql U12.04-F.1.0.0 U12.04-F.1.0.1 /var/lib/debootstrap

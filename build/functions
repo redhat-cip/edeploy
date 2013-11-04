@@ -16,34 +16,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-. common
+. ${ORIG}/common
 
 if [ -z "$dir" -o ! -d "$src" -o -z "$version" ]; then
    echo "Usage: $0 <base directory> <target directory name> <version>" 1>&2
    exit 1
 fi
-
-cleanup() {
-    ret=$?
-    rm -f "${dir}"/etc/default/grub.d/edeploy.cfg
-    chroot ${dir} bash -c "apt-get clean || rm -rf /var/cache/yum"
-    for mpoint in /dev /proc; do
-	a=10
-	while ! umount ${dir}$mpoint; do
-	    sleep 1
-	    a=$(($a - 1))
-	    if [ $a -eq 0 ]; then
-		break
-	    fi
-	done
-    done
-    if [ $ret = 0 ]; then
-	cd ${dir}
-	rm -f ../../${ROLE}-${version}.edeploy
-
-	tar c . | compress -9v > ../../${ROLE}-${version}.edeploy
-    fi
-}
 
 set -e
 
@@ -51,25 +29,7 @@ echo -n "Copying tree ${src}/ to ${dir}/"
 rsync -a --delete ${src}/ ${dir}/
 echo done
 
-# Resolv.conf got setup during the initial deboostrap
-# But since, you might have change your host to another network (office vs home vs mobile vs ...)
-# In such case, the resolv.conf is wrong and prevents apt (and all networking-depedent stuff from working)
-# So let's copy the current one to insure the setup is good
-cp -f /etc/resolv.conf "$dir/etc/"
-
-set -x
-
 echo ${ROLE} > ${dir}/etc/hostname
-echo -e "\nVersion ${version}\n" > ${dir}/etc/motd
-echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf
-
 cat ${ORIG}/${ROLE}.exclude >> "$dir/var/lib/edeploy/${version}/exclude"
 
-export DEBIAN_FRONTEND=noninteractive
-
-# magical stuff to let kernel upgrade work
-mkdir -p "${dir}"/etc/default/grub.d
-echo 'exit 0' > "${dir}"/etc/default/grub.d/edeploy.cfg
-mount -obind /dev ${dir}/dev
-mount -t proc none ${dir}/proc
-trap cleanup 0
+common_setup

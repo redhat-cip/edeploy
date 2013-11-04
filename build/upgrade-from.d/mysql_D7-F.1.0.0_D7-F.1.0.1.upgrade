@@ -26,10 +26,19 @@ export DEBIAN_FRONTEND=noninteractive
 
 set -x
 
-cat > ${TDIR}/etc/apt/sources.list.d/updates.list <<EOF
+if [ "$OS" == Debian -a "$RELEASE" == wheezy ]; then
+    cat > ${TDIR}/etc/apt/sources.list.d/updates.list <<EOF
 deb http://security.debian.org/ wheezy/updates main
 deb http://ftp.debian.org/debian/ wheezy-updates main
 EOF
+elif [ "$OS" == Ubuntu -a "$RELEASE" == precise ]; then
+	cat > ${dir}/etc/apt/sources.list << EOF
+deb http://archive.ubuntu.com/ubuntu precise main
+deb http://archive.ubuntu.com/ubuntu precise universe
+EOF
+fi
 
-chroot ${TDIR} apt-get update
-chroot ${TDIR} apt-get install -y mysql-server-5.5
+if [ "$OS" == Debian -o "$OS" == Ubuntu ]; then
+    chroot ${TDIR} apt-get update
+    chroot ${TDIR} apt-get install -y mysql-server-5.5
+fi

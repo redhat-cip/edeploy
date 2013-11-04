@@ -22,16 +22,22 @@ FROM="$2"
 TO="$3"
 DEST="$4"
 
-ORIG=$(cd $(dirname $0); pwd)
+BUILDDIR=$(cd $(dirname $0); pwd)
 FDIR=${DEST}/install/${FROM}/${ROLE}
 TDIR=${DEST}/install/${TO}/${ROLE}
-METADATA_DIR=${DEST}/metadata/${FROM}/${ROLE}/${TO}
+METADATA_DIR=${BUILDDIR}/../metadata/${FROM}/${ROLE}/${TO}
 EXCLUDE_FILE=${METADATA_DIR}/exclude
 ADD_ONLY_FILE=${METADATA_DIR}/add_only
 
+. $BUILDDIR/common
+
+# for compatibility with cleanup and common_setup from common
+dir=${TDIR}
+version=${TO}
+
 setup_add_only() {
     if [ ! -f $ADD_ONLY_FILE ]; then
-        PRIOR_ADD=$(find ${DEST}/metadata/*/${ROLE}/${FROM}/add_only || true)
+        PRIOR_ADD=$(find ${BUILDDIR}/../metadata/*/${ROLE}/${FROM}/add_only || true)
         if [ ! -z $PRIOR_ADD ]; then
             echo "Found an add_only file for release ${FROM}"
             echo "Let's use it as default for this version too"
@@ -53,7 +59,7 @@ EOF
 }
 setup_exclude() {
     if [ ! -f $EXCLUDE_FILE ]; then
-        PRIOR_EXCLUDE=$(find ${DEST}/metadata/*/${ROLE}/${FROM}/exclude || true)
+        PRIOR_EXCLUDE=$(find ${BUILDDIR}/../metadata/*/${ROLE}/${FROM}/exclude || true)
         if [ ! -z $PRIOR_EXCLUDE ]; then
             echo "Found an exclude file for release ${FROM}"
             echo "Let's use it as default for this version too"
@@ -117,10 +123,7 @@ if [ ! -d "$FDIR" ]; then
     exit 1
 fi
 
-export DEBIAN_FRONTEND=noninteractive
-
 set -e
-set -x
 
 if [ ! -d ${TDIR} ]; then
     mkdir -p ${TDIR}
@@ -130,19 +133,15 @@ echo -n "Syncing ${FDIR} to ${TDIR}..."
 rsync -a --delete-before ${FDIR}/ ${TDIR}/
 echo "done"
 
-cleanup() {
-    umount ${TDIR}/dev
-}
+common_setup
 
-trap cleanup 0
+if [ -x ${TDIR}/usr/bin/dpkg ]; then
+    chroot ${TDIR} apt-get update
+else
+    chroot ${TDIR} yum update
+fi
 
-mount -obind /dev ${TDIR}/dev
-chroot ${TDIR} apt-get update
-cp -p ${ORIG}/edeploy ${TDIR}/usr/sbin/
-echo -e "VERS=${TO}\nROLE=${ROLE}\n" > ${TDIR}/var/lib/edeploy/conf
-
-mkdir -p ${TDIR}/etc/default/grub.d
-echo 'exit 0' > ${TDIR}/etc/default/grub.d/edeploy.cfg
+cp -p ${BUILDDIR}/edeploy ${TDIR}/usr/sbin/
 
 script="$BASE".d/${ROLE}_${FROM}_${TO}.upgrade
 
@@ -150,9 +149,7 @@ if [ -x "$script" ]; then
     "$script" $ROLE $FROM $TO $TDIR
 fi
 
-rm -f ${TDIR}/etc/default/grub.d/edeploy.cfg
-
-chroot ${TDIR} apt-get clean
-chroot ${TDIR} dpkg -l > ${TDIR}/../${ROLE}.dpkg
-
 setup_metadata
+
+mkdir -p ${TDIR}/var/lib/edeploy/${TO}
+cp ${METADATA_DIR}/exclude ${TDIR}/var/lib/edeploy/${TO}/exclude

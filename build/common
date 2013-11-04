@@ -1,3 +1,5 @@
+# -*- shell-script -*-
+
 compress() {
     COMPRESS=gzip
     if [ ! -z $(which pigz 2>/dev/null) ]; then
@@ -32,63 +34,65 @@ EOF
 }
 
 install_mellanox() {
-RELEASE=$1
-CHROOT=$2
-URL=http://www.mellanox.com/downloads/ofed/MLNX_OFED-2.0-3.0.0/
-FILE=
-KVER=
-KVER_TO_REMOVE=
-PACKAGES=
-case $RELEASE in
-    precise)
-    KVER=3.5.0-42-generic
-    KVER_TO_REMOVE=3.8.0-32
-    FILE="MLNX_OFED_LINUX-2.0-3.0.0-ubuntu12.04-x86_64.tgz"
-    URL="$URL/$FILE"
-    # Thoses packages will be installed by mellanox but one by one ....
-    # Let's install them at once to save time
-    PACKAGES="autotools-dev autoconf libtool automake1.10 automake debhelper tcl tcl8.4 chrpath swig graphviz tcl-dev tcl8.4-dev tk-dev tk8.4-dev bison flex dpatch libcurl4-gnutls-dev python-libxml2 libvirt-bin"
-    PACKAGES="$PACKAGES linux-image-$KVER linux-headers-$KVER"
-    # We shall only keep the final kernel unless kernel-mft-dkms fails at compiling
-    PACKAGES_TO_REMOVE="linux-image-$KVER_TO_REMOVE-generic linux-headers-$KVER_TO_REMOVE-generic linux-headers-$KVER_TO_REMOVE"
-    ;;
-    *)
-    ;;
-esac
+    RELEASE=$1
+    CHROOT=$2
+    URL=http://www.mellanox.com/downloads/ofed/MLNX_OFED-2.0-3.0.0/
+    FILE=
+    KVER=
+    KVER_TO_REMOVE=
+    PACKAGES=
+    case $RELEASE in
+	precise)
+	    KVER=3.5.0-42-generic
+	    KVER_TO_REMOVE=3.8.0-32
+	    FILE="MLNX_OFED_LINUX-2.0-3.0.0-ubuntu12.04-x86_64.tgz"
+	    URL="$URL/$FILE"
+	    # Thoses packages will be installed by mellanox but one by one ....
+	    # Let's install them at once to save time
+	    PACKAGES="autotools-dev autoconf libtool automake1.10 automake debhelper tcl tcl8.4 chrpath swig graphviz tcl-dev tcl8.4-dev tk-dev tk8.4-dev bison flex dpatch libcurl4-gnutls-dev python-libxml2 libvirt-bin"
+	    PACKAGES="$PACKAGES linux-image-$KVER linux-headers-$KVER"
+	    # We shall only keep the final kernel unless kernel-mft-dkms fails at compiling
+	    PACKAGES_TO_REMOVE="linux-image-$KVER_TO_REMOVE-generic linux-headers-$KVER_TO_REMOVE-generic linux-headers-$KVER_TO_REMOVE"
+	    ;;
+	*)
+	    ;;
+    esac
 
-# As we are chroot, we have to prevent some services to be restarted by packages
-# This prevent failures
-prevent_services_to_run $CHROOT on
+    # As we are chroot, we have to prevent some services to be restarted by packages
+    # This prevent failures
+    prevent_services_to_run $CHROOT on
 
-for mydir in /proc /dev /sys /dev/pts /run; do
-    mount $mydir $CHROOT/$mydir -o bind || echo "Failed at binding $mydir"
-done
-chroot $CHROOT apt-get  -y --force-yes purge $PACKAGES_TO_REMOVE
-chroot $CHROOT apt-get -y --force-yes install $PACKAGES
+    for mydir in /proc /dev /sys /dev/pts /run; do
+	mount $mydir $CHROOT/$mydir -o bind || echo "Failed at binding $mydir"
+    done
+    chroot $CHROOT apt-get  -y --force-yes purge $PACKAGES_TO_REMOVE
+    chroot $CHROOT apt-get -y --force-yes install $PACKAGES
 
-wget -q -N $URL
-cp $FILE $CHROOT
-cd $CHROOT
-tar -xf $FILE
-cd -
+    wget -q -N $URL
+    cp $FILE $CHROOT
+    cd $CHROOT
+    tar -xf $FILE
+    cd -
 
-# We need to perform many task in the chroot, let's make a script for that
-cat > $CHROOT/doit.sh << EOF
+    # We need to perform many task in the chroot, let's make a script for that
+    cat > $CHROOT/doit.sh << EOF
+#!/bin/bash
+
 # To avoid dkms from failing, let's insure we have the headers well installed
 cd /lib/modules/
-    ln -sf $KVER `uname -r`
-    rm -rf $KVER_TO_REMOVE*
+ln -sf $KVER `uname -r`
+rm -rf $KVER_TO_REMOVE*
 
-    #Mellanox is installing dkms drivers but they do conflict
-    #with the existing ones. So let's get them out of the tree.
-    mkdir -p $KVER-obsolete/kernel/drivers/net/ethernet/mellanox
-    mv $KVER/kernel/drivers/infiniband $KVER-obsolete/kernel/drivers
-    mv $KVER/kernel/drivers/net/ethernet/mellanox/ $KVER-obsolete/kernel/drivers/net/ethernet/mellanox/
+#Mellanox is installing dkms drivers but they do conflict
+#with the existing ones. So let's get them out of the tree.
+mkdir -p $KVER-obsolete/kernel/drivers/net/ethernet/mellanox
+mv $KVER/kernel/drivers/infiniband $KVER-obsolete/kernel/drivers
+mv $KVER/kernel/drivers/net/ethernet/mellanox/ $KVER-obsolete/kernel/drivers/net/ethernet/mellanox/
 cd -
 
 cd /lib/modules/$KVER
-    ln -sf build source
-    ln -sf x86 build/arch/amd64
+ln -sf build source
+ln -sf x86 build/arch/amd64
 cd -
 
 DIRNAME=$(echo $FILE | sed -e 's/\.tgz//g')
@@ -113,20 +117,20 @@ rm -f /lib/modules/`uname -r`
 depmod -a $KVER
 EOF
 
-chmod +x $CHROOT/doit.sh
-chroot "$CHROOT" /doit.sh
-# Let's revert our change, we now can run services
-prevent_services_to_run $CHROOT off
+    chmod +x $CHROOT/doit.sh
+    chroot "$CHROOT" /doit.sh
+    # Let's revert our change, we now can run services
+    prevent_services_to_run $CHROOT off
 
-#Let's tweak the grub setup to boot the proper kernel with intel_iommu for SR_IOV
-#Grub will be updates/installed when eDeploy will install it on the real server
-sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="intel_iommu=on"/g' $CHROOT/etc/default/grub
+    #Let's tweak the grub setup to boot the proper kernel with intel_iommu for SR_IOV
+    #Grub will be updates/installed when eDeploy will install it on the real server
+    sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="intel_iommu=on"/g' $CHROOT/etc/default/grub
 
-for mydir in /proc /dev/pts /sys /dev/ /run; do
-    umount $CHROOT/$mydir
-done
+    for mydir in /proc /dev/pts /sys /dev/ /run; do
+	umount $CHROOT/$mydir
+    done
 
-rm -f $CHROOT/doit.sh
+    rm -f $CHROOT/doit.sh
 }
 
 
@@ -173,4 +177,65 @@ do_chroot() {
     shift
     REMAIN=$@
     PATH=/bin/:/sbin:$PATH chroot $DIR bash -c "export LANG=C; export LC_ALL=C; export LC_CTYPE=C; export LANGUAGE=C; $REMAIN"
+}
+
+# Called to clean packages, temporary files and to create the compressed archive
+# usually by a "trap cleanup 0" in a script
+cleanup() {
+    ret=$?
+    if [ ! -d "${dir}" ]; then
+	return
+    fi
+    rm -f "${dir}"/etc/default/grub.d/edeploy.cfg
+    chroot ${dir} bash -c "apt-get clean || rm -rf /var/cache/yum"
+    for mpoint in /dev /proc; do
+	a=10
+	while ! umount ${dir}$mpoint; do
+	    sleep 1
+	    a=$(($a - 1))
+	    if [ $a -eq 0 ]; then
+		break
+	    fi
+	done
+    done
+    if [ $ret = 0 ]; then
+	if [ -x ${dir}/usr/bin/dpkg ]; then
+	    chroot ${dir} dpkg -l > ${dir}/../${ROLE}.packages
+	else
+	    chroot ${dir} rpm -qa > ${dir}/../${ROLE}.packages
+	fi
+
+	cd ${dir}
+
+	rm -f ../../${ROLE}-${version}.edeploy
+
+	tar c . | compress -9v > ../../${ROLE}-${version}.edeploy
+    fi
+}
+
+common_setup() {
+    # export these variables to let them be used by upgrade-from sub-scripts
+    export OS=$(chroot ${dir} lsb_release -i -s)
+    export RELEASE=$(chroot ${dir} lsb_release -c -s)
+    export CODENAME=$(chroot ${dir} lsb_release -r -s)
+    
+    # Resolv.conf got setup during the initial deboostrap
+    # But since, you might have change your host to another network (office vs home vs mobile vs ...)
+    # In such case, the resolv.conf is wrong and prevents apt (and all networking-depedent stuff from working)
+    # So let's copy the current one to insure the setup is good
+    cp -f /etc/resolv.conf "$dir/etc/"
+
+    set -x
+
+    echo -e "\nRole ${ROLE}\nVersion ${version}\n" > ${dir}/etc/motd
+    echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf
+
+    export DEBIAN_FRONTEND=noninteractive
+
+    # magical stuff to let kernel upgrade work
+    mkdir -p "${dir}"/etc/default/grub.d
+    echo 'exit 0' > "${dir}"/etc/default/grub.d/edeploy.cfg
+    mount -obind /dev ${dir}/dev
+    mount -t proc none ${dir}/proc
+    trap cleanup 0
 }

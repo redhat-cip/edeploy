@@ -29,13 +29,8 @@ ROLE=openstack-swift-proxy
 ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
-. ${ORIG}/common
 
 install_ib_if_needed $ORIG $dir
-
-OS=$(chroot ${dir} lsb_release -i -s)
-RELEASE=$(chroot ${dir} lsb_release -c -s)
-CODENAME=$(chroot ${dir} lsb_release -r -s)
 
 if [ $OS == "Debian" ] && [ $RELEASE == "wheezy" ]; then
     cat > ${dir}/etc/apt/sources.list.d/mongodb.list <<EOF

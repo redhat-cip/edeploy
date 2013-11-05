@@ -48,11 +48,30 @@ bootstrap() {
             if [ "$(package_tool)" = "yum" ]; then
                 check_binary yum
                 check_binary rpm
-                rpm -ivh --root "$target" "http://mirror.centos.org/centos/6.4/os/x86_64/Packages/centos-release-6-4.el6.centos.10.x86_64.rpm"
-                sed -i 's/$releasever/6/g' ${target}/etc/yum.repos.d/*
-                cp -f /etc/resolv.conf "$target/etc/"
-                # We cannot use install_packages since the basesystem isn't yet setup
-                yum --installroot $target install -y --nogpgcheck basesystem yum initscripts passwd
+                case $dist in
+                    centos)
+                        RELEASE_RPM_URL="http://mirror.centos.org/centos/6.4/os/x86_64/Packages/centos-release-6-4.el6.centos.10.x86_64.rpm"
+                        rpm -ivh --root "$target" "$RELEASE_RPM_URL"
+                        sed -i 's/$releasever/6/g' ${target}/etc/yum.repos.d/*
+                        cp -f /etc/resolv.conf "$target/etc/"
+                        # We cannot use install_packages since the basesystem isn't yet setup
+                        yum --installroot $target install -y --nogpgcheck basesystem yum
+                        ;;
+                    redhat)
+                        if [ -z $RHEL_REPO ];then
+                            fatal_error "You must set your RHEL repository in the variable RHEL_REPO"
+                        fi
+                        RELEASE_RPM_URL="${RHEL_REPO}/Packages/redhat-release-server-6Server-6.4.0.4.el6.x86_64.rpm"
+                        rpm -ivh --root "$target" "$RELEASE_RPM_URL"
+                        cp -f /etc/resolv.conf "$target/etc/"
+                        sed "0,/^enabled=/ s/enabled=0/enabled=1/" -i ${target}/etc/yum.repos.d/rhel-source.repo
+                        sed "0,/^baseurl=/ s/baseurl=.*/baseurl=${RHEL_REPO//\//\\/}/" -i ${target}/etc/yum.repos.d/rhel-source.repo
+                        # We cannot use install_packages since the basesystem isn't yet setup
+                        yum --installroot $target install -y --nogpgcheck basesystem yum
+                        ;;
+                    *)
+                        fatal_error "Unsupported RPM+YUM based distro: ${DIST}"
+                esac
                 cp ${target}/etc/skel/.bashrc ${target}/root
                 cp ${target}/etc/skel/.bash_profile ${target}/root
             else

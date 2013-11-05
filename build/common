@@ -1,5 +1,7 @@
 # -*- shell-script -*-
 
+. packages
+
 compress() {
     COMPRESS=gzip
     if [ ! -z $(which pigz 2>/dev/null) ]; then
@@ -213,33 +215,6 @@ cleanup() {
     fi
 }
 
-package_type() {
-    case "$DIST" in
-        wheezy|precise)
-            echo "deb"
-        ;;
-        centos|redhat)
-            echo "rpm"
-        ;;
-        *)
-            echo "unknown"
-        ;;
-    esac
-}
-
-package_tool() {
-    case "$DIST" in
-        wheezy|precise)
-            echo "apt"
-        ;;
-        centos|redhat)
-            echo "yum"
-        ;;
-        *)
-            echo "unknown"
-        ;;
-    esac
-}
 common_setup() {
     # export these variables to let them be used by upgrade-from sub-scripts
     export OS=$(chroot ${dir} lsb_release -i -s)

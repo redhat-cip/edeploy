@@ -1,0 +1,28 @@
+package_type() {
+    case "$DIST" in
+        wheezy|precise)
+            echo "deb"
+        ;;
+        centos|redhat)
+            echo "rpm"
+        ;;
+        *)
+            echo "unknown"
+        ;;
+    esac
+}
+
+package_tool() {
+    case "$DIST" in
+        wheezy|precise)
+            echo "apt"
+        ;;
+        centos|redhat)
+            echo "yum"
+        ;;
+        *)
+            echo "unknown"
+        ;;
+    esac
+}
+

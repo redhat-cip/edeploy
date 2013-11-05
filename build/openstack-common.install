@@ -167,7 +167,7 @@ cloud_final_modules:
 EOF
 }
 
-install_packages () {
+os_install_packages () {
 update_repositories $dir
 
 case $OS in
@@ -191,5 +191,5 @@ do_chroot ${dir} rm -rf /var/lib/puppet/ssl/* || true
 }
 
 prepare_packages
-install_packages
+os_install_packages
 configure_cloudinit

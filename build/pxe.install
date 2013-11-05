@@ -45,9 +45,10 @@ rsync -aH --delete-before ${SRC}/ ${DST2}/
 # So let's copy the current one to insure the setup is good
 cp -f /etc/resolv.conf "$DST2/etc/"
 
-do_chroot ${DST2} apt-get update
-do_chroot ${DST2} apt-get install -y --force-yes python-netaddr ethtool sdparm
-do_chroot ${DST2} apt-get clean
+
+update_repositories $DST2
+install_packages $DST2 python-netaddr ethtool sdparm
+clear_packages_cache $DST2
 
 install_ib_if_needed $ORIG $DST2
 

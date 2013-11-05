@@ -1,3 +1,5 @@
+# -*- shell-script -*-
+
 package_type() {
     case "$DIST" in
         wheezy|precise)
@@ -7,7 +9,7 @@ package_type() {
             echo "rpm"
         ;;
         *)
-            echo "unknown"
+            fatal_error "$DIST isn't supported in package_type()"
         ;;
     esac
 }
@@ -21,8 +23,85 @@ package_tool() {
             echo "yum"
         ;;
         *)
-            echo "unknown"
+            fatal_error "$DIST isn't supported in package_tool()"
         ;;
     esac
 }
 
+install_packages() {
+    CHROOT=$1
+    PACKAGES=$2
+    case "$(package_tool)" in
+        apt)
+            do_chroot $CHROOT apt-get install $INSTALL_OPTIONS -y --force-yes $PACKAGES
+        ;;
+        yum)
+            do_chroot $CHROOT yum $INSTALL_OPTIONS install -y --nogpgcheck $PACKAGES
+        ;;
+        *)
+            fatal_error "$(package_tool) isn't supported in install_packages()"
+        ;;
+    esac
+}
+
+update_repositories() {
+    CHROOT=$1
+    case "$(package_tool)" in
+        apt)
+            do_chroot $CHROOT apt-get update
+        ;;
+        yum)
+            do_chroot $CHROOT yum check-update
+        ;;
+        *)
+            fatal_error "$(package_tool) isn't supported in update_repositories()"
+        ;;
+    esac
+}
+
+update_system() {
+    CHROOT=$1
+    case "$(package_tool)" in
+        apt)
+            do_chroot $CHROOT apt-get upgrade
+        ;;
+        yum)
+            do_chroot $CHROOT yum update
+        ;;
+        *)
+            fatal_error "$(package_tool) isn't supported in update_system()"
+        ;;
+    esac
+}
+
+upgrade_system() {
+    CHROOT=$1
+    case "$(package_tool)" in
+        apt)
+            do_chroot $CHROOT apt-get dist-upgrade -y
+        ;;
+        yum)
+            # didn't really found something equivalent
+            # Let's do a yum update so
+            do_chroot $CHROOT yum update
+        ;;
+        *)
+            fatal_error "$(package_tool) isn't supported in update_system()"
+        ;;
+    esac
+}
+
+clear_packages_cache() {
+    CHROOT=$1
+    case "$(package_tool)" in
+        apt)
+            do_chroot $CHROOT apt-get clean
+        ;;
+        yum)
+            do_chroot $CHROOT yum clean packages
+        ;;
+        *)
+            fatal_error "$(package_tool) isn't supported in clear_packages_cache()"
+        ;;
+    esac
+}

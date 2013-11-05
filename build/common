@@ -15,17 +15,6 @@ compress() {
     $COMPRESS $@
 }
 
-is_deb_distro() {
-    case $dist in
-        centos*)
-        DEB=
-        ;;
-    *)
-        DEB=1
-    esac
-    return $DEB
-}
-
 prevent_services_to_run() {
     if [ x"$2" = x"on" ]; then
 cat > ${1}/usr/sbin/policy-rc.d <<EOF
@@ -144,7 +133,6 @@ EOF
 install_ib_if_needed() {
     ORIG=$1
     CHROOT=$2
-    RELEASE=$(chroot "$CHROOT" lsb_release -sc)
     if [ "$ENABLE_IB" = "y" ]; then
         if [ "$ENABLE_MELLANOX" = "y" ]; then
             case $RELEASE in
@@ -158,22 +146,16 @@ install_ib_if_needed() {
             esac
         else
             bash ${ORIG}/infiniband $CHROOT
-            PACKAGES="infiniband-diags"
-            DEB=is_deb_distro
-            if [ -n "$DEB" ]; then
-                chroot "$CHROOT" apt-get -y install $PACKAGES
-               if [ "$RELEASE" = "precise" ]; then
-                    # as per https://bugs.launchpad.net/ubuntu/+source/libmlx4/+bug/1037107
-                    # ubuntu precise needs a package to be backported
-                    LIBMLX=libmlx4-1_1.0.4-1_amd64.deb
-                    cd $CHROOT;
-                        wget http://us.archive.ubuntu.com/ubuntu/ubuntu/pool/universe/libm/libmlx4/$LIBMLX
-                    cd -
-                    chroot "$CHROOT" dpkg -i /$LIBMLX
-                    rm -rf $CHROOT/$LIBMLX
-                fi
-            else
-                chroot "$CHROOT" yum --nogpgcheck install -y $PACKAGES
+            install_packages $CHROOT infiniband-diags
+            if [ "$RELEASE" = "precise" ]; then
+                # as per https://bugs.launchpad.net/ubuntu/+source/libmlx4/+bug/1037107
+                # ubuntu precise needs a package to be backported
+                LIBMLX=libmlx4-1_1.0.4-1_amd64.deb
+                cd $CHROOT;
+                    wget http://us.archive.ubuntu.com/ubuntu/ubuntu/pool/universe/libm/libmlx4/$LIBMLX
+                cd -
+                chroot "$CHROOT" dpkg -i /$LIBMLX
+                rm -rf $CHROOT/$LIBMLX
             fi
         fi
     fi

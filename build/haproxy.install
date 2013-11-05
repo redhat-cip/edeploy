@@ -26,17 +26,19 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
-do_chroot ${dir} apt-get update
-do_chroot ${dir} apt-get install -y --force-yes wget openssh-server python-software-properties
-do_chroot ${dir} apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db
-do_chroot ${dir} apt-get clean
+PACKAGES="wget openssh-server python-software-properties"
+update_repositories $dir
+install_packages $dir $PACKAGES
+clear_packages_cache $dir
 
 install_ib_if_needed $ORIG $dir
 
-if [ $OS == "Debian" ] && [ $RELEASE == "wheezy" ]; then
-    do_chroot ${dir} add-apt-repository 'deb http://ftp2.fr.debian.org/debian wheezy-backports main'
-
-elif [ $OS == "Ubuntu" ] && [ $RELEASE == "precise" ]; then
+case "$RELEASE" in
+    "wheezy")
+        do_chroot ${dir} add-apt-repository 'deb http://ftp2.fr.debian.org/debian wheezy-backports main'
+    ;;
+    "precise")
+    do_chroot ${dir} apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db
    cat > ${dir}/etc/apt/sources.list <<EOF
 deb http://archive.ubuntu.com/ubuntu precise main
 deb-src http://archive.ubuntu.com/ubuntu precise main
@@ -51,12 +53,13 @@ deb-src http://security.ubuntu.com/ubuntu precise-security main
 deb http://security.ubuntu.com/ubuntu precise-security universe
 deb-src http://security.ubuntu.com/ubuntu precise-security universe
 EOF
+    ;;
+    *)
+    fatal_error "OS ($OS) or Release $(RELEASE) not supported"
+    ;;
+esac
 
-else
- echo "OS or Release not supported"
- exit 1
-
-fi
-
-do_chroot ${dir} apt-get update
-do_chroot ${dir} apt-get install -y haproxy
+PACKAGES=haproxy
+update_repositories $dir
+install_packages $dir $PACKAGES
+clear_packages_cache $dir

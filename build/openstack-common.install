@@ -36,28 +36,28 @@ fi
 install_ib_if_needed $ORIG $dir
 
 prepare_packages () {
-
-if [ $OS == "Debian" ]; then
-    do_chroot ${dir} wget http://apt.puppetlabs.com/puppetlabs-release-$RELEASE.deb
-    do_chroot ${dir} dpkg -i puppetlabs-release-$RELEASE.deb
-    do_chroot ${dir} rm puppetlabs-release-$RELEASE.deb
-    do_chroot ${dir} apt-key adv --recv-keys --keyserver keyserver.ubuntu.com E52660B15D964F0B
-  cat > ${dir}/etc/apt/sources.list.d/$RELEASE-backport.list <<EOF
+    case "$OS" in
+        "Debian")
+            do_chroot ${dir} wget http://apt.puppetlabs.com/puppetlabs-release-$RELEASE.deb
+            do_chroot ${dir} dpkg -i puppetlabs-release-$RELEASE.deb
+            do_chroot ${dir} rm puppetlabs-release-$RELEASE.deb
+            do_chroot ${dir} apt-key adv --recv-keys --keyserver keyserver.ubuntu.com E52660B15D964F0B
+            cat > ${dir}/etc/apt/sources.list.d/$RELEASE-backport.list <<EOF
 deb http://ftp.debian.org/debian ${RELEASE}-backports main
 EOF
-  cat > ${dir}/etc/apt/sources.list.d/openstack-$RELEASE-$OS-VERS.list <<EOF
+            cat > ${dir}/etc/apt/sources.list.d/openstack-$RELEASE-$OS-VERS.list <<EOF
 deb http://cloud.pkgs.enovance.com/${RELEASE}-${OS_VERS}/ ${OS_VERS} main
 EOF
-
-elif [ $OS == "Ubuntu" ]; then
-    do_chroot ${dir} wget http://apt.puppetlabs.com/puppetlabs-release-$RELEASE.deb
-    do_chroot ${dir} dpkg -i puppetlabs-release-$RELEASE.deb
-    do_chroot ${dir} rm puppetlabs-release-$RELEASE.deb
-    do_chroot ${dir} apt-key adv --recv-keys --keyserver keyserver.ubuntu.com E52660B15D964F0B
-  cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
+        ;;
+        "Ubuntu")
+            do_chroot ${dir} wget http://apt.puppetlabs.com/puppetlabs-release-$RELEASE.deb
+            do_chroot ${dir} dpkg -i puppetlabs-release-$RELEASE.deb
+            do_chroot ${dir} rm puppetlabs-release-$RELEASE.deb
+            do_chroot ${dir} apt-key adv --recv-keys --keyserver keyserver.ubuntu.com E52660B15D964F0B
+            cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
 deb http://cloud.pkgs.enovance.com/${RELEASE}-${OS_VERS}/ ${OS_VERS} main
 EOF
-  cat > ${dir}/etc/apt/sources.list <<EOF
+            cat > ${dir}/etc/apt/sources.list <<EOF
 deb http://archive.ubuntu.com/ubuntu ${RELEASE} main
 deb-src http://archive.ubuntu.com/ubuntu ${RELEASE} main
 deb http://archive.ubuntu.com/ubuntu ${RELEASE}-updates main
@@ -71,46 +71,50 @@ deb-src http://security.ubuntu.com/ubuntu ${RELEASE}-security main
 deb http://security.ubuntu.com/ubuntu ${RELEASE}-security universe
 deb-src http://security.ubuntu.com/ubuntu ${RELEASE}-security universe
 EOF
-
-elif [ $OS == "CentOS" ] && [ $CODENAME == "6.4" ]; then
-    do_chroot ${dir} rpm -ivh http://yum.puppetlabs.com/el/6/products/i386/puppetlabs-release-6-7.noarch.rpm
-    do_chroot ${dir} yum install -y puppet
-    do_chroot ${dir} yum remove puppetlabs-release-6-7.noarch
-    do_chroot ${dir} yum install -y http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-    do_chroot ${dir} yum install -y http://rdo.fedorapeople.org/openstack-${OS_VERS}/rdo-release-${OS_VERS}.rpm
-
-else
-  echo "OS or Release not supported"
-  exit 1
-fi
-
+        "CentOS")
+            if [ $CODENAME == "6.4" ]; then
+                do_chroot ${dir} rpm -ivh http://yum.puppetlabs.com/el/6/products/i386/puppetlabs-release-6-7.noarch.rpm
+                install_packages $dir puppet
+                remove_packages puppetlabs-release-6-7.noarch
+                install_packages $dir http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+                install_packages $dir http://rdo.fedorapeople.org/openstack-${OS_VERS}/rdo-release-${OS_VERS}.rpm
+            fi
+         ;;
+        *)
+            fatal_error "OS ($OS) or Release ($OS) not supported"
+         ;;
+esac
 }
 
 configure_cloudinit () {
 mkdir -p ${dir}/etc/cloud/cloud.cfg.d
 rm -f ${dir}/etc/cloud/cloud.cfg
 
-if [ $OS == "Debian" ]; then
-    do_chroot ${dir} apt-get install -y -t $RELEASE-backports cloud-init
-
-elif [ $OS == "Ubuntu" ]; then
-  # Todo(EmilienM): Move cloud-init into backports repo to have last release properly
-  do_chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/c/cloud-init/cloud-init_0.7.3-0ubuntu2_all.deb
-  do_chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/p/python-json-patch/python-json-patch_1.0-2_all.deb
-  do_chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/p/python-json-pointer/python-json-pointer_1.0-1ubuntu2_all.deb
-  do_chroot ${dir} dpkg -i cloud-init_0.7.3-0ubuntu2_all.deb  || true
-  do_chroot ${dir} dpkg -i python-json-patch_1.0-2_all.deb  || true
-  do_chroot ${dir} dpkg -i python-json-pointer_1.0-1ubuntu2_all.deb  || true
-  do_chroot ${dir} apt-get -f install -y -o Dpkg::Options::="--force-confold"
-  do_chroot ${dir} rm cloud-init_0.7.3-0ubuntu2_all.deb python-json-patch_1.0-2_all.deb python-json-pointer_1.0-1ubuntu2_all.deb
-
-elif [ $OS == "CentOS" ] && [ $CODENAME == "6.4" ]; then
-    do_chroot ${dir} yum install -y cloud-init
-
-else
-  echo "OS or Release not supported"
-  exit 1
-fi
+case "$OS" in
+    "Debian")
+        PACKAGES="-t $RELEASE-backports cloud-init"
+        install_packages $dir $PACKAGES
+        ;;
+    "Ubuntu")
+        # Todo(EmilienM): Move cloud-init into backports repo to have last release properly
+        do_chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/c/cloud-init/cloud-init_0.7.3-0ubuntu2_all.deb
+        do_chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/p/python-json-patch/python-json-patch_1.0-2_all.deb
+        do_chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/p/python-json-pointer/python-json-pointer_1.0-1ubuntu2_all.deb
+        do_chroot ${dir} dpkg -i cloud-init_0.7.3-0ubuntu2_all.deb  || true
+        do_chroot ${dir} dpkg -i python-json-patch_1.0-2_all.deb  || true
+        do_chroot ${dir} dpkg -i python-json-pointer_1.0-1ubuntu2_all.deb  || true
+        do_chroot ${dir} apt-get -f install -y -o Dpkg::Options::="--force-confold"
+        do_chroot ${dir} rm cloud-init_0.7.3-0ubuntu2_all.deb python-json-patch_1.0-2_all.deb python-json-pointer_1.0-1ubuntu2_all.deb
+        ;;
+     "CentOS")
+            if [ $CODENAME == "6.4" ]; then
+                install_packages $dir cloud-init
+            fi
+     ;;
+     *)
+        fatal_error "OS ($OS) or Release ($RELEASE) not supported"
+     ;;
+esac
 
 cat > ${dir}/etc/cloud/cloud.cfg.d/90_dpkg.cfg << EOF
 datasource_list: [ NoCloud ]
@@ -163,21 +167,26 @@ EOF
 }
 
 install_packages () {
-if [ $OS == "Debian" ] || [ $OS == "Ubuntu" ]; then
-    do_chroot ${dir} apt-get update
-    do_chroot ${dir} apt-get install -y --force-yes puppet augeas-tools openssh-server wget iptables build-essential
-    do_chroot ${dir} sed -e 's/START=yes/START=no/' -i /etc/default/puppet
+update_repositories $dir
 
-elif [ $OS == "CentOS" ] && [ $CODENAME == "6.4" ]; then
-    do_chroot ${dir} yum install -y augeas openssh-server wget
-
-else
-  echo "OS or Release not supported"
-  exit 1
-fi
+case $OS in
+    "Debian" | "Ubuntu")
+        PACKAGES="puppet augeas-tools openssh-server wget iptables build-essential"
+        install_packages $dir $PACKAGES
+        do_chroot ${dir} sed -e 's/START=yes/START=no/' -i /etc/default/puppet
+    ;;
+    "CentOS")
+       if [ $CODENAME == "6.4" ]; then
+           PACKAGES="augeas openssh-server wget"
+           install_packages $dir $PACKAGES
+       fi
+       ;;
+    *)
+        fatal_error "OS ($OS) or Release ($RELEASE) not supported"
+        ;;
+esac
 
 do_chroot ${dir} rm -rf /var/lib/puppet/ssl/* || true
-
 }
 
 prepare_packages

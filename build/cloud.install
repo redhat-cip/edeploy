@@ -26,20 +26,25 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
+if [ "$(package_type)" = "rpm" ]; then
+    fatal_error "rpm based distro are not yet supported in this role"
+fi
+
 install_ib_if_needed $ORIG $dir
 
-if grep -q debian.org ${dir}/etc/apt/sources.list; then
+if [ "$RELEASE" = "wheezy" ]; then
     # for cloud-init
     cat > ${dir}/etc/apt/sources.list.d/backport.list <<EOF
 deb http://ftp.debian.org/debian wheezy-backports main
 EOF
 fi
 
-do_chroot ${dir} apt-get update
-
 rm -f ${dir}/etc/cloud/cloud.cfg
 
-do_chroot ${dir} apt-get install -y cloud-init
+PACKAGES=cloud-init
+update_repositories $dir
+install_packages $dir $PACKAGES
+clear_packages_cache $dir
 
 mkdir -p ${dir}/etc/cloud/cloud.cfg.d
 

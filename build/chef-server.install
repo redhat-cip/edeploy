@@ -25,15 +25,19 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
-do_chroot ${dir} apt-get update
-do_chroot ${dir} apt-get install -y --force-yes wget
-do_chroot ${dir} apt-get clean
+PACKAGES=wget
+update_repositories $dir
+install_packages $dir $PACKAGES
+clear_packages_cache $dir
 
 configure_cloudinit () {
     mkdir -p ${dir}/etc/cloud/cloud.cfg.d
     rm -f ${dir}/etc/cloud/cloud.cfg
-    do_chroot ${dir} apt-get update
-    do_chroot ${dir} apt-get install -y cloud-init
+
+    PACKAGES=cloud-init
+    update_repositories $dir
+    install_packages $dir $PACKAGES
+    clear_packages_cache $dir
 
     cat > ${dir}/etc/cloud/cloud.cfg.d/90_dpkg.cfg << EOF
 # to update this file, run dpkg-reconfigure cloud-init
@@ -86,7 +90,8 @@ cloud_final_modules:
 EOF
 }
 
-if [ $OS == "Ubuntu" ]; then
+case $OS in
+    "Ubuntu")
  configure_cloudinit
  do_chroot ${dir} wget "http://www.opscode.com/chef/download-server?p=ubuntu&pv=${RELEASE}&m=x86_64&v=latest" -O /tmp/chef-server.deb
  do_chroot ${dir} dpkg -i /tmp/chef-server.deb
@@ -120,7 +125,8 @@ fi
 su - -c '/usr/bin/chef-server-ctl reconfigure'
 EOF
  chmod 755 ${dir}/etc/rc.local ${dir}/etc/first-boot.d/99-chef-server
-else
- echo "OS or Release not supported"
- exit 1
-fi
+ ;;
+    *)
+        fatal_error "OS ($OS) or Release ($RELEASE) not supported"
+    ;;
+esac

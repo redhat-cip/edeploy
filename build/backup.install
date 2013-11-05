@@ -10,6 +10,7 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
-do_chroot ${dir} apt-get update
-do_chroot ${dir} apt-get install -y --force-yes wget openssh-server vlan bridge-utils vim
-do_chroot ${dir} apt-get clean
+PACKAGES=wget openssh-server vlan bridge-utils vim
+update_repositories $dir
+install_packages $dir $PACKAGES
+clear_packages_cache $dir

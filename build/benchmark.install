@@ -26,9 +26,10 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
-do_chroot ${dir} apt-get update
-do_chroot ${dir} apt-get install -y --force-yes wget openssh-server
-do_chroot ${dir} apt-get clean
+PACKAGES="wget openssh-server"
+update_repositories $dir
+install_packages $dir $PACKAGES
+clear_packages_cache $dir
 
 install_ib_if_needed $ORIG $dir
 
@@ -40,7 +41,8 @@ if [ "$OS" = "Ubuntu" ]; then
 deb http://archive.ubuntu.com/ubuntu precise multiverse
 deb http://archive.ubuntu.com/ubuntu precise-updates multiverse
 EOF
-    do_chroot ${dir} apt-get update
 fi
 
-do_chroot ${dir} apt-get install -y --force-yes $PACKAGES
+update_repositories $dir
+install_packages $dir $PACKAGES
+clear_packages_cache $dir

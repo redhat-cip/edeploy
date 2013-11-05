@@ -26,18 +26,20 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
-do_chroot ${dir} apt-get update
-do_chroot ${dir} apt-get install -y --force-yes wget openssh-server
-do_chroot ${dir} apt-get clean
+PACKAGES="wget openssh-server"
+update_repositories $dir
+install_packages $dir $PACKAGES
+clear_packages_cache $dir
 
 install_ib_if_needed $ORIG $dir
 
-if [ $OS == "Debian" ] && [ $RELEASE == "wheezy" ]; then
+case "$RELEASE" in
+    "wheezy")
    cat > ${dir}/etc/apt/sources.list.d/ceph.list <<EOF
 deb [trusted=1] http://cloud.pkgs.enovance.com/wheezy-grizzly/ grizzly main ceph
 EOF
-
-elif [ $OS == "Ubuntu" ] && [ $RELEASE == "precise" ]; then
+    ;;
+    "precise")
    cat > ${dir}/etc/apt/sources.list <<EOF
 deb http://archive.ubuntu.com/ubuntu precise main
 deb-src http://archive.ubuntu.com/ubuntu precise main
@@ -55,13 +57,16 @@ EOF
    cat > ${dir}/etc/apt/sources.list.d/ceph.list <<EOF
 deb [trusted=1] http://cloud.pkgs.enovance.com/precise-grizzly/ grizzly main ceph
 EOF
+    *)
+    fatal_error "Release '$RELEASE' is not supported"
+    ;;
+esac
 
-else
- echo "OS or Release not supported"
- exit 1
-
+if [ "$(package_type)" = "deb" ]; then
+    do_chroot ${dir} sh -c "curl -k 'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc' | apt-key add -"
 fi
 
-do_chroot ${dir} sh -c "curl -k 'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc' | apt-key add -"
-do_chroot ${dir} apt-get update
-do_chroot ${dir} apt-get install ceph -y --force-yes
+PACKAGES=ceph
+update_repositories $dir
+install_packages $dir $PACKAGES
+clear_packages_cache $dir

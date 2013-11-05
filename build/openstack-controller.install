@@ -25,20 +25,22 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
-do_chroot ${dir} apt-get update
-do_chroot ${dir} apt-get install -y --force-yes openssh-server iptables build-essential wget
-do_chroot ${dir} apt-get clean
+PACKAGES="openssh-server iptables build-essential wget"
+update_repositories $dir
+install_packages $dir $PACKAGES
+clear_packages_cache $dir
 
 install_ib_if_needed $ORIG $dir
 
-if [ $OS == "Debian" ] && [ $RELEASE == "wheezy" ]; then
+case "$RELEASE" in
+    "wheezy")
     cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
-deb [trusted=1] http://cloud.pkgs.enovance.com/wheezy-grizzly/ grizzly main 
+deb [trusted=1] http://cloud.pkgs.enovance.com/wheezy-grizzly/ grizzly main
 EOF
-
-elif [ $OS == "Ubuntu" ] && [ $RELEASE == "precise" ]; then
+    ;;
+    "precise")
     cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
-deb [trusted=1] http://cloud.pkgs.enovance.com/precise-grizzly/ grizzly main 
+deb [trusted=1] http://cloud.pkgs.enovance.com/precise-grizzly/ grizzly main
 EOF
 
 cat >> ${dir}/etc/apt/sources.list << EOF
@@ -46,12 +48,12 @@ deb http://archive.ubuntu.com/ubuntu precise-updates main
 deb http://archive.ubuntu.com/ubuntu precise universe
 deb http://archive.ubuntu.com/ubuntu precise-updates universe
 EOF
+    ;;
+    *)
+        fatal_error "OS ($OS) or Release ($RELEASE) not supported"
+    ;;
+esac
 
-else
- echo "OS or Release not supported"
- exit 1
-
-fi
-
-do_chroot ${dir} apt-get update
-do_chroot ${dir} apt-get install -y openstack-proxy-node
+update_repositories $dir
+install_packages $dir openstack-proxy-node
+clear_packages_cache $dir

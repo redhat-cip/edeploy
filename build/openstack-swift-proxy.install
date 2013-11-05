@@ -32,38 +32,46 @@ ORIG=$(cd $(dirname $0); pwd)
 
 install_ib_if_needed $ORIG $dir
 
-if [ $OS == "Debian" ] && [ $RELEASE == "wheezy" ]; then
+case "$OS" in
+    "Debian")
     cat > ${dir}/etc/apt/sources.list.d/mongodb.list <<EOF
 deb http://downloads-distro.mongodb.org/repo/debian-sysvinit dist 10gen
 EOF
-
-elif [ $OS == "Ubuntu" ] && [ $RELEASE == "precise" ]; then
+    ;;
+    "Ubuntu")
     cat > ${dir}/etc/apt/sources.list.d/mongodb.list <<EOF
 deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen
 EOF
-
-elif [ $OS == "CentOS" ] && [ $CODENAME == "6.4" ]; then
-    cat > ${dir}/etc/yum.repos.d/mongodb.repo <<EOF
+    ;;
+    "CentOS")
+       if [ $CODENAME == "6.4" ]; then
+            cat > ${dir}/etc/yum.repos.d/mongodb.repo <<EOF
 [mongodb]
 name=MongoDB Repository
 baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64/
 gpgcheck=0
 enabled=1
 EOF
+      fi
+      ;;
+    *)
+    fatal_error "OS or Release not supported"
+    ;;
+esac
 
-else
-    echo "OS or Release not supported"
-    exit 1
-fi
+case "$(package_type)" in
+    "deb")
+        PACKAGES="swift-proxy memcached keystone ceilometer-api ceilometer-agent-central ceilometer-collector mysql-server mongodb-10gen"
+        ;;
+    "rpm")
+        PACKAGES="openstack-swift-proxy memcached openstack-keystone openstack-ceilometer-api openstack-ceilometer-agent-central openstack-ceilometer-collector mysql-server mongo-10gen mongo-10gen-server"
+        ;;
+    *)
+        fatal_error "$(package_type) isn't supported"
+        ;;
+esac
 
-if [ $OS == "Debian" ] || [ $OS == "Ubuntu" ]; then
-    do_chroot ${dir} apt-get update
-    do_chroot ${dir} apt-get install -y --force-yes swift-proxy memcached keystone ceilometer-api ceilometer-agent-central ceilometer-collector mysql-server mongodb-10gen
+update_repositories $dir
+install_packages $dir $PACKAGES
+clear_packages_cache $dir
 
-elif [ $OS == "CentOS" ] && [ $CODENAME == "6.4" ]; then
-    do_chroot ${dir} yum install -y openstack-swift-proxy memcached openstack-keystone openstack-ceilometer-api openstack-ceilometer-agent-central openstack-ceilometer-collector mysql-server mongo-10gen mongo-10gen-server
-
-else
-  echo "OS or Release not supported"
-  exit 1
-fi

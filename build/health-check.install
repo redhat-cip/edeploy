@@ -46,9 +46,10 @@ rsync -aH --delete-before ${SRC}/ ${DST2}/
 # So let's copy the current one to insure the setup is good
 cp -f /etc/resolv.conf "$DST2/etc/"
 
-do_chroot ${DST2} apt-get update
-do_chroot ${DST2} apt-get install -y --force-yes sysbench fio python-psutil netperf python-netaddr ethtool python-numpy sdparm
-do_chroot ${DST2} apt-get clean
+PACKAGES="sysbench fio python-psutil netperf python-netaddr ethtool python-numpy sdparm"
+update_repositories $dir
+install_packages $dir $PACKAGES
+clear_packages_cache $dir
 
 install_ib_if_needed $ORIG $DST2
 

@@ -53,6 +53,22 @@ install_packages() {
     esac
 }
 
+remove_packages() {
+    CHROOT=$1
+    PACKAGES=$2
+    case "$(package_tool)" in
+        apt)
+            do_chroot $CHROOT apt-get remove $PACKAGES
+        ;;
+        yum)
+            chrooted_yum $CHROOT remove $PACKAGES
+        ;;
+        *)
+            fatal_error "$(package_tool) isn't supported in install_packages()"
+        ;;
+    esac
+}
+
 update_repositories() {
     CHROOT=$1
     case "$(package_tool)" in

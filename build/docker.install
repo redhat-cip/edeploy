@@ -27,10 +27,13 @@ ORIG=$(cd $(dirname $0); pwd)
 # Add the PPA sources to your apt sources list.
 . ${ORIG}/functions
 
-if grep -q debian.org ${dir}/etc/apt/sources.list; then
-    echo "Docker only supported under Ubuntu"
-    exit 1
-fi
+case "$OS" in
+    Ubuntu)
+        ;;
+    *)
+    fatal_error "Docker only supported under Ubuntu"
+    ;;
+esac
 
 cat > ${dir}/etc/apt/sources.list << EOF
 deb http://archive.ubuntu.com/ubuntu precise main
@@ -43,11 +46,17 @@ EOF
 do_chroot ${dir} dpkg-divert --local --rename --add /sbin/initctl
 do_chroot ${dir} ln -s /bin/true /sbin/initctl
 
-do_chroot ${dir} apt-get update
-do_chroot ${dir} apt-get install -y --force-yes python-software-properties linux-image-generic-lts-raring linux-headers-generic-lts-raring
+PACKAGES="python-software-properties linux-image-generic-lts-raring linux-headers-generic-lts-raring"
+update_repositories $dir
+install_packages $dir $PACKAGES
+clear_packages_cache $dir
+
 do_chroot ${dir} add-apt-repository -y ppa:dotcloud/lxc-docker
-do_chroot ${dir} apt-get update
-do_chroot ${dir} apt-get install -y --force-yes lxc-docker
+
+PACKAGES="lxc-docker"
+update_repositories $dir
+install_packages $dir $PACKAGES
+clear_packages_cache $dir
 
 # NOTE (leseb): at some point this seems to break the boot sequence
 # so it's better remove it as soon as Docker is properly installed

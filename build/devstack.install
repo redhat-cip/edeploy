@@ -31,15 +31,16 @@ install_ib_if_needed $ORIG $dir
 
 echo "Preparing package sources for $dist"
 
-if [ $dist == "wheezy" ]; then
+case "$dist" in
+    "wheezy")
     cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
 deb [trusted=1] http://archive.gplhost.com/debian grizzly main
 deb [trusted=1] http://archive.gplhost.com/debian/ grizzly-backports main
 EOF
+    PKGS=""
+    ;;
 
-PKGS=""
-
-elif [ $dist == "precise" ]; then
+    "precise")
     cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
 deb [trusted=1 arch=amd64] http://archive.gplhost.com/debian precise-grizzly-backports main
 EOF
@@ -57,18 +58,18 @@ deb-src http://security.ubuntu.com/ubuntu precise-security main
 deb http://security.ubuntu.com/ubuntu precise-security universe
 deb-src http://security.ubuntu.com/ubuntu precise-security universe
 EOF
+    PKGS="open-iscsi-utils"
+    ;;
+    *)
+    fatal_error "$dist distro are not yet supported in this role"
+    ;;
+esac
 
-PKGS="open-iscsi-utils"
+PACKAGES="bridge-utils curl dnsmasq-base dnsmasq-utils ebtables euca2ools gawk gcc genisoimage git iptables iputils-arping iputils-ping kpartx libjs-jquery-tablesorter libldap2-dev libsasl2-dev libxml2-dev locate lsof lvm2 msgpack-python nbd-client nodejs open-iscsi openssh-server openssl parted psmisc pylint python-anyjson python-beautifulsoup python-boto python-carrot python-cheetah python-cherrypy3 python-cmd2 python-coverage python-dateutil python-dev python-eventlet python-feedparser python-gflags python-greenlet python-iso8601 python-kombu python-libxml2 python-lockfile python-lxml python-m2crypto python-migrate python-mox python-mysqldb python-netaddr python-nose python-numpy python-paste python-pastedeploy python-pastescript python-pip python-pysqlite2 python-qpid python-routes python-setuptools python-sphinx python-sqlalchemy python-suds python-tempita python-unittest2 python-virtualenv python-webob python-wsgiref python-xattr qemu-utils screen sg3-utils socat sqlite3 sudo sysfsutils tar tcpdump tgt unzip vim-nox vlan wget $PKGS"
 
-else
- echo "OS or Release not supported"
- exit 1
-
-fi
-
-do_chroot ${dir} apt-get update
-
-do_chroot ${dir} apt-get install -y bridge-utils curl dnsmasq-base dnsmasq-utils ebtables euca2ools gawk gcc genisoimage git iptables iputils-arping iputils-ping kpartx libjs-jquery-tablesorter libldap2-dev libsasl2-dev libxml2-dev locate lsof lvm2 msgpack-python nbd-client nodejs open-iscsi openssh-server openssl parted psmisc pylint python-anyjson python-beautifulsoup python-boto python-carrot python-cheetah python-cherrypy3 python-cmd2 python-coverage python-dateutil python-dev python-eventlet python-feedparser python-gflags python-greenlet python-iso8601 python-kombu python-libxml2 python-lockfile python-lxml python-m2crypto python-migrate python-mox python-mysqldb python-netaddr python-nose python-numpy python-paste python-pastedeploy python-pastescript python-pip python-pysqlite2 python-qpid python-routes python-setuptools python-sphinx python-sqlalchemy python-suds python-tempita python-unittest2 python-virtualenv python-webob python-wsgiref python-xattr qemu-utils screen sg3-utils socat sqlite3 sudo sysfsutils tar tcpdump tgt unzip vim-nox vlan wget $PKGS
+update_repositories $dir
+install_packages $dir $PACKAGES
+clear_packages_cache $dir
 
 USER=stack
 

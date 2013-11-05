@@ -75,7 +75,7 @@ EOF
         "CentOS")
             if [ $CODENAME == "6.4" ]; then
                 do_chroot ${dir} rpm -ivh http://yum.puppetlabs.com/el/6/products/i386/puppetlabs-release-6-7.noarch.rpm
-                install_packages $dir puppet
+                install_packages $dir "puppet"
                 remove_packages puppetlabs-release-6-7.noarch
                 install_packages $dir http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
                 install_packages $dir http://rdo.fedorapeople.org/openstack-${OS_VERS}/rdo-release-${OS_VERS}.rpm
@@ -108,13 +108,13 @@ case "$OS" in
         do_chroot ${dir} rm cloud-init_0.7.3-0ubuntu2_all.deb python-json-patch_1.0-2_all.deb python-json-pointer_1.0-1ubuntu2_all.deb
         ;;
      "CentOS")
-            if [ $CODENAME == "6.4" ]; then
-                install_packages $dir cloud-init
-            fi
-     ;;
+        if [ $CODENAME == "6.4" ]; then
+          install_packages $dir "cloud-init"
+        fi
+        ;;
      *)
         fatal_error "OS ($OS) or Release ($RELEASE) not supported"
-     ;;
+        ;;
 esac
 
 cat > ${dir}/etc/cloud/cloud.cfg.d/90_dpkg.cfg << EOF

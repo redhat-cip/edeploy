@@ -26,11 +26,6 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . common
 
-fatal_error() {
-	echo $1;
-	exit 1
-}
-
 check_binary() {
 	type -p $1 || fatal_error "$1 is missing"
 }

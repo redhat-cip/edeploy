@@ -2,6 +2,11 @@
 
 . packages
 
+fatal_error() {
+    echo $1;
+    exit 1
+}
+
 compress() {
     COMPRESS=gzip
     if [ ! -z $(which pigz 2>/dev/null) ]; then

@@ -74,7 +74,7 @@ rsync -au --delete-excluded --delete --exclude /boot/ \
     --exclude 'lib/modules/*/kernel/drivers/net/wireless/' \
     --exclude 'ocfs2*.ko' \
     --exclude '*.pyc' \
-    ${DST2/ ${DST}
+    ${DST2}/ ${DST}
 
 rm -rf ${DST2}
 

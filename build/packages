@@ -28,6 +28,15 @@ package_tool() {
     esac
 }
 
+
+chrooted_yum() {
+    CHROOT=$1
+    shift
+    mount /dev/ $CHROOT/dev -o bind
+    do_chroot $CHROOT yum $@
+    umount $CHROOT/dev
+}
+
 install_packages() {
     CHROOT=$1
     PACKAGES=$2
@@ -36,9 +45,7 @@ install_packages() {
             do_chroot $CHROOT apt-get install $INSTALL_OPTIONS -y --force-yes $PACKAGES
         ;;
         yum)
-            mount /dev/ $CHROOT/dev -o bind
-            do_chroot $CHROOT yum $INSTALL_OPTIONS install -y --nogpgcheck $PACKAGES
-            umount $CHROOT/dev
+            chrooted_yum $INSTALL_OPTIONS install -y --nogpgcheck $PACKAGES
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in install_packages()"
@@ -53,7 +60,7 @@ update_repositories() {
             do_chroot $CHROOT apt-get update
         ;;
         yum)
-            do_chroot $CHROOT yum check-update
+            chrooted_yum $CHROOT check-update
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in update_repositories()"
@@ -68,7 +75,7 @@ update_system() {
             do_chroot $CHROOT apt-get upgrade
         ;;
         yum)
-            do_chroot $CHROOT yum update
+            chrooted_yum $CHROOT update
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in update_system()"
@@ -85,7 +92,7 @@ upgrade_system() {
         yum)
             # didn't really found something equivalent
             # Let's do a yum update so
-            do_chroot $CHROOT yum update
+            chrooted_yum $CHROOT update
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in update_system()"
@@ -100,7 +107,7 @@ clear_packages_cache() {
             do_chroot $CHROOT apt-get clean
         ;;
         yum)
-            do_chroot $CHROOT yum clean packages
+            chrooted_yum $CHROOT clean packages
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in clear_packages_cache()"

@@ -176,7 +176,7 @@ cleanup() {
 	return
     fi
     rm -f "${dir}"/etc/default/grub.d/edeploy.cfg
-    chroot ${dir} bash -c "apt-get clean || rm -rf /var/cache/yum"
+    clear_packages_cache $dir
     for mpoint in /dev /proc; do
 	a=10
 	while ! umount ${dir}$mpoint; do

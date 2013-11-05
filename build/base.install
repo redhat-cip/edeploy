@@ -41,7 +41,7 @@ bootstrap() {
     mount -obind /dev ${target}/dev
     mount -obind /proc ${target}/proc
     # Use debootstrap for debian based distribution
-    if [ -n "$DEB" ]; then
+    if [ "$(package_type)" = "deb" ]; then
         debootstrap --arch ${ARCH:=amd64} --variant=minbase $dist "$target" $REPOSITORY
         # workaround no signature downloaded
         rm -f "$target"/var/lib/apt/lists/*[es]
@@ -49,16 +49,21 @@ bootstrap() {
         cp -p ${ORIG}/policy-rc.d ${target}/usr/sbin/
         echo 'APT::Install-Recommends "0" ;' >> "$target/etc/apt/apt.conf"
         echo 'APT::Install-Suggests "0" ;' >> "$target/etc/apt/apt.conf"
-    else # Centos
-        check_binary yum
-        check_binary rpm
-        rpm -ivh --root "$target" "http://mirror.centos.org/centos/6.4/os/x86_64/Packages/centos-release-6-4.el6.centos.10.x86_64.rpm"
-        sed -i 's/$releasever/6/g' ${target}/etc/yum.repos.d/*
-        cp -f /etc/resolv.conf "$target/etc/"
-        yum --installroot "$target" -y --nogpgcheck install yum
-        do_chroot "$target" yum --nogpgcheck install -y yum basesystem
-        cp ${target}/etc/skel/.bashrc ${target}/root
-        cp ${target}/etc/skel/.bash_profile ${target}/root
+    else if [ "$(package_type)" = "rpm" ]; then
+            if [ "$(package_tool)" = "yum" ]; then
+                check_binary yum
+                check_binary rpm
+                rpm -ivh --root "$target" "http://mirror.centos.org/centos/6.4/os/x86_64/Packages/centos-release-6-4.el6.centos.10.x86_64.rpm"
+                sed -i 's/$releasever/6/g' ${target}/etc/yum.repos.d/*
+                cp -f /etc/resolv.conf "$target/etc/"
+                yum --installroot "$target" -y --nogpgcheck install yum
+                do_chroot "$target" yum --nogpgcheck install -y yum basesystem
+                cp ${target}/etc/skel/.bashrc ${target}/root
+                cp ${target}/etc/skel/.bash_profile ${target}/root
+            else
+                fatal_error "$(package_tool) is not supported for $DIST distro"
+            fi
+        fi
     fi
     umount -lf ${target}/dev || true
     umount -lf ${target}/proc || true
@@ -97,7 +102,7 @@ install_base_packages() {
             exit 1
             ;;
     esac
-    if [ -n "$DEB" ]; then
+    if [ "$(package_type)" = "deb" ]; then
         do_chroot "$target" apt-get update
         do_chroot "$target" apt-get dist-upgrade -y
         mkdir -p "${target}"/etc/default/grub.d
@@ -106,12 +111,13 @@ install_base_packages() {
         echo  "en_US.utf8 UTF-8" >> $target/etc/locale.gen
         do_chroot "$target" locale-gen
         rm -f "${target}"/etc/default/grub.d/edeploy.cfg
-    else
-        mount -obind /dev ${target}/dev
-        do_chroot "$target" yum --nogpgcheck install -y $PACKAGES
-        # bring lshw from epel
-        do_chroot "$target" rpm -ivh "https://dl.fedoraproject.org/pub/epel/6/x86_64/lshw-B.02.14-3.el6.x86_64.rpm"
-        umount -lf ${target}/dev
+    else if [ "$(package_type)" = "rpm" ]; then
+            mount -obind /dev ${target}/dev
+            do_chroot "$target" yum --nogpgcheck install -y $PACKAGES
+            # bring lshw from epel
+            do_chroot "$target" rpm -ivh "https://dl.fedoraproject.org/pub/epel/6/x86_64/lshw-B.02.14-3.el6.x86_64.rpm"
+            umount -lf ${target}/dev
+         fi
     fi
     umount -lf ${target}/dev || true
     umount -lf ${target}/proc || true
@@ -124,7 +130,7 @@ install_hp_raid_cli_tool() {
         wget http://downloads.linux.hp.com/SDR/downloads/ServicePackforProLiant/2013.02.0/hp/swpackages/hpacucli-9.40-12.0.x86_64.rpm
     fi
 
-    if [ -n "$DEB" ]; then
+    if [ "$(package_type)" = "deb" ]; then
         if [ ! -r hpacucli_9.40-13_amd64.deb  ]; then
         alien hpacucli-9.40-12.0.x86_64.rpm
         fi
@@ -134,13 +140,14 @@ install_hp_raid_cli_tool() {
         rm "$target"/tmp/hpacucli.deb
 
         do_chroot "$target" apt-get clean
-    else
-        mount -obind /dev ${target}/dev
-        do_chroot "$target" yum --nogpgcheck install -y pexpect
-        cp hpacucli-9.40-12.0.x86_64.rpm $dir/tmp
-        do_chroot $dir rpm -ivh /tmp/hpacucli-9.40-12.0.x86_64.rpm
-        rm -f $dir/tmp/hpacucli-9.40-12.0.x86_64.rpm
-        umount -lf ${target}/dev
+    else if [ "$(package_type)" = "deb" ]; then
+            mount -obind /dev ${target}/dev
+            do_chroot "$target" yum --nogpgcheck install -y pexpect
+            cp hpacucli-9.40-12.0.x86_64.rpm $dir/tmp
+            do_chroot $dir rpm -ivh /tmp/hpacucli-9.40-12.0.x86_64.rpm
+            rm -f $dir/tmp/hpacucli-9.40-12.0.x86_64.rpm
+            umount -lf ${target}/dev
+         fi
     fi
 }
 
@@ -148,7 +155,7 @@ ssh_fix() {
     target=$1
     # let the key be generated on first boot
     rm -f "$target"/etc/ssh/*key*
-    if [ -n "$DEB" ]; then
+    if [ "$(package_type)" = "deb" ]; then
         cat > ${target}/etc/first-boot.d/01-ssh <<EOF
 #!/bin/bash
 
@@ -185,7 +192,7 @@ EOF
 clean_tmp_dir() {
     target=$1
     rm -rf ${target}/var/tmp/* ${target}/tmp/*
-    if [ -z "$DEB" ]; then
+    if [ "$(package_tool)" = "yum" ]; then
         rm -rf "$target/var/cache/yum"
     fi
 }
@@ -233,14 +240,9 @@ fi
 set -e              # abort on failure
 set -x              # print commands
 
-case $dist in
-    centos*)
-        DEB=
-        ;;
-    *)
-        DEB=1
-        export DEBIAN_FRONTEND=noninteractive
-esac
+if [ "$(package_type)" = "deb" ]; then
+    export DEBIAN_FRONTEND=noninteractive
+fi
 
 trap cleanup 0
 

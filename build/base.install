@@ -207,13 +207,14 @@ cleanup() {
     fi
 }
 
+############################
+########## MAIN ############
+############################
+
 if [ -z "$1" -o -z "$dist" -o -z "$version" ]; then
    echo "Usage: $0 <directory name> <distro name>" 1>&2
    exit 1
 fi
-
-set -e              # abort on failure
-set -x              # print commands
 
 check_binary dh_testdir
 check_binary alien
@@ -228,6 +229,9 @@ if [ $? -eq 0 ]; then
     echo "Exiting"
     exit 1
 fi
+
+set -e              # abort on failure
+set -x              # print commands
 
 case $dist in
     centos*)

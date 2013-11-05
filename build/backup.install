@@ -10,7 +10,7 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
-PACKAGES=wget openssh-server vlan bridge-utils vim
+PACKAGES="wget openssh-server vlan bridge-utils vim"
 update_repositories $dir
-install_packages $dir $PACKAGES
+install_packages $dir "$PACKAGES"
 clear_packages_cache $dir

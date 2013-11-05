@@ -28,7 +28,7 @@ ORIG=$(cd $(dirname $0); pwd)
 
 PACKAGES="wget openssh-server"
 update_repositories $dir
-install_packages $dir $PACKAGES
+install_packages $dir "$PACKAGES"
 clear_packages_cache $dir
 
 install_ib_if_needed $ORIG $dir
@@ -44,5 +44,5 @@ EOF
 fi
 
 update_repositories $dir
-install_packages $dir $PACKAGES
+install_packages $dir "$PACKAGES"
 clear_packages_cache $dir

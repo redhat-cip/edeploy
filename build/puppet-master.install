@@ -90,7 +90,7 @@ rm -f ${dir}/etc/cloud/cloud.cfg
 
 case "$OS" in
     "Debian")
-        install_packages ${dir} cloud-init
+        install_packages ${dir} "cloud-init"
         ;;
     "Ubuntu")
         # Todo(EmilienM): Move cloud-init into backports repo to have last release properly
@@ -105,7 +105,7 @@ case "$OS" in
         ;;
     "CentOS")
        if [ $CODENAME == "6.4" ]; then
-          install_packages $dir cloud-init
+          install_packages $dir "cloud-init"
        fi
        ;;
     *)

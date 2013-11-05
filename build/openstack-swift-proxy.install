@@ -72,6 +72,6 @@ case "$(package_type)" in
 esac
 
 update_repositories $dir
-install_packages $dir $PACKAGES
+install_packages $dir "$PACKAGES"
 clear_packages_cache $dir
 

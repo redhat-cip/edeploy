@@ -25,18 +25,18 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
-PACKAGES=wget
+PACKAGES="wget"
 update_repositories $dir
-install_packages $dir $PACKAGES
+install_packages $dir "$PACKAGES"
 clear_packages_cache $dir
 
 configure_cloudinit () {
     mkdir -p ${dir}/etc/cloud/cloud.cfg.d
     rm -f ${dir}/etc/cloud/cloud.cfg
 
-    PACKAGES=cloud-init
+    PACKAGES="cloud-init"
     update_repositories $dir
-    install_packages $dir $PACKAGES
+    install_packages $dir "$PACKAGES"
     clear_packages_cache $dir
 
     cat > ${dir}/etc/cloud/cloud.cfg.d/90_dpkg.cfg << EOF

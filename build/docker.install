@@ -48,14 +48,14 @@ do_chroot ${dir} ln -s /bin/true /sbin/initctl
 
 PACKAGES="python-software-properties linux-image-generic-lts-raring linux-headers-generic-lts-raring"
 update_repositories $dir
-install_packages $dir $PACKAGES
+install_packages $dir "$PACKAGES"
 clear_packages_cache $dir
 
 do_chroot ${dir} add-apt-repository -y ppa:dotcloud/lxc-docker
 
 PACKAGES="lxc-docker"
 update_repositories $dir
-install_packages $dir $PACKAGES
+install_packages $dir "$PACKAGES"
 clear_packages_cache $dir
 
 # NOTE (leseb): at some point this seems to break the boot sequence

@@ -27,7 +27,7 @@ ORIG=$(cd $(dirname $0); pwd)
 
 PACKAGES="openssh-server iptables build-essential wget"
 update_repositories $dir
-install_packages $dir $PACKAGES
+install_packages $dir "$PACKAGES"
 clear_packages_cache $dir
 
 install_ib_if_needed $ORIG $dir
@@ -55,5 +55,5 @@ EOF
 esac
 
 update_repositories $dir
-install_packages $dir openstack-proxy-node
+install_packages $dir "openstack-proxy-node"
 clear_packages_cache $dir

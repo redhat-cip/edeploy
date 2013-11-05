@@ -103,12 +103,12 @@ install_base_packages() {
     if [ "$(package_type)" = "deb" ]; then
         mkdir -p "${target}"/etc/default/grub.d
         echo 'exit 0' > "${target}"/etc/default/grub.d/edeploy.cfg
-        install_packages $target $PACKAGES
+        install_packages $target "$PACKAGES"
         echo  "en_US.utf8 UTF-8" >> $target/etc/locale.gen
         do_chroot "$target" locale-gen
         rm -f "${target}"/etc/default/grub.d/edeploy.cfg
     else if [ "$(package_type)" = "rpm" ]; then
-            install_packages $target $PACKAGES
+            install_packages $target "$PACKAGES"
             # bring lshw from epel
             do_chroot "$target" rpm -ivh "https://dl.fedoraproject.org/pub/epel/6/x86_64/lshw-B.02.14-3.el6.x86_64.rpm"
          fi
@@ -129,10 +129,10 @@ install_hp_raid_cli_tool() {
         alien hpacucli-9.40-12.0.x86_64.rpm
         fi
         cp hpacucli_9.40-13_amd64.deb "$target"/tmp/hpacucli.deb
-        install_packages $target lib32gcc1 lib32stdc++6 python-pexpect lvm2 vim-tiny bsdmainutils
+        install_packages $target "lib32gcc1 lib32stdc++6 python-pexpect lvm2 vim-tiny bsdmainutils"
         do_chroot "$target" dpkg -i /tmp/hpacucli.deb
     elif [ "$(package_type)" = "rpm" ]; then
-        install_packages $target pexpect
+        install_packages $target "pexpect"
         cp hpacucli-9.40-12.0.x86_64.rpm $dir/tmp
         do_chroot $dir rpm -ivh /tmp/hpacucli-9.40-12.0.x86_64.rpm
     else

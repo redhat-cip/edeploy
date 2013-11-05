@@ -36,10 +36,10 @@ case "$(package_tool)" in
         rm -f ${dir}/etc/apt/sources.list.d/updates.list
         do_chroot ${dir} debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password password your_password'
         do_chroot ${dir} debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password_again password your_password'
-        install_packages $dir $PACKAGES
+        install_packages $dir "$PACKAGES"
         ;;
     "yum")
-        install_packages $dir $PACKAGES
+        install_packages $dir "$PACKAGES"
         do_chroot ${dir} chkconfig --level 2345 mysqld on
         ;;
     *)

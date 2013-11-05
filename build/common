@@ -147,7 +147,7 @@ install_ib_if_needed() {
             esac
         else
             bash ${ORIG}/infiniband $CHROOT
-            install_packages $CHROOT infiniband-diags
+            install_packages $CHROOT "infiniband-diags"
             if [ "$RELEASE" = "precise" ]; then
                 # as per https://bugs.launchpad.net/ubuntu/+source/libmlx4/+bug/1037107
                 # ubuntu precise needs a package to be backported

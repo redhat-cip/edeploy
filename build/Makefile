@@ -64,7 +64,7 @@ base $(INST)/base.done: base.install policy-rc.d edeploy
 	touch $(INST)/base.done
 
 cloud $(INST)/cloud.done: cloud.install $(INST)/base.done
-	/cloud.install $(INST)/base $(INST)/cloud $(VERS)
+	./cloud.install $(INST)/base $(INST)/cloud $(VERS)
 	touch $(INST)/cloud.done
 
 devstack $(INST)/devstack.done: devstack.install $(INST)/cloud.done

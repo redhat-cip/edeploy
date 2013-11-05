@@ -38,8 +38,6 @@ DEBUG=1
 UPLOAD_LOG:=0
 PYDIR=../src
 PYSERVERDIR=../server
-export ENABLE_IB
-export ENABLE_MELLANOX
 
 LOAD=5
 HTTP=
@@ -53,56 +51,56 @@ health-check: $(INST)/base.done init.health health-check.install $(PYDIR)/detect
 	ENABLE_IB=y ENABLE_MELLANOX=n ./health-check.install $(INST)/base $(INST)/health-check $(HEALTH_IMG) $(VERS) $(DEBUG)
 
 health-img: health-check
-	UPLOAD_LOG=$(UPLOAD_LOG) ./img.install $(INST)/base $(HEALTH_IMG) $(VERS) $(INST) $(SERV) $(HSERV) $(DEBUG) health
+	./img.install $(INST)/base $(HEALTH_IMG) $(VERS) $(INST) $(SERV) $(HSERV) $(DEBUG) health
 
 pxe $(INST)/$(IMG): $(INST)/base.done init pxe.install $(PYDIR)/detect.py $(PYDIR)/hpacucli.py $(PYSERVERDIR)/matcher.py $(PYDIR)/diskinfo.py $(PYDIR)/ipmi.py $(PYDIR)/infiniband.py
 	ENABLE_IB=y ENABLE_MELLANOX=n ./pxe.install $(INST)/base $(INST)/pxe $(IMG) $(VERS) $(DEBUG)
 
 img: $(INST)/$(IMG)
-	UPLOAD_LOG=$(UPLOAD_LOG) ./img.install $(INST)/base $(IMG) $(VERS) $(INST) $(SERV) $(HSERV) $(DEBUG)
+	./img.install $(INST)/base $(IMG) $(VERS) $(INST) $(SERV) $(HSERV) $(DEBUG)
 
 base $(INST)/base.done: base.install policy-rc.d edeploy
-	REPOSITORY=$(REPOSITORY) ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ARCH=$(ARCH) ./base.install $(INST)/base $(DIST) $(VERS)
+	./base.install $(INST)/base $(DIST) $(VERS)
 	touch $(INST)/base.done
 
 cloud $(INST)/cloud.done: cloud.install $(INST)/base.done
-	ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ./cloud.install $(INST)/base $(INST)/cloud $(VERS)
+	/cloud.install $(INST)/base $(INST)/cloud $(VERS)
 	touch $(INST)/cloud.done
 
 devstack $(INST)/devstack.done: devstack.install $(INST)/cloud.done
-	ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ./devstack.install $(INST)/cloud $(INST)/devstack $(DIST) $(VERS)
+	./devstack.install $(INST)/cloud $(INST)/devstack $(DIST) $(VERS)
 	touch $(INST)/devstack.done
 
 openstack-common $(INST)/openstack-common.done: openstack-common.install $(INST)/base.done
-	ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ./openstack-common.install $(INST)/base $(INST)/openstack-common $(VERS)
+	./openstack-common.install $(INST)/base $(INST)/openstack-common $(VERS)
 	touch $(INST)/openstack-common.done
 
 openstack-controller $(INST)/openstack-controller.done: openstack-controller.install $(INST)/base.done
-	ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ./openstack-controller.install $(INST)/base $(INST)/openstack-controller $(VERS)
+	./openstack-controller.install $(INST)/base $(INST)/openstack-controller $(VERS)
 	touch $(INST)/openstack-controller.done
 
 openstack-swift-proxy $(INST)/openstack-swift-proxy.done: openstack-swift-proxy.install $(INST)/openstack-common.done
-	ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ./openstack-swift-proxy.install $(INST)/openstack-common $(INST)/openstack-swift-proxy $(VERS)
+	./openstack-swift-proxy.install $(INST)/openstack-common $(INST)/openstack-swift-proxy $(VERS)
 	touch $(INST)/openstack-swift-proxy.done
 
 openstack-swift-storage $(INST)/openstack-swift-storage.done: openstack-swift-storage.install $(INST)/openstack-common.done
-	ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ./openstack-swift-storage.install $(INST)/openstack-common $(INST)/openstack-swift-storage $(VERS)
+	./openstack-swift-storage.install $(INST)/openstack-common $(INST)/openstack-swift-storage $(VERS)
 	touch $(INST)/openstack-swift-storage.done
 
 mysql $(INST)/mysql.done: mysql.install $(INST)/base.done
-	ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ./mysql.install $(INST)/base $(INST)/mysql $(VERS)
+	./mysql.install $(INST)/base $(INST)/mysql $(VERS)
 	touch $(INST)/mysql.done
 
 galera $(INST)/galera.done: galera.install $(INST)/base.done
-	ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ./galera.install $(INST)/base $(INST)/galera $(VERS)
+	./galera.install $(INST)/base $(INST)/galera $(VERS)
 	touch $(INST)/galera.done
 
 haproxy $(INST)/haproxy.done: haproxy.install $(INST)/base.done
-	ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ./haproxy.install $(INST)/base $(INST)/haproxy $(VERS)
+	./haproxy.install $(INST)/base $(INST)/haproxy $(VERS)
 	touch $(INST)/haproxy.done
 
 ceph $(INST)/ceph.done: ceph.install $(INST)/base.done
-	ENABLE_IB=$(ENABLE_IB) ENABLE_MELLANOX=$(ENABLE_MELLANOX) ./ceph.install $(INST)/base $(INST)/ceph $(VERS)
+	./ceph.install $(INST)/base $(INST)/ceph $(VERS)
 	touch $(INST)/ceph.done
 
 docker $(INST)/docker.done: docker.install $(INST)/base.done
@@ -129,7 +127,7 @@ stress-http:
 	cd ../tests; ./run_kvm.sh $(TOP) stress-http $(LOAD) $(HTTP)
 
 benchmark $(INST)/benchmark.done: benchmark.install $(INST)/base.done
-	ENABLE_IB=y ENABLE_MELLANOX=$(ENABLE_MELLANOX) ./benchmark.install $(INST)/base $(INST)/benchmark $(VERS)
+	ENABLE_IB=y ./benchmark.install $(INST)/base $(INST)/benchmark $(VERS)
 	touch $(INST)/benchmark.done
 
 dist:

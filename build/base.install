@@ -138,7 +138,7 @@ install_hp_raid_cli_tool() {
     else
         fatal_error "package_type $(package_type) isn't suported in install_hp_raid_cli_tool()"
     fi
-    rm "$target"/tmp/hpacucli.*
+    rm "$target"/tmp/hpacucli*
     clear_packages_cache $target
 }
 

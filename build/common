@@ -164,7 +164,8 @@ install_ib_if_needed() {
 do_chroot() {
     DIR=$1
     shift
-    PATH=/bin/:/sbin:$PATH chroot $DIR bash -c "export LANG=C; export LC_ALL=C; export LC_CTYPE=C; export LANGUAGE=C; $@"
+    REMAIN=$@
+    PATH=/bin/:/sbin:$PATH chroot $DIR bash -c "export LANG=C; export LC_ALL=C; export LC_CTYPE=C; export LANGUAGE=C; $REMAIN"
 }
 
 # Called to clean packages, temporary files and to create the compressed archive

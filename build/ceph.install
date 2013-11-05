@@ -57,6 +57,7 @@ EOF
    cat > ${dir}/etc/apt/sources.list.d/ceph.list <<EOF
 deb [trusted=1] http://cloud.pkgs.enovance.com/precise-grizzly/ grizzly main ceph
 EOF
+    ;;
     *)
     fatal_error "Release '$RELEASE' is not supported"
     ;;

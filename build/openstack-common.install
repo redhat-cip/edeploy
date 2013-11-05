@@ -71,6 +71,7 @@ deb-src http://security.ubuntu.com/ubuntu ${RELEASE}-security main
 deb http://security.ubuntu.com/ubuntu ${RELEASE}-security universe
 deb-src http://security.ubuntu.com/ubuntu ${RELEASE}-security universe
 EOF
+        ;;
         "CentOS")
             if [ $CODENAME == "6.4" ]; then
                 do_chroot ${dir} rpm -ivh http://yum.puppetlabs.com/el/6/products/i386/puppetlabs-release-6-7.noarch.rpm

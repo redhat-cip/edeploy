@@ -51,6 +51,7 @@ install_mellanox() {
 	    PACKAGES_TO_REMOVE="linux-image-$KVER_TO_REMOVE-generic linux-headers-$KVER_TO_REMOVE-generic linux-headers-$KVER_TO_REMOVE"
 	    ;;
 	*)
+        return
 	    ;;
     esac
 
@@ -140,7 +141,7 @@ install_ib_if_needed() {
                     install_mellanox $RELEASE $CHROOT
                 ;;
                 *)
-                echo "Mellanox configuraiton is not available yet for $RELEASE"
+                echo "Mellanox configuration is not available yet for $RELEASE"
                 return
                 ;;
             esac

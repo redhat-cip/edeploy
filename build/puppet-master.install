@@ -59,7 +59,7 @@ case "$OS" in
             install_packages $dir http://yum.puppetlabs.com/el/6/products/i386/puppetlabs-release-6-7.noarch.rpm
             install_packages $dir http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
             install_packages $dir puppet-server mysql-server git cloud-init augeas
-            remove_packages  $dir puppetlabs-release-6-7.noarch
+            remove_packages  $dir puppetlabs-release-6-7.noarch -y
         fi
    ;;
    *)

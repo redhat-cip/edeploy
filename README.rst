@@ -404,3 +404,15 @@ For ``specs`` debug
 - On eDeploy server ``multitail /var/log/apache2/{error,access}.log /var/log/syslog``
 - And on booted but unmatch profile vm ``curl -s -S -F file=@/hw.py http://<ip-edeploy-srv>:80/cgi-bin/upload.py``
 - Or see uploaded ``.hw`` files on the eDeploy server (in ``HWDIR`` directory)
+
+cmdb files
+++++++++++
+
+config/foo.cmdb files are updated during ``make test`` execution. The files will show up add changed in git.
+You can ignore these changes with this command::
+
+    git update-index --assume-unchanged config/kvm-test.cmdb
+
+To revert the configuration, just run::
+
+    git update-index --no-assume-unchanged config/kvm-test.cmdb

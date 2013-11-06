@@ -16,6 +16,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+set -e
 DISK=kvm_storage.img
 DISK_SIZE=2000 # in MB
 HTTP_PORT=9000

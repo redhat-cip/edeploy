@@ -235,7 +235,6 @@ if [ -z "$1" -o -z "$dist" -o -z "$version" ]; then
 fi
 
 check_binary dh_testdir
-check_binary alien
 check_binary wget
 check_binary debootstrap
 check_binary chroot

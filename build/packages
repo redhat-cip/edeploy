@@ -5,19 +5,20 @@ get_mirror() {
 
   if [ -n "$REPOSITORY" ]; then
     echo "$REPOSITORY"
-  else
-    case "$dist" in
-      wheezy|squeeze|jessie)
-        echo "http://cdn.debian.net/debian"
-      ;;
-      lucid|precise|quantal|raring|saucy|trusty)
-        echo "http://archive.ubuntu.com/ubuntu"
-      ;;
-      *)
-        fatal_error "$dist isn't supported in get_mirror()"
-      ;;
-    esac
+    return
   fi
+
+  case "$dist" in
+    wheezy|squeeze|jessie)
+        echo "http://cdn.debian.net/debian"
+    ;;
+    lucid|precise|quantal|raring|saucy|trusty)
+        echo "http://archive.ubuntu.com/ubuntu"
+    ;;
+    *)
+        fatal_error "$dist isn't supported in get_mirror()"
+    ;;
+  esac
 }
 
 package_type() {

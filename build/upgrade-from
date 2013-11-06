@@ -135,11 +135,7 @@ echo "done"
 
 common_setup
 
-if [ -x ${TDIR}/usr/bin/dpkg ]; then
-    chroot ${TDIR} apt-get update
-else
-    chroot ${TDIR} yum update
-fi
+update_repositories $TDIR
 
 cp -p ${BUILDDIR}/edeploy ${TDIR}/usr/sbin/
 

@@ -216,6 +216,9 @@ cleanup() {
     echo "END OF TRAP"
     echo "###########"
 }
+
+clear_trap() {
+    trap - 0
 }
 
 common_setup() {

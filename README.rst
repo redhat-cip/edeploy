@@ -32,6 +32,13 @@ It may be a good idea to install these additional dependencies too::
 
  apt-get install pigz
 
+Root privilege
+++++++++++++++
+
+``make`` calls ``debootstrap``. This command needs root privilege. You can
+either work as root or use ``sudo -E make``. -E parameter is important to
+ensure the DISPLAY environment variable will be properly exported.
+
 How to start
 ------------
 

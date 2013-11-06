@@ -4,6 +4,7 @@
 
 fatal_error() {
     echo $1;
+    clean_mount_points
     exit 1
 }
 
@@ -169,37 +170,42 @@ do_chroot() {
     PATH=/bin/:/sbin:$PATH chroot $DIR bash -c "export LANG=C; export LC_ALL=C; export LC_CTYPE=C; export LANGUAGE=C; $REMAIN"
 }
 
+clean_mount_points() {
+    if [ ! -d "${dir}" ]; then
+    	return
+    fi
+    for mpoint in /dev/pts /dev /proc; do
+        grep -qi ${dir}$mpoint /proc/mounts || continue
+    	a=10
+	    while ! umount ${dir}$mpoint; do
+	        sleep 1
+    	    a=$(($a - 1))
+	        if [ $a -eq 0 ]; then
+		        break
+    	    fi
+	    done
+    done
+}
+
 # Called to clean packages, temporary files and to create the compressed archive
 # usually by a "trap cleanup 0" in a script
 cleanup() {
     ret=$?
-    if [ ! -d "${dir}" ]; then
-	return
-    fi
+    clean_mount_points
     rm -f "${dir}"/etc/default/grub.d/edeploy.cfg
     clear_packages_cache $dir
-    for mpoint in /dev /proc; do
-	a=10
-	while ! umount ${dir}$mpoint; do
-	    sleep 1
-	    a=$(($a - 1))
-	    if [ $a -eq 0 ]; then
-		break
-	    fi
-	done
-    done
     if [ $ret = 0 ]; then
-	if [ -x ${dir}/usr/bin/dpkg ]; then
-	    chroot ${dir} dpkg -l > ${dir}/../${ROLE}.packages
-	else
-	    chroot ${dir} rpm -qa > ${dir}/../${ROLE}.packages
-	fi
+    	if [ -x ${dir}/usr/bin/dpkg ]; then
+	        chroot ${dir} dpkg -l > ${dir}/../${ROLE}.packages
+    	else
+    	    chroot ${dir} rpm -qa > ${dir}/../${ROLE}.packages
+	    fi
 
-	cd ${dir}
+    	cd ${dir}
 
-	rm -f ../../${ROLE}-${version}.edeploy
+    	rm -f ../../${ROLE}-${version}.edeploy
 
-	tar c . | compress -9v > ../../${ROLE}-${version}.edeploy
+	    tar c . | compress -9v > ../../${ROLE}-${version}.edeploy
     fi
 }
 
@@ -226,6 +232,7 @@ common_setup() {
     mkdir -p "${dir}"/etc/default/grub.d
     echo 'exit 0' > "${dir}"/etc/default/grub.d/edeploy.cfg
     mount -obind /dev ${dir}/dev
+    mount -obind /dev/pts ${dir}/dev/pts
     mount -t proc none ${dir}/proc
     trap cleanup 0
 }

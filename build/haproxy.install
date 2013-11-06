@@ -35,7 +35,8 @@ install_ib_if_needed $ORIG $dir
 
 case "$RELEASE" in
     "wheezy")
-      do_chroot ${dir} add-apt-repository \'deb http://ftp2.fr.debian.org/debian wheezy-backports main\'
+      local repository=$(get_mirror $DIST)
+      do_chroot ${dir} add-apt-repository \'deb $repository wheezy-backports main\'
     ;;
     "precise")
       do_chroot ${dir} apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db

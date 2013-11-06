@@ -38,12 +38,13 @@ install_ib_if_needed $ORIG $dir
 prepare_packages () {
     case "$OS" in
         "Debian")
+            local repository=$(get_mirror $DIST)
             do_chroot ${dir} wget http://apt.puppetlabs.com/puppetlabs-release-$RELEASE.deb
             do_chroot ${dir} dpkg -i puppetlabs-release-$RELEASE.deb
             do_chroot ${dir} rm puppetlabs-release-$RELEASE.deb
             do_chroot ${dir} apt-key adv --recv-keys --keyserver keyserver.ubuntu.com E52660B15D964F0B
             cat > ${dir}/etc/apt/sources.list.d/$RELEASE-backport.list <<EOF
-deb http://ftp.debian.org/debian ${RELEASE}-backports main
+deb $repository ${RELEASE}-backports main
 EOF
             cat > ${dir}/etc/apt/sources.list.d/openstack-$RELEASE-$OS-VERS.list <<EOF
 deb http://cloud.pkgs.enovance.com/${RELEASE}-${OS_VERS}/ ${OS_VERS} main

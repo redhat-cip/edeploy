@@ -32,8 +32,9 @@ install_puppet () {
 
 case "$OS" in
     "Debian")
+        local repository=$(get_mirror $DIST)
         cat > ${dir}/etc/apt/sources.list.d/$RELEASE-backport.list <<EOF
-deb http://ftp.debian.org/debian ${RELEASE}-backports main
+deb $repository ${RELEASE}-backports main
 EOF
     ;;
     "Ubuntu")

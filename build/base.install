@@ -32,12 +32,15 @@ check_binary() {
 
 bootstrap() {
     target=$1
+
+    local repository=$(get_mirror $dist)
+
     mkdir -p "$target/dev" "$target/proc"
     mount -obind /dev ${target}/dev
     mount -obind /proc ${target}/proc
     # Use debootstrap for debian based distribution
     if [ "$(package_type)" = "deb" ]; then
-        debootstrap --arch ${ARCH:=amd64} --variant=minbase $dist "$target" $REPOSITORY
+        debootstrap --arch ${ARCH:=amd64} --variant=minbase $dist "$target" $repository
         # workaround no signature downloaded
         rm -f "$target"/var/lib/apt/lists/*[es]
         update_repositories $target

@@ -1,5 +1,25 @@
 # -*- shell-script -*-
 
+get_mirror() {
+    local dist=$1
+
+    if [ -z "$REPOSITORY" ]; then
+        echo "$REPOSITORY"
+    fi
+
+    case "$dist" in
+        wheezy|squeeze|jessie)
+            echo "http://cdn.debian.net/debian"
+            ;;
+        lucid|precise|quantal|raring|saucy|trusty)
+            echo "http://archive.ubuntu.com/ubuntu"
+            ;;
+        *)
+
+    esac
+
+}
+
 package_type() {
     DISTRO="$DIST"
     if [ -z "$DISTRO" ]; then

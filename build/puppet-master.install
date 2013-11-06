@@ -37,20 +37,6 @@ deb http://ftp.debian.org/debian ${RELEASE}-backports main
 EOF
     ;;
     "Ubuntu")
-        cat > ${dir}/etc/apt/sources.list <<EOF
-deb http://archive.ubuntu.com/ubuntu ${RELEASE} main
-deb-src http://archive.ubuntu.com/ubuntu ${RELEASE} main
-deb http://archive.ubuntu.com/ubuntu ${RELEASE}-updates main
-deb-src http://archive.ubuntu.com/ubuntu ${RELEASE}-updates main
-deb http://archive.ubuntu.com/ubuntu ${RELEASE} universe
-deb-src http://archive.ubuntu.com/ubuntu ${RELEASE} universe
-deb http://archive.ubuntu.com/ubuntu ${RELEASE}-updates universe
-deb-src http://archive.ubuntu.com/ubuntu ${RELEASE}-updates universe
-deb http://security.ubuntu.com/ubuntu ${RELEASE}-security main
-deb-src http://security.ubuntu.com/ubuntu ${RELEASE}-security main
-deb http://security.ubuntu.com/ubuntu ${RELEASE}-security universe
-deb-src http://security.ubuntu.com/ubuntu ${RELEASE}-security universe
-EOF
     ;;
 esac
 

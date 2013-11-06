@@ -44,18 +44,12 @@ EOF
     cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
 deb [trusted=1 arch=amd64] http://archive.gplhost.com/debian precise-grizzly-backports main
 EOF
-    cat > ${dir}/etc/apt/sources.list <<EOF
-deb http://archive.ubuntu.com/ubuntu precise main
+    cat >> ${dir}/etc/apt/sources.list <<EOF
 deb-src http://archive.ubuntu.com/ubuntu precise main
-deb http://archive.ubuntu.com/ubuntu precise-updates main
 deb-src http://archive.ubuntu.com/ubuntu precise-updates main
-deb http://archive.ubuntu.com/ubuntu precise universe
 deb-src http://archive.ubuntu.com/ubuntu precise universe
-deb http://archive.ubuntu.com/ubuntu precise-updates universe
 deb-src http://archive.ubuntu.com/ubuntu precise-updates universe
-deb http://security.ubuntu.com/ubuntu precise-security main
 deb-src http://security.ubuntu.com/ubuntu precise-security main
-deb http://security.ubuntu.com/ubuntu precise-security universe
 deb-src http://security.ubuntu.com/ubuntu precise-security universe
 EOF
     PKGS="open-iscsi-utils"

@@ -35,13 +35,6 @@ case "$OS" in
     ;;
 esac
 
-cat > ${dir}/etc/apt/sources.list << EOF
-deb http://archive.ubuntu.com/ubuntu precise main
-deb http://archive.ubuntu.com/ubuntu precise-updates main
-deb http://archive.ubuntu.com/ubuntu precise universe
-deb http://archive.ubuntu.com/ubuntu precise-updates universe
-EOF
-
 # NOTE (leseb): Docker's installation won't finish properly if we don't use this workaround
 do_chroot ${dir} dpkg-divert --local --rename --add /sbin/initctl
 do_chroot ${dir} ln -s /bin/true /sbin/initctl

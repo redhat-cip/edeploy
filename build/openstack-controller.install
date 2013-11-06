@@ -42,12 +42,6 @@ EOF
     cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
 deb [trusted=1] http://cloud.pkgs.enovance.com/precise-grizzly/ grizzly main
 EOF
-
-cat >> ${dir}/etc/apt/sources.list << EOF
-deb http://archive.ubuntu.com/ubuntu precise-updates main
-deb http://archive.ubuntu.com/ubuntu precise universe
-deb http://archive.ubuntu.com/ubuntu precise-updates universe
-EOF
     ;;
     *)
         fatal_error "OS ($OS) or Release ($RELEASE) not supported"

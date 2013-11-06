@@ -101,6 +101,8 @@ install_base_packages() {
             echo "deb http://archive.ubuntu.com/ubuntu precise-updates main" >> ${target}/etc/apt/sources.list
             echo "deb http://archive.ubuntu.com/ubuntu precise universe" >> ${target}/etc/apt/sources.list
             echo "deb http://archive.ubuntu.com/ubuntu precise-updates universe" >> ${target}/etc/apt/sources.list
+            echo "deb http://security.ubuntu.com/ubuntu precise-security main" >> ${target}/etc/apt/sources.list
+            echo "deb http://security.ubuntu.com/ubuntu precise-security universe" >> ${target}/etc/apt/sources.list
             ;;
         wheezy)
             PACKAGES="$PACKAGES linux-image-amd64 ipmitool htop acpi-support-base inetutils-ping firmware-bnx2 $DEB_PKG"

@@ -57,20 +57,6 @@ EOF
             cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
 deb http://cloud.pkgs.enovance.com/${RELEASE}-${OS_VERS}/ ${OS_VERS} main
 EOF
-            cat > ${dir}/etc/apt/sources.list <<EOF
-deb http://archive.ubuntu.com/ubuntu ${RELEASE} main
-deb-src http://archive.ubuntu.com/ubuntu ${RELEASE} main
-deb http://archive.ubuntu.com/ubuntu ${RELEASE}-updates main
-deb-src http://archive.ubuntu.com/ubuntu ${RELEASE}-updates main
-deb http://archive.ubuntu.com/ubuntu ${RELEASE} universe
-deb-src http://archive.ubuntu.com/ubuntu ${RELEASE} universe
-deb http://archive.ubuntu.com/ubuntu ${RELEASE}-updates universe
-deb-src http://archive.ubuntu.com/ubuntu ${RELEASE}-updates universe
-deb http://security.ubuntu.com/ubuntu ${RELEASE}-security main
-deb-src http://security.ubuntu.com/ubuntu ${RELEASE}-security main
-deb http://security.ubuntu.com/ubuntu ${RELEASE}-security universe
-deb-src http://security.ubuntu.com/ubuntu ${RELEASE}-security universe
-EOF
         ;;
         "CentOS")
             if [ $CODENAME == "6.4" ]; then

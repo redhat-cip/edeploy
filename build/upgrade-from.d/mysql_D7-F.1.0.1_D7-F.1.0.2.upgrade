@@ -22,8 +22,11 @@ FROM="$2"
 TO="$3"
 TDIR="$4"
 
+dir=$TDIR
 export DEBIAN_FRONTEND=noninteractive
+
+. common
 
 set -x
 
-chroot ${TDIR} apt-get dist-upgrade -y
+update_system $TDIR

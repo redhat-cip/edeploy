@@ -21,14 +21,11 @@ FROM="$2"
 TO="$3"
 TDIR="$4"
 
+dir=$TDIR
 export DEBIAN_FRONTEND=noninteractive
 
+. common
 set -x
 
-cat > ${TDIR}/etc/apt/sources.list.d/updates.list <<EOF
-deb http://archive.ubuntu.com/ubuntu/ precise-security main 
-deb http://archive.ubuntu.com/ubuntu/ precise-updates main 
-EOF
-
-chroot ${TDIR} apt-get update
-chroot ${TDIR} apt-get upgrade -y
+update_repository $TDIR
+update_system $TDIR

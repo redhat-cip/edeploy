@@ -97,7 +97,7 @@ update_system() {
     CHROOT=$1
     case "$(package_tool)" in
         apt)
-            do_chroot $CHROOT apt-get upgrade
+            do_chroot $CHROOT apt-get upgrade -y
         ;;
         yum)
             chrooted_yum $CHROOT update

@@ -32,19 +32,22 @@ clear_packages_cache $dir
 
 install_ib_if_needed $ORIG $dir
 
-case "$RELEASE" in
-    "wheezy")
+case "$OS" in
+  "Debian")
     cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
 deb [trusted=1] http://cloud.pkgs.enovance.com/wheezy-grizzly/ grizzly main
 EOF
     ;;
-    "precise")
+  "Ubuntu")
     cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
 deb [trusted=1] http://cloud.pkgs.enovance.com/precise-grizzly/ grizzly main
 EOF
     ;;
-    *)
-        fatal_error "OS ($OS) or Release ($RELEASE) not supported"
+  "CentOS")
+    echo 'havana repo already set in openstack-common'
+    ;;
+  *)
+    fatal_error "Release ($RELEASE) not supported by openstack-controller"
     ;;
 esac
 

@@ -1,7 +1,11 @@
 # -*- shell-script -*-
 
 package_type() {
-    case "$DIST" in
+    DISTRO="$DIST"
+    if [ -z "$DISTRO" ]; then
+        DISTRO="$RELEASE"
+    fi
+    case "$DISTRO" in
         wheezy|precise)
             echo "deb"
         ;;
@@ -9,13 +13,17 @@ package_type() {
             echo "rpm"
         ;;
         *)
-            fatal_error "$DIST isn't supported in package_type()"
+            fatal_error "$DISTRO isn't supported in package_type()"
         ;;
     esac
 }
 
 package_tool() {
-    case "$DIST" in
+    DISTRO="$DIST"
+    if [ -z "$DISTRO" ]; then
+        DISTRO="$RELEASE"
+    fi
+    case "$DISTRO" in
         wheezy|precise)
             echo "apt"
         ;;
@@ -23,7 +31,7 @@ package_tool() {
             echo "yum"
         ;;
         *)
-            fatal_error "$DIST isn't supported in package_tool()"
+            fatal_error "$DISTRO isn't supported in package_tool()"
         ;;
     esac
 }

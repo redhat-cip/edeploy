@@ -1,23 +1,23 @@
 # -*- shell-script -*-
 
 get_mirror() {
-    local dist=$1
+  local dist=$1
 
-    if [ -z "$REPOSITORY" ]; then
-        echo "$REPOSITORY"
-    fi
-
+  if [ -n "$REPOSITORY" ]; then
+    echo "$REPOSITORY"
+  else
     case "$dist" in
-        wheezy|squeeze|jessie)
-            echo "http://cdn.debian.net/debian"
-            ;;
-        lucid|precise|quantal|raring|saucy|trusty)
-            echo "http://archive.ubuntu.com/ubuntu"
-            ;;
-        *)
-
+      wheezy|squeeze|jessie)
+        echo "http://cdn.debian.net/debian"
+      ;;
+      lucid|precise|quantal|raring|saucy|trusty)
+        echo "http://archive.ubuntu.com/ubuntu"
+      ;;
+      *)
+        fatal_error "$dist isn't supported in get_mirror()"
+      ;;
     esac
-
+  fi
 }
 
 package_type() {

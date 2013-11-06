@@ -35,12 +35,12 @@ install_ib_if_needed $ORIG $dir
 
 case "$RELEASE" in
     "wheezy")
-    do_chroot ${dir} add-apt-repository 'deb http://ftp.osuosl.org/pub/mariadb/repo/5.5/debian wheezy main'
+    do_chroot ${dir} add-apt-repository \'deb http://ftp.osuosl.org/pub/mariadb/repo/5.5/debian wheezy main\'
     ;;
 
     "precise")
     do_chroot ${dir} apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db
-    do_chroot ${dir} add-apt-repository 'deb http://ftp.osuosl.org/pub/mariadb/repo/5.5/ubuntu precise main'
+    do_chroot ${dir} add-apt-repository \'deb http://ftp.osuosl.org/pub/mariadb/repo/5.5/ubuntu precise main\'
     ;;
     *)
         fatal_error "OS ($OS) or Release ($RELEASE) not supported"

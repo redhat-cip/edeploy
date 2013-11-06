@@ -310,11 +310,9 @@ case "$MODE" in
     ;;
     "health")
         setup_pxe
-        detect_kvm
         prepare_disk
         start_httpd
         create_edeploy_conf
-        detect_kvm
         run_kvm
         stop_httpd
     ;;
@@ -327,7 +325,6 @@ case "$MODE" in
         start_rsyncd
         start_httpd
         create_edeploy_conf
-        detect_kvm
         prepare_disk
         run_kvm
         run_kvm local

@@ -191,6 +191,11 @@ clean_mount_points() {
 # usually by a "trap cleanup 0" in a script
 cleanup() {
     ret=$?
+    last_command=$BASH_COMMAND
+    echo "################"
+    echo "TRAP TRIGGERED !"
+    echo "################"
+    echo "$last_command returned $ret"
     clean_mount_points
     rm -f "${dir}"/etc/default/grub.d/edeploy.cfg
     clear_packages_cache $dir
@@ -207,6 +212,10 @@ cleanup() {
 
 	    tar c . | compress -9v > ../../${ROLE}-${version}.edeploy
     fi
+    echo "###########"
+    echo "END OF TRAP"
+    echo "###########"
+}
 }
 
 common_setup() {

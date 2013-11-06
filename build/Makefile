@@ -119,7 +119,7 @@ health-test: health-check
 	cd ../tests/tftpboot/; ln -sf $(INST)/base/boot/vmlinuz* vmlinuz; ln -sf $(INST)/initrd.pxe initrd;
 	cd ../tests; ./run_kvm.sh $(TOP) health
 
-test: $(INST)/$(IMG)
+test: $(INST)/$(IMG) $(INST)/mysql.done
 	cd ../tests/tftpboot/; ln -sf $(INST)/base/boot/vmlinuz* vmlinuz; ln -sf $(INST)/initrd.pxe initrd;
 	cd ../tests; ./run_kvm.sh $(TOP)
 

@@ -156,9 +156,12 @@ chmod a+rw .
 chmod a+rw $PWD/../health/
 chmod a+rw $PWD/../config/
 chmod a+rw $PWD/../config/hw/
-chmod a+rw $PWD/../config/*.hw
-chmod a+rw $PWD/../config/state
-chmod a+rw $PWD/../config/kvm-test.cmdb
+find $PWD/../config \
+    -maxdepth 1 \
+    -name '*.hw' -or \
+    -name 'state' -or \
+    -name 'kvm-test.cmdb' \
+    -exec chmod a+rw {} \;
 
 ln -sf $PWD/edeploy.conf /etc/
 }

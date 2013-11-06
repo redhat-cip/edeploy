@@ -50,7 +50,7 @@ EOF
 esac
 
 if [ "$(package_type)" = "deb" ]; then
-    do_chroot ${dir} sh -c "curl -k 'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc' | apt-key add -"
+    do_chroot ${dir} curl -k https://raw.github.com/ceph/ceph/master/keys/release.asc | apt-key add -
 fi
 
 PACKAGES="ceph"

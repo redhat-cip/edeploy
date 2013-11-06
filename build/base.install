@@ -97,21 +97,22 @@ install_base_packages() {
     cp -f /etc/resolv.conf "$target/etc/"
     PACKAGES="pciutils rsyslog lsb-release"
     DEB_PKG=" wget sudo locales openssh-server parted net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase dmidecode bash curl hdparm xfsprogs acpid ifenslave kexec-tools"
+    local repository=$(get_mirror $dist)
     case $dist in
         precise)
             PACKAGES="$PACKAGES linux-image-generic-lts-raring linux-headers-generic-lts-raring iputils-ping linux-firmware grub2 $DEB_PKG"
-            echo "deb http://archive.ubuntu.com/ubuntu precise main" > ${target}/etc/apt/sources.list
-            echo "deb http://archive.ubuntu.com/ubuntu precise-updates main" >> ${target}/etc/apt/sources.list
-            echo "deb http://archive.ubuntu.com/ubuntu precise universe" >> ${target}/etc/apt/sources.list
-            echo "deb http://archive.ubuntu.com/ubuntu precise-updates universe" >> ${target}/etc/apt/sources.list
+            echo "deb $repository precise main" > ${target}/etc/apt/sources.list
+            echo "deb $repository precise-updates main" >> ${target}/etc/apt/sources.list
+            echo "deb $repository precise universe" >> ${target}/etc/apt/sources.list
+            echo "deb $repository precise-updates universe" >> ${target}/etc/apt/sources.list
             echo "deb http://security.ubuntu.com/ubuntu precise-security main" >> ${target}/etc/apt/sources.list
             echo "deb http://security.ubuntu.com/ubuntu precise-security universe" >> ${target}/etc/apt/sources.list
             ;;
         wheezy)
             PACKAGES="$PACKAGES linux-image-amd64 ipmitool htop acpi-support-base inetutils-ping firmware-bnx2 $DEB_PKG"
-            echo "deb http://ftp.debian.org/debian/ wheezy non-free" > ${target}/etc/apt/sources.list.d/nonfree.list
+            echo "deb $repository wheezy non-free" > ${target}/etc/apt/sources.list.d/nonfree.list
             echo "deb http://security.debian.org/ wheezy/updates main" >  ${target}/etc/apt/sources.list.d/updates.list
-            echo "deb http://ftp.debian.org/debian/ wheezy-updates main" >> ${target}/etc/apt/sources.list.d/updates.list
+            echo "deb $repository wheezy-updates main" >> ${target}/etc/apt/sources.list.d/updates.list
             ;;
         centos*)
             PACKAGES="$PACKAGES passwd kernel redhat-lsb-core wget sudo openssh-server parted coreutils perl e2fsprogs net-tools initscripts upstart vconfig dhclient grub grubby kbd rsync ifupdown dmidecode bash curl hdparm xfsprogs acpid"

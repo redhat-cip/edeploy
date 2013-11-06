@@ -155,6 +155,7 @@ EOF
 chmod a+rw .
 chmod a+rw $PWD/../health/
 chmod a+rw $PWD/../config/
+chmod a+rw $PWD/../config/hw/
 chmod a+rw $PWD/../config/*.hw
 chmod a+rw $PWD/../config/state
 chmod a+rw $PWD/../config/kvm-test.cmdb

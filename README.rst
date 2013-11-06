@@ -30,7 +30,7 @@ You will need the following dependencies to be able to run the test-suite::
 
 It may be a good idea to install these additional dependencies too::
 
- apt-get install pigz
+ apt-get install pigz yum
 
 Root privilege
 ++++++++++++++

@@ -14,7 +14,7 @@ Installation is done using these steps:
 - according to the defined role, rsync the tree on the newly created partitions.
 - configure the grub2 boot loader and reboot the system.
 
-Then the system will boot on the provisioned harddrive directly.
+Then the system will boot on the provisioned hard drive directly.
 
 Initial configuration
 ---------------------
@@ -92,7 +92,7 @@ Unless you run the rsync server or the http server on a very
 particular setup, don't use this variables.
 
 ``HTTP_PATH`` variable can be use to override the default ``/cgi-bin/`` directory.
-This could be usefull if you don't have the rights in this diretory.
+This could be usefull if you don't have the rights in this directory.
 The directory pointed by ``HTTP_PATH`` shall contains all edeploy code & configuration.
 
 CGI script
@@ -274,7 +274,7 @@ Setting up the ``HSERV`` and optionally ``HSERV_PORT`` variables to
 target the appropriate server. An ``install`` directory shall be available
 from the root directory to get ``.edeploy`` files.
 
-eDeploy dowloads the image files by using the following URL:
+eDeploy downloads the image files by using the following URL:
   ``http://${HSERV}:${HSERV_PORT}//install/${ROLE}-${VERS}.edeploy``
 
 Rsync server
@@ -326,6 +326,11 @@ upgrade by running::
 
  edeploy verify
 
+or::
+
+  edeploy test-upgrade <to-version>
+
+
 Update process
 ++++++++++++++
 
@@ -350,9 +355,9 @@ for the ``mysql`` role, you must have this::
  D7-F.1.0.0/mysql/D7-F.1.0.1/
 
 This directory must contain an ``exclude`` file which defines the list
-of files to exclude from the synchonization. These files are the
+of files to exclude from the synchronization. These files are the
 changing files like data or generated files. You can use ``edeploy
-verify`` to help defining these files.
+test-upgrade <to version>`` to help defining these files.
 
 This directory could also contain 2 scripts ``pre`` and ``post`` which
 will be run if present before synchronizing the files to stop services
@@ -400,7 +405,7 @@ style. You can run them by hand or use the ``make quality`` command in
 the top directory of the project.
 
 Debug
-+++++
+-----
 
 For ``specs`` debug
 

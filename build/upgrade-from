@@ -150,4 +150,5 @@ setup_metadata
 mkdir -p ${TDIR}/var/lib/edeploy/${TO}
 cp ${METADATA_DIR}/exclude ${TDIR}/var/lib/edeploy/${TO}/exclude
 
+clean_mount_points
 clear_trap

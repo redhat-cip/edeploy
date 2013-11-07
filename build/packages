@@ -69,15 +69,15 @@ chrooted_yum() {
 }
 
 install_packages() {
-    CHROOT=$1
+    local chroot=$1
     shift
-    PACKAGES=$@
+    local packages=$@
     case "$(package_tool)" in
         apt)
-            do_chroot $CHROOT apt-get install $INSTALL_OPTIONS -y --force-yes $PACKAGES
+            do_chroot $chroot apt-get install $INSTALL_OPTIONS -y --force-yes $packages
         ;;
         yum)
-            chrooted_yum $CHROOT $INSTALL_OPTIONS install -y --nogpgcheck $PACKAGES
+            chrooted_yum $chroot $INSTALL_OPTIONS install -y --nogpgcheck $packages
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in install_packages()"

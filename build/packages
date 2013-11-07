@@ -61,11 +61,11 @@ package_tool() {
 
 
 chrooted_yum() {
-    CHROOT=$1
+    local chroot=$1
     shift
-    mount /dev/ $CHROOT/dev -o bind
-    do_chroot $CHROOT yum --assumeyes $@
-    umount $CHROOT/dev
+    mount /dev/ $chrot/dev -o bind
+    do_chroot $chroot yum --assumeyes $@
+    umount $chroot/dev
 }
 
 install_packages() {

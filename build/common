@@ -164,10 +164,10 @@ install_ib_if_needed() {
 }
 
 do_chroot() {
-    DIR=$1
+    local dir=$1
     shift
-    REMAIN=$@
-    PATH=/bin/:/sbin:$PATH chroot $DIR bash -c "export LANG=C; export LC_ALL=C; export LC_CTYPE=C; export LANGUAGE=C; $REMAIN"
+    local remain=$@
+    PATH=/bin/:/sbin:$PATH chroot $dir bash -c "export LANG=C; export LC_ALL=C; export LC_CTYPE=C; export LANGUAGE=C; $remain"
 }
 
 clean_mount_points() {

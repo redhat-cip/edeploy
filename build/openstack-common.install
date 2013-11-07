@@ -63,7 +63,7 @@ EOF
             if [ $CODENAME == "6.4" ]; then
                 do_chroot ${dir} rpm -ivh http://yum.puppetlabs.com/el/6/products/i386/puppetlabs-release-6-7.noarch.rpm
                 install_packages $dir "puppet"
-                remove_packages puppetlabs-release-6-7.noarch
+                remove_packages $dir puppetlabs-release-6-7.noarch
                 install_packages $dir http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
                 install_packages $dir http://rdo.fedorapeople.org/openstack-${OS_VERS}/rdo-release-${OS_VERS}.rpm
             fi
@@ -80,8 +80,8 @@ rm -f ${dir}/etc/cloud/cloud.cfg
 
 case "$OS" in
     "Debian")
-        PACKAGES="-t $RELEASE-backports cloud-init"
-        install_packages $dir "$PACKAGES"
+        local packages="-t $RELEASE-backports cloud-init"
+        install_packages $dir "$packages"
         ;;
     "Ubuntu")
         # Todo(EmilienM): Move cloud-init into backports repo to have last release properly
@@ -159,14 +159,14 @@ update_repositories $dir
 
 case $OS in
     "Debian" | "Ubuntu")
-        PACKAGES="puppet augeas-tools openssh-server wget iptables build-essential"
-        install_packages $dir "$PACKAGES"
+        local packages="puppet augeas-tools openssh-server wget iptables build-essential"
+        install_packages $dir "$packages"
         do_chroot ${dir} sed -e \'s/START=yes/START=no/\' -i /etc/default/puppet
     ;;
     "CentOS")
        if [ $CODENAME == "6.4" ]; then
-           PACKAGES="augeas openssh-server wget"
-           install_packages $dir "$PACKAGES"
+           local packages="augeas openssh-server wget"
+           install_packages $dir "$packages"
        fi
        ;;
     *)

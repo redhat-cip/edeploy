@@ -16,7 +16,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-KVM=
+set -e
 DISK=kvm_storage.img
 DISK_SIZE=2000 # in MB
 HTTP_PORT=9000
@@ -40,13 +40,11 @@ check_binary() {
 }
 
 detect_kvm() {
-	KVM=$(which kvm 2>/dev/null)
-	if [ $? -ne 0 ]; then
-		KVM=$(which qemu-kvm 2>/dev/null)
-		if [ $? -ne 0 ]; then
-			fatal_error "Please Install KVM first"
-		fi
-	fi
+
+    for kvm_bin in qemu-system-x86_64 kvm qemu-kvm; do
+        which $kvm_bin 2>/dev/null && return 0
+    done
+	fatal_error "Please Install KVM first"
 }
 
 prepare_disk() {
@@ -60,7 +58,9 @@ run_kvm() {
 	BOOT_DEVICE="n"
 	[ "$1" = "local" ] && BOOT_DEVICE="c"
 
-	$KVM --enable-kvm -m 512\
+    local kvm_bin=$(detect_kvm)
+
+	$kvm_bin --enable-kvm -m 512\
 		-netdev user,id=net0,net=10.0.2.0/24,tftp=tftpboot,bootfile=/pxelinux.0,hostfwd=tcp::$SSH_PORT-:22 \
 		-netdev user,id=net1,net=10.0.3.0/24 \
 		-netdev user,id=net2,net=1.2.3.0/24 \
@@ -310,11 +310,9 @@ case "$MODE" in
     ;;
     "health")
         setup_pxe
-        detect_kvm
         prepare_disk
         start_httpd
         create_edeploy_conf
-        detect_kvm
         run_kvm
         stop_httpd
     ;;
@@ -327,7 +325,6 @@ case "$MODE" in
         start_rsyncd
         start_httpd
         create_edeploy_conf
-        detect_kvm
         prepare_disk
         run_kvm
         run_kvm local

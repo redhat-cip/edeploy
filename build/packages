@@ -11,12 +11,14 @@ get_mirror() {
   case "$dist" in
     wheezy|squeeze|jessie)
         echo "http://cdn.debian.net/debian"
+        return 0
     ;;
     lucid|precise|quantal|raring|saucy|trusty)
         echo "http://archive.ubuntu.com/ubuntu"
+        return 0
     ;;
     *)
-        fatal_error "$dist isn't supported in get_mirror()"
+        return 1
     ;;
   esac
 }
@@ -62,7 +64,7 @@ chrooted_yum() {
     CHROOT=$1
     shift
     mount /dev/ $CHROOT/dev -o bind
-    do_chroot $CHROOT yum $@
+    do_chroot $CHROOT yum --assumeyes $@
     umount $CHROOT/dev
 }
 
@@ -84,14 +86,14 @@ install_packages() {
 }
 
 remove_packages() {
-    CHROOT=$1
-    PACKAGES=$2
+    local chroot=$1
+    local packages=$2
     case "$(package_tool)" in
         apt)
-            do_chroot $CHROOT apt-get remove $PACKAGES
+            do_chroot $chroot apt-get remove $packages
         ;;
         yum)
-            chrooted_yum $CHROOT remove $PACKAGES
+            chrooted_yum $chroot remove $packages
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in install_packages()"

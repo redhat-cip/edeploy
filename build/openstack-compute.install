@@ -1,0 +1,67 @@
+#!/bin/bash
+#
+# Copyright (C) 2013 eNovance SAS <licensing@enovance.com>
+#
+# Author: Emilien Macchi <emilien.macchi@enovance.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+src="$1"
+dir="$2"
+version="$3"
+ROLE=openstack-compute
+
+ORIG=$(cd $(dirname $0); pwd)
+
+. ${ORIG}/functions
+. ${ORIG}/common
+
+do_chroot ${dir} apt-get update
+do_chroot ${dir} apt-get install -y --force-yes openssh-server iptables build-essential wget
+do_chroot ${dir} apt-get clean
+
+OS=$(chroot ${dir} lsb_release -i -s)
+RELEASE=$(chroot ${dir} lsb_release -c -s)
+
+if [ $OS == "Debian" ] && [ $RELEASE == "wheezy" ]; then
+    cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
+deb [trusted=1] http://cloud.pkgs.enovance.com/wheezy-grizzly/ grizzly main 
+EOF
+
+elif [ $OS == "Ubuntu" ] && [ $RELEASE == "precise" ]; then
+    cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
+deb [trusted=1] http://cloud.pkgs.enovance.com/precise-grizzly/ grizzly main 
+EOF
+    cat > ${dir}/etc/apt/sources.list <<EOF
+deb http://archive.ubuntu.com/ubuntu precise main
+deb-src http://archive.ubuntu.com/ubuntu precise main
+deb http://archive.ubuntu.com/ubuntu precise-updates main
+deb-src http://archive.ubuntu.com/ubuntu precise-updates main
+deb http://archive.ubuntu.com/ubuntu precise universe
+deb-src http://archive.ubuntu.com/ubuntu precise universe
+deb http://archive.ubuntu.com/ubuntu precise-updates universe
+deb-src http://archive.ubuntu.com/ubuntu precise-updates universe
+deb http://security.ubuntu.com/ubuntu precise-security main
+deb-src http://security.ubuntu.com/ubuntu precise-security main
+deb http://security.ubuntu.com/ubuntu precise-security universe
+deb-src http://security.ubuntu.com/ubuntu precise-security universe
+EOF
+
+else
+ echo "OS or Release not supported"
+ exit 1
+
+fi
+
+do_chroot ${dir} apt-get update
+do_chroot ${dir} apt-get install -y openstack-compute-node

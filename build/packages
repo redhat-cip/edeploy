@@ -63,7 +63,7 @@ package_tool() {
 chrooted_yum() {
     local chroot=$1
     shift
-    mount /dev/ $chrot/dev -o bind
+    mount /dev/ $chroot/dev -o bind
     do_chroot $chroot yum --assumeyes $@
     umount $chroot/dev
 }

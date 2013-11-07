@@ -11,12 +11,14 @@ get_mirror() {
   case "$dist" in
     wheezy|squeeze|jessie)
         echo "http://cdn.debian.net/debian"
+        return 0
     ;;
     lucid|precise|quantal|raring|saucy|trusty)
         echo "http://archive.ubuntu.com/ubuntu"
+        return 0
     ;;
     *)
-        fatal_error "$dist isn't supported in get_mirror()"
+        return 1
     ;;
   esac
 }

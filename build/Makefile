@@ -59,63 +59,78 @@ pxe $(INST)/$(IMG): $(INST)/base.done init pxe.install $(PYDIR)/detect.py $(PYDI
 img: $(INST)/$(IMG)
 	./img.install $(INST)/base $(IMG) $(VERS) $(INST) $(SERV) $(HSERV) $(DEBUG)
 
-base $(INST)/base.done: base.install policy-rc.d edeploy
+base: $(INST)/base.done
+$(INST)/base.done: base.install policy-rc.d edeploy
 	./base.install $(INST)/base $(DIST) $(VERS)
 	touch $(INST)/base.done
 
-cloud $(INST)/cloud.done: cloud.install $(INST)/base.done
+cloud: $(INST)/cloud.done
+$(INST)/cloud.done: cloud.install $(INST)/base.done
 	./cloud.install $(INST)/base $(INST)/cloud $(VERS)
 	touch $(INST)/cloud.done
 
-devstack $(INST)/devstack.done: devstack.install $(INST)/cloud.done
+devstack: $(INST)/devstack.done
+$(INST)/devstack.done: devstack.install $(INST)/cloud.done
 	./devstack.install $(INST)/cloud $(INST)/devstack $(DIST) $(VERS)
 	touch $(INST)/devstack.done
 
-openstack-common $(INST)/openstack-common.done: openstack-common.install $(INST)/base.done
+openstack-common: $(INST)/openstack-common.done
+$(INST)/openstack-common.done: openstack-common.install $(INST)/base.done
 	./openstack-common.install $(INST)/base $(INST)/openstack-common $(VERS)
 	touch $(INST)/openstack-common.done
 
-openstack-controller $(INST)/openstack-controller.done: openstack-controller.install $(INST)/openstack-common.done
+openstack-controller: $(INST)/openstack-controller.done
+$(INST)/openstack-controller.done: openstack-controller.install $(INST)/openstack-common.done
 	./openstack-controller.install $(INST)/base $(INST)/openstack-controller $(VERS)
 	touch $(INST)/openstack-controller.done
 
-openstack-swift-proxy $(INST)/openstack-swift-proxy.done: openstack-swift-proxy.install $(INST)/openstack-common.done
+openstack-swift-proxy: $(INST)/openstack-swift-proxy.done
+$(INST)/openstack-swift-proxy.done: openstack-swift-proxy.install $(INST)/openstack-common.done
 	./openstack-swift-proxy.install $(INST)/openstack-common $(INST)/openstack-swift-proxy $(VERS)
 	touch $(INST)/openstack-swift-proxy.done
 
-openstack-swift-storage $(INST)/openstack-swift-storage.done: openstack-swift-storage.install $(INST)/openstack-common.done
+openstack-swift-storage: $(INST)/openstack-swift-storage.done
+$(INST)/openstack-swift-storage.done: openstack-swift-storage.install $(INST)/openstack-common.done
 	./openstack-swift-storage.install $(INST)/openstack-common $(INST)/openstack-swift-storage $(VERS)
 	touch $(INST)/openstack-swift-storage.done
 
-openstack-compute $(INST)/openstack-compute.done: openstack-compute.install $(INST)/openstack-common.done
+openstack-compute: $(INST)/openstack-compute.done
+$(INST)/openstack-compute.done: openstack-compute.install $(INST)/openstack-common.done
 	./openstack-compute.install $(INST)/openstack-common $(INST)/openstack-compute $(VERS)
 	touch $(INST)/openstack-compute.done
 
-mysql $(INST)/mysql.done: mysql.install $(INST)/base.done
+mysql: $(INST)/mysql.done
+$(INST)/mysql.done: mysql.install $(INST)/base.done
 	./mysql.install $(INST)/base $(INST)/mysql $(VERS)
 	touch $(INST)/mysql.done
 
-galera $(INST)/galera.done: galera.install $(INST)/base.done
+galera: $(INST)/galera.done
+$(INST)/galera.done: galera.install $(INST)/base.done
 	./galera.install $(INST)/base $(INST)/galera $(VERS)
 	touch $(INST)/galera.done
 
-haproxy $(INST)/haproxy.done: haproxy.install $(INST)/base.done
+haproxy: $(INST)/haproxy.done
+$(INST)/haproxy.done: haproxy.install $(INST)/base.done
 	./haproxy.install $(INST)/base $(INST)/haproxy $(VERS)
 	touch $(INST)/haproxy.done
 
-ceph $(INST)/ceph.done: ceph.install $(INST)/base.done
+ceph: $(INST)/ceph.done
+$(INST)/ceph.done: ceph.install $(INST)/base.done
 	./ceph.install $(INST)/base $(INST)/ceph $(VERS)
 	touch $(INST)/ceph.done
 
-docker $(INST)/docker.done: docker.install $(INST)/base.done
+docker: $(INST)/docker.done
+$(INST)/docker.done: docker.install $(INST)/base.done
 	./docker.install $(INST)/base $(INST)/docker $(VERS)
 	touch $(INST)/docker.done
 
-puppet-master $(INST)/puppet-master.done: puppet-master.install $(INST)/base.done
+puppet-master: $(INST)/puppet-master.done
+$(INST)/puppet-master.done: puppet-master.install $(INST)/base.done
 	./puppet-master.install $(INST)/base $(INST)/puppet-master $(VERS)
 	touch $(INST)/puppet-master.done
 
-chef-server $(INST)/chef-server.done: chef-server.install $(INST)/base.done
+server: $(INST)/chef-server.done
+$(INST)/chef-server.done: chef-server.install $(INST)/base.done
 	./chef-server.install $(INST)/base $(INST)/chef-server $(VERS)
 	touch $(INST)/chef-server.done
 
@@ -142,3 +157,7 @@ clean:
 
 distclean: clean
 	-rm -rf $(INST)/*
+
+.PHONY: base img base cloud devstack openstack-common openstack-controller openstack-swift-proxy\
+    openstack-swift-storage openstack-compute mysql galera haproxy ceph docker puppet-master\
+	server test stress-http benchmark dist clean distclean

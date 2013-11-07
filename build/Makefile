@@ -87,6 +87,10 @@ openstack-swift-storage $(INST)/openstack-swift-storage.done: openstack-swift-st
 	./openstack-swift-storage.install $(INST)/openstack-common $(INST)/openstack-swift-storage $(VERS)
 	touch $(INST)/openstack-swift-storage.done
 
+openstack-compute $(INST)/openstack-compute.done: openstack-compute.install $(INST)/openstack-common.done
+	./openstack-compute.install $(INST)/openstack-common $(INST)/openstack-compute $(VERS)
+	touch $(INST)/openstack-compute.done
+
 mysql $(INST)/mysql.done: mysql.install $(INST)/base.done
 	./mysql.install $(INST)/base $(INST)/mysql $(VERS)
 	touch $(INST)/mysql.done

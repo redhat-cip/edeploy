@@ -80,8 +80,8 @@ rm -f ${dir}/etc/cloud/cloud.cfg
 
 case "$OS" in
     "Debian")
-        PACKAGES="-t $RELEASE-backports cloud-init"
-        install_packages $dir "$PACKAGES"
+        local packages="-t $RELEASE-backports cloud-init"
+        install_packages $dir "$packages"
         ;;
     "Ubuntu")
         # Todo(EmilienM): Move cloud-init into backports repo to have last release properly
@@ -159,14 +159,14 @@ update_repositories $dir
 
 case $OS in
     "Debian" | "Ubuntu")
-        PACKAGES="puppet augeas-tools openssh-server wget iptables build-essential"
-        install_packages $dir "$PACKAGES"
+        local packages="puppet augeas-tools openssh-server wget iptables build-essential"
+        install_packages $dir "$packages"
         do_chroot ${dir} sed -e \'s/START=yes/START=no/\' -i /etc/default/puppet
     ;;
     "CentOS")
        if [ $CODENAME == "6.4" ]; then
-           PACKAGES="augeas openssh-server wget"
-           install_packages $dir "$PACKAGES"
+           local packages="augeas openssh-server wget"
+           install_packages $dir "$packages"
        fi
        ;;
     *)

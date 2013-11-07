@@ -61,16 +61,28 @@ bootstrap() {
                         yum --installroot $target install -y --nogpgcheck basesystem yum
                         ;;
                     redhat)
-                        if [ -z $RHEL_REPO ];then
-                            fatal_error "You must set your RHEL repository in the variable RHEL_REPO"
+                        if [ -z $REPOSITORY ] && [ -z $ISO_PATH ];then
+                            fatal_error "You must set your RHEL repository in the variable REPOSITORY or the RHEL server ISO path in the ISO_PATH variable."
                         fi
-                        RELEASE_RPM_URL="${RHEL_REPO}/Packages/redhat-release-server-6Server-6.4.0.4.el6.x86_64.rpm"
+                        if [ -z $ISO_PATH ]; then
+                            RELEASE_RPM_URL="${REPOSITORY}/Packages/redhat-release-server-6Server-6.4.0.4.el6.x86_64.rpm"    
+                        else
+                            export ISO_MOUNT_POINT="${target}/repo"
+                            mkdir -p ${target}/repo
+                            mount -o loop ${ISO_PATH} ${ISO_MOUNT_POINT}
+                            REPOSITORY="file://${target}/repo"
+                            REPOSITORY_NEXTSTEP="file:///repo"
+                            RELEASE_RPM_URL="${target}/repo/Packages/redhat-release-server-6Server-6.4.0.4.el6.x86_64.rpm"
+                        fi
                         rpm -ivh --root "$target" "$RELEASE_RPM_URL"
                         cp -f /etc/resolv.conf "$target/etc/"
                         sed "0,/^enabled=/ s/enabled=0/enabled=1/" -i ${target}/etc/yum.repos.d/rhel-source.repo
-                        sed "0,/^baseurl=/ s/baseurl=.*/baseurl=${RHEL_REPO//\//\\/}/" -i ${target}/etc/yum.repos.d/rhel-source.repo
+                        sed "0,/^baseurl=/ s/baseurl=.*/baseurl=${REPOSITORY//\//\\/}/" -i ${target}/etc/yum.repos.d/rhel-source.repo
                         # We cannot use install_packages since the basesystem isn't yet setup
                         yum --installroot $target install -y --nogpgcheck basesystem yum
+                        if [ -n REPOSITORY_NEXTSTEP ]; then
+                            sed "0,/^baseurl=/ s/baseurl=.*/baseurl=${REPOSITORY_NEXTSTEP//\//\\/}/" -i ${target}/etc/yum.repos.d/rhel-source.repo
+                        fi
                         ;;
                     *)
                         fatal_error "Unsupported RPM+YUM based distro: ${DIST}"
@@ -114,7 +126,7 @@ install_base_packages() {
             echo "deb http://security.debian.org/ wheezy/updates main" >  ${target}/etc/apt/sources.list.d/updates.list
             echo "deb $repository wheezy-updates main" >> ${target}/etc/apt/sources.list.d/updates.list
             ;;
-        centos*)
+        centos|redhat)
             PACKAGES="$PACKAGES passwd kernel redhat-lsb-core wget sudo openssh-server parted coreutils perl e2fsprogs net-tools initscripts upstart vconfig dhclient grub grubby kbd rsync ifupdown dmidecode bash curl hdparm xfsprogs acpid"
             ;;
         *)
@@ -219,6 +231,9 @@ cleanup() {
     rc=$?
     umount ${dir}/dev || true
     umount ${dir}/proc || true
+    if [ -n $ISO_MOUNT_POINT ]; then
+        umount ${ISO_MOUNT_POINT} || true
+    fi
     if [ $rc = 0 ]; then
     cd ${dir}
     tar c . | compress -9v > ../../${ROLE}-${version}.edeploy

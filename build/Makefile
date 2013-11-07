@@ -75,7 +75,7 @@ openstack-common $(INST)/openstack-common.done: openstack-common.install $(INST)
 	./openstack-common.install $(INST)/base $(INST)/openstack-common $(VERS)
 	touch $(INST)/openstack-common.done
 
-openstack-controller $(INST)/openstack-controller.done: openstack-controller.install $(INST)/base.done
+openstack-controller $(INST)/openstack-controller.done: openstack-controller.install $(INST)/openstack-common.done
 	./openstack-controller.install $(INST)/base $(INST)/openstack-controller $(VERS)
 	touch $(INST)/openstack-controller.done
 

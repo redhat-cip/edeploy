@@ -116,7 +116,7 @@ chef-server $(INST)/chef-server.done: chef-server.install $(INST)/base.done
 	touch $(INST)/chef-server.done
 
 health-test: health-check
-	cd ../tests/tftpboot/; ln -sf $(INST)/base/boot/vmlinuz* vmlinuz; ln -sf $(INST)/initrd.pxe initrd;
+	cd ../tests/tftpboot/; ln -sf $(INST)/base/boot/vmlinuz* vmlinuz; ln -sf $(INST)/health.pxe initrd;
 	cd ../tests; ./run_kvm.sh $(TOP) health
 
 test: $(INST)/$(IMG) $(INST)/mysql.done

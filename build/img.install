@@ -168,7 +168,11 @@ copy_os_to_flash() {
 	step "Copy OS to flash"
 
 	cp -f ${SRC}/boot/vmlinuz* $BOOT_MOUNT_POINT/vmlinuz
-	cp -f ${INST}/initrd.pxe $BOOT_MOUNT_POINT
+    if [ "$MODE" = "health" ]; then
+	    cp -f ${INST}/health.pxe $BOOT_MOUNT_POINT
+    else
+	    cp -f ${INST}/initrd.pxe $BOOT_MOUNT_POINT
+    fi
 }
 
 setup_bootloader() {
@@ -193,7 +197,7 @@ LABEL SAFE
          Test duration will vary regarding the hardware setup.
         ENDTEXT
         KERNEL /vmlinuz
-        INITRD /initrd.pxe
+        INITRD /health.pxe
         APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG UPLOAD_LOG=${UPLOAD_LOG}
 
 LABEL SAFE1H
@@ -204,7 +208,7 @@ LABEL SAFE1H
          Test duration will vary regarding the hardware setup.
         ENDTEXT
         KERNEL /vmlinuz
-        INITRD /initrd.pxe
+        INITRD /health.pxe
         APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG SMOKE=60 UPLOAD_LOG=${UPLOAD_LOG}
 
 LABEL SAFE12H
@@ -215,7 +219,7 @@ LABEL SAFE12H
          Test duration will vary regarding the hardware setup.
         ENDTEXT
         KERNEL /vmlinuz
-        INITRD /initrd.pxe
+        INITRD /health.pxe
         APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG SMOKE=720 UPLOAD_LOG=${UPLOAD_LOG}
 
 LABEL SAFE24H
@@ -226,7 +230,7 @@ LABEL SAFE24H
          Test duration will vary regarding the hardware setup.
         ENDTEXT
         KERNEL /vmlinuz
-        INITRD /initrd.pxe
+        INITRD /health.pxe
         APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG SMOKE=1440 UPLOAD_LOG=${UPLOAD_LOG}
 
 LABEL SAFE48H
@@ -237,7 +241,7 @@ LABEL SAFE48H
          Test duration will vary regarding the hardware setup.
         ENDTEXT
         KERNEL /vmlinuz
-        INITRD /initrd.pxe
+        INITRD /health.pxe
         APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG SMOKE=2880 UPLOAD_LOG=${UPLOAD_LOG}
 
 LABEL SAFE72H
@@ -248,7 +252,7 @@ LABEL SAFE72H
          Test duration will vary regarding the hardware setup.
         ENDTEXT
         KERNEL /vmlinuz
-        INITRD /initrd.pxe
+        INITRD /health.pxe
         APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG SMOKE=4320 UPLOAD_LOG=${UPLOAD_LOG}
 
 MENU SEPARATOR
@@ -261,7 +265,7 @@ LABEL DESTRUCTIVE
                       !!!  WILL BE DESTROYED PERMANENTLY  !!!
         ENDTEXT
         KERNEL /vmlinuz
-        INITRD /initrd.pxe
+        INITRD /health.pxe
         APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG DESTRUCTIVE_MODE=1 UPLOAD_LOG=${UPLOAD_LOG}
 
 LABEL DESTRUCTIVE1H
@@ -272,7 +276,7 @@ LABEL DESTRUCTIVE1H
                       !!!  WILL BE DESTROYED PERMANENTLY  !!!
         ENDTEXT
         KERNEL /vmlinuz
-        INITRD /initrd.pxe
+        INITRD /health.pxe
         APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG DESTRUCTIVE_MODE=1 SMOKE=60 UPLOAD_LOG=${UPLOAD_LOG}
 
 LABEL DESTRUCTIVE12H
@@ -283,7 +287,7 @@ LABEL DESTRUCTIVE12H
                       !!!  WILL BE DESTROYED PERMANENTLY  !!!
         ENDTEXT
         KERNEL /vmlinuz
-        INITRD /initrd.pxe
+        INITRD /health.pxe
         APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG DESTRUCTIVE_MODE=1 SMOKE=720 UPLOAD_LOG=${UPLOAD_LOG}
 
 LABEL DESTRUCTIVE24H
@@ -294,7 +298,7 @@ LABEL DESTRUCTIVE24H
                       !!!  WILL BE DESTROYED PERMANENTLY  !!!
         ENDTEXT
         KERNEL /vmlinuz
-        INITRD /initrd.pxe
+        INITRD /health.pxe
         APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG DESTRUCTIVE_MODE=1 SMOKE=1440 UPLOAD_LOG=${UPLOAD_LOG}
 
 LABEL DESTRUCTIVE48H
@@ -305,7 +309,7 @@ LABEL DESTRUCTIVE48H
                       !!!  WILL BE DESTROYED PERMANENTLY  !!!
         ENDTEXT
         KERNEL /vmlinuz
-        INITRD /initrd.pxe
+        INITRD /health.pxe
         APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG DESTRUCTIVE_MODE=1 SMOKE=2880 UPLOAD_LOG=${UPLOAD_LOG}
 
 LABEL DESTRUCTIVE72H
@@ -316,7 +320,7 @@ LABEL DESTRUCTIVE72H
                       !!!  WILL BE DESTROYED PERMANENTLY  !!!
         ENDTEXT
         KERNEL /vmlinuz
-        INITRD /initrd.pxe
+        INITRD /health.pxe
         APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG DESTRUCTIVE_MODE=1 SMOKE=4320 UPLOAD_LOG=${UPLOAD_LOG}
 
 EOF

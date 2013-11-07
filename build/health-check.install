@@ -46,6 +46,7 @@ rsync -aH --delete-before ${SRC}/ ${DST2}/
 # So let's copy the current one to insure the setup is good
 cp -f /etc/resolv.conf "$DST2/etc/"
 
+dir=$DST2
 PACKAGES="sysbench fio python-psutil netperf python-netaddr ethtool python-numpy sdparm"
 update_repositories $dir
 install_packages $dir "$PACKAGES"

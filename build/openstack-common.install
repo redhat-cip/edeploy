@@ -159,13 +159,13 @@ update_repositories $dir
 
 case $OS in
     "Debian" | "Ubuntu")
-        local packages="puppet augeas-tools openssh-server wget iptables build-essential"
+        packages="puppet augeas-tools openssh-server wget iptables build-essential"
         install_packages $dir "$packages"
         do_chroot ${dir} sed -e \'s/START=yes/START=no/\' -i /etc/default/puppet
     ;;
     "CentOS")
        if [ $CODENAME == "6.4" ]; then
-           local packages="augeas openssh-server wget"
+           packages="augeas openssh-server wget"
            install_packages $dir "$packages"
        fi
        ;;

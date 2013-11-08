@@ -59,15 +59,6 @@ package_tool() {
     esac
 }
 
-
-chrooted_yum() {
-    local chroot=$1
-    shift
-    mount /dev/ $chroot/dev -o bind
-    do_chroot $chroot yum --assumeyes $@
-    umount $chroot/dev
-}
-
 install_packages() {
     local chroot=$1
     shift
@@ -77,7 +68,7 @@ install_packages() {
             do_chroot $chroot apt-get install $INSTALL_OPTIONS -y --force-yes $packages
         ;;
         yum)
-            chrooted_yum $chroot $INSTALL_OPTIONS install -y --nogpgcheck $packages
+            do_chroot $chroot yum $INSTALL_OPTIONS install -y --nogpgcheck $packages
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in install_packages()"
@@ -93,7 +84,7 @@ remove_packages() {
             do_chroot $chroot apt-get remove $packages
         ;;
         yum)
-            chrooted_yum $chroot remove $packages
+            do_chroot $chroot yum remove $packages --assumeyes
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in install_packages()"
@@ -108,7 +99,7 @@ update_repositories() {
             do_chroot $CHROOT apt-get update
         ;;
         yum)
-            chrooted_yum $CHROOT check-update
+            do_chroot $CHROOT yum check-update
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in update_repositories()"
@@ -123,7 +114,7 @@ update_system() {
             do_chroot $CHROOT apt-get upgrade -y
         ;;
         yum)
-            chrooted_yum $CHROOT update
+            do_chroot $CHROOT yum update
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in update_system()"
@@ -140,7 +131,7 @@ upgrade_system() {
         yum)
             # didn't really found something equivalent
             # Let's do a yum update so
-            chrooted_yum $CHROOT update
+            do_chroot $CHROOT yum update
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in update_system()"
@@ -155,7 +146,7 @@ clear_packages_cache() {
             do_chroot $CHROOT apt-get clean
         ;;
         yum)
-            chrooted_yum $CHROOT clean packages
+            do_chroot $CHROOT yum clean packages
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in clear_packages_cache()"

@@ -179,7 +179,7 @@ clean_mount_points() {
 
     while (grep -qi " ${dir}" /proc/mounts); do
         # Let's umount all mounted dir by taking the longest path first
-        grep -i ${dir} /proc/mounts | sort -u -r | xargs umount && a=10
+        grep -i ${dir} /proc/mounts | awk '{print $2}' | sort -u -r | xargs umount && a=10
 
         a=$(($a - 1))
         if [ $a -eq 0 ]; then

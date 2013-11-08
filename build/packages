@@ -99,7 +99,7 @@ update_repositories() {
             do_chroot $CHROOT apt-get update
         ;;
         yum)
-            do_chroot $CHROOT yum check-update
+            do_chroot $CHROOT yum check-update || true
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in update_repositories()"

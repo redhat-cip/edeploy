@@ -54,7 +54,7 @@ bootstrap() {
                 case $dist in
                     centos)
                         RELEASE_RPM_URL="http://mirror.centos.org/centos/6.4/os/x86_64/Packages/centos-release-6-4.el6.centos.10.x86_64.rpm"
-                        rpm -ivh --root "$target" "$RELEASE_RPM_URL"
+                        [ -d "${target}/usr/share/doc/centos-release-6" ] || rpm -ivh --root "$target" "$RELEASE_RPM_URL"
                         sed -i 's/$releasever/6/g' ${target}/etc/yum.repos.d/*
                         cp -f /etc/resolv.conf "$target/etc/"
                         # We cannot use install_packages since the basesystem isn't yet setup
@@ -144,7 +144,7 @@ install_base_packages() {
     else if [ "$(package_type)" = "rpm" ]; then
             install_packages $target "$PACKAGES"
             # bring lshw from epel
-            do_chroot "$target" rpm -ivh "https://dl.fedoraproject.org/pub/epel/6/x86_64/lshw-B.02.14-3.el6.x86_64.rpm"
+            [ -f "$target/usr/sbin/lshw" ] || do_chroot "$target" rpm -ivh "https://dl.fedoraproject.org/pub/epel/6/x86_64/lshw-B.02.14-3.el6.x86_64.rpm"
          fi
     fi
 }

@@ -174,17 +174,21 @@ clean_mount_points() {
     if [ ! -d "${dir}" ]; then
     	return
     fi
-    for mpoint in /dev/pts /dev /proc; do
-        grep -qi ${dir}$mpoint /proc/mounts || continue
-    	a=10
-	    while ! umount ${dir}$mpoint; do
-	        sleep 1
-    	    a=$(($a - 1))
-	        if [ $a -eq 0 ]; then
-		        break
-    	    fi
-	    done
+
+    a=10
+
+    while (grep -qi " ${dir}" /proc/mounts); do
+        local mpoints=$(grep -i " ${dir}" /proc/mounts|cut -d ' ' -f 2)
+        umount $mpoints && a=10
+
+        a=$(($a - 1))
+        if [ $a -eq 0 ]; then
+            echo "clean_mount_points() FAILED!"
+            return 1
+        fi
     done
+
+    return 0
 }
 
 # Called to clean packages, temporary files and to create the compressed archive

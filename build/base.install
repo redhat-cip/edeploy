@@ -67,9 +67,8 @@ bootstrap() {
                         if [ -z $ISO_PATH ]; then
                             RELEASE_RPM_URL="${REPOSITORY}/Packages/redhat-release-server-6Server-6.4.0.4.el6.x86_64.rpm"    
                         else
-                            export ISO_MOUNT_POINT="${target}/repo"
                             mkdir -p ${target}/repo
-                            mount -o loop ${ISO_PATH} ${ISO_MOUNT_POINT}
+                            mount -o loop ${ISO_PATH} "${target}/repo"
                             REPOSITORY="file://${target}/repo"
                             REPOSITORY_NEXTSTEP="file:///repo"
                             RELEASE_RPM_URL="${target}/repo/Packages/redhat-release-server-6Server-6.4.0.4.el6.x86_64.rpm"

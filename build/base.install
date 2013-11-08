@@ -223,19 +223,6 @@ install_edeploy_bin() {
     cp ${ORIG}/base.exclude "$target/var/lib/edeploy/${version}/exclude"
 }
 
-cleanup() {
-    rc=$?
-    umount ${dir}/dev || true
-    umount ${dir}/proc || true
-    if [ -n $ISO_MOUNT_POINT ]; then
-        umount ${ISO_MOUNT_POINT} || true
-    fi
-    if [ $rc = 0 ]; then
-    cd ${dir}
-    tar c . | compress -9v > ../../${ROLE}-${version}.edeploy
-    fi
-}
-
 ############################
 ########## MAIN ############
 ############################

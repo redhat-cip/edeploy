@@ -30,6 +30,39 @@ check_binary() {
 	type -p $1 || fatal_error "$1 is missing"
 }
 
+init_redhat_chroot() {
+    target=$1
+    release_rpm_url=$2
+    dist=$3
+    if [ ! -f "${target}/etc/redhat-release" ]; then
+        rpm --initdb --root="$target"
+        rpm -ivh --root "$target" "$release_rpm_url"
+    fi
+    case "$dist" in
+        "centos")
+            sed -i 's/$releasever/6/g' ${target}/etc/yum.repos.d/*
+            ;;
+        "redhat")
+            sed "0,/^enabled=/ s/enabled=0/enabled=1/" -i ${target}/etc/yum.repos.d/rhel-source.repo
+            sed "0,/^baseurl=/ s/baseurl=.*/baseurl=${REPOSITORY//\//\\/}/" -i ${target}/etc/yum.repos.d/rhel-source.repo
+            ;;
+    esac
+    cp -f /etc/resolv.conf "$target/etc/"
+    rpm --root="$target" --import $target/etc/pki/rpm-gpg/RPM-GPG-KEY-*
+    # We cannot use install_packages since the basesystem isn't yet setup
+    yum --installroot $target install -y basesystem yum
+
+    case "$dist" in
+        "redhat")
+            if [ -n $REPOSITORY_NEXTSTEP ]; then
+                sed "0,/^baseurl=/ s/baseurl=.*/baseurl=${REPOSITORY_NEXTSTEP//\//\\/}/" -i ${target}/etc/yum.repos.d/rhel-source.repo
+            fi
+         ;;
+    esac
+
+    do_chroot $target "rpm --rebuilddb"
+}
+
 bootstrap() {
     target=$1
 
@@ -53,35 +86,23 @@ bootstrap() {
                 check_binary rpm
                 case $dist in
                     centos)
-                        RELEASE_RPM_URL="http://mirror.centos.org/centos/6.4/os/x86_64/Packages/centos-release-6-4.el6.centos.10.x86_64.rpm"
-                        [ -d "${target}/usr/share/doc/centos-release-6" ] || rpm -ivh --root "$target" "$RELEASE_RPM_URL"
-                        sed -i 's/$releasever/6/g' ${target}/etc/yum.repos.d/*
-                        cp -f /etc/resolv.conf "$target/etc/"
-                        # We cannot use install_packages since the basesystem isn't yet setup
-                        yum --installroot $target install -y --nogpgcheck basesystem yum
+                        release_rpm_url="http://mirror.centos.org/centos/6.4/os/x86_64/Packages/centos-release-6-4.el6.centos.10.x86_64.rpm"
+                        init_redhat_chroot $target $release_rpm_url $dist
                         ;;
                     redhat)
                         if [ -z $REPOSITORY ] && [ -z $ISO_PATH ];then
                             fatal_error "You must set your RHEL repository in the variable REPOSITORY or the RHEL server ISO path in the ISO_PATH variable."
                         fi
                         if [ -z $ISO_PATH ]; then
-                            RELEASE_RPM_URL="${REPOSITORY}/Packages/redhat-release-server-6Server-6.4.0.4.el6.x86_64.rpm"
+                            release_rpm_url="${REPOSITORY}/Packages/redhat-release-server-6Server-6.4.0.4.el6.x86_64.rpm"
                         else
                             mkdir -p ${target}/repo
                             mount -o loop ${ISO_PATH} "${target}/repo"
                             REPOSITORY="file://${target}/repo"
                             REPOSITORY_NEXTSTEP="file:///repo"
-                            RELEASE_RPM_URL="${target}/repo/Packages/redhat-release-server-6Server-6.4.0.4.el6.x86_64.rpm"
+                            release_rpm_url="${target}/repo/Packages/redhat-release-server-6Server-6.4.0.4.el6.x86_64.rpm"
                         fi
-                        rpm -ivh --root "$target" "$RELEASE_RPM_URL"
-                        cp -f /etc/resolv.conf "$target/etc/"
-                        sed "0,/^enabled=/ s/enabled=0/enabled=1/" -i ${target}/etc/yum.repos.d/rhel-source.repo
-                        sed "0,/^baseurl=/ s/baseurl=.*/baseurl=${REPOSITORY//\//\\/}/" -i ${target}/etc/yum.repos.d/rhel-source.repo
-                        # We cannot use install_packages since the basesystem isn't yet setup
-                        yum --installroot $target install -y --nogpgcheck basesystem yum
-                        if [ -n REPOSITORY_NEXTSTEP ]; then
-                            sed "0,/^baseurl=/ s/baseurl=.*/baseurl=${REPOSITORY_NEXTSTEP//\//\\/}/" -i ${target}/etc/yum.repos.d/rhel-source.repo
-                        fi
+                        init_redhat_chroot $target $release_rpm_url $dist
                         ;;
                     *)
                         fatal_error "Unsupported RPM+YUM based distro: ${DIST}"

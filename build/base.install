@@ -94,8 +94,6 @@ bootstrap() {
             fi
         fi
     fi
-    umount -lf ${target}/dev || true
-    umount -lf ${target}/proc || true
 }
 
 install_base_packages() {
@@ -150,8 +148,6 @@ install_base_packages() {
             do_chroot "$target" rpm -ivh "https://dl.fedoraproject.org/pub/epel/6/x86_64/lshw-B.02.14-3.el6.x86_64.rpm"
          fi
     fi
-    umount -lf ${target}/dev || true
-    umount -lf ${target}/proc || true
 }
 
 install_hp_raid_cli_tool() {

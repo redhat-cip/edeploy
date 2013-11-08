@@ -202,9 +202,9 @@ cleanup() {
         echo "################"
         echo "$last_command returned $ret"
     fi
-    clean_mount_points
     rm -f "${dir}"/etc/default/grub.d/edeploy.cfg
     clear_packages_cache $dir
+    clean_mount_points
     if [ $ret = 0 ]; then
     	if [ -x ${dir}/usr/bin/dpkg ]; then
 	        chroot ${dir} dpkg -l > ${dir}/../${ROLE}.packages

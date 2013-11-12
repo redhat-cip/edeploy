@@ -54,26 +54,64 @@ install_ib_if_needed $ORIG $DST2
 clean_mount_points
 
 rsync -au --delete-excluded --delete --exclude /boot/ \
-    --exclude 'vmlinuz*' \
-    --exclude 'initrd*' \
-    --exclude usr/share/man \
-    --exclude usr/share/doc \
-    --exclude usr/share/info \
-    --exclude var/lib/dpkg  \
-    --exclude var/lib/apt \
-    --exclude var/cache/debconf \
-    --exclude 'var/cache/apt/archives/*.deb' \
-    --exclude usr/share/zoneinfo \
-    --exclude usr/share/locale \
-    --exclude usr/lib/*/gconv/ \
+   --exclude 'initrd*' \
+    --exclude 'lib/modules/*/kernel/drivers/bluetooth' \
+    --exclude 'lib/modules/*/kernel/drivers/gpu/' \
+    --exclude 'lib/modules/*/kernel/drivers/hwmon/' \
+    --exclude 'lib/modules/*/kernel/drivers/isdn/' \
+    --exclude 'lib/modules/*/kernel/drivers/media' \
+    --exclude 'lib/modules/*/kernel/drivers/net/mac80211' \
+    --exclude 'lib/modules/*/kernel/drivers/net/wireless/' \
+    --exclude 'lib/modules/*/kernel/drivers/sound' \
+    --exclude 'lib/modules/*/kernel/drivers/uwb' \
+    --exclude 'lib/modules/*/kernel/drivers/video' \
     --exclude 'lib/modules/*/kernel/net/netfilter' \
     --exclude 'lib/modules/*/kernel/sound' \
-    --exclude 'lib/modules/*/kernel/drivers/sound' \
-    --exclude 'lib/modules/*/kernel/drivers/media' \
-    --exclude 'lib/modules/*/kernel/drivers/gpu/' \
-    --exclude 'lib/modules/*/kernel/drivers/net/wireless/' \
     --exclude 'ocfs2*.ko' \
     --exclude '*.pyc' \
+    --exclude usr/lib/*/gconv/ \
+    --exclude usr/lib/locale \
+    --exclude usr/lib64/perl5 \
+    --exclude usr/lib64/libgtk* \
+    --exclude usr/lib64/graphviz \
+    --exclude usr/share/anaconda \
+    --exclude usr/share/backgrounds \
+    --exclude usr/share/cracklib \
+    --exclude usr/share/cvs \
+    --exclude usr/share/doc \
+    --exclude usr/share/dracut \
+    --exclude usr/share/firstboot \
+    --exclude usr/share/fonts \
+    --exclude usr/share/gettext \
+    --exclude usr/share/groff \
+    --exclude usr/share/hwdata \
+    --exclude usr/share/i18n \
+    --exclude usr/share/ibmgtsim \
+    --exclude usr/share/icons \
+    --exclude usr/share/info \
+    --exclude usr/share/kde* \
+    --exclude usr/share/locale \
+    --exclude usr/share/man \
+    --exclude usr/share/misc \
+    --exclude usr/share/perl5 \
+    --exclude usr/share/pixmaps \
+    --exclude usr/share/plymouth \
+    --exclude usr/share/swig \
+    --exclude usr/share/tcl* \
+    --exclude usr/share/tk* \
+    --exclude usr/share/wallpapers \
+    --exclude usr/share/X11 \
+    --exclude usr/share/yum* \
+    --exclude usr/share/zoneinfo \
+    --exclude 'var/cache/apt/archives/*.deb' \
+    --exclude var/cache/debconf \
+    --exclude var/cache/debconf \
+    --exclude var/cache/yum \
+    --exclude var/lib/apt \
+    --exclude var/lib/dpkg  \
+    --exclude var/lib/rpm \
+    --exclude var/lib/yum \
+    --exclude 'vmlinuz*' \
     ${DST2}/ ${DST}
 
 rm -rf ${DST2}

@@ -174,21 +174,25 @@ install_hp_raid_cli_tool() {
     target=$1
     # Inject HP RAID CLI tool
     if [ "$(package_type)" = "deb" ]; then
-        if [ ! -r $target/tmp/hpacucli_9.40.1-1._amd64.deb ]; then
-            wget http://downloads.linux.hp.com/SDR/downloads/MCP/pool/non-free/hpacucli_9.40.1-1._amd64.deb -O $target/tmp/hpacucli_9.40.1-1._amd64.deb
+        local package_name=hpacucli_9.40.1-1._amd64.deb
+        if [ ! -r $target/tmp/$package_name ]; then
+            wget http://downloads.linux.hp.com/SDR/downloads/MCP/pool/non-free/$package_name -O $target/tmp/$package_name
         fi
         install_packages $target "python-pexpect"
-        do_chroot $target dpkg -i /tmp/hpacucli_9.40.1-1._amd64.deb
+        do_chroot $target dpkg -i /tmp/$package_name
+        rm -f $target/tmp/$package_name
     elif [ "$(package_type)" = "rpm" ]; then
-        if [ ! -r $target/tmp/hpacucli-9.40-12.0.x86_64.rpm ]; then
-            wget http://downloads.linux.hp.com/SDR/downloads/ServicePackforProLiant/2013.02.0/hp/swpackages/hpacucli-9.40-12.0.x86_64.rpm -O $target/tmp/hpacucli-9.40-12.0.x86_64.rpm
+        local package_name="hpacucli-9.40-12.0.x86_64.rpm"
+        is_package_installed $target $package_name && return
+        if [ ! -r $target/tmp/$package_name ]; then
+            wget http://downloads.linux.hp.com/SDR/downloads/ServicePackforProLiant/2013.02.0/hp/swpackages/$package_name -O $target/tmp/$package_name
         fi
         install_packages $target "pexpect"
-        do_chroot $target rpm -ivh /tmp/hpacucli-9.40-12.0.x86_64.rpm
+        do_chroot $target rpm -ivh /tmp/$package_name
+        rm -f $target/tmp/$package_name
     else
         fatal_error "package_type $(package_type) isn't suported in install_hp_raid_cli_tool()"
     fi
-    rm $target/tmp/hpacucli*
     clear_packages_cache $target
 }
 

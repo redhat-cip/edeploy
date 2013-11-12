@@ -144,7 +144,7 @@ install_base_packages() {
             echo "deb $repository wheezy-updates main" >> ${target}/etc/apt/sources.list.d/updates.list
             ;;
         centos|redhat)
-            PACKAGES="$PACKAGES passwd kernel redhat-lsb-core wget sudo openssh-server parted coreutils perl e2fsprogs net-tools initscripts upstart vconfig dhclient grub grubby kbd rsync dmidecode bash curl hdparm xfsprogs acpid"
+            PACKAGES="$PACKAGES passwd kernel redhat-lsb-core wget sudo openssh-server parted coreutils perl e2fsprogs net-tools initscripts upstart vconfig dhclient grub grubby kbd rsync dmidecode bash curl hdparm xfsprogs acpid pciutils module-init-tools iproute"
             ;;
         *)
             echo "unsupported distribution: $dist" 2>&1

@@ -118,8 +118,6 @@ bootstrap() {
 
 install_base_packages() {
     target=$1
-    mount -obind /dev ${target}/dev
-    mount -obind /proc ${target}/proc
     # Resolv.conf got setup during the initial deboostrap
     # But since, you might have change your host to another network (office vs home vs mobile vs ...)
     # In such case, the resolv.conf is wrong and prevents apt (and all networking-depedent stuff from working)

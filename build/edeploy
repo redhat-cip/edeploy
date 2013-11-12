@@ -145,17 +145,17 @@ command="$1"
 shift
 
 case "$command" in
-	help)
-		help
-	;;
-	test-upgrade|upgrade|list|verify)
-		check_args
-		"$command" "$@"
-	;;
+    help)
+        help
+    ;;
+    test-upgrade|upgrade|list|verify)
+        check_args
+        "$command" "$@"
+    ;;
 
-	*)
-		usage 1>&2
-		exit 1
-	;;
+    *)
+        usage 1>&2
+        exit 1
+    ;;
 esac
 

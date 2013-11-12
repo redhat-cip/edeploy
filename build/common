@@ -180,10 +180,17 @@ clean_mount_points() {
     fi
 
     a=10
+    local lazy=""
 
     while (grep -qi " ${dir}" /proc/mounts); do
+        # After 8 tries, let's try the lazy umount
+        # As we are on virtual fs, this is not an issue
+        if [ $a -eq 8 ]; then
+            lazy="-l"
+        fi
+
         # Let's umount all mounted dir by taking the longest path first
-        grep -i ${dir} /proc/mounts | awk '{print $2}' | sort -u -r | xargs umount && a=10
+        grep -i " ${dir}" /proc/mounts | awk '{print $2}' | sort -u -r | xargs umount $lazy && a=10
 
         a=$(($a - 1))
         if [ $a -eq 0 ]; then

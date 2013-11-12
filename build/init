@@ -45,6 +45,7 @@ eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^DEBUG=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^VERBOSE=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^NOREBOOT=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^ONSUCCESS=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^ONFAILURE=")
 
 #compatibilty module
 if [ "$NOREBOOT" = "1" ]; then

@@ -41,7 +41,7 @@ check_binary() {
 
 detect_kvm() {
 
-    for kvm_bin in qemu-system-x86_64 kvm qemu-kvm; do
+    for kvm_bin in kvm qemu-kvm qemu-system-x86_64; do
         which $kvm_bin 2>/dev/null && return 0
     done
 	fatal_error "Please Install KVM first"

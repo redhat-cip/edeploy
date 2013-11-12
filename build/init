@@ -33,6 +33,8 @@ tpid=$!
 
 ################################################################################
 
+set_path
+
 step "Create directories"
 create_main_directories
 rm -rf /var/lock

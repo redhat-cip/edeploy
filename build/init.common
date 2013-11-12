@@ -347,3 +347,8 @@ while true; do
     fi
 done
 }
+
+set_path() {
+    PATH=/sbin:/bin:/usr/bin:/usr/sbin
+    export PATH
+}

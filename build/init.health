@@ -89,6 +89,8 @@ mount_virtual_fs
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^DEBUG=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^VERBOSE=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^NOREBOOT=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^ONSUCCESS=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^ONFAILURE=")
 
 if [ "$VERBOSE" = 1 ]; then
     set -x			# show commands
@@ -230,11 +232,22 @@ log "###########################################################################
 umount /ahcexport
 save_log
 
-if [ "$DEBUG" = 1 ]; then
-    echo "Debug mode, launching an interactive shell"
-    exec /bin/bash -i
-else
-    echo "Shutting down the system in 10 sec"
-    sleep 10
-    poweroff -f
-fi
+case $ONSUCCESS)
+    "reboot")
+        log "Automatic rebooting as required by ONSUCCESS"
+        umount -a
+        do_reboot
+    ;;
+    "halt")
+        log "Automatic poweroff as required by ONSUCCESS"
+        umount -a
+        do_halt
+    ;;
+    "console")
+        log "ONSUCCESS=console, launching an interactive shell"
+        do_console
+    ;;
+    *)
+        give_up "Unsupported ONSUCCESS=$ONSUCCESS value"
+    ;;
+esac

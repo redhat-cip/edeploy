@@ -8,6 +8,10 @@ fatal_error() {
     exit 1
 }
 
+check_variables() {
+	echo $TOP | grep -q '^/' || fatal_error "TOP_DIR ($TOP) shall be absolute, not relative"
+}
+
 compress() {
     COMPRESS=gzip
     if [ ! -z $(which pigz 2>/dev/null) ]; then

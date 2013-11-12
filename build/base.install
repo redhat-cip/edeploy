@@ -166,7 +166,7 @@ install_base_packages() {
     else if [ "$(package_type)" = "rpm" ]; then
             install_packages $target "$PACKAGES"
             # bring lshw from epel
-            [ -f "$target/usr/sbin/lshw" ] || do_chroot "$target" rpm -ivh "https://dl.fedoraproject.org/pub/epel/6/x86_64/lshw-B.02.14-3.el6.x86_64.rpm"
+            [ -f "$target/usr/sbin/lshw" ] || install_packages "$target" https://dl.fedoraproject.org/pub/epel/6/x86_64/lshw-B.02.14-3.el6.x86_64.rpm
          fi
     fi
 }
@@ -183,14 +183,11 @@ install_hp_raid_cli_tool() {
         do_chroot $target dpkg -i /tmp/$package_name
         rm -f $target/tmp/$package_name
     elif [ "$(package_type)" = "rpm" ]; then
-        local package_name="hpacucli-9.40-12.0.x86_64.rpm"
-        is_package_installed $target $package_name && return
-        if [ ! -r $target/tmp/$package_name ]; then
-            wget http://downloads.linux.hp.com/SDR/downloads/ServicePackforProLiant/2013.02.0/hp/swpackages/$package_name -O $target/tmp/$package_name
-        fi
         install_packages $target "pexpect"
-        do_chroot $target rpm -ivh /tmp/$package_name
-        rm -f $target/tmp/$package_name
+        if [ ! -f "$target/usr/sbin/hpacucli" ]; then
+            install_packages $target \
+                http://downloads.linux.hp.com/SDR/downloads/ServicePackforProLiant/2013.02.0/hp/swpackages/hpacucli-9.40-12.0.x86_64.rpm
+        fi
     else
         fatal_error "package_type $(package_type) isn't suported in install_hp_raid_cli_tool()"
     fi

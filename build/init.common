@@ -232,7 +232,11 @@ probe_network_devices() {
 DHCP_TIMEOUT=30
 DHCP_GRACE_TIME=10
 DHCP_NO_RACETIMING=1
-sed -i "s/^\#timeout.*/timeout $DHCP_TIMEOUT/g" /etc/dhcp/dhclient.conf
+if [ -f /etc/dhcp/dhclient.conf ]; then
+    sed -i "s/^\#timeout.*/timeout $DHCP_TIMEOUT/g" /etc/dhcp/dhclient.conf
+else
+    echo "timeout $DHCP_TIMEOUT" > /etc/dhcp/dhclient.conf
+fi
 
 MAX_RUN=3
 RUN=0

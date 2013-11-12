@@ -215,6 +215,8 @@ cleanup() {
         echo "$last_command returned $ret"
     fi
     rm -f "${dir}"/etc/default/grub.d/edeploy.cfg
+    # TODO(Gonéri): $dir is empty with pxe.install. This will
+    # create error messages and an empty .edeploy file
     clear_packages_cache $dir
     clean_mount_points
     if [ $ret = 0 ]; then

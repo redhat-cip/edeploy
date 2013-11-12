@@ -224,6 +224,9 @@ probe_pci_devices() {
         modprobe $module && log "done" || log "error"
       done
     fi
+
+    # Add weird sleep to get all drivers probed
+    sleep 5
 }
 
 probe_network_devices() {

@@ -338,12 +338,7 @@ while true; do
       log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
       log "!! NO DHCP FOUND after $RUN tries. Rebooting in 10 seconds !!"
       log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-      if [ "$DEBUG" != 1 ]; then
-        do_reboot
-      else
-        show_kernel_modules
-        give_up "!! DEBUG mode is set, let's give up as no DHCP server found"
-      fi
+      give_up "!! DEBUG mode is set, let's give up as no DHCP server found"
     fi
 done
 }

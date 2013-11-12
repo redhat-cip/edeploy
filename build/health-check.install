@@ -40,19 +40,18 @@ set -e
 
 rsync -aH --delete-before ${SRC}/ ${DST2}/
 
-# Resolv.conf got setup during the initial deboostrap
-# But since, you might have change your host to another network (office vs home vs mobile vs ...)
-# In such case, the resolv.conf is wrong and prevents apt (and all networking-depedent stuff from working)
-# So let's copy the current one to insure the setup is good
-cp -f /etc/resolv.conf "$DST2/etc/"
-
 dir=$DST2
+common_setup
+
 PACKAGES="sysbench fio python-psutil netperf python-netaddr ethtool python-numpy sdparm"
 update_repositories $dir
 install_packages $dir "$PACKAGES"
 clear_packages_cache $dir
 
 install_ib_if_needed $ORIG $DST2
+
+#Starting here, we don't need the mount points anymore
+clean_mount_points
 
 rsync -au --delete-excluded --delete --exclude /boot/ \
     --exclude 'vmlinuz*' \

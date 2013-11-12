@@ -217,7 +217,7 @@ if /configure; then
         MODEL=$(cat /sys/block/$DISK_BASE/device/model)
         VENDOR=$(cat /sys/block/$DISK_BASE/device/vendor)
         echo  "################################################################################################"
-        echo  "# Installing grub  on device ${DISK} which is a $MODEL from $VENDOR with SN=$SER"
+        echo  "# Installing grub on device ${DISK} which is a $MODEL from $VENDOR with SN=$SER"
         echo  "################################################################################################"
         # grub1 doesn't have /usr/sbin/grub-mkconfig
         if [ ! -x $d/usr/sbin/grub-mkconfig ]; then

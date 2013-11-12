@@ -119,12 +119,16 @@ start_httpd() {
 }
 
 stop_httpd() {
-	kill -9 $HTTP_PID &>/dev/null
+    if [ ! -z $HTTP_PID ]; then
+    	kill -9 $HTTP_PID &>/dev/null
+    fi
 	rm -f $LOCKFILE
 }
 
 stop_rsyncd() {
-	kill -9 $RSYNC_PID &>/dev/null
+    if [ ! -z $RSYNC_PID ]; then
+	    kill -9 $RSYNC_PID &>/dev/null
+    fi
 	rm -f rsyncd-edeploy.pid &>/dev/null
 }
 
@@ -289,7 +293,14 @@ printf "  Average waiting : %7.2f seconds\n" $AVERAGE_WAIT_TIME
 printf "  Std deviation   : %7.2f seconds\n" $STD_DEV_WAIT
 }
 
+do_exit() {
+    set +e
+    stop_httpd
+    stop_rsyncd
+}
+
 ############## MAIN
+trap do_exit EXIT
 case "$MODE" in
     "stress-http")
         check_binary curl

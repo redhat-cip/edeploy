@@ -231,6 +231,7 @@ clear_trap() {
 }
 
 common_setup() {
+    export LC_ALL=C
     # export these variables to let them be used by upgrade-from sub-scripts
     export OS=$(chroot ${dir} lsb_release -i -s)
     export RELEASE=$(chroot ${dir} lsb_release -c -s)

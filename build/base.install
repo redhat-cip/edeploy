@@ -24,7 +24,7 @@ ROLE=base
 
 ORIG=$(cd $(dirname $0); pwd)
 
-. functions
+. common
 
 check_binary() {
 	type -p $1 || fatal_error "$1 is missing"
@@ -278,9 +278,8 @@ if [ "$(package_type)" = "deb" ]; then
     export DEBIAN_FRONTEND=noninteractive
 fi
 
-trap cleanup 0
-
 bootstrap $dir
+common_setup
 install_base_packages $dir
 install_hp_raid_cli_tool $dir
 set_firstboot $dir

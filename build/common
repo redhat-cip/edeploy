@@ -266,6 +266,6 @@ common_setup() {
     echo 'exit 0' > "${dir}"/etc/default/grub.d/edeploy.cfg
     mount -obind /dev ${dir}/dev
     mount -obind /dev/pts ${dir}/dev/pts
-    mount -t proc none ${dir}/proc
+    mount -obind /proc ${dir}/proc
     trap cleanup 0
 }

@@ -153,3 +153,53 @@ clear_packages_cache() {
         ;;
     esac
 }
+
+is_package_installed() {
+    CHROOT=$1
+    PACKAGE=$2
+    set +e
+    case "$(package_tool)" in
+        apt)
+            # We need to find a way to make it with apt/dpkg
+            return 0
+        ;;
+        yum)
+            do_chroot $CHROOT "rpm -qi $PACKAGE &>/dev/null"
+            return $?
+        ;;
+        *)
+            fatal_error "$(package_tool) isn't supported in is_package_installed()"
+        ;;
+    esac
+    set -e
+}
+
+rebuild_db_with_local() {
+    CHROOT=$1
+    case "$(package_tool)" in
+        apt)
+        ;;
+        yum)
+            rpm --root=$CHROOT --rebuilddb
+        ;;
+        *)
+            fatal_error "$(package_tool) isn't supported in rebuild_db_with_local()"
+        ;;
+    esac
+
+}
+
+rebuild_db() {
+    CHROOT=$1
+    case "$(package_tool)" in
+        apt)
+        ;;
+        yum)
+            do_chroot $CHROOT "rpm --rebuilddb"
+        ;;
+        *)
+            fatal_error "$(package_tool) isn't supported in rebuild_db()"
+        ;;
+    esac
+
+}

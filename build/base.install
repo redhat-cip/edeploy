@@ -278,6 +278,7 @@ if [ "$(package_type)" = "deb" ]; then
     export DEBIAN_FRONTEND=noninteractive
 fi
 
+trap cleanup 0
 bootstrap $dir
 common_setup
 install_base_packages $dir

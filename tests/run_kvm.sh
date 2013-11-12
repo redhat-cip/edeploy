@@ -106,6 +106,7 @@ start_httpd() {
     fi
 	HTTP_PID=$!
 
+    set +e
     echo "Waiting HTTP server to start"
     RETURN_CODE="7"
     while [ $RETURN_CODE -ne 0 ]; do
@@ -113,6 +114,7 @@ start_httpd() {
          RETURN_CODE="$?"
          sleep .1
     done
+    set -e
     echo "HTTP server started"
 }
 

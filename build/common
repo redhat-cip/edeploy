@@ -43,21 +43,21 @@ install_mellanox() {
     KVER_TO_REMOVE=
     PACKAGES=
     case $RELEASE in
-	precise)
-	    KVER=3.5.0-42-generic
-	    KVER_TO_REMOVE=3.8.0-32
-	    FILE="MLNX_OFED_LINUX-2.0-3.0.0-ubuntu12.04-x86_64.tgz"
-	    URL="$URL/$FILE"
-	    # Thoses packages will be installed by mellanox but one by one ....
-	    # Let's install them at once to save time
-	    PACKAGES="autotools-dev autoconf libtool automake1.10 automake debhelper tcl tcl8.4 chrpath swig graphviz tcl-dev tcl8.4-dev tk-dev tk8.4-dev bison flex dpatch libcurl4-gnutls-dev python-libxml2 libvirt-bin"
-	    PACKAGES="$PACKAGES linux-image-$KVER linux-headers-$KVER"
-	    # We shall only keep the final kernel unless kernel-mft-dkms fails at compiling
-	    PACKAGES_TO_REMOVE="linux-image-$KVER_TO_REMOVE-generic linux-headers-$KVER_TO_REMOVE-generic linux-headers-$KVER_TO_REMOVE"
-	    ;;
-	*)
+    precise)
+        KVER=3.5.0-42-generic
+        KVER_TO_REMOVE=3.8.0-32
+        FILE="MLNX_OFED_LINUX-2.0-3.0.0-ubuntu12.04-x86_64.tgz"
+        URL="$URL/$FILE"
+        # Thoses packages will be installed by mellanox but one by one ....
+        # Let's install them at once to save time
+        PACKAGES="autotools-dev autoconf libtool automake1.10 automake debhelper tcl tcl8.4 chrpath swig graphviz tcl-dev tcl8.4-dev tk-dev tk8.4-dev bison flex dpatch libcurl4-gnutls-dev python-libxml2 libvirt-bin"
+        PACKAGES="$PACKAGES linux-image-$KVER linux-headers-$KVER"
+        # We shall only keep the final kernel unless kernel-mft-dkms fails at compiling
+        PACKAGES_TO_REMOVE="linux-image-$KVER_TO_REMOVE-generic linux-headers-$KVER_TO_REMOVE-generic linux-headers-$KVER_TO_REMOVE"
+        ;;
+    *)
         return
-	    ;;
+        ;;
     esac
 
     # As we are chroot, we have to prevent some services to be restarted by packages
@@ -65,7 +65,7 @@ install_mellanox() {
     prevent_services_to_run $CHROOT on
 
     for mydir in /proc /dev /sys /dev/pts /run; do
-	mount $mydir $CHROOT/$mydir -o bind || echo "Failed at binding $mydir"
+        mount $mydir $CHROOT/$mydir -o bind || echo "Failed at binding $mydir"
     done
     chroot $CHROOT apt-get  -y --force-yes purge $PACKAGES_TO_REMOVE
     chroot $CHROOT apt-get -y --force-yes install $PACKAGES
@@ -129,7 +129,7 @@ EOF
     sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="intel_iommu=on"/g' $CHROOT/etc/default/grub
 
     for mydir in /proc /dev/pts /sys /dev/ /run; do
-	umount $CHROOT/$mydir
+        umount $CHROOT/$mydir
     done
 
     rm -f $CHROOT/doit.sh
@@ -176,7 +176,7 @@ do_chroot() {
 
 clean_mount_points() {
     if [ ! -d "${dir}" ]; then
-    	return
+        return
     fi
 
     a=10
@@ -211,17 +211,17 @@ cleanup() {
     clear_packages_cache $dir
     clean_mount_points
     if [ $ret = 0 ]; then
-    	if [ -x ${dir}/usr/bin/dpkg ]; then
-	        chroot ${dir} dpkg -l > ${dir}/../${ROLE}.packages
-    	else
-    	    chroot ${dir} rpm -qa > ${dir}/../${ROLE}.packages
-	    fi
+        if [ -x ${dir}/usr/bin/dpkg ]; then
+            chroot ${dir} dpkg -l > ${dir}/../${ROLE}.packages
+        else
+            chroot ${dir} rpm -qa > ${dir}/../${ROLE}.packages
+        fi
 
-    	cd ${dir}
+        cd ${dir}
 
-    	rm -f ../../${ROLE}-${version}.edeploy
+        rm -f ../../${ROLE}-${version}.edeploy
 
-	    tar c . | compress -9v > ../../${ROLE}-${version}.edeploy
+        tar c . | compress -9v > ../../${ROLE}-${version}.edeploy
     fi
     if [ "$ret" != "0" ]; then
         echo "###########"

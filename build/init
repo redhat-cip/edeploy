@@ -217,12 +217,12 @@ if /configure; then
         MODEL=$(cat /sys/block/$DISK_BASE/device/model)
         VENDOR=$(cat /sys/block/$DISK_BASE/device/vendor)
         echo  "################################################################################################"
-        echo  "# Installing grub  on device ${DISK} which is a $MODEL from $VENDOR with SN=$SER"
+        echo  "# Installing grub on device ${DISK} which is a $MODEL from $VENDOR with SN=$SER"
         echo  "################################################################################################"
         # grub1 doesn't have /usr/sbin/grub-mkconfig
         if [ ! -x $d/usr/sbin/grub-mkconfig ]; then
-            chroot $d /bin/bash -c "cat /proc/mounts > /etc/mtab"
-            chroot $d /bin/bash -c "/sbin/grub-install ${DISK}"
+            chroot $d /bin/sh -c "cat /proc/mounts > /etc/mtab"
+            chroot $d /bin/sh -c "/sbin/grub-install ${DISK}"
             ret=$?
             root=`mount | grep /chroot | awk '{print $1}'`
             eval `blkid $root -o export`
@@ -240,8 +240,8 @@ if /configure; then
                 echo "	initrd $INITRD" >> ${d}/boot/grub/grub.conf
             done
             # grub 2
-        elif chroot $d /bin/bash -c "/usr/sbin/grub-install ${DISK}"; then
-            chroot $d /bin/bash -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"
+        elif chroot $d /bin/sh -c "/usr/sbin/grub-install ${DISK}"; then
+            chroot $d /bin/sh -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"
             ret=$?
         else
             ret=1

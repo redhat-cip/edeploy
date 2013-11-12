@@ -65,72 +65,72 @@ $(INST)/base.done: base.install policy-rc.d edeploy
 	touch $(INST)/base.done
 
 cloud: $(INST)/cloud.done
-$(INST)/cloud.done: cloud.install $(INST)/base.done
+$(INST)/cloud.done: cloud.install base
 	./cloud.install $(INST)/base $(INST)/cloud $(VERS)
 	touch $(INST)/cloud.done
 
 devstack: $(INST)/devstack.done
-$(INST)/devstack.done: devstack.install $(INST)/cloud.done
+$(INST)/devstack.done: devstack.install cloud
 	./devstack.install $(INST)/cloud $(INST)/devstack $(DIST) $(VERS)
 	touch $(INST)/devstack.done
 
 openstack-common: $(INST)/openstack-common.done
-$(INST)/openstack-common.done: openstack-common.install $(INST)/base.done
+$(INST)/openstack-common.done: openstack-common.install base
 	./openstack-common.install $(INST)/base $(INST)/openstack-common $(VERS)
 	touch $(INST)/openstack-common.done
 
 openstack-controller: $(INST)/openstack-controller.done
-$(INST)/openstack-controller.done: openstack-controller.install $(INST)/openstack-common.done
+$(INST)/openstack-controller.done: openstack-controller.install openstack-common
 	./openstack-controller.install $(INST)/base $(INST)/openstack-controller $(VERS)
 	touch $(INST)/openstack-controller.done
 
 openstack-swift-proxy: $(INST)/openstack-swift-proxy.done
-$(INST)/openstack-swift-proxy.done: openstack-swift-proxy.install $(INST)/openstack-common.done
+$(INST)/openstack-swift-proxy.done: openstack-swift-proxy.install openstack-common
 	./openstack-swift-proxy.install $(INST)/openstack-common $(INST)/openstack-swift-proxy $(VERS)
 	touch $(INST)/openstack-swift-proxy.done
 
 openstack-swift-storage: $(INST)/openstack-swift-storage.done
-$(INST)/openstack-swift-storage.done: openstack-swift-storage.install $(INST)/openstack-common.done
+$(INST)/openstack-swift-storage.done: openstack-swift-storage.install openstack-common
 	./openstack-swift-storage.install $(INST)/openstack-common $(INST)/openstack-swift-storage $(VERS)
 	touch $(INST)/openstack-swift-storage.done
 
 openstack-compute: $(INST)/openstack-compute.done
-$(INST)/openstack-compute.done: openstack-compute.install $(INST)/openstack-common.done
+$(INST)/openstack-compute.done: openstack-compute.install openstack-common
 	./openstack-compute.install $(INST)/openstack-common $(INST)/openstack-compute $(VERS)
 	touch $(INST)/openstack-compute.done
 
 mysql: $(INST)/mysql.done
-$(INST)/mysql.done: mysql.install $(INST)/base.done
+$(INST)/mysql.done: mysql.install base
 	./mysql.install $(INST)/base $(INST)/mysql $(VERS)
 	touch $(INST)/mysql.done
 
 galera: $(INST)/galera.done
-$(INST)/galera.done: galera.install $(INST)/base.done
+$(INST)/galera.done: galera.install base
 	./galera.install $(INST)/base $(INST)/galera $(VERS)
 	touch $(INST)/galera.done
 
 haproxy: $(INST)/haproxy.done
-$(INST)/haproxy.done: haproxy.install $(INST)/base.done
+$(INST)/haproxy.done: haproxy.install base
 	./haproxy.install $(INST)/base $(INST)/haproxy $(VERS)
 	touch $(INST)/haproxy.done
 
 ceph: $(INST)/ceph.done
-$(INST)/ceph.done: ceph.install $(INST)/base.done
+$(INST)/ceph.done: ceph.install base
 	./ceph.install $(INST)/base $(INST)/ceph $(VERS)
 	touch $(INST)/ceph.done
 
 docker: $(INST)/docker.done
-$(INST)/docker.done: docker.install $(INST)/base.done
+$(INST)/docker.done: docker.install base
 	./docker.install $(INST)/base $(INST)/docker $(VERS)
 	touch $(INST)/docker.done
 
 puppet-master: $(INST)/puppet-master.done
-$(INST)/puppet-master.done: puppet-master.install $(INST)/base.done
+$(INST)/puppet-master.done: puppet-master.install base
 	./puppet-master.install $(INST)/base $(INST)/puppet-master $(VERS)
 	touch $(INST)/puppet-master.done
 
 server: $(INST)/chef-server.done
-$(INST)/chef-server.done: chef-server.install $(INST)/base.done
+$(INST)/chef-server.done: chef-server.install base
 	./chef-server.install $(INST)/base $(INST)/chef-server $(VERS)
 	touch $(INST)/chef-server.done
 
@@ -138,14 +138,14 @@ health-test: health-check
 	cd ../tests/tftpboot/; ln -sf $(INST)/base/boot/vmlinuz* vmlinuz; ln -sf $(INST)/health.pxe initrd;
 	cd ../tests; ./run_kvm.sh $(TOP) health
 
-test: $(INST)/$(IMG) $(INST)/mysql.done
+test: $(INST)/$(IMG) mysql
 	cd ../tests/tftpboot/; ln -sf $(INST)/base/boot/vmlinuz* vmlinuz; ln -sf $(INST)/initrd.pxe initrd;
 	cd ../tests; ./run_kvm.sh $(TOP)
 
 stress-http:
 	cd ../tests; ./run_kvm.sh $(TOP) stress-http $(LOAD) $(HTTP)
 
-benchmark $(INST)/benchmark.done: benchmark.install $(INST)/base.done
+benchmark $(INST)/benchmark.done: benchmark.install base
 	ENABLE_IB=y ./benchmark.install $(INST)/base $(INST)/benchmark $(VERS)
 	touch $(INST)/benchmark.done
 

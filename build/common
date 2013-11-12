@@ -9,7 +9,7 @@ fatal_error() {
 }
 
 check_variables() {
-	echo $TOP | grep -q '^/' || fatal_error "TOP_DIR ($TOP) shall be absolute, not relative"
+	echo $TOP | grep -q '^/' || fatal_error "TOP variable ($TOP) shall be absolute, not relative"
 }
 
 compress() {

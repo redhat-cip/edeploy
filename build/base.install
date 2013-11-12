@@ -48,6 +48,7 @@ init_redhat_chroot() {
             ;;
     esac
     cp -f /etc/resolv.conf "$target/etc/"
+    rebuild_db_with_local $target
     rpm --root="$target" --import $target/etc/pki/rpm-gpg/RPM-GPG-KEY-*
     # We cannot use install_packages since the basesystem isn't yet setup
     yum --installroot $target install -y basesystem yum
@@ -60,7 +61,7 @@ init_redhat_chroot() {
          ;;
     esac
 
-    do_chroot $target "rpm --rebuilddb"
+    rebuild_db $target
 }
 
 bootstrap() {
@@ -151,6 +152,7 @@ install_base_packages() {
             ;;
     esac
 
+    rebuild_db $target
     update_repositories $target
     upgrade_system $target
     if [ "$(package_type)" = "deb" ]; then

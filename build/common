@@ -257,6 +257,10 @@ common_setup() {
     set -x
 
     echo -e "\nRole ${ROLE}\nVersion ${version}\n" > ${dir}/etc/motd
+
+    if [ ! -d ${dir}/var/lib/edeploy ]; then
+        mkdir -p ${dir}/var/lib/edeploy
+    fi
     echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf
 
     export DEBIAN_FRONTEND=noninteractive

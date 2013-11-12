@@ -24,7 +24,7 @@ ROLE=base
 
 ORIG=$(cd $(dirname $0); pwd)
 
-. common
+. functions
 
 check_binary() {
 	type -p $1 || fatal_error "$1 is missing"

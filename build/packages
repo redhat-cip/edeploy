@@ -23,6 +23,46 @@ get_mirror() {
   esac
 }
 
+get_openstack_mirror() {
+  local dist=$1
+  openstack_release=$2
+
+  if [ -n "$OPENSTACK_REPOSITORY" ]; then
+    echo "$OPENSTACK_REPOSITORY"
+    return
+  fi
+
+  case "$dist" in
+    wheezy|squeeze|jessie)
+        echo "http://cloud.pkgs.enovance.com/${RELEASE}-${openstack_release}/ ${openstack_release} main"
+        return 0
+    ;;
+    lucid|precise|quantal|raring|saucy|trusty)
+        echo "http://cloud.pkgs.enovance.com/${RELEASE}-${openstack_release}/ ${openstack_release} main"
+        return 0
+    ;;
+    centos|redhat)
+        current_rpm_release="undef"
+        case "$openstack_release" in
+            "havana")
+                current_rpm_release=7
+            ;;
+            "grizzly")
+                current_rpm_release=3
+            ;;
+            *)
+                fatal_error "Unsupported openstack release ($openstack_release) for $dist distribution"
+            ;;
+        esac
+        echo "http://rdo.fedorapeople.org/openstack-${openstack_release}/rdo-release-${openstack_release}-${current_rpm_release}.rpm"
+        return 0
+    ;;
+    *)
+        return 1
+    ;;
+  esac
+}
+
 package_type() {
     DISTRO="$DIST"
     if [ -z "$DISTRO" ]; then

@@ -27,6 +27,7 @@ ORIG=$(cd $(dirname $0); pwd)
 
 install_ib_if_needed $ORIG $dir
 
+declare -A packages
 packages=(
     ["deb"]="openstack-compute-node"
     ["rpm"]="openstack-nova-compute"

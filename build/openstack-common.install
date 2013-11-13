@@ -55,7 +55,7 @@ EOF
             do_chroot ${dir} apt-key adv --recv-keys --keyserver keyserver.ubuntu.com E52660B15D964F0B
             get_openstack_mirror $DIST $OS_VERS > ${dir}/etc/apt/sources.list.d/openstack.list
         ;;
-        "CentOS")
+        "CentOS"|"RedHatEnterpriseServer")
             if [ $CODENAME == "6.4" ]; then
                 install_packages ${dir} http://yum.puppetlabs.com/el/6/products/i386/puppetlabs-release-6-7.noarch.rpm
                 install_packages $dir "puppet"
@@ -90,7 +90,7 @@ case "$OS" in
         do_chroot ${dir} apt-get -f install -y -o Dpkg::Options::="--force-confold"
         do_chroot ${dir} rm cloud-init_0.7.3-0ubuntu2_all.deb python-json-patch_1.0-2_all.deb python-json-pointer_1.0-1ubuntu2_all.deb
         ;;
-     "CentOS")
+     "CentOS"|"RedHatEnterpriseServer")
         if [ $CODENAME == "6.4" ]; then
           install_packages $dir "cloud-init"
         fi
@@ -159,7 +159,7 @@ case $OS in
         install_packages $dir "$packages"
         do_chroot ${dir} sed -e \'s/START=yes/START=no/\' -i /etc/default/puppet
     ;;
-    "CentOS")
+    "CentOS"|"RedHatEnterpriseServer")
        if [ $CODENAME == "6.4" ]; then
            packages="augeas openssh-server wget"
            install_packages $dir "$packages"

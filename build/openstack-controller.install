@@ -43,7 +43,7 @@ EOF
 deb [trusted=1] http://cloud.pkgs.enovance.com/precise-grizzly/ grizzly main
 EOF
     ;;
-  "CentOS")
+  "CentOS"|"RedHatEnterpriseServer")
     echo 'havana repo already set in openstack-common'
     ;;
   *)

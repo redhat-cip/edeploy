@@ -67,11 +67,11 @@ get_openstack_mirror() {
 
   case "$dist" in
     wheezy|squeeze|jessie)
-        echo "http://cloud.pkgs.enovance.com/${RELEASE}-${openstack_release}/ ${openstack_release} main"
+        echo "deb http://cloud.pkgs.enovance.com/${RELEASE}-${openstack_release}/ ${openstack_release} main"
         return 0
     ;;
     lucid|precise|quantal|raring|saucy|trusty)
-        echo "http://cloud.pkgs.enovance.com/${RELEASE}-${openstack_release}/ ${openstack_release} main"
+        echo "deb http://cloud.pkgs.enovance.com/${RELEASE}-${openstack_release}/ ${openstack_release} main"
         return 0
     ;;
     centos|redhat)

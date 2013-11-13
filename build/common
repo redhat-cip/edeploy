@@ -190,7 +190,7 @@ clean_mount_points() {
         fi
 
         # Let's umount all mounted dir by taking the longest path first
-        grep -i " ${dir}" /proc/mounts | awk '{print $2}' | sort -u -r | xargs umount $lazy && a=10
+        grep -i " ${dir}" /proc/mounts | awk '{print $2}' | sort -u -r | xargs umount $lazy && a=10 && lazy=""
 
         a=$(($a - 1))
         if [ $a -eq 0 ]; then

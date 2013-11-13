@@ -245,18 +245,18 @@ clear_trap() {
 
 mount_fs() {
     for virtual_dir in /dev /dev/pts /proc; do
-        if [ ! -d ${target}/${virtual_dir} ]; then
-            mkdir -p ${target}/${virtual_dir}
+        if [ ! -d ${dir}/${virtual_dir} ]; then
+            mkdir -p ${dir}/${virtual_dir}
         fi
         mount -obind ${virtual_dir} ${dir}/${virtual_dir}
     done
 
     # If we run with an ISO as loopback, we need to mount it
     if [ ! -z $ISO_PATH ]; then
-        if [ ! -d ${target}/repo ]; then
-            mkdir -p ${target}/repo
+        if [ ! -d ${dir}/repo ]; then
+            mkdir -p ${dir}/repo
         fi
-        mount -o loop $ISO_PATH "${target}/repo"
+        mount -o loop $ISO_PATH "${dir}/repo"
     fi
 }
 

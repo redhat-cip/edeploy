@@ -115,6 +115,7 @@ bootstrap() {
             fi
         fi
     fi
+    clean_mount_points
 }
 
 install_base_packages() {

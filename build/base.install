@@ -53,6 +53,8 @@ init_redhat_chroot() {
     # We cannot use install_packages since the basesystem isn't yet setup
     yum --installroot $target install -y basesystem yum
 
+    rebuild_db $target
+
     case "$dist" in
         "redhat")
             if [ -n $REPOSITORY_NEXTSTEP ]; then
@@ -61,8 +63,6 @@ init_redhat_chroot() {
             add_satellite_repository $dist $target
          ;;
     esac
-
-    rebuild_db $target
 }
 
 bootstrap() {

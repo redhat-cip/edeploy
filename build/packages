@@ -54,7 +54,7 @@ get_openstack_mirror() {
                 fatal_error "Unsupported openstack release ($openstack_release) for $dist distribution"
             ;;
         esac
-        echo "http://rdo.fedorapeople.org/openstack-${openstack_release}/rdo-release-${openstack_release}-${current_rpm_release}.rpm"
+        echo "http://rdo.fedorapeople.org/openstack-${openstack_release}/rdo-release-${openstack_release}-${current_rpm_release}.noarch.rpm"
         return 0
     ;;
     *)

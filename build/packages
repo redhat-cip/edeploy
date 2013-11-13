@@ -34,6 +34,28 @@ add_epel_repository() {
   esac
 }
 
+add_satellite_repository() {
+  local dist=$1
+  local target=$2
+  case "$dist" in
+    redhat)
+      if [ -z "$SATELLITE_USERNAME" ] || [ -z "$SATELLITE_PASSWORD" ]; then
+        echo "You should provide SATELLITE_USERNAME and SATELLITE_PASSWORD to get a satellite support"
+        return
+      fi
+
+      install_packages $target rhn-setup
+      do_chroot $dir "rhnreg_ks --profilename=edeploy --username=$SATELLITE_USERNAME --password=$SATELLITE_PASSWORD"
+      do_chroot $dir "rhn-channel --add --channel=rhel-x86_64-server-optional-6 -u $SATELLITE_USERNAME -p $SATELLITE_PASSWORD"
+      install_packages $dir "yum-utils"
+      do_chroot $dir "yum-config-manager --enable rhel-6-server-optional-rpms"
+      update_system $dir
+    ;;
+  *)
+    ;;
+  esac
+}
+
 get_openstack_mirror() {
   local dist=$1
   openstack_release=$2

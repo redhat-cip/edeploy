@@ -356,24 +356,24 @@ while true; do
 
     IP_SET=$(ip -4 a  | grep -iw "inet" | grep -v "127.0.0.1" | wc -l)
     if [ "$IP_SET" -gt 0 ]; then
-    log "Found $IP_SET interfaces properly configured"
-    # We found at least once DHCP server so we can continue
-    # the install procedure
-    break
+        log "Found $IP_SET interfaces properly configured"
+        # We found at least once DHCP server so we can continue
+        # the install procedure
+        break
     fi
 
     RUN=$(( $RUN + 1 ))
     sleep 10
     if [ "$RUN" != "$MAX_RUN" ]; then
-      log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-      log "!! NO DHCP FOUND ! Waiting 10 seconds before trying again. !!"
-      log "!! ($RUN / $MAX_RUN)                                       !!"
-      log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        log "!! NO DHCP FOUND ! Waiting 10 seconds before trying again. !!"
+        log "!! ($RUN / $MAX_RUN)                                       !!"
+        log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
     else
-      log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-      log "!! NO DHCP FOUND after $RUN tries. Rebooting in 10 seconds !!"
-      log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-      give_up "!! DEBUG mode is set, let's give up as no DHCP server found"
+        log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        log "!! NO DHCP FOUND after $RUN tries. Rebooting in 10 seconds !!"
+        log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        give_up "!! DEBUG mode is set, let's give up as no DHCP server found"
     fi
 done
 }

@@ -165,7 +165,7 @@ update_system() {
             do_chroot $CHROOT apt-get upgrade -y
         ;;
         yum)
-            do_chroot $CHROOT yum update
+            do_chroot $CHROOT yum update -y
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in update_system()"
@@ -182,7 +182,7 @@ upgrade_system() {
         yum)
             # didn't really found something equivalent
             # Let's do a yum update so
-            do_chroot $CHROOT yum update
+            do_chroot $CHROOT yum update -y
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in update_system()"

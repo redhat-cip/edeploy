@@ -354,7 +354,7 @@ while true; do
     fi
     done
 
-    IP_SET=$(ip a  | grep -iw "inet" | grep -v "127.0.0.1" | wc -l)
+    IP_SET=$(ip -4 a  | grep -iw "inet" | grep -v "127.0.0.1" | wc -l)
     if [ "$IP_SET" -gt 0 ]; then
     log "Found $IP_SET interfaces properly configured"
     # We found at least once DHCP server so we can continue

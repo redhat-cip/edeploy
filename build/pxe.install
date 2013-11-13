@@ -43,11 +43,12 @@ dir=$DST2
 common_setup
 
 PACKAGES="python-netaddr ethtool sdparm"
-update_repositories $DST2
-install_packages $DST2 $PACKAGES
-clear_packages_cache $DST2
+add_epel_repository $dir
+update_repositories $dir
+install_packages $dir $PACKAGES
+clear_packages_cache $dir
 
-install_ib_if_needed $ORIG $DST2
+install_ib_if_needed $ORIG $dir
 
 #Starting here, we don't need the mount points anymore
 clean_mount_points

@@ -23,6 +23,17 @@ get_mirror() {
   esac
 }
 
+add_epel_repository() {
+  local dist=$1
+  case "$dist" in
+    centos|redhat)
+        install_packages $dir http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+    ;;
+  *)
+    ;;
+  esac
+}
+
 get_openstack_mirror() {
   local dist=$1
   openstack_release=$2

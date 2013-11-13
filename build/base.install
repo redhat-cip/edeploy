@@ -69,9 +69,7 @@ bootstrap() {
 
     local repository=$(get_mirror $dist)
 
-    mkdir -p "$target/dev" "$target/proc"
-    mount -obind /dev ${target}/dev
-    mount -obind /proc ${target}/proc
+    mount_fs
     # Use debootstrap for debian based distribution
     if [ "$(package_type)" = "deb" ]; then
         debootstrap --arch ${ARCH:=amd64} --variant=minbase $dist "$target" $repository
@@ -97,8 +95,6 @@ bootstrap() {
                         if [ -z $ISO_PATH ]; then
                             release_rpm_url="${REPOSITORY}/Packages/redhat-release-server-6Server-6.4.0.4.el6.x86_64.rpm"
                         else
-                            mkdir -p ${target}/repo
-                            mount -o loop ${ISO_PATH} "${target}/repo"
                             REPOSITORY="file://${target}/repo"
                             REPOSITORY_NEXTSTEP="file:///repo"
                             release_rpm_url="${target}/repo/Packages/redhat-release-server-6Server-6.4.0.4.el6.x86_64.rpm"

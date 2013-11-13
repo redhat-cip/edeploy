@@ -243,6 +243,23 @@ clear_trap() {
     trap - 0
 }
 
+mount_fs() {
+    for virtual_dir in /dev /dev/pts /proc; do
+        if [ ! -d ${target}/${virtual_dir} ]; then
+            mkdir -p ${target}/${virtual_dir}
+        fi
+        mount -obind ${virtual_dir} ${dir}/${virtual_dir}
+    done
+
+    # If we run with an ISO as loopback, we need to mount it
+    if [ ! -z $ISO_PATH ]; then
+        if [ ! -d ${target}/repo ]; then
+            mkdir -p ${target}/repo
+        fi
+        mount -o loop $ISO_PATH "${target}/repo"
+    fi
+}
+
 common_setup() {
     export LC_ALL=C
     # export these variables to let them be used by upgrade-from sub-scripts
@@ -270,8 +287,6 @@ common_setup() {
     # magical stuff to let kernel upgrade work
     mkdir -p "${dir}"/etc/default/grub.d
     echo 'exit 0' > "${dir}"/etc/default/grub.d/edeploy.cfg
-    mount -obind /dev ${dir}/dev
-    mount -obind /dev/pts ${dir}/dev/pts
-    mount -obind /proc ${dir}/proc
+    mount_fs
     trap cleanup 0
 }

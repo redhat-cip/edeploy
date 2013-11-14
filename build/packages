@@ -76,6 +76,7 @@ get_openstack_mirror() {
     ;;
     centos|redhat)
         current_rpm_release="undef"
+        cloud_init_release="0.7.2-2.el6"
         case "$openstack_release" in
             "havana")
                 current_rpm_release=7
@@ -87,7 +88,7 @@ get_openstack_mirror() {
                 fatal_error "Unsupported openstack release ($openstack_release) for $dist distribution"
             ;;
         esac
-        echo "http://rdo.fedorapeople.org/openstack-${openstack_release}/rdo-release-${openstack_release}-${current_rpm_release}.noarch.rpm"
+        echo "http://rdo.fedorapeople.org/openstack-${openstack_release}/rdo-release-${openstack_release}-${current_rpm_release}.noarch.rpm http://repos.fedorapeople.org/repos/openstack/cloud-init/epel-6/cloud-init-${cloud_init_release}.noarch.rpm"
         return 0
     ;;
     *)

@@ -230,7 +230,7 @@ cleanup() {
 
         rm -f ../../${ROLE}-${version}.edeploy
 
-        if [ ! -z "$NO_COMPRESSED_FILE" ]; then
+        if [ -z "$NO_COMPRESSED_FILE" ]; then
             tar c . | compress -9v > ../../${ROLE}-${version}.edeploy
         fi
     fi

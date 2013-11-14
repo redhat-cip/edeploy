@@ -31,9 +31,22 @@ check_binary() {
 }
 
 init_redhat_chroot() {
-    target=$1
-    release_rpm_url=$2
-    dist=$3
+    local target=$1
+    local release_rpm_url=$2
+    local dist=$3
+    local rpm_repository="$REPOSITORY"
+    local next_repository=""
+
+    if [ -z $REPOSITORY ] && [ -z $ISO_PATH ];then
+        fatal_error "You must set your repository in the variable REPOSITORY or the ISO path in the ISO_PATH variable."
+    fi
+
+    # If the ISO_PATH is set it means the repo is mounted in loopback
+    if [ ! -z "$ISO_PATH" ]; then
+        rpm_repository="file://${target}/repo"
+        next_repository="file:///repo"
+    fi
+
     if [ ! -f "${target}/etc/redhat-release" ]; then
         rpm --initdb --root="$target"
         rpm -ivh --root "$target" "$release_rpm_url"
@@ -44,7 +57,7 @@ init_redhat_chroot() {
             ;;
         "redhat")
             sed "0,/^enabled=/ s/enabled=0/enabled=1/" -i ${target}/etc/yum.repos.d/rhel-source.repo
-            sed "0,/^baseurl=/ s/baseurl=.*/baseurl=${REPOSITORY//\//\\/}/" -i ${target}/etc/yum.repos.d/rhel-source.repo
+            sed "0,/^baseurl=/ s/baseurl=.*/baseurl=${rpm_repository//\//\\/}/" -i ${target}/etc/yum.repos.d/rhel-source.repo
             ;;
     esac
     cp -f /etc/resolv.conf "$target/etc/"
@@ -57,8 +70,8 @@ init_redhat_chroot() {
 
     case "$dist" in
         "redhat")
-            if [ -n $REPOSITORY_NEXTSTEP ]; then
-                sed "0,/^baseurl=/ s/baseurl=.*/baseurl=${REPOSITORY_NEXTSTEP//\//\\/}/" -i ${target}/etc/yum.repos.d/rhel-source.repo
+            if [ ! -z "$next_repository" ]; then
+                sed "0,/^baseurl=/ s/baseurl=.*/baseurl=${next_repository//\//\\/}/" -i ${target}/etc/yum.repos.d/rhel-source.repo
             fi
             add_satellite_repository $dist $target
          ;;
@@ -84,21 +97,17 @@ bootstrap() {
             if [ "$(package_tool)" = "yum" ]; then
                 check_binary yum
                 check_binary rpm
+
                 case $dist in
                     centos)
                         release_rpm_url="http://mirror.centos.org/centos/6.4/os/x86_64/Packages/centos-release-6-4.el6.centos.10.x86_64.rpm"
                         init_redhat_chroot $target $release_rpm_url $dist
                         ;;
                     redhat)
-                        if [ -z $REPOSITORY ] && [ -z $ISO_PATH ];then
-                            fatal_error "You must set your RHEL repository in the variable REPOSITORY or the RHEL server ISO path in the ISO_PATH variable."
-                        fi
-                        if [ -z $ISO_PATH ]; then
-                            release_rpm_url="${REPOSITORY}/Packages/redhat-release-server-6Server-6.4.0.4.el6.x86_64.rpm"
-                        else
-                            REPOSITORY="file://${target}/repo"
-                            REPOSITORY_NEXTSTEP="file:///repo"
+                       if [ ! -z "$ISO_PATH" ]; then
                             release_rpm_url="${target}/repo/Packages/redhat-release-server-6Server-6.4.0.4.el6.x86_64.rpm"
+                        else
+                            release_rpm_url="${REPOSITORY}/Packages/redhat-release-server-6Server-6.4.0.4.el6.x86_64.rpm"
                         fi
                         init_redhat_chroot $target $release_rpm_url $dist
                         ;;

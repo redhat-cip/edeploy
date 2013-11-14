@@ -34,17 +34,13 @@ install_ib_if_needed $ORIG $dir
 
 case "$OS" in
   "Debian")
-    cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
-deb [trusted=1] http://cloud.pkgs.enovance.com/wheezy-grizzly/ grizzly main
-EOF
+    PACKAGES="openstack-proxy-node"
     ;;
   "Ubuntu")
-    cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
-deb [trusted=1] http://cloud.pkgs.enovance.com/precise-grizzly/ grizzly main
-EOF
+    PACKAGES="openstack-proxy-node"
     ;;
   "CentOS"|"RedHatEnterpriseServer")
-    echo 'havana repo already set in openstack-common'
+    PACKAGES="openstack-proxy-node"
     ;;
   *)
     fatal_error "Release ($RELEASE) not supported by openstack-controller"
@@ -52,5 +48,5 @@ EOF
 esac
 
 update_repositories $dir
-install_packages $dir "openstack-proxy-node"
+install_packages $dir "$PACKAGES"
 clear_packages_cache $dir

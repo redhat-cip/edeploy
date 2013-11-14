@@ -93,7 +93,7 @@ EOF
 case $OS in
     "Ubuntu")
  configure_cloudinit
- do_chroot ${dir} wget "http://www.opscode.com/chef/download-server?p=ubuntu&pv=${RELEASE}&m=x86_64&v=latest" -O /tmp/chef-server.deb
+ do_chroot ${dir} wget --no-verbose "http://www.opscode.com/chef/download-server?p=ubuntu&pv=${RELEASE}&m=x86_64&v=latest" -O /tmp/chef-server.deb
  do_chroot ${dir} dpkg -i /tmp/chef-server.deb
  mkdir -p ${dir}/etc/chef-server
  cat > ${dir}/etc/chef-server/chef-server.rb <<EOF

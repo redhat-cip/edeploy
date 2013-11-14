@@ -159,7 +159,7 @@ install_ib_if_needed() {
                 # ubuntu precise needs a package to be backported
                 LIBMLX=libmlx4-1_1.0.4-1_amd64.deb
                 cd $CHROOT;
-                    wget http://us.archive.ubuntu.com/ubuntu/ubuntu/pool/universe/libm/libmlx4/$LIBMLX
+                    wget --no-verbose http://us.archive.ubuntu.com/ubuntu/ubuntu/pool/universe/libm/libmlx4/$LIBMLX
                 cd -
                 chroot "$CHROOT" dpkg -i /$LIBMLX
                 rm -rf $CHROOT/$LIBMLX

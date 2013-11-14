@@ -183,7 +183,7 @@ install_hp_raid_cli_tool() {
     if [ "$(package_type)" = "deb" ]; then
         local package_name=hpacucli_9.40.1-1._amd64.deb
         if [ ! -r $target/tmp/$package_name ]; then
-            wget http://downloads.linux.hp.com/SDR/downloads/MCP/pool/non-free/$package_name -O $target/tmp/$package_name
+            wget --no-verbose http://downloads.linux.hp.com/SDR/downloads/MCP/pool/non-free/$package_name -O $target/tmp/$package_name
         fi
         install_packages $target "python-pexpect"
         do_chroot $target dpkg -i /tmp/$package_name

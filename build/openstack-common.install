@@ -39,7 +39,7 @@ prepare_packages () {
     case "$OS" in
         "Debian")
             local repository=$(get_mirror $DIST)
-            do_chroot ${dir} wget http://apt.puppetlabs.com/puppetlabs-release-$RELEASE.deb
+            do_chroot ${dir} wget --no-verbose http://apt.puppetlabs.com/puppetlabs-release-$RELEASE.deb
             do_chroot ${dir} dpkg -i puppetlabs-release-$RELEASE.deb
             do_chroot ${dir} rm puppetlabs-release-$RELEASE.deb
             do_chroot ${dir} apt-key adv --recv-keys --keyserver keyserver.ubuntu.com E52660B15D964F0B
@@ -49,7 +49,7 @@ EOF
             get_openstack_mirror $DIST $OS_VERS > ${dir}/etc/apt/sources.list.d/openstack-$RELEASE-$OS-VERS.list
         ;;
         "Ubuntu")
-            do_chroot ${dir} wget http://apt.puppetlabs.com/puppetlabs-release-$RELEASE.deb
+            do_chroot ${dir} wget --no-verbose http://apt.puppetlabs.com/puppetlabs-release-$RELEASE.deb
             do_chroot ${dir} dpkg -i puppetlabs-release-$RELEASE.deb
             do_chroot ${dir} rm puppetlabs-release-$RELEASE.deb
             do_chroot ${dir} apt-key adv --recv-keys --keyserver keyserver.ubuntu.com E52660B15D964F0B
@@ -81,9 +81,9 @@ case "$OS" in
         ;;
     "Ubuntu")
         # Todo(EmilienM): Move cloud-init into backports repo to have last release properly
-        do_chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/c/cloud-init/cloud-init_0.7.3-0ubuntu2_all.deb
-        do_chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/p/python-json-patch/python-json-patch_1.0-2_all.deb
-        do_chroot ${dir} wget http://security.ubuntu.com/ubuntu/pool/main/p/python-json-pointer/python-json-pointer_1.0-1ubuntu2_all.deb
+        do_chroot ${dir} wget --no-verbose http://security.ubuntu.com/ubuntu/pool/main/c/cloud-init/cloud-init_0.7.3-0ubuntu2_all.deb
+        do_chroot ${dir} wget --no-verbose http://security.ubuntu.com/ubuntu/pool/main/p/python-json-patch/python-json-patch_1.0-2_all.deb
+        do_chroot ${dir} wget --no-verbose http://security.ubuntu.com/ubuntu/pool/main/p/python-json-pointer/python-json-pointer_1.0-1ubuntu2_all.deb
         do_chroot ${dir} dpkg -i cloud-init_0.7.3-0ubuntu2_all.deb  || true
         do_chroot ${dir} dpkg -i python-json-patch_1.0-2_all.deb  || true
         do_chroot ${dir} dpkg -i python-json-pointer_1.0-1ubuntu2_all.deb  || true

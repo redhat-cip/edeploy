@@ -66,7 +66,7 @@ Configure the PXE boot like that::
  	LOCALBOOT 0
 
 The ``ONFAILURE`` variable if set to ``console`` on the kernel command line, it
-enables more debugging, the start of an ssh server on the configured
+enables more debugging, the start of an ssh server (port 2222) on the configured
 system and the launch of an interactive shell at the end of the
 installation, three possible values :
 ``reboot`` mode will reboot the server once installed.

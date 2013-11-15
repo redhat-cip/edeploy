@@ -233,7 +233,7 @@ log "###########################################################################
 umount /ahcexport
 save_log
 
-case $ONSUCCESS)
+case "$ONSUCCESS" in
     "reboot")
         log "Automatic rebooting as required by ONSUCCESS"
         umount -a

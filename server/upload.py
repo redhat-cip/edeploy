@@ -350,7 +350,7 @@ def main():
         print                                   # blank line, end of headers
 
         # If the filename ends with a .log, we need to process it as a log file
-        if ('file' in form) and (form['file'].filename.endswith('.log')):
+        if ('file' in form) and (form['file'].filename.endswith('.log.gz')):
             logitem = form['file']
             logfile = logitem.file
             try:

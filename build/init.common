@@ -66,6 +66,8 @@ upload_log() {
     if [ "$UPLOAD_LOG" != "1" ]; then
         return
     fi
+
+    log "Uploading log to server ${SERV}"
     vendor=$(dmidecode -s system-manufacturer | tr ' ' '-' | tr -d '\n')
     product=$(dmidecode -s system-product-name | tr ' ' '-' | tr -d '\n')
     serial=$(dmidecode -s system-serial-number | tr ' ' '-' | tr -d '\n')
@@ -86,8 +88,9 @@ upload_log() {
     dmesg >> /${log_file}
     echo "############################" >> /${log_file}
 
+    cd /; gzip -9 /log; mv /log.gz /${log_file}.gz
     # Uploading log file
-    curl -s -S -o/log.stats -F file=@/${log_file} http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py || true
+    curl -s -S -o/log.stats -F file=@/${log_file}.gz http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py || true
 }
 
 ################################################################################

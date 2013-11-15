@@ -131,12 +131,13 @@ install_base_packages() {
     # In such case, the resolv.conf is wrong and prevents apt (and all networking-depedent stuff from working)
     # So let's copy the current one to insure the setup is good
     cp -f /etc/resolv.conf "$target/etc/"
-    PACKAGES="pciutils rsyslog lvm2"
-    DEB_PKG=" wget sudo locales openssh-server parted net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase dmidecode bash curl hdparm xfsprogs acpid ifenslave kexec-tools lsb-release"
+    local packages=""
+    local cross_distro_packages="pciutils rsyslog lvm2"
+    local deb_packages=" wget sudo locales openssh-server parted net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase dmidecode bash curl hdparm xfsprogs acpid ifenslave kexec-tools lsb-release"
     local repository=$(get_mirror $dist)
     case $dist in
         precise)
-            PACKAGES="$PACKAGES linux-image-generic-lts-raring linux-headers-generic-lts-raring iputils-ping linux-firmware grub2 $DEB_PKG"
+            packages="$cross_distro_packages linux-image-generic-lts-raring linux-headers-generic-lts-raring iputils-ping linux-firmware grub2 $deb_packages"
             echo "deb $repository precise main" > ${target}/etc/apt/sources.list
             echo "deb $repository precise-updates main" >> ${target}/etc/apt/sources.list
             echo "deb $repository precise universe" >> ${target}/etc/apt/sources.list
@@ -145,13 +146,13 @@ install_base_packages() {
             echo "deb http://security.ubuntu.com/ubuntu precise-security universe" >> ${target}/etc/apt/sources.list
             ;;
         wheezy)
-            PACKAGES="$PACKAGES linux-image-amd64 ipmitool htop acpi-support-base inetutils-ping firmware-bnx2 $DEB_PKG"
+            packages="$cross_distro_packages linux-image-amd64 ipmitool htop acpi-support-base inetutils-ping firmware-bnx2 $deb_packages"
             echo "deb $repository wheezy non-free" > ${target}/etc/apt/sources.list.d/nonfree.list
             echo "deb http://security.debian.org/ wheezy/updates main" >  ${target}/etc/apt/sources.list.d/updates.list
             echo "deb $repository wheezy-updates main" >> ${target}/etc/apt/sources.list.d/updates.list
             ;;
         centos|redhat)
-            PACKAGES="$PACKAGES passwd kernel redhat-lsb-core wget sudo openssh-server parted coreutils perl e2fsprogs net-tools initscripts upstart vconfig dhclient grub grubby kbd rsync dmidecode bash curl hdparm xfsprogs acpid pciutils module-init-tools iproute"
+            packages="$cross_distro_packages passwd kernel redhat-lsb-core wget sudo openssh-server parted coreutils perl e2fsprogs net-tools initscripts upstart vconfig dhclient grub grubby kbd rsync dmidecode bash curl hdparm xfsprogs acpid pciutils module-init-tools iproute"
             ;;
         *)
             echo "unsupported distribution: $dist" 2>&1
@@ -165,12 +166,12 @@ install_base_packages() {
     if [ "$(package_type)" = "deb" ]; then
         mkdir -p "${target}"/etc/default/grub.d
         echo 'exit 0' > "${target}"/etc/default/grub.d/edeploy.cfg
-        install_packages $target "$PACKAGES"
+        install_packages $target "$packages"
         echo  "en_US.utf8 UTF-8" >> $target/etc/locale.gen
         do_chroot "$target" locale-gen
         rm -f "${target}"/etc/default/grub.d/edeploy.cfg
     else if [ "$(package_type)" = "rpm" ]; then
-            install_packages $target "$PACKAGES"
+            install_packages $target "$packages"
             # bring lshw from epel
             [ -f "$target/usr/sbin/lshw" ] || install_packages "$target" https://dl.fedoraproject.org/pub/epel/6/x86_64/lshw-B.02.14-3.el6.x86_64.rpm
          fi

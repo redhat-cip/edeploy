@@ -39,12 +39,14 @@ do_reboot() {
 }
 
 do_halt() {
+    upload_log
     sync
     sleep 5
     poweroff -f
 }
 
 do_console() {
+    upload_log
     exec /bin/bash -i
 }
 

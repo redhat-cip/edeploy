@@ -261,7 +261,6 @@ fi
 
 check_variables
 
-check_binary dh_testdir
 check_binary wget
 check_binary debootstrap
 check_binary chroot

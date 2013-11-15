@@ -71,6 +71,22 @@ upload_log() {
     serial=$(dmidecode -s system-serial-number | tr ' ' '-' | tr -d '\n')
     log_file="${vendor}-${product}-${serial}.log"
     ln -sf /log /${log_file}
+
+    # Adding content of configure file to the log file we upload
+    # This is interesting when no console can be taken on the server while the /configure fails
+    echo "##### Content of /configure #####" >> /${log_file}
+    cat /configure >> ${log_file}
+    echo "#################################" >> /${log_file}
+
+    echo >> /${log_file}
+
+    # Adding also the dmesg to the log we upload
+    # Could be useful to grab some kernel messages or device errors
+    echo "##### Content of dmesg #####" >> /${log_file}
+    dmesg >> /${log_file}
+    echo "############################" >> /${log_file}
+
+    # Uploading log file
     curl -s -S -o/log.stats -F file=@/${log_file} http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py || true
 }
 

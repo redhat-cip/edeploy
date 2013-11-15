@@ -75,6 +75,13 @@ upload_log() {
     log_file="${vendor}-${product}-${serial}.log.gz"
     log "Uploading log ($log_file) to server ${SERV}"
 
+    # Logging the command line to the log file
+    # This is useful to find the context of this execution
+    echo >> /log
+    echo "##### Kernel command line #####" >> /log
+    cat /proc/cmdline >> /log
+    echo "###############################" >> /log
+
     # Adding content of configure file to the log file we upload
     # This is interesting when no console can be taken on the server while the /configure fails
     echo >> /log

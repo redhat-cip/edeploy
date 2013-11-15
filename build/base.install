@@ -172,8 +172,6 @@ install_base_packages() {
         rm -f "${target}"/etc/default/grub.d/edeploy.cfg
     else if [ "$(package_type)" = "rpm" ]; then
             install_packages $target "$packages"
-            # bring lshw from epel
-            [ -f "$target/usr/sbin/lshw" ] || install_packages "$target" https://dl.fedoraproject.org/pub/epel/6/x86_64/lshw-B.02.14-3.el6.x86_64.rpm
          fi
     fi
 }

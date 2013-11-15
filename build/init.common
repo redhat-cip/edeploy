@@ -171,6 +171,10 @@ create_keys() {
         "$hostkeys" /etc/ssh/ssh_host_ecdsa_key -t ecdsa
 }
 
+update_ssh_port() {
+    sed -i -e 's/^.*Port.*$/Port 2222/' /etc/ssh/sshd_config
+}
+
 give_up() {
     log "$@"
     save_log

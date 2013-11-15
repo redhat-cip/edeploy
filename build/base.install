@@ -131,7 +131,7 @@ install_base_packages() {
     # In such case, the resolv.conf is wrong and prevents apt (and all networking-depedent stuff from working)
     # So let's copy the current one to insure the setup is good
     cp -f /etc/resolv.conf "$target/etc/"
-    PACKAGES="pciutils rsyslog"
+    PACKAGES="pciutils rsyslog lvm2"
     DEB_PKG=" wget sudo locales openssh-server parted net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase dmidecode bash curl hdparm xfsprogs acpid ifenslave kexec-tools lsb-release"
     local repository=$(get_mirror $dist)
     case $dist in

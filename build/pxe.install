@@ -55,6 +55,8 @@ install_ib_if_needed $ORIG $dir
 #Starting here, we don't need the mount points anymore
 clean_mount_points
 
+save_package_list $dir
+
 rsync -au --delete-excluded --delete --exclude /boot/ \
     --exclude 'initrd*' \
     --exclude 'lib/modules/*/kernel/drivers/bluetooth' \

@@ -44,6 +44,8 @@ HTTP=
 
 INST=$(TOP)/install/$(VERS)
 META=$(TOP)/metadata/$(VERS)
+MAKEFILE_TARGET=$@
+export MAKEFILE_TARGET
 
 all: $(INST)/$(IMG) $(INST)/mysql.done
 

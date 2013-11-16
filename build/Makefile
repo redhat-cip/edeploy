@@ -83,7 +83,7 @@ $(INST)/openstack-common.done: openstack-common.install $(INST)/base.done
 
 openstack-controller: $(INST)/openstack-controller.done
 $(INST)/openstack-controller.done: openstack-controller.install $(INST)/openstack-common.done
-	./openstack-controller.install $(INST)/base $(INST)/openstack-controller $(VERS)
+	./openstack-controller.install $(INST)/openstack-common $(INST)/openstack-controller $(VERS)
 	touch $(INST)/openstack-controller.done
 
 openstack-swift-proxy: $(INST)/openstack-swift-proxy.done

@@ -31,10 +31,10 @@ except:
     print 'We can continue to see if we can create everything else'
 
 print '# Creating System Array'
-sys = cli.ctrl_create_ld(slot, (disk1, disk2), raid='1')
-print "# -> %s" % sys
+bootable_disk = cli.ctrl_create_ld(slot, (disk1, disk2), raid='1')
+print "# -> %s" % bootable_disk
 print "Creating Partitions"
-run('dd if=/dev/zero of=%s bs=1M count=100' % sys)
+run('dd if=/dev/zero of=%s bs=1M count=100' % bootable_disk)
 
 print '# Creating Data Array'
 data = cli.ctrl_create_ld(slot, (disk3, disk4, disk5, disk6, disk7, disk8, disk9, disk10, disk11, disk12, disk13, disk14), raid='1+0')
@@ -42,28 +42,28 @@ print "# -> %s" % data
 print "Creating Partitions"
 run('dd if=/dev/zero of=%s bs=1M count=100' % data)
 
-run('hdparm -z %s' % sys)
+run('hdparm -z %s' % bootable_disk)
 run('hdparm -z %s' % data)
 
-run('parted -a optimal --script %s mktable gpt' % sys)
-run('parted -a optimal --script %s mkpart primary 0%% 10' % sys)
+run('parted -a optimal --script %s mktable gpt' % bootable_disk)
+run('parted -a optimal --script %s mkpart primary 0%% 10' % bootable_disk)
 
-run('parted --script %s set 1 boot on' % sys)
-run('parted --script %s set 1 bios_grub on' % sys)
+run('parted --script %s set 1 boot on' % bootable_disk)
+run('parted --script %s set 1 bios_grub on' % bootable_disk)
 
-run('parted -a optimal --script %s mkpart primary ext4 10 512 ' % sys)
-run('parted -a optimal --script %s mkpart primary ext4 513 24000 ' % sys)
-run('parted -a optimal --script %s mkpart primary ext4 24001 100%%' % sys)
+run('parted -a optimal --script %s mkpart primary ext4 10 512 ' % bootable_disk)
+run('parted -a optimal --script %s mkpart primary ext4 513 24000 ' % bootable_disk)
+run('parted -a optimal --script %s mkpart primary ext4 24001 100%%' % bootable_disk)
 
-run('parted --script %s align-check optimal 1' % sys)
-run('parted --script %s align-check optimal 2' % sys)
-run('parted --script %s align-check optimal 3' % sys)
-run('parted --script %s align-check optimal 4' % sys)
+run('parted --script %s align-check optimal 1' % bootable_disk)
+run('parted --script %s align-check optimal 2' % bootable_disk)
+run('parted --script %s align-check optimal 3' % bootable_disk)
+run('parted --script %s align-check optimal 4' % bootable_disk)
 
 print "Creating FS"
-run('mkfs.ext4 -L boot -m 0 %s%d' % (sys,2))
-run('mkswap -f %s%d' % (sys,3))
-run('mkfs.ext4 -L slash -m 0 -O extent -E stride=32,stripe_width=32 %s%d' % (sys,4))
+run('mkfs.ext4 -L boot -m 0 %s%d' % (bootable_disk,2))
+run('mkswap -f %s%d' % (bootable_disk,3))
+run('mkfs.ext4 -L slash -m 0 -O extent -E stride=32,stripe_width=32 %s%d' % (bootable_disk,4))
 run('mount LABEL=slash /chroot')
 run('mkdir /chroot/etc /chroot/boot')
 run('mount LABEL=boot /chroot/boot')
@@ -140,4 +140,4 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=0 --word=8 --parity=no --stop=
 #GRUB_INIT_TUNE="480 440 1"
 ''')
 
-set_role('backup', 'D7-1.0.1', sys)
+set_role('backup', 'D7-1.0.1', bootable_disk)

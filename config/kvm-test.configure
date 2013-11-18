@@ -1,11 +1,11 @@
 
 # -*- python -*-
 
-disk1 = '/dev/' + var['disk']
+bootable_disk = '/dev/' + var['disk']
 
 run('dmsetup remove_all || /bin/true')
 
-for disk, path in ((disk1, '/chroot'), ):
+for disk, path in ((bootable_disk, '/chroot'), ):
     run('parted -a optimal --script %s mktable gpt' % disk)
     run('parted -a optimal --script %s mkpart primary 0%% 10' % disk)
     run('parted --script %s set 1 boot on' % disk)
@@ -71,4 +71,4 @@ open('/post_rsync/etc/hostname','w').write('''%(hostname)s
 ipmi.setup_user(var['ipmi-fake-channel'],'root','pastouche')
 ipmi.setup_network(var['ipmi-fake-channel'],var['ip-ipmi'], var['netmask-ipmi'],var['gateway-ipmi'])
 
-set_role('mysql', 'D7-F.1.0.0', disk1)
+set_role('mysql', 'D7-F.1.0.0', bootable_disk)

@@ -1,12 +1,12 @@
 
 # -*- python -*-
 
-disk1 = '/dev/' + var['disk']
+bootable_disk = '/dev/' + var['disk']
 disk2 = '/dev/' + var['disk2']
 
 run('dmsetup remove_all || /bin/true')
 
-for disk, path in ((disk1, '/chroot'), (disk2, '/chroot/var')):
+for disk, path in ((bootable_disk, '/chroot'), (disk2, '/chroot/var')):
     run('parted -s %s mklabel msdos' % disk)
     run('parted -s %s mkpart primary ext2 0%% 100%%' % disk)
     run('dmsetup remove_all || /bin/true')
@@ -16,4 +16,4 @@ for disk, path in ((disk1, '/chroot'), (disk2, '/chroot/var')):
 fstab = open('/post_rsync/etc/fstab', 'a')
 fstab.write('%s1 /var ext4 defaults 0 2\n' % disk2)
 
-set_role('mysql', 'U12.04-F.1.0.0', disk1)
+set_role('mysql', 'U12.04-F.1.0.0', bootable_disk)

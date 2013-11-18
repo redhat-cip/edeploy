@@ -18,6 +18,7 @@ install-www:
 	mkdir -p $(WWW_HARDWARE_DIR) && chmod 755 $(WWW_HARDWARE_DIR)
 	mkdir -p $(ETC_DIR) && chmod 755 $(ETC_DIR)
 	mkdir -p $(ANSIBLE_DIR) && chmod 755 $(ANSIBLE_DIR)
+	if [ -f $(ETC_DIR)/edeploy.conf ]; then cp -f $(ETC_DIR)/edeploy.conf $(ETC_DIR)/edeploy.conf.backup; fi
 	install -m 644 server/edeploy.conf $(ETC_DIR)/
 	install -m 755 server/upload.py server/matcher.py $(WWW_DIR)/
 	install -m 644 config/*.specs $(WWW_CONFIG_DIR)/

@@ -231,7 +231,7 @@ cleanup() {
         echo "$last_command returned $ret"
     fi
     rm -f "${dir}"/etc/default/grub.d/edeploy.cfg
-    if [ $ret = 0 ]; then
+    if [ "$ret" = "0" ]; then
         case "$MAKEFILE_TARGET" in
             pxe|health-check)
                 clean_mount_points
@@ -247,6 +247,8 @@ cleanup() {
                 fi
             ;;
         esac
+    else
+        clean_mount_points
     fi
     if [ "$ret" != "0" ]; then
         echo "###########"

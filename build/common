@@ -231,14 +231,15 @@ cleanup() {
         echo "$last_command returned $ret"
     fi
     rm -f "${dir}"/etc/default/grub.d/edeploy.cfg
-    clean_mount_points
     if [ $ret = 0 ]; then
         case "$MAKEFILE_TARGET" in
             pxe|health-check)
+                clean_mount_points
             ;;
             *)
                 clear_packages_cache $dir
                 save_package_list $dir
+                clean_mount_points
                 rm -f ${INST}/../${ROLE}-${version}.edeploy
                 cd ${dir}
                 if [ -z "$NO_COMPRESSED_FILE" ]; then

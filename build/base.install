@@ -146,7 +146,7 @@ install_base_packages() {
             echo "deb http://security.ubuntu.com/ubuntu precise-security universe" >> ${target}/etc/apt/sources.list
             ;;
         wheezy)
-            packages="$cross_distro_packages linux-image-amd64 ipmitool htop acpi-support-base inetutils-ping firmware-bnx2 $deb_packages"
+            packages="$cross_distro_packages linux-image-amd64 ipmitool libui-dialog-perl htop acpi-support-base inetutils-ping firmware-bnx2 $deb_packages"
             echo "deb $repository wheezy non-free" > ${target}/etc/apt/sources.list.d/nonfree.list
             echo "deb http://security.debian.org/ wheezy/updates main" >  ${target}/etc/apt/sources.list.d/updates.list
             echo "deb $repository wheezy-updates main" >> ${target}/etc/apt/sources.list.d/updates.list

@@ -250,6 +250,8 @@ cleanup() {
                 tar c . | compress -9v > ${INST}/../${ROLE}-${version}.edeploy
             fi
         fi
+    else
+        clean_mount_points
     fi
 
     if [ "$ret" != "0" ]; then

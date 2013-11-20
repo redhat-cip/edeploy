@@ -244,6 +244,9 @@ cleanup() {
         echo "END OF TRAP"
         echo "###########"
     fi
+
+    clear_trap
+    exit $ret
 }
 
 clear_trap() {

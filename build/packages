@@ -34,6 +34,39 @@ add_epel_repository() {
   esac
 }
 
+unregister_satellite() {
+    local dist=$1
+    local target=$2
+    local builddir=$(dirname $0)
+    local cmd=$builddir/remove_system_on_satellite
+
+    # Let's to the basic tests here
+    # This have only a meaning for redhat systems
+    case "$dist" in
+        redhat)
+
+        # Let's remove the systemid from the chroot
+        if [ -f $target/etc/sysconfig/rhn/systemid ]; then
+            rm -f $target/etc/sysconfig/rhn/systemid || fatal_error "Cannot delete systemid in unregister_satellite()"
+        fi
+
+        if [ ! -x $cmd ]; then
+            fatal_error "$cmd is mandatory to remove the satellite repository"
+        fi
+        # Let's be sure that delete-old-systems-interactive can be run on the system
+        $cmd 2>&1 | grep -qi failed && fatal_error "$cmd is missing dependencies"
+        ;;
+        *)
+        return
+        ;;
+    esac
+
+    $cmd --system=edeploy --user=$SATELLITE_USERNAME --password=$SATELLITE_PASSWORD
+    if [ "$?" != "0" ]; then
+        echo "Failed at removing system from satellite"
+    fi
+}
+
 add_satellite_repository() {
   local dist=$1
   local target=$2

@@ -73,7 +73,6 @@ init_redhat_chroot() {
             if [ ! -z "$next_repository" ]; then
                 sed "0,/^baseurl=/ s/baseurl=.*/baseurl=${next_repository//\//\\/}/" -i ${target}/etc/yum.repos.d/rhel-source.repo
             fi
-            add_satellite_repository $dist $target
          ;;
     esac
 }

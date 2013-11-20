@@ -28,6 +28,9 @@ ORIG=$(cd $(dirname $0); pwd)
 
 ROLE=pxe
 
+# This is a stripped target as per rsync
+export STRIPPED_TARGET=1
+
 . ${ORIG}/common
 
 if [ ! -d "$SRC" -o -z "$DST" -o -z "$IMG" -o -z "$vers" ]; then

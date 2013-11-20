@@ -1,0 +1,63 @@
+#!/usr/bin/perl
+
+use Getopt::Long;
+use Pod::Usage;
+use warnings;
+use strict;
+use Frontier::Client;
+
+my $URL  = 'https://rhn.redhat.com/rpc/api';
+my ($serverID);
+my %options;
+my $user = '';
+my $pass = '';
+my $system_to_delete = '';
+
+GetOptions(\%options,'user=s' => \$user, 'password=s'=>\$pass, "system=s"=>\$system_to_delete) or pod2usage(1);
+
+pod2usage(1) if not $user;
+pod2usage(1) if not $pass;
+pod2usage(1) if not $system_to_delete;
+
+printf "About to delete system %s (user=%s password=%s)\n", $system_to_delete, $user,$pass;
+
+my $client = new Frontier::Client(url => $URL);
+my $session = $client->call('auth.login', $user, $pass);
+my $systems = $client->call('system.listUserSystems', $session);
+
+foreach my $system (@$systems) {
+    print "Found $system->{'name'}\n";
+    if ($system->{'name'} =~ /$system_to_delete/) {
+        $serverID = $system->{'id'};
+    }
+}
+
+die "No instance of server $system_to_delete found " if ! $serverID;
+
+my $deleted = $client->call('system.deleteSystems', $session, $serverID);
+$client->call('auth.logout', $session);
+
+if ($deleted) {
+    print "Server ".$system_to_delete." has been deleted\n";
+    exit 0;
+}
+else {
+    die "Unable to delete server: ".$system_to_delete."\n";
+}
+
+__END__
+
+=head1 NAME
+remove_system_on_satellite
+
+=head1 SYNOPSIS
+
+deleteRHN [options] [file ...]
+
+Options:
+
+    -user       rhn username
+    -password   rhn password
+    -system     system name to delete
+
+=head1 DESCRIPTION

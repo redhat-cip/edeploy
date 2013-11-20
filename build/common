@@ -231,25 +231,27 @@ cleanup() {
         echo "$last_command returned $ret"
     fi
     rm -f "${dir}"/etc/default/grub.d/edeploy.cfg
+
     if [ "$ret" = "0" ]; then
-        case "$MAKEFILE_TARGET" in
-            pxe|health-check)
-                clean_mount_points
-            ;;
-            *)
-                clear_packages_cache $dir
-                save_package_list $dir
-                clean_mount_points
-                rm -f ${INST}/../${ROLE}-${version}.edeploy
-                cd ${dir}
-                if [ -z "$NO_COMPRESSED_FILE" ]; then
-                    tar c . | compress -9v > ${INST}/../${ROLE}-${version}.edeploy
-                fi
-            ;;
-        esac
-    else
+        if [ -z "$STRIPPED_TARGET" ]; then
+            clear_packages_cache $dir
+            save_package_list $dir
+        fi
+
         clean_mount_points
+
+        # Let's remove any trace of a satellite configuration
+        unregister_satellite $DIST $dir
+
+        if [ -z "$STRIPPED_TARGET" ]; then
+            rm -f ${INST}/../${ROLE}-${version}.edeploy
+            cd ${dir}
+            if [ -z "$NO_COMPRESSED_FILE" ]; then
+                tar c . | compress -9v > ${INST}/../${ROLE}-${version}.edeploy
+            fi
+        fi
     fi
+
     if [ "$ret" != "0" ]; then
         echo "###########"
         echo "END OF TRAP"
@@ -279,6 +281,7 @@ mount_fs() {
 }
 
 common_setup() {
+    trap cleanup 0
     export LC_ALL=C
     # export these variables to let them be used by upgrade-from sub-scripts
     export OS=$(do_chroot ${dir} lsb_release -i -s)
@@ -306,5 +309,6 @@ common_setup() {
     mkdir -p "${dir}"/etc/default/grub.d
     echo 'exit 0' > "${dir}"/etc/default/grub.d/edeploy.cfg
     mount_fs
-    trap cleanup 0
+
+    add_satellite_repository $DIST $dir
 }

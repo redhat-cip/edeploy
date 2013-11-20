@@ -203,21 +203,6 @@ clean_mount_points() {
     return 0
 }
 
-save_package_list() {
-local directory=$1
-case $(package_type) in
-    "deb")
-        do_chroot ${directory} dpkg -l > ${INST}/${ROLE}.packages
-     ;;
-     "rpm")
-        do_chroot ${directory} rpm -qa > ${INST}/${ROLE}.packages
-     ;;
-     *)
-        fatal_error "Unsupported package_type ($package_type) in save_package_list()"
-     ;;
-esac
-}
-
 # Called to clean packages, temporary files and to create the compressed archive
 # usually by a "trap cleanup 0" in a script
 cleanup() {

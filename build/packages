@@ -23,6 +23,21 @@ get_mirror() {
   esac
 }
 
+save_package_list() {
+local directory=$1
+case $(package_type) in
+    "deb")
+        do_chroot ${directory} dpkg -l > ${INST}/${ROLE}.packages
+     ;;
+     "rpm")
+        do_chroot ${directory} rpm -qa > ${INST}/${ROLE}.packages
+     ;;
+     *)
+        fatal_error "Unsupported package_type ($package_type) in save_package_list()"
+     ;;
+esac
+}
+
 add_epel_repository() {
   local dist=$1
   case "$dist" in

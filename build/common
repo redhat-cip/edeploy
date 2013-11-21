@@ -207,6 +207,7 @@ clean_mount_points() {
 # usually by a "trap cleanup 0" in a script
 cleanup() {
     ret=$?
+    clear_trap
     set +e
     last_command=$BASH_COMMAND
     if [ "$ret" != "0" ]; then
@@ -245,7 +246,6 @@ cleanup() {
         echo "###########"
     fi
 
-    clear_trap
     exit $ret
 }
 

@@ -104,9 +104,9 @@ bootstrap() {
                         ;;
                     redhat)
                        if [ ! -z "$ISO_PATH" ]; then
-                            release_rpm_url="${target}/repo/Packages/redhat-release-server-6Server-6.4.0.4.el6.x86_64.rpm"
+                            release_rpm_url="${target}/repo/Packages/redhat-release-server-6Server-6.5.0.1.el6.x86_64.rpm"
                         else
-                            release_rpm_url="${REPOSITORY}/Packages/redhat-release-server-6Server-6.4.0.4.el6.x86_64.rpm"
+                            release_rpm_url="${REPOSITORY}/Packages/redhat-release-server-6Server-6.5.0.1.el6.x86_64.rpm"
                         fi
                         init_redhat_chroot $target $release_rpm_url $dist
                         ;;

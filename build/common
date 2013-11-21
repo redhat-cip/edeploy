@@ -217,6 +217,9 @@ cleanup() {
     fi
     rm -f "${dir}"/etc/default/grub.d/edeploy.cfg
 
+    # Let's remove any trace of a satellite configuration
+    unregister_satellite $DIST $dir
+
     if [ "$ret" = "0" ]; then
         if [ -z "$STRIPPED_TARGET" ]; then
             clear_packages_cache $dir
@@ -224,9 +227,6 @@ cleanup() {
         fi
 
         clean_mount_points
-
-        # Let's remove any trace of a satellite configuration
-        unregister_satellite $DIST $dir
 
         if [ -z "$STRIPPED_TARGET" ]; then
             rm -f ${INST}/../${ROLE}-${version}.edeploy

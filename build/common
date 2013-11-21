@@ -129,7 +129,7 @@ EOF
     #Grub will be updates/installed when eDeploy will install it on the real server
     sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="intel_iommu=on"/g' $CHROOT/etc/default/grub
 
-    for mydir in /proc /dev/pts /sys /dev/ /run; do
+    for mydir in /proc /sys /run; do
         umount $CHROOT/$mydir
     done
 
@@ -254,12 +254,16 @@ clear_trap() {
 }
 
 mount_fs() {
-    for virtual_dir in /dev /dev/pts /proc; do
+    for virtual_dir in /proc; do
         if [ ! -d ${dir}/${virtual_dir} ]; then
             mkdir -p ${dir}/${virtual_dir}
         fi
         mount -obind ${virtual_dir} ${dir}/${virtual_dir}
     done
+
+    # Let's create a copy of the current /dev
+    mkdir -p ${dir}/dev/pts
+    rsync -a --delete-before /dev/ ${dir}/dev/
 
     # If we run with an ISO as loopback, we need to mount it
     if [ ! -z $ISO_PATH ]; then

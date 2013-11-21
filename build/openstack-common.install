@@ -160,7 +160,7 @@ case $OS in
         do_chroot ${dir} sed -e \'s/START=yes/START=no/\' -i /etc/default/puppet
     ;;
     "CentOS"|"RedHatEnterpriseServer")
-       if [ $CODENAME == "6.4" ]; then
+       if [ "$(get_redhat_major_version $CODENAME)" == "6" ]; then
            packages="augeas openssh-server wget"
            install_packages $dir "$packages"
        fi

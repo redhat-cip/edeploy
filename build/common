@@ -252,6 +252,7 @@ cleanup() {
             cd ${dir}
             if [ -z "$NO_COMPRESSED_FILE" ]; then
                 tar c . | compress -9v > ${INST}/../${ROLE}-${version}.edeploy
+		(cd ${INST}/../; md5sum ${ROLE}-${version}.edeploy > ${ROLE}-${version}.edeploy.md5)
             fi
         fi
     else

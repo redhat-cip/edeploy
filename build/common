@@ -295,6 +295,13 @@ mount_fs() {
 
 common_setup() {
     trap cleanup 0
+
+    local git_version=$(git rev-parse HEAD 2>/dev/null || true)
+
+    if [ ! -z "$git_version" ]; then
+        echo "Running edeploy on top of git $git_version"
+    fi
+
     export LC_ALL=C
     # export these variables to let them be used by upgrade-from sub-scripts
     export OS=$(do_chroot ${dir} lsb_release -i -s)

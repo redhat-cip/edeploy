@@ -44,7 +44,7 @@ deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen
 EOF
     ;;
     "CentOS"|"RedHatEnterpriseServer")
-       if [ $CODENAME == "6.4" ]; then
+      if [ "$(get_redhat_major_version $CODENAME)" == "6" ]; then
             cat > ${dir}/etc/yum.repos.d/mongodb.repo <<EOF
 [mongodb]
 name=MongoDB Repository

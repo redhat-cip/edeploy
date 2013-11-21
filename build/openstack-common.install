@@ -56,7 +56,7 @@ EOF
             get_openstack_mirror $DIST $OS_VERS > ${dir}/etc/apt/sources.list.d/openstack.list
         ;;
         "CentOS"|"RedHatEnterpriseServer")
-            if [ $CODENAME == "6.4" ]; then
+            if [ "$(get_redhat_major_version $CODENAME)" == "6" ]; then
                 install_packages ${dir} http://yum.puppetlabs.com/el/6/products/x86_64/puppetlabs-release-6-7.noarch.rpm
                 install_packages $dir "puppet"
                 remove_packages $dir puppetlabs-release-6-7.noarch
@@ -91,7 +91,7 @@ case "$OS" in
         do_chroot ${dir} rm cloud-init_0.7.3-0ubuntu2_all.deb python-json-patch_1.0-2_all.deb python-json-pointer_1.0-1ubuntu2_all.deb
         ;;
      "CentOS"|"RedHatEnterpriseServer")
-        if [ $CODENAME == "6.4" ]; then
+        if [ "$(get_redhat_major_version $CODENAME)" == "6" ]; then
           install_packages $dir "cloud-init"
         fi
         ;;

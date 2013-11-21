@@ -1,5 +1,13 @@
 # -*- shell-script -*-
 
+get_redhat_major_version() {
+    echo $1 | sed -e 's/\(.*\)\..*/\1/g'
+}
+
+get_redhat_minor_version() {
+    echo $1 | sed -e 's/.*\.\(.*\)/\1/g'
+}
+
 get_mirror() {
   local dist=$1
 

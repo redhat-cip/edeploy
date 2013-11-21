@@ -55,7 +55,7 @@ case "$OS" in
         do_chroot ${dir} service puppetmaster restart
     ;;
     "CentOS"|"RedHatEnterpriseServer")
-        if [ $CODENAME == "6.4" ]; then
+        if [ "$(get_redhat_major_version $CODENAME)" == "6" ]; then
             install_packages $dir http://yum.puppetlabs.com/el/6/products/i386/puppetlabs-release-6-7.noarch.rpm
             install_packages $dir http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
             install_packages $dir puppet-server mysql-server git cloud-init augeas

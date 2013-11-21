@@ -206,10 +206,25 @@ clean_mount_points() {
     return 0
 }
 
+prevent_ctrl_c() {
+    case "$1" in
+        "on")
+            trap '' 2
+        ;;
+        "off")
+            trap 2
+        ;;
+    esac
+}
+
 # Called to clean packages, temporary files and to create the compressed archive
 # usually by a "trap cleanup 0" in a script
 cleanup() {
     ret=$?
+
+    # This part of the code shall never by breaked by a user
+    prevent_ctrl_c on
+
     clear_trap
     set +e
     last_command=$BASH_COMMAND
@@ -249,6 +264,7 @@ cleanup() {
         echo "###########"
     fi
 
+    prevent_ctrl_c off
     exit $ret
 }
 

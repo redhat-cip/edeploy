@@ -83,7 +83,7 @@ unregister_satellite() {
         ;;
     esac
 
-    $cmd --system=edeploy --user=$SATELLITE_USERNAME --password=$SATELLITE_PASSWORD
+    $cmd --system=edeploy-$HOSTNAME --user=$SATELLITE_USERNAME --password=$SATELLITE_PASSWORD
     if [ "$?" != "0" ]; then
         echo "Failed at removing system from satellite"
     fi
@@ -100,7 +100,7 @@ add_satellite_repository() {
       fi
 
       install_packages $target rhn-setup
-      do_chroot $dir "rhnreg_ks --profilename=edeploy --username=$SATELLITE_USERNAME --password=$SATELLITE_PASSWORD"
+      do_chroot $dir "rhnreg_ks --profilename=edeploy-$HOSTNAME --username=$SATELLITE_USERNAME --password=$SATELLITE_PASSWORD"
       do_chroot $dir "rhn-channel --add --channel=rhel-x86_64-server-optional-6 -u $SATELLITE_USERNAME -p $SATELLITE_PASSWORD"
       install_packages $dir "yum-utils"
       do_chroot $dir "yum-config-manager --enable rhel-6-server-optional-rpms"

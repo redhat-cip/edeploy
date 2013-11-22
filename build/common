@@ -181,7 +181,7 @@ clean_mount_points() {
     fi
 
     # Since /dev is a copy, we shall clean it as it will be reconstructed at boot time
-    rm -rf ${dir}/dev
+    rm -rf ${dir}/dev/*
 
     a=10
     local lazy=""

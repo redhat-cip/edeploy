@@ -237,13 +237,29 @@ if /configure; then
             echo "default=0"  > ${d}/boot/grub/grub.conf
             echo "timeout=5" >> ${d}/boot/grub/grub.conf
             echo "hiddenmenu">> ${d}/boot/grub/grub.conf
+            DEFAULT_BOOT_PARTITION=0
+
+            # Does /boot have a separate partition ?
+            mountpoint -q ${d}/boot
+            NO_BOOT_MOUNTPOINT=$?
+            # Yes it's split, so let's compute its partition number for grub
+            if [ $NO_BOOT_MOUNTPOINT -eq 0 ]; then
+                PART_NUM=$(basename $(grep "${d}/boot" /proc/mounts  | awk '{print $1}')| sed -e 's/[a-z]*\(.*\)/\1/g')
+                DEFAULT_BOOT_PARTITION=$(($PART_NUM - 1))
+            fi
             for kernel in ${d}/boot/vmlinuz-*; do
                 kversion=`echo $kernel | awk -F'vmlinuz-' '{print $NF}'`;
-                KERNEL="/boot/vmlinuz-${kversion}"
-                INITRD="/boot/initramfs-${kversion}.img"
+                # If /boot is splitted, we shall not prefix with /boot
+                if [ $NO_BOOT_MOUNTPOINT -eq 0 ]; then
+                    KERNEL="/vmlinuz-${kversion}"
+                    INITRD="/initramfs-${kversion}.img"
+                else
+                    KERNEL="/boot/vmlinuz-${kversion}"
+                    INITRD="/boot/initramfs-${kversion}.img"
+                fi
                 TITLE="CentOS (${kversion})"
                 echo "title $TITLE" >> ${d}/boot/grub/grub.conf
-                echo "	root (hd0,0)" >> ${d}/boot/grub/grub.conf
+                echo "	root (hd0,$DEFAULT_BOOT_PARTITION)" >> ${d}/boot/grub/grub.conf
                 echo "	kernel $KERNEL root=UUID=$UUID nomodeset quiet$BOOT_ARG" >> ${d}/boot/grub/grub.conf
                 echo "	initrd $INITRD" >> ${d}/boot/grub/grub.conf
             done

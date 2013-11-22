@@ -28,7 +28,10 @@ def cp_cmd(src, dst):
     for file_src in glob.iglob(src):
         file_dst = os.path.join(dst, os.path.basename(file_src))
         if not os.path.exists(file_dst):
-            shutil.copyfile(file_src, file_dst)
+            if os.path.isdir(file_src):
+                shutil.copytree(file_src, file_dst)
+            else:
+                shutil.copyfile(file_src, file_dst)
             ret[file_src] = 'copied'
             ret['changed'] = True
     return ret

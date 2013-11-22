@@ -12,6 +12,7 @@
       - python-pip
       - git
       - rsync
+      - debootstrap
   - name: extract eDeploy git repo
     git: repo=https://github.com/enovance/edeploy.git
          dest=/srv/edeploy force=no

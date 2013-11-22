@@ -47,6 +47,8 @@ META=$(TOP)/metadata/$(VERS)
 MAKEFILE_TARGET=$@
 export MAKEFILE_TARGET
 
+TEST_ROLE:=mysql
+
 all: $(INST)/$(IMG) $(INST)/mysql.done
 
 health-check: $(INST)/base.done init.health init.common health-check.install $(PYDIR)/detect.py $(PYDIR)/hpacucli.py $(PYSERVERDIR)/matcher.py $(PYDIR)/diskinfo.py $(PYDIR)/ipmi.py $(PYDIR)/infiniband.py
@@ -140,7 +142,7 @@ health-test: health-check
 	cd ../tests/tftpboot/; ln -sf $(INST)/base/boot/vmlinuz* vmlinuz; ln -sf $(INST)/health.pxe initrd;
 	cd ../tests; ./run_kvm.sh $(TOP) health
 
-test: $(INST)/$(IMG) mysql
+test: $(INST)/$(IMG) $(TEST_ROLE)
 	cd ../tests/tftpboot/; ln -sf $(INST)/base/boot/vmlinuz* vmlinuz; ln -sf $(INST)/initrd.pxe initrd;
 	cd ../tests; ./run_kvm.sh $(TOP)
 

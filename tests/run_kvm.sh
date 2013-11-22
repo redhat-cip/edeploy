@@ -172,6 +172,15 @@ find $PWD/../config \
 ln -sf $PWD/edeploy.conf /etc/
 }
 
+tweak_role() {
+    # If no TEST_ROLE is given, let's consider mysql
+    if [ -z "$TEST_ROLE" ]; then
+        TEST_ROLE=mysql
+    fi
+    sed -i "s/set_role.*/set_role('$TEST_ROLE','$VERS',bootable_disk)/g" $PWD/../config/kvm-test.configure
+   #sed -i "s/set_role('mysql', 'D7-F.1.0.0', bootable_disk)
+}
+
 stress-http() {
 CONCURENT_HTTP_REQUESTS=$1
 HTTP_SERVER=$2
@@ -333,7 +342,7 @@ case "$MODE" in
         check_binary rsync
         check_binary qemu-img
         check_binary python
-
+        tweak_role
         setup_pxe
         start_rsyncd
         start_httpd

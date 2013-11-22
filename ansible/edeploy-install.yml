@@ -60,7 +60,7 @@
     lineinfile: dest=/etc/default/rsync regexp=RSYNC_ENABLE= line="RSYNC_ENABLE=true" state=present
     notify: start rsync daemon
   - name: install eDeploy profile in pxemngr
-    template: src=edeploy.prof dest=/var/lib/tftpboot/pxelinux.cfg/profiles/edeploy.prof
+    template: src=edeploy.prof dest=/var/lib/tftpboot/pxelinux.cfg/profiles/edeploy.prof mode=0644
     notify: sync bootnames
     when: pxemngr
   handlers:

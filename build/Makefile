@@ -18,6 +18,7 @@
 # Exporting ALL variables to other childs
 .EXPORT_ALL_VARIABLES:
 
+MAKEFILE_DIR=$(shell pwd)
 SDIR=/root/edeploy
 TOP=/var/lib/debootstrap
 DVER=D7

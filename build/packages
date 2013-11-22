@@ -60,8 +60,7 @@ add_epel_repository() {
 unregister_satellite() {
     local dist=$1
     local target=$2
-    local builddir=$(dirname $0)
-    local cmd=$builddir/remove_system_on_satellite
+    local cmd=$MAKEFILE_DIR/remove_system_on_satellite
 
     # Let's to the basic tests here
     # This have only a meaning for redhat systems

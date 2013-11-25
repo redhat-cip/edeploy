@@ -60,7 +60,7 @@ EOF
                 install_packages ${dir} http://yum.puppetlabs.com/el/6/products/x86_64/puppetlabs-release-6-7.noarch.rpm
                 install_packages $dir "puppet"
                 remove_packages $dir puppetlabs-release-6-7.noarch
-                add_epel_repository $DIST
+                add_epel_repository $DIST $dir
                 install_packages $dir $(get_openstack_mirror $DIST $OS_VERS)
             fi
          ;;

@@ -48,9 +48,10 @@ esac
 
 add_epel_repository() {
   local dist=$1
+  local target=$2
   case "$dist" in
     centos|redhat)
-        install_packages $dir http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+        install_packages $target http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
     ;;
   *)
     ;;

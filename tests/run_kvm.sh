@@ -24,7 +24,8 @@ INST=$1
 MODE=$2
 LOAD="$3"
 HTTP_SERVER="$4"
-SSH_PORT=2222
+DEBUG_SSH_PORT=2222
+SSH_PORT=222
 PYTHON_PID=0
 RSYNC_PID=0
 LOCKFILE=/tmp/edeploy.lock
@@ -61,7 +62,7 @@ run_kvm() {
     local kvm_bin=$(detect_kvm)
 
 	$kvm_bin --enable-kvm -m 512\
-		-netdev user,id=net0,net=10.0.2.0/24,tftp=tftpboot,bootfile=/pxelinux.0,hostfwd=tcp::$SSH_PORT-:22 \
+		-netdev user,id=net0,net=10.0.2.0/24,tftp=tftpboot,bootfile=/pxelinux.0,hostfwd=tcp::$SSH_PORT-:22,hostfwd=tcp::$DEBUG_SSH_PORT-:$DEBUG_SSH_PORT \
 		-netdev user,id=net1,net=10.0.3.0/24 \
 		-netdev user,id=net2,net=1.2.3.0/24 \
 		-device virtio-net,netdev=net0,mac=52:54:12:34:00:01 \

@@ -262,7 +262,7 @@ if /configure; then
                 TITLE="CentOS (${kversion})"
                 echo "title $TITLE" >> ${d}/boot/grub/grub.conf
                 echo "	root (hd0,$DEFAULT_BOOT_PARTITION)" >> ${d}/boot/grub/grub.conf
-                echo "	kernel $KERNEL root=UUID=$UUID nomodeset $BOOT_ARG" >> ${d}/boot/grub/grub.conf
+                echo "	kernel $KERNEL root=UUID=$UUID nomodeset rw $BOOT_ARG" >> ${d}/boot/grub/grub.conf
                 echo "	initrd $INITRD" >> ${d}/boot/grub/grub.conf
             done
             # grub 2

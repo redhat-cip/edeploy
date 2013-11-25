@@ -18,20 +18,32 @@
 
 '''Ansible module to copy files on the remote host.'''
 
+DOCUMENTATION = '''
+---
+module: cp
+short_description: copy file on the remote host
+# ... snip ...
+'''
+
+EXAMPLES = '''
+- action: cp src=/usr/src/project/*.conf dest=/etc/project/
+'''
+
 import glob
 import os.path
 import shutil
 
 
-def cp_cmd(src, dst):
+def cp_cmd(src, dst, dry_run, force):
     ret = {'changed': False}
     for file_src in glob.iglob(src):
         file_dst = os.path.join(dst, os.path.basename(file_src))
-        if not os.path.exists(file_dst):
-            if os.path.isdir(file_src):
-                shutil.copytree(file_src, file_dst)
-            else:
-                shutil.copyfile(file_src, file_dst)
+        if force or not os.path.exists(file_dst):
+            if not dry_run:
+                if os.path.isdir(file_src):
+                    shutil.copytree(file_src, file_dst)
+                else:
+                    shutil.copyfile(file_src, file_dst)
             ret[file_src] = 'copied'
             ret['changed'] = True
     return ret
@@ -42,10 +54,13 @@ def main():
         argument_spec=dict(
             src=dict(required=True),
             dest=dict(required=True),
-            )
+            force=dict(required=False, default=False, type='bool'),
+            ),
+        supports_check_mode=True
         )
     args = []
-    kwd = cp_cmd(module.params['src'], module.params['dest'])
+    kwd = cp_cmd(module.params['src'], module.params['dest'],
+                 module.check_mode, module.params['force'])
     module.exit_json(*args, **kwd)
 
 # include magic from lib/ansible/module_common.py

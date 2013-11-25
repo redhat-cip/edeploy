@@ -83,6 +83,8 @@ unregister_satellite() {
         ;;
     esac
 
+    do_chroot $target "yum-config-manager --disable rhel-6-server-optional-rpms"
+    remove_packages $target yum-utils
     $cmd --system=edeploy-$HOSTNAME --user=$SATELLITE_USERNAME --password=$SATELLITE_PASSWORD
     if [ "$?" != "0" ]; then
         echo "Failed at removing system from satellite"

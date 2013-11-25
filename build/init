@@ -232,7 +232,7 @@ if /configure; then
             chroot $d /bin/sh -c "cat /proc/mounts > /etc/mtab"
             chroot $d /bin/sh -c "/sbin/grub-install ${DISK}"
             ret=$?
-            root=`mount | grep /chroot | awk '{print $1}'`
+            root=`mount | grep "$d " | awk '{print $1}'`
             eval `blkid $root -o export`
             echo "default=0"  > ${d}/boot/grub/grub.conf
             echo "timeout=5" >> ${d}/boot/grub/grub.conf

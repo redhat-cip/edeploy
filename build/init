@@ -203,7 +203,7 @@ if /configure; then
         if [ -n "${METADATA_URL}" ]; then
             log "Setting up cloudinit with METADATAURL=$METADATA_URL"
             sed -i -e "s@GRUB_CMDLINE_LINUX_DEFAULT=\"\(.*\)\"@GRUB_CMDLINE_LINUX_DEFAULT=\"\1 ds=nocloud-net\\\\;s=${METADATA_URL}\"@" $d/etc/default/grub
-            BOOT_ARG=" ds=nocloud-net;s=${METADATA_URL}"
+            BOOT_ARG="$BOOT_ARG ds=nocloud-net;s=${METADATA_URL}"
         else
             log "No METADATA_URL variable found, no cloud-init configuration done"
         fi
@@ -262,7 +262,7 @@ if /configure; then
                 TITLE="CentOS (${kversion})"
                 echo "title $TITLE" >> ${d}/boot/grub/grub.conf
                 echo "	root (hd0,$DEFAULT_BOOT_PARTITION)" >> ${d}/boot/grub/grub.conf
-                echo "	kernel $KERNEL root=UUID=$UUID nomodeset quiet$BOOT_ARG" >> ${d}/boot/grub/grub.conf
+                echo "	kernel $KERNEL root=UUID=$UUID nomodeset $BOOT_ARG" >> ${d}/boot/grub/grub.conf
                 echo "	initrd $INITRD" >> ${d}/boot/grub/grub.conf
             done
             # grub 2

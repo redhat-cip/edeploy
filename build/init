@@ -101,10 +101,8 @@ probe_pci_devices
 
 step "Starting networking"
 
-if [ "$DEBUG" = 1 -o "$ONFAILURE" = "console" ]; then
-    create_keys
-    update_ssh_port
-    /etc/init.d/ssh start
+if [ "$DEBUG" = 1 ]; then
+    start_ssh_server
 fi
 
 probe_network_devices

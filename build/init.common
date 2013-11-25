@@ -173,6 +173,14 @@ create_keys() {
 
 update_ssh_port() {
     sed -i -e 's/^.*Port.*$/Port 2222/' /etc/ssh/sshd_config
+    sed -i -e 's/^.*#PermitRootLogin.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
+    sed -i -e 's/^.*#PermitEmptyPasswords.*$/PermitEmptyPasswords yes/' /etc/ssh/sshd_config
+}
+
+start_ssh_server() {
+    create_keys
+    update_ssh_port
+    /etc/init.d/ssh start || /etc/init.d/sshd start
 }
 
 give_up() {
@@ -188,6 +196,7 @@ give_up() {
         ;;
       "console")
         log "ONFAILURE=console, launching an interactive shell"
+        start_ssh_server
         do_console
         ;;
       "reboot")
@@ -208,6 +217,7 @@ create_main_directories() {
     [ -d /sys ] || mkdir /sys
     [ -d /proc ] || mkdir /proc
     [ -d /tmp ] || mkdir /tmp
+    [ -d /var/lock/subsys ] || mkdir -p /var/lock/subsys
 }
 
 mount_virtual_fs() {

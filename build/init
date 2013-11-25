@@ -249,6 +249,8 @@ if /configure; then
                 PART_NUM=$(basename $(grep "${d}/boot" /proc/mounts  | awk '{print $1}')| sed -e 's/[a-z]*\(.*\)/\1/g')
                 DEFAULT_BOOT_PARTITION=$(($PART_NUM - 1))
             fi
+
+            DISTRO_NAME=$(chroot $d lsb_release -d |  awk '{ print substr($0, index($0,$2)) }')
             for kernel in ${d}/boot/vmlinuz-*; do
                 kversion=`echo $kernel | awk -F'vmlinuz-' '{print $NF}'`;
                 # If /boot is splitted, we shall not prefix with /boot
@@ -259,7 +261,7 @@ if /configure; then
                     KERNEL="/boot/vmlinuz-${kversion}"
                     INITRD="/boot/initramfs-${kversion}.img"
                 fi
-                TITLE="CentOS (${kversion})"
+                TITLE="$DISTRO_NAME (${kversion})"
                 echo "title $TITLE" >> ${d}/boot/grub/grub.conf
                 echo "	root (hd0,$DEFAULT_BOOT_PARTITION)" >> ${d}/boot/grub/grub.conf
                 echo "	kernel $KERNEL root=UUID=$UUID nomodeset rw $BOOT_ARG" >> ${d}/boot/grub/grub.conf

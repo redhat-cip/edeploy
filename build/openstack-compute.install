@@ -30,7 +30,7 @@ install_ib_if_needed $ORIG $dir
 declare -A packages
 packages=(
     ["deb"]="openstack-compute-node"
-    ["rpm"]="openstack-nova-compute"
+    ["rpm"]="openstack-nova-compute qemu-kvm python-cinderclient openstack-ceilometer-compute openstack-neutron"
 )
 
 update_repositories $dir

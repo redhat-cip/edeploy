@@ -305,6 +305,9 @@ common_setup() {
     fi
 
     export LC_ALL=C
+
+    mount_fs
+
     # export these variables to let them be used by upgrade-from sub-scripts
     export OS=$(do_chroot ${dir} lsb_release -i -s)
     export RELEASE=$(do_chroot ${dir} lsb_release -c -s)
@@ -330,7 +333,6 @@ common_setup() {
     # magical stuff to let kernel upgrade work
     mkdir -p "${dir}"/etc/default/grub.d
     echo 'exit 0' > "${dir}"/etc/default/grub.d/edeploy.cfg
-    mount_fs
 
     add_satellite_repository $DIST $dir
 }

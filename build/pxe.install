@@ -78,7 +78,6 @@ rsync -au --delete-excluded --delete --exclude /boot/ \
     --exclude '*.pyc' \
     --exclude usr/lib/*/gconv/ \
     --exclude usr/lib/locale \
-    --exclude usr/lib64/perl5 \
     --exclude usr/lib64/libgtk* \
     --exclude usr/lib64/graphviz \
     --exclude usr/share/anaconda \

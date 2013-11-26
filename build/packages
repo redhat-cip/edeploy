@@ -129,7 +129,10 @@ get_openstack_mirror() {
         return 0
     ;;
     lucid|precise|quantal|raring|saucy|trusty)
-        echo "deb http://cloud.pkgs.enovance.com/${RELEASE}-${openstack_release}/ ${openstack_release} main"
+        wget http://ubuntu-${openstack_release}.pkgs.enovance.com/debian/dists/$dist-${openstack_release}-backports/key.asc -O $dir/tmp/key.asc &>/dev/null
+        do_chroot $dir "apt-key add /tmp/key.asc" &>/dev/null && rm -f $dir/tmp/key.asc &>/dev/null
+        echo "deb http://ubuntu-${openstack_release}.pkgs.enovance.com/debian $dist-${openstack_release}-backports main"
+#        echo "deb http://cloud.pkgs.enovance.com/${RELEASE}-${openstack_release}/ ${openstack_release} main"
         return 0
     ;;
     centos|redhat)

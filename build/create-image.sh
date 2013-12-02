@@ -81,12 +81,17 @@ chroot "$MDIR" grub-install --no-floppy "$DISK"
 
 # Configure Grub
 
+UUID=$(blkid -s UUID -o value "$DEV")
+export GRUB_DEVICE_UUID=$UUID
+echo $GRUB_DEVICE_UUID
+
 if [ ! -r "$MDIR"/boot/grub/grub.cfg ]; then
     chroot "$MDIR" grub-mkconfig -o /boot/grub/grub.cfg || :
 fi
 
-eval $(blkid -o export "$DEV")
-sed -i -e "s/\(--set=root \|UUID=\)[^ ]*/\1$UUID/p" $MDIR/boot/grub/grub.cfg
+# Fix generated grub.cfg
+sed -i -e 's/\t*loopback.*//' -e 's/\t*set root=.*//' -e "s/\(--set=root \|UUID=\)[^ ]*/\1$UUID/p" $MDIR/boot/grub/grub.cfg
+
 sync
 
 # Fixes according to
@@ -115,5 +120,5 @@ losetup -d $DEV
 kpartx -d "$IMG"
 rmdir "$MDIR"
 
-#qemu-img convert -O qcow2 "$IMG" "$IMG".qcow2
-#mv -f "$IMG".qcow2 "$IMG"
+qemu-img convert -O qcow2 "$IMG" "$IMG".qcow2
+mv -f "$IMG".qcow2 "$IMG"

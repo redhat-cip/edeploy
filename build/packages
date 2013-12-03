@@ -294,8 +294,8 @@ is_package_installed() {
     set +e
     case "$(package_tool)" in
         apt)
-            # We need to find a way to make it with apt/dpkg
-            return 0
+            do_chroot $CHROOT "dpkg -l $PACKAGE &>/dev/null"
+            return $?
         ;;
         yum)
             do_chroot $CHROOT "rpm -qi $PACKAGE &>/dev/null"

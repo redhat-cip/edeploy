@@ -92,7 +92,7 @@ Unless you run the rsync server or the http server on a very
 particular setup, don't use this variables.
 
 ``HTTP_PATH`` variable can be use to override the default ``/cgi-bin/`` directory.
-This could be usefull if you don't have the rights in this directory.
+This could be useful if you don't have the rights in this directory.
 The directory pointed by ``HTTP_PATH`` shall contains all edeploy code & configuration.
 
 CGI script

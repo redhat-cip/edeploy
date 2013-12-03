@@ -160,7 +160,7 @@ mount_flash_fs() {
     mount $LOOPBACK_BOOT $BOOT_MOUNT_POINT
 
     if [ ! `grep $BOOT_MOUNT_POINT /proc/mounts | wc -l` ]; then
-        die "Flash Sytem isn't mounted !"
+        die "Flash System isn't mounted !"
     fi
 }
 

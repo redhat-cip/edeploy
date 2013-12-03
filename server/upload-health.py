@@ -25,7 +25,7 @@ a Python configuration script corresponding to the matched config.
 If nothing matches, nothing is returned. So the system can abort
 its configuration.
 
-On the to be configured host, it is usally called like that:
+On the to be configured host, it is usually called like that:
 
 $ curl -i -F name=test -F file=@/tmp/hw.lst http://localhost/cgi-bin/upload.py
 '''

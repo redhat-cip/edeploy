@@ -37,7 +37,7 @@ PACKAGES="netperf netpipe fio cpuburn"
 
 if [ "$OS" = "Ubuntu" ]; then
     PACKAGES="netperf netpipe-tcp fio cpuburn"
-    repository=$(get_mirror $DIST)
+    repository=$(add_main_repository $DIST)
     cat >> ${dir}/etc/apt/sources.list << EOF
 deb $repository precise multiverse
 deb $repository precise-updates multiverse

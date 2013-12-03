@@ -35,7 +35,7 @@ install_ib_if_needed $ORIG $dir
 
 case "$RELEASE" in
     "wheezy")
-      repository=$(get_mirror $DIST)
+      repository=$(add_main_repository $DIST)
       do_chroot ${dir} add-apt-repository \'deb $repository wheezy-backports main\'
     ;;
     "precise")

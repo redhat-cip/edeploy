@@ -1,4 +1,4 @@
-get_mirror() {
+add_main_repository() {
   local dist=$1
 
   if [ -n "$REPOSITORY" ]; then
@@ -21,7 +21,7 @@ get_mirror() {
   esac
 }
 
-get_openstack_mirror() {
+get_openstack_repository() {
   local dist=$1
   openstack_release=$2
 

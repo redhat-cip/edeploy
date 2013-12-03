@@ -32,7 +32,7 @@ install_puppet () {
 
 case "$OS" in
     "Debian")
-        local repository=$(get_mirror $DIST)
+        local repository=$(add_main_repository $DIST)
         cat > ${dir}/etc/apt/sources.list.d/$RELEASE-backport.list <<EOF
 deb $repository ${RELEASE}-backports main
 EOF

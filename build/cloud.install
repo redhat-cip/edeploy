@@ -34,7 +34,7 @@ install_ib_if_needed $ORIG $dir
 
 if [ "$RELEASE" = "wheezy" ]; then
     # for cloud-init
-    repository=$(get_mirror $DIST)
+    repository=$(add_main_repository $DIST)
     cat > ${dir}/etc/apt/sources.list.d/backport.list <<EOF
 deb $repository wheezy-backports main
 EOF

@@ -80,7 +80,7 @@ init_redhat_chroot() {
 bootstrap() {
     target=$1
 
-    local repository=$(get_mirror $dist)
+    local repository=$(add_main_repository $dist)
 
     mount_fs
     # Use debootstrap for debian based distribution
@@ -133,7 +133,7 @@ install_base_packages() {
     local packages=""
     local cross_distro_packages="pciutils rsyslog lvm2"
     local deb_packages=" wget sudo locales openssh-server parted net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase dmidecode bash curl hdparm acpid ifenslave kexec-tools lsb-release"
-    local repository=$(get_mirror $dist)
+    local repository=$(add_main_repository $dist)
     case $dist in
         precise)
             packages="$cross_distro_packages linux-image-generic-lts-raring linux-headers-generic-lts-raring iputils-ping linux-firmware grub2 $deb_packages"

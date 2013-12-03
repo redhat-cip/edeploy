@@ -38,7 +38,7 @@ install_ib_if_needed $ORIG $dir
 prepare_packages () {
     case "$OS" in
         "Debian")
-            local repository=$(get_mirror $DIST)
+            local repository=$(add_main_repository $DIST)
             do_chroot ${dir} wget --no-verbose http://apt.puppetlabs.com/puppetlabs-release-$RELEASE.deb
             do_chroot ${dir} dpkg -i puppetlabs-release-$RELEASE.deb
             do_chroot ${dir} rm puppetlabs-release-$RELEASE.deb
@@ -46,14 +46,14 @@ prepare_packages () {
             cat > ${dir}/etc/apt/sources.list.d/$RELEASE-backport.list <<EOF
 deb $repository ${RELEASE}-backports main
 EOF
-            get_openstack_mirror $DIST $OS_VERS > ${dir}/etc/apt/sources.list.d/openstack-$RELEASE-$OS-VERS.list
+            get_openstack_repository $DIST $OS_VERS > ${dir}/etc/apt/sources.list.d/openstack-$RELEASE-$OS-VERS.list
         ;;
         "Ubuntu")
             do_chroot ${dir} wget --no-verbose http://apt.puppetlabs.com/puppetlabs-release-$RELEASE.deb
             do_chroot ${dir} dpkg -i puppetlabs-release-$RELEASE.deb
             do_chroot ${dir} rm puppetlabs-release-$RELEASE.deb
             do_chroot ${dir} apt-key adv --recv-keys --keyserver keyserver.ubuntu.com E52660B15D964F0B
-            get_openstack_mirror $DIST $OS_VERS > ${dir}/etc/apt/sources.list.d/openstack.list
+            get_openstack_repository $DIST $OS_VERS > ${dir}/etc/apt/sources.list.d/openstack.list
         ;;
         "CentOS"|"RedHatEnterpriseServer")
             if [ "$(get_redhat_major_version $CODENAME)" == "6" ]; then
@@ -61,7 +61,7 @@ EOF
                 install_packages $dir "puppet"
                 remove_packages $dir puppetlabs-release-6-7.noarch
                 add_epel_repository $DIST $dir
-                install_packages $dir $(get_openstack_mirror $DIST $OS_VERS)
+                install_packages $dir $(get_openstack_repository $DIST $OS_VERS)
             fi
          ;;
         *)

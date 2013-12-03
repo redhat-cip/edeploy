@@ -44,7 +44,7 @@ EOF
     cat > ${dir}/etc/apt/sources.list.d/openstack.list <<EOF
 deb [trusted=1 arch=amd64] http://archive.gplhost.com/debian precise-grizzly-backports main
 EOF
-    repository=$(get_mirror $DIST)
+    repository=$(add_main_repository $DIST)
     cat >> ${dir}/etc/apt/sources.list <<EOF
 deb-src $repository precise main
 deb-src $repository precise-updates main

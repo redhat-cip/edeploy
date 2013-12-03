@@ -63,7 +63,8 @@ packages=(
         ceilometer-alarm-evaluator ceilometer-alarm-notifier \
         swift-plugin-s3 memcached keystone ceilometer-api \
         ceilometer-agent-central ceilometer-collector mysql-server \
-        mongodb-server mongodb-clients swift-account swift-container swift-object xfsprogs"
+        mongodb-server mongodb-clients swift-account swift-container swift-object \
+        xfsprogs libdbd-mysql-perl"
     ["rpm"]="openstack-nova-compute qemu-kvm python-cinderclient \
         openstack-ceilometer-compute openstack-neutron openstack-proxy-node \
         openstack-swift-proxy memcached openstack-keystone \

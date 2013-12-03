@@ -1,0 +1,81 @@
+#!/bin/bash
+#
+# Copyright (C) 2013 eNovance SAS <licensing@enovance.com>
+#
+# Author: Emilien Macchi <emilien.macchi@enovance.com>
+#         Gonéri Le Bouder <goneri.lebouder@enovance.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+src="$1"
+dir="$2"
+version="$3"
+ROLE=openstack-compute
+
+ORIG=$(cd $(dirname $0); pwd)
+
+. ${ORIG}/functions
+
+install_ib_if_needed $ORIG $dir
+
+case "$OS" in
+    "Debian")
+#    cat > ${dir}/etc/apt/sources.list.d/mongodb.list <<EOF
+#deb http://downloads-distro.mongodb.org/repo/debian-sysvinit dist 10gen
+#EOF
+    ;;
+    "Ubuntu")
+#    cat > ${dir}/etc/apt/sources.list.d/mongodb.list <<EOF
+#deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen
+#EOF
+    ;;
+    "CentOS"|"RedHatEnterpriseServer")
+      if [ "$(get_redhat_major_version $CODENAME)" == "6" ]; then
+            cat > ${dir}/etc/yum.repos.d/mongodb.repo <<EOF
+[mongodb]
+name=MongoDB Repository
+baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64/
+gpgcheck=0
+enabled=1
+EOF
+      fi
+      ;;
+    *)
+    fatal_error "OS or Release not supported"
+    ;;
+esac
+
+
+
+declare -A packages
+packages=(
+    ["deb"]="openstack-compute-node openstack-proxy-node xinetd swift-proxy \
+        ceilometer-alarm-evaluator ceilometer-alarm-notifier \
+        swift-plugin-s3 memcached keystone ceilometer-api \
+        ceilometer-agent-central ceilometer-collector mysql-server \
+        mongodb-server mongodb-clients swift-account swift-container swift-object xfsprogs"
+    ["rpm"]="openstack-nova-compute qemu-kvm python-cinderclient \
+        openstack-ceilometer-compute openstack-neutron openstack-proxy-node \
+        openstack-swift-proxy memcached openstack-keystone \
+        openstack-ceilometer-api openstack-ceilometer-agent-central \
+        openstack-ceilometer-collector mysql-server mongo-10gen mongo-10gen-server \
+        openstack-swift-account openstack-swift-container openstack-swift-object \
+        xfsprogs"
+)
+
+update_repositories $dir
+install_packages $dir ${packages[$(package_type)]}
+clear_packages_cache $dir
+
+
+

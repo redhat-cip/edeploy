@@ -85,6 +85,11 @@ $(INST)/openstack-common.done: openstack-common.install $(INST)/base.done
 	./openstack-common.install $(INST)/base $(INST)/openstack-common $(VERS)
 	touch $(INST)/openstack-common.done
 
+openstack-full: $(INST)/openstack-full.done
+$(INST)/openstack-full.done: openstack-full.install $(INST)/openstack-common.done
+	./openstack-full.install $(INST)/openstack-common $(INST)/openstack-full $(VERS)
+	touch $(INST)/openstack-full.done
+
 openstack-controller: $(INST)/openstack-controller.done
 $(INST)/openstack-controller.done: openstack-controller.install $(INST)/openstack-common.done
 	./openstack-controller.install $(INST)/openstack-common $(INST)/openstack-controller $(VERS)

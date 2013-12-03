@@ -34,7 +34,7 @@ install_ib_if_needed $ORIG $dir
 
 case "$OS" in
   "Debian"|"Ubuntu")
-    PACKAGES="openstack-proxy-node"
+    PACKAGES="openstack-proxy-node xinetd swift-proxy ceilometer-alarm-evaluator ceilometer-alarm-notifier mongodb swift-plugin-s3"
     ;;
   "CentOS"|"RedHatEnterpriseServer")
     PACKAGES="openstack-proxy-node"

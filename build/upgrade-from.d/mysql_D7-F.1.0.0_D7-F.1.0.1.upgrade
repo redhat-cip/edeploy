@@ -16,17 +16,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-BASEDIR=$(dirname $0)
-ROLE="$1"
-FROM="$2"
-TO="$3"
-TDIR="$4"
-
-dir=$TDIR
-
-export DEBIAN_FRONTEND=noninteractive
 . common
-
-set -x
 
 install_packages $dir mysql-server-5.5 apache2

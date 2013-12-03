@@ -1,6 +1,5 @@
 # -*- shell-script -*-
 
-export DEBIAN_FRONTEND=noninteractive
 . packages
 
 fatal_error() {

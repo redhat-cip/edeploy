@@ -180,8 +180,8 @@ if /configure; then
     if [ -n "$ROLE" -a -n "$VERS" ]; then
         log "Deploying role '$ROLE' version '$VERS' on disk '$DISK' @ $(date)"
         if [ ! -z "$HSERV" ]; then
-            log_n "Transfering files from http://${HSERV}:${HSERV_PORT}/install/${ROLE}-${VERS}.edeploy..."
-            curl -s -S http://${HSERV}:${HSERV_PORT}/install/${ROLE}-${VERS}.edeploy | gzip -d | tar x -C $d
+            log_n "Transfering files from http://${HSERV}:${HSERV_PORT}/install/${VERS}/${ROLE}-${VERS}.edeploy..."
+            curl -s -S http://${HSERV}:${HSERV_PORT}/install/${VERS}/${ROLE}-${VERS}.edeploy | gzip -d | tar x -C $d
         else
             log_n "Copying files from rsync://${RSERV}:${RSERV_PORT}/install/${VERS}/${ROLE}..."
             rsync -a rsync://${RSERV}:${RSERV_PORT}/install/${VERS}/${ROLE}/ $d/

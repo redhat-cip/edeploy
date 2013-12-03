@@ -24,7 +24,8 @@ TOP=/var/lib/debootstrap
 DVER=D7
 PVER=F
 REL=1.0.0
-VERS=$(DVER)-$(PVER).$(REL)
+VERSION:=$(PVER).$(REL)
+VERS=$(DVER)-$(VERSION)
 DIST=wheezy
 
 SRC=base

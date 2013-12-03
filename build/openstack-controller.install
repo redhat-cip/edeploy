@@ -33,10 +33,7 @@ clear_packages_cache $dir
 install_ib_if_needed $ORIG $dir
 
 case "$OS" in
-  "Debian")
-    PACKAGES="openstack-proxy-node"
-    ;;
-  "Ubuntu")
+  "Debian"|"Ubuntu")
     PACKAGES="openstack-proxy-node"
     ;;
   "CentOS"|"RedHatEnterpriseServer")

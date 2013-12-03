@@ -1,6 +1,7 @@
 # -*- shell-script -*-
 
 export DEBIAN_FRONTEND=noninteractive
+. repositories
 
 get_redhat_major_version() {
     echo $1 | sed -e 's/\(.*\)\..*/\1/g'
@@ -8,29 +9,6 @@ get_redhat_major_version() {
 
 get_redhat_minor_version() {
     echo $1 | sed -e 's/.*\.\(.*\)/\1/g'
-}
-
-get_mirror() {
-  local dist=$1
-
-  if [ -n "$REPOSITORY" ]; then
-    echo "$REPOSITORY"
-    return
-  fi
-
-  case "$dist" in
-    wheezy|squeeze|jessie)
-        echo "http://cdn.debian.net/debian"
-        return 0
-    ;;
-    lucid|precise|quantal|raring|saucy|trusty)
-        echo "http://archive.ubuntu.com/ubuntu"
-        return 0
-    ;;
-    *)
-        return 1
-    ;;
-  esac
 }
 
 save_package_list() {
@@ -46,117 +24,6 @@ case $(package_type) in
         fatal_error "Unsupported package_type ($package_type) in save_package_list()"
      ;;
 esac
-}
-
-add_epel_repository() {
-  local dist=$1
-  local target=$2
-  case "$dist" in
-    centos|redhat)
-        install_packages $target http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-    ;;
-  *)
-    ;;
-  esac
-}
-
-unregister_satellite() {
-    local dist=$1
-    local target=$2
-    local cmd=$MAKEFILE_DIR/remove_system_on_satellite
-
-    # Let's to the basic tests here
-    # This have only a meaning for redhat systems
-    case "$dist" in
-        redhat)
-
-        # Let's remove the systemid from the chroot
-        if [ -f $target/etc/sysconfig/rhn/systemid ]; then
-            rm -f $target/etc/sysconfig/rhn/systemid || fatal_error "Cannot delete systemid in unregister_satellite()"
-        fi
-
-        if [ ! -x $cmd ]; then
-            fatal_error "$cmd is mandatory to remove the satellite repository"
-        fi
-        # Let's be sure that delete-old-systems-interactive can be run on the system
-        $cmd 2>&1 | grep -qi failed && fatal_error "$cmd is missing dependencies"
-        ;;
-        *)
-        return
-        ;;
-    esac
-
-    do_chroot $target "yum-config-manager --disable rhel-6-server-optional-rpms"
-    remove_packages $target yum-utils
-    $cmd --system=edeploy-$HOSTNAME --user=$SATELLITE_USERNAME --password=$SATELLITE_PASSWORD
-    if [ "$?" != "0" ]; then
-        echo "Failed at removing system from satellite"
-    fi
-}
-
-add_satellite_repository() {
-  local dist=$1
-  local target=$2
-  case "$dist" in
-    redhat)
-      if [ -z "$SATELLITE_USERNAME" ] || [ -z "$SATELLITE_PASSWORD" ]; then
-        echo "You should provide SATELLITE_USERNAME and SATELLITE_PASSWORD to get a satellite support"
-        return
-      fi
-
-      install_packages $target rhn-setup
-      do_chroot $dir "rhnreg_ks --profilename=edeploy-$HOSTNAME --username=$SATELLITE_USERNAME --password=$SATELLITE_PASSWORD"
-      do_chroot $dir "rhn-channel --add --channel=rhel-x86_64-server-optional-6 -u $SATELLITE_USERNAME -p $SATELLITE_PASSWORD"
-      do_chroot $dir "rhn-channel --add --channel=rhel-x86_64-server-sfs-6 -u $SATELLITE_USERNAME -p $SATELLITE_PASSWORD"
-      install_packages $dir "yum-utils"
-      do_chroot $dir "yum-config-manager --enable rhel-6-server-optional-rpms"
-      do_chroot $dir "yum-config-manager --enable rhel-6-server-sfs-rpms"
-      update_system $dir
-    ;;
-  *)
-    ;;
-  esac
-}
-
-get_openstack_mirror() {
-  local dist=$1
-  openstack_release=$2
-
-  if [ -n "$OPENSTACK_REPOSITORY" ]; then
-    echo "$OPENSTACK_REPOSITORY"
-    return
-  fi
-
-  case "$dist" in
-    wheezy|squeeze|jessie)
-        echo "deb http://cloud.pkgs.enovance.com/${RELEASE}-${openstack_release}/ ${openstack_release} main"
-        return 0
-    ;;
-    lucid|precise|quantal|raring|saucy|trusty)
-        echo "deb http://cloud.pkgs.enovance.com/${RELEASE}-${openstack_release}/ ${openstack_release} main"
-        return 0
-    ;;
-    centos|redhat)
-        current_rpm_release="undef"
-        cloud_init_release="0.7.2-2.el6"
-        case "$openstack_release" in
-            "havana")
-                current_rpm_release=7
-            ;;
-            "grizzly")
-                current_rpm_release=3
-            ;;
-            *)
-                fatal_error "Unsupported openstack release ($openstack_release) for $dist distribution"
-            ;;
-        esac
-        echo "http://rdo.fedorapeople.org/openstack-${openstack_release}/rdo-release-${openstack_release}-${current_rpm_release}.noarch.rpm http://repos.fedorapeople.org/repos/openstack/cloud-init/epel-6/cloud-init-${cloud_init_release}.noarch.rpm"
-        return 0
-    ;;
-    *)
-        return 1
-    ;;
-  esac
 }
 
 package_type() {
@@ -224,21 +91,6 @@ remove_packages() {
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in install_packages()"
-        ;;
-    esac
-}
-
-update_repositories() {
-    CHROOT=$1
-    case "$(package_tool)" in
-        apt)
-            do_chroot $CHROOT apt-get update
-        ;;
-        yum)
-            do_chroot $CHROOT yum check-update || true
-        ;;
-        *)
-            fatal_error "$(package_tool) isn't supported in update_repositories()"
         ;;
     esac
 }

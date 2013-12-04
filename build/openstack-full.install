@@ -82,7 +82,7 @@ case "$OS" in
 
         services="swift-account-replicator apache2 heat-api openvswitch-switch \
           glance-registry nova-scheduler cloud-init-local \
-          swift-container puppet neutron-dhcp-agent nova-novncproxy \
+          swift-container neutron-dhcp-agent nova-novncproxy \
           mongodb swift-container-auditor ceilometer-agent-central \
           heat-api-cloudwatch neutron-l3-agent nova-spicehtml5proxy \
           swift-container-replicator ceilometer-agent-compute heat-engine \

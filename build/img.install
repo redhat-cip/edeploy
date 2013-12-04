@@ -178,9 +178,15 @@ copy_os_to_flash() {
 setup_bootloader() {
 
     KERNEL_OPTIONS="quiet panic=-1 oops=panic consoleblank=0"
+    if [ -z "$ONSUCCESS" ]; then
+        ONSUCCESS="halt"
+    fi
+    if [ -z "$ONFAILURE" ]; then
+        ONSUCCESS="console"
+    fi
     mkdir $1/extlinux
     if [ "$MODE" = "health" ]; then
-COMMON_ARGS="$KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG UPLOAD_LOG=${UPLOAD_LOG} ONFAILURE=console ONSUCCESS=halt"
+COMMON_ARGS="$KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG UPLOAD_LOG=${UPLOAD_LOG} ONFAILURE=$ONFAILURE ONSUCCESS=$ONSUCCESS"
 cat << EOF >> $1/extlinux/extlinux.conf
 TIMEOUT 100
 PROMPT 1

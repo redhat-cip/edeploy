@@ -70,6 +70,11 @@ $(INST)/base.done: base.install policy-rc.d edeploy
 	./base.install $(INST)/base $(DIST) $(VERS)
 	touch $(INST)/base.done
 
+#sample: $(INST)/sample.done
+#$(INST)/sample.done: sample.install $(INST)/sample.done
+#	./sample.install $(INST)/base $(INST)/sample $(VERS)
+#	touch $(INST)/sample.done
+
 cloud: $(INST)/cloud.done
 $(INST)/cloud.done: cloud.install $(INST)/base.done
 	./cloud.install $(INST)/base $(INST)/cloud $(VERS)

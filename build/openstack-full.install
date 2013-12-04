@@ -76,7 +76,35 @@ packages=(
 
 update_repositories $dir
 install_packages $dir ${packages[$(package_type)]}
-clear_packages_cache $dir
 
+case "$OS" in
+    "Debian"|"Ubuntu")
+
+        services="swift-account-replicator apache2 heat-api openvswitch-switch \
+          glance-registry nova-scheduler cloud-init-local \
+          swift-container puppet neutron-dhcp-agent nova-novncproxy \
+          mongodb swift-container-auditor ceilometer-agent-central \
+          heat-api-cloudwatch neutron-l3-agent nova-spicehtml5proxy \
+          swift-container-replicator ceilometer-agent-compute heat-engine \
+          xinetd neutron-plugin-openvswitch-agent cloud-final \
+          rabbitmq-server swift-container-updater ceilometer-alarm-evaluator \
+          ipmievd cloud-config neutron-server swift-object \
+          ceilometer-alarm-notifier keystone nova-api swift-object-auditor \
+          ceilometer-api memcached nova-cert swift-account \
+          swift-object-replicator ceilometer-collector mysql nova-compute \
+          swift-account-auditor swift-object-updater cloud-init nova-xenvncproxy \
+          nova-conductor swift-account-reaper swift-proxy glance-api \
+          nova-consoleauth heat-api-cfn libvirt-bin libvirt-guests"
+
+    for s in ${services}; do
+        do_chroot $dir update-rc.d $s disable
+    done
+    ;;
+    *)
+    fatal_error "OS or Release not supported"
+    ;;
+esac
+
+clear_packages_cache $dir
 
 

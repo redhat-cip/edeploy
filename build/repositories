@@ -16,7 +16,7 @@ add_main_repository() {
         return 0
     ;;
     centos)
-        echo "http://mirror.centos.org/centos/6.4/os/x86_64/Packages/centos-release-6-4.el6.centos.10.x86_64.rpm"
+        echo "http://mirror.centos.org/centos/6.5/os/x86_64/Packages/centos-release-6-5.el6.centos.11.1.x86_64.rpm"
         return 0
     ;;
     redhat)

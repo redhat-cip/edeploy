@@ -48,7 +48,7 @@ case "$OS" in
         do_chroot ${dir} wget --no-verbose http://apt.puppetlabs.com/puppetlabs-release-$RELEASE.deb
         do_chroot ${dir} dpkg -i puppetlabs-release-$RELEASE.deb
         do_chroot ${dir} rm puppetlabs-release-$RELEASE.deb
-        PACKAGES="puppetmaster puppetmaster-passenger puppet augeas-tools mysql-server libmysql-ruby libactiverecord-ruby git cloud-init"
+        PACKAGES="puppetmaster puppetmaster-passenger puppet augeas-tools mysql-server libmysql-ruby libactiverecord-ruby git ntp cloud-init"
         install_packages $dir $PACKAGES
         do_chroot ${dir} a2dissite puppetmaster
         do_chroot ${dir} service apache2 reload

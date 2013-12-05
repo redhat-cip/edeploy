@@ -71,7 +71,7 @@ packages=(
         openstack-ceilometer-api openstack-ceilometer-agent-central \
         openstack-ceilometer-collector mysql-server mongo-10gen mongo-10gen-server \
         openstack-swift-account openstack-swift-container openstack-swift-object \
-        xfsprogs"
+        xfsprogs ruby-sqlite3 ruby-activerecord"
 )
 
 update_repositories $dir

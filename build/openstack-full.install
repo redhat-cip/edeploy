@@ -20,7 +20,7 @@
 src="$1"
 dir="$2"
 version="$3"
-ROLE=openstack-compute
+ROLE=openstack-full
 
 ORIG=$(cd $(dirname $0); pwd)
 

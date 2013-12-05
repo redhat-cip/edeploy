@@ -64,7 +64,7 @@ packages=(
         swift-plugin-s3 memcached keystone ceilometer-api \
         ceilometer-agent-central ceilometer-collector mysql-server \
         mongodb-server mongodb-clients swift-account swift-container swift-object \
-        xfsprogs libdbd-mysql-perl"
+        xfsprogs libdbd-mysql-perl ruby-sqlite3 ruby-activerecord"
     ["rpm"]="openstack-nova-compute qemu-kvm python-cinderclient \
         openstack-ceilometer-compute openstack-neutron openstack-proxy-node \
         openstack-swift-proxy memcached openstack-keystone \

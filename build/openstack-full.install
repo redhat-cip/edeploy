@@ -81,7 +81,7 @@ case "$OS" in
     "Debian"|"Ubuntu")
 
         services="swift-account-replicator apache2 heat-api openvswitch-switch \
-          glance-registry nova-scheduler cloud-init-local \
+          glance-registry nova-scheduler \
           swift-container neutron-dhcp-agent nova-novncproxy \
           mongodb swift-container-auditor ceilometer-agent-central \
           heat-api-cloudwatch neutron-l3-agent nova-spicehtml5proxy \
@@ -92,7 +92,7 @@ case "$OS" in
           ceilometer-alarm-notifier keystone nova-api swift-object-auditor \
           ceilometer-api memcached nova-cert swift-account \
           swift-object-replicator ceilometer-collector mysql nova-compute \
-          swift-account-auditor swift-object-updater cloud-init nova-xenvncproxy \
+          swift-account-auditor swift-object-updater nova-xenvncproxy \
           nova-conductor swift-account-reaper swift-proxy glance-api \
           nova-consoleauth heat-api-cfn libvirt-bin libvirt-guests"
 

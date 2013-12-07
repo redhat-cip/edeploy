@@ -1,20 +1,31 @@
 eDeploy
 =======
 
-eDeploy is a work in progress to experiment with a new way to
-provision/update systems (physical or virtual) using trees of files
-instead of packages or VM images.
+.. contents::
+
+Introduction
+------------
+
+eDeploy is a tool to provision and update systems (physical or virtual)
+using trees of files instead of packages or VM images.
 
 Installation is done using these steps:
 
-- detect PCI hardware and setup network.
-- send the detected hardware config to the server
-- the server sends back a configuration script.
-- run the configuration script to setup IPMI, RAID, partitions and network.
-- according to the defined role, rsync the tree on the newly created partitions.
-- configure the grub2 boot loader and reboot the system.
+- boot on PXE or iPXE kernel and initrd. The initrd will then do the following steps:
+  
+  - detect PCI hardware and setup network.
 
-Then the system will boot on the provisioned hard drive directly.
+  - send the detected hardware configuration to the server.
+
+  - the server sends back a configuration script.
+
+  - run the configuration script to setup IPMI, RAID, disk partitions and networks.
+
+  - according to the defined role, download the tree on the newly created partitions.
+
+  - configure the GRUB boot loader and reboot the system.
+
+- Then the system will boot on the provisioned hard drive directly.
 
 Initial configuration
 ---------------------

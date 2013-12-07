@@ -18,20 +18,20 @@
 
 '''Main entry point for hardware and system detection routines in eDeploy.'''
 
-from commands import getstatusoutput as cmd
-import pprint
-import sys
-import xml.etree.ElementTree as ET
-import subprocess
-import socket
-import fcntl
-import struct
-from netaddr import IPNetwork
 
+from commands import getstatusoutput as cmd
 import diskinfo
+import fcntl
 import hpacucli
 import infiniband as ib
+from netaddr import IPNetwork
 import os
+import pprint
+import socket
+import struct
+import subprocess
+import sys
+import xml.etree.ElementTree as ET
 
 
 SIOCGIFNETMASK = 0x891b
@@ -263,11 +263,15 @@ def detect_system(hw_lst, output=None):
         for elt in xml.findall(".//node[@class='network']"):
             name = elt.find('logicalname')
             if name is not None:
-                ''' lshw is not able to get the complete mac addr for ib devices '''
-                ''' Let's workaround it with an ip command '''
+                # lshw is not able to get the complete mac addr for ib
+                # devices Let's workaround it with an ip command.
                 if name.text.startswith('ib'):
-                    status_ip, output_ip = cmd("ip addr show %s | grep link | awk '{print $2}'" % name.text)
-                    hw_lst.append(('network', name.text, 'serial', output_ip.split('\n')[0]))
+                    cmds = "ip addr show %s | grep link | awk '{print $2}'"
+                    status_ip, output_ip = cmd(cmds % name.text)
+                    hw_lst.append(('network',
+                                   name.text,
+                                   'serial',
+                                   output_ip.split('\n')[0]))
                 else:
                     find_element(elt, 'serial', 'serial', name.text, 'network')
 
@@ -291,7 +295,7 @@ def detect_system(hw_lst, output=None):
                         hw_lst.append(
                             ('network', name.text, 'ipv4-network',
                              "%s" % IPNetwork('%s/%s' % (ipv4, cidr)).network))
-                    except:
+                    except Exception:
                         sys.stderr.write('unable to get info for %s\n'
                                          % name.text)
 

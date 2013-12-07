@@ -27,10 +27,13 @@ def ib_card_drv():
 
 
 # {'node_guid': '0x0002c90300ea6840', 'sys_guid': '0x0002c90300ea6843',
-# 'fw_ver': '2.11.500', 'device_type': 'MT4099', 'hw_ver': '0', 'nb_ports': '2'}
+#  'fw_ver': '2.11.500',
+#   'device_type': 'MT4099',
+#   'hw_ver': '0', 'nb_ports': '2'}
 def ib_global_info(card_drv):
     '''Return global info of a IB card in a python dict. (take in argument a
-    card_drv (ex: mlx4_0)).'''
+       card_drv (ex: mlx4_0)).
+    '''
     global_card_info = {}
     global_info = cmd('ibstat %s -s' % card_drv)
     for line in global_info.split('\n'):
@@ -59,7 +62,8 @@ def ib_global_info(card_drv):
 # 'physical_state': 'Down', 'sm_lid': '0', 'state': 'Down', 'lmc': '0'}
 def ib_port_info(card_drv, port):
     '''Return port infos of a IB card_drv in a python dict.
-    (take in argument the card_drv name and the port number (ex: mlx4_0,1))'''
+       (take in argument the card_drv name and the port number (ex: mlx4_0,1))
+    '''
     port_infos = {}
     port_desc = cmd('ibstat %s %i' % (card_drv, port))
     for line in port_desc.split('\n'):

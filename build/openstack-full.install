@@ -94,11 +94,13 @@ case "$OS" in
           swift-object-replicator ceilometer-collector mysql nova-compute \
           swift-account-auditor swift-object-updater nova-xenvncproxy \
           nova-conductor swift-account-reaper swift-proxy glance-api \
-          nova-consoleauth heat-api-cfn libvirt-bin libvirt-guests"
+          nova-consoleauth heat-api-cfn libvirt-bin libvirt-guests \
+          rubygem-activerecord ruby-sqlite3"
 
     for s in ${services}; do
         do_chroot $dir update-rc.d $s disable
     done
+    ;;
     "CentOS"|"RedHatEnterpriseServer")
         services="cloud-config cloud-final cloud-init cloud-init-local \
           iscsi iscsid libvirt-guests libvirtd memcached mongod mysqld \
@@ -112,7 +114,7 @@ case "$OS" in
           openstack-swift-container-updater openstack-swift-object \
           openstack-swift-object-auditor openstack-swift-object-expirer \
           openstack-swift-object-replicator openstack-swift-object-updater \
-          openstack-swift-proxy radvd rubygem-activerecord ruby-sqlite3"
+          openstack-swift-proxy radvd"
 
     for s in ${services}; do
         do_chroot $dir chkconfig $s off

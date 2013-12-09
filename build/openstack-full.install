@@ -120,8 +120,6 @@ case "$OS" in
         do_chroot $dir chkconfig $s off
     done
     do_chroot $dir chkconfig puppet on
-    # Allow the puppet master to create the sqlite DB for testing purpose
-    do_chroot $dir chown puppet.puppet /var/lib/puppet/state
     ;;
     *)
     fatal_error "OS or Release not supported"

@@ -99,6 +99,27 @@ case "$OS" in
     for s in ${services}; do
         do_chroot $dir update-rc.d $s disable
     done
+    "CentOS"|"RedHatEnterpriseServer")
+        services="cloud-config cloud-final cloud-init cloud-init-local \
+          iscsi iscsid libvirt-guests libvirtd memcached mongod mysqld \
+          neutron-dhcp-agent neutron-l3-agent neutron-lbaas-agent \
+          neutron-metadata-agent neutron-server openstack-ceilometer-api \
+          openstack-ceilometer-collector openstack-ceilometer-compute \
+          openstack-keystone openstack-nova-compute openstack-swift-account \
+          openstack-swift-account-auditor openstack-swift-account-reaper \
+          openstack-swift-account-replicator openstack-swift-container \
+          openstack-swift-container-auditor openstack-swift-container-replicator \
+          openstack-swift-container-updater openstack-swift-object \
+          openstack-swift-object-auditor openstack-swift-object-expirer \
+          openstack-swift-object-replicator openstack-swift-object-updater \
+          openstack-swift-proxy radvd rubygem-activerecord ruby-sqlite3"
+
+    for s in ${services}; do
+        do_chroot $dir chkconfig $s off
+    done
+    do_chroot $dir chkconfig puppet on
+    # Allow the puppet master to create the sqlite DB for testing purpose
+    do_chroot $dir chown puppet.puppet /var/lib/puppet/state
     ;;
     *)
     fatal_error "OS or Release not supported"

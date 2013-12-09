@@ -46,7 +46,7 @@ def parse_hdparm_output(output):
 
 def diskperfs(names):
     return dict((name, parse_hdparm_output(cmd('hdparm -t /dev/%s' % name)))
-            for name in names)
+                for name in names)
 
 
 def disksizes(names):

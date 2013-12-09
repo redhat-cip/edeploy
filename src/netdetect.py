@@ -16,20 +16,20 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import sys
+import collections
+from commands import getstatusoutput as cmd
+import cPickle
+import netaddr
+import numpy
+import os
+import pprint
+import re
 import socket
 import struct
-import cPickle
-import time
-import threading
-import collections
-from netaddr import *
-from commands import getstatusoutput as cmd
 import subprocess
-import re
-import pprint
-import os
-import numpy
+import sys
+import threading
+import time
 
 timestamp = {}
 server_list = {}
@@ -50,7 +50,7 @@ selected_subnet = ''
 KEEP_ALIVE = 2
 
 ''' Amount of seconds no system shall {dis]appear '''
-DISCOVERY_TIME = 20*KEEP_ALIVE
+DISCOVERY_TIME = 20 * KEEP_ALIVE
 
 ''' Multicast Address used to communicate '''
 MCAST_GRP = '224.1.1.1'
@@ -65,7 +65,7 @@ BENCH_DURATION = 30
 
 
 def get_mac(hw, level1, level2):
-    ''' Extract a Mac Address from an hw list '''
+    '''Extract a Mac Address from an hw list.'''
     for entry in hw:
         if (level1 == entry[0] and level2 == entry[2]):
             return entry[3]
@@ -82,28 +82,33 @@ def get_value(hw, level1, level2, level3):
 def get_cidr_from_eth(hw, eth):
     if (eth):
         for entry in hw:
-            if (entry[0] == 'network') and (entry[1] == eth) and (entry[2] == 'ipv4-cidr'):
+            if (entry[0] == 'network') and \
+               (entry[1] == eth) and (entry[2] == 'ipv4-cidr'):
                 return entry[3]
 
 
 def get_network_from_eth(hw, eth):
     if (eth):
         for entry in hw:
-            if (entry[0] == 'network') and (entry[1] == eth) and (entry[2] == 'ipv4-network'):
+            if (entry[0] == 'network') and \
+               (entry[1] == eth) and (entry[2] == 'ipv4-network'):
                 return entry[3]
 
 
 def get_ip_list(hw):
-    ''' Extract All IPV4 addresses from hw list '''
+    '''Extract All IPV4 addresses from hw list.'''
     ip_list = []
     for entry in hw:
         if (entry[0] == 'network') and (entry[2] == 'ipv4'):
-            ip_list.append('%s/%s/%s' % (entry[3], get_cidr_from_eth(hw, entry[1]), get_network_from_eth(hw, entry[1])))
+            ip_list.append('%s/%s/%s' %
+                           (entry[3],
+                            get_cidr_from_eth(hw, entry[1]),
+                            get_network_from_eth(hw, entry[1])))
     return ip_list
 
 
 def start_sync_bench_server():
-    ''' Server is made for receiving keepalives and manage them '''
+    '''Server is made for receiving keepalives and manage them.'''
     global server_list
     ''' Let's bind a server to the Multicast group '''
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -120,13 +125,14 @@ def start_sync_bench_server():
         if 'READY_TO_BENCH' in answer.keys():
             if answer['READY_TO_BENCH'] not in servers_ready_to_bench.keys():
                 servers_ready_to_bench[answer['READY_TO_BENCH']] = True
-            sys.stderr.write("Received Ready_to_bench from %s\n" % answer['READY_TO_BENCH'])
+            sys.stderr.write("Received Ready_to_bench from %s\n" %
+                             answer['READY_TO_BENCH'])
 
     sys.stderr.write('All servers are now ready to bench\n')
 
 
 def start_discovery_server():
-    ''' Server is made for receiving keepalives and manage them '''
+    '''Server is made for receiving keepalives and manage them.'''
     global server_list
     global timestamp
     global synthesis
@@ -170,21 +176,22 @@ def start_discovery_server():
             server_list = collections.OrderedDict()
             timestamp = {}
             synthesis = True
-            ''' We are no more in a discovery phase, that will kill client '''
+            # We are no more in a discovery phase, that will kill client '''
             discovery = False
 
-            ''' Let's save the selected subnet for later reporting '''
+            # Let's save the selected subnet for later reporting '''
             selected_subnet = answer['subnet']
             del(answer['subnet'])
 
-            ''' Remove Synthesis entry as it doesn't mean a server '''
+            # Remove Synthesis entry as it doesn't mean a server '''
             del(answer['SYNTHESIS'])
 
-            ''' We shall wait at least 2 Keep alives to insure client completed his task '''
-            time.sleep(2*KEEP_ALIVE)
+            # We shall wait at least 2 Keep alives to ensure client
+            # completed his task.
+            time.sleep(2 * KEEP_ALIVE)
 
         for key in answer.keys():
-            if not key in server_list.keys():
+            if key not in server_list.keys():
                 if key == 'MAX_CLIENTS':
                     continue
                 ''' Let's add the new server if we didn't knew it '''
@@ -201,13 +208,14 @@ def start_discovery_server():
         semaphore.release()
 
         if (max_clients > 0):
-            sys.stderr.write("Found %d of %d servers\n" % (len(server_list), max_clients))
+            sys.stderr.write("Found %d of %d servers\n" %
+                             (len(server_list), max_clients))
 
     sys.stderr.write("Exiting server\n")
 
 
 def start_client(mode, max_clients=0):
-    ''' Client is made for generating keepalives'''
+    '''Client is made for generating keepalives.'''
     global hw
     global discovery
     global ready_to_bench
@@ -260,7 +268,8 @@ def start_client(mode, max_clients=0):
 
 def fatal_error(error):
     '''Report a shell script with the error message and log
-    the message on stderr.'''
+       the message on stderr.
+    '''
     sys.stderr.write('%s\n' % error)
     sys.exit(1)
 
@@ -271,9 +280,9 @@ def prepare_synthesis():
     new_server_list = {}
     for server in server_list.keys():
         netaddrs = server_list[server]
-        for netaddr in netaddrs:
-            network = "%s/%s" % (netaddr.split('/')[2], netaddr.split('/')[1])
-            if not network in network_list.keys():
+        for net in netaddrs:
+            network = "%s/%s" % (net.split('/')[2], net.split('/')[1])
+            if network not in network_list.keys():
                 network_list[network] = 1
             else:
                 network_list[network] += 1
@@ -287,12 +296,13 @@ def prepare_synthesis():
 
     sys.stderr.write("Selected network is %s\n" % (selected_network))
 
-    valid_ip_list = [str(ip) for ip in IPNetwork(selected_network).iter_hosts()]
+    valid_ip_list = [
+        str(ip) for ip in netaddr.IPNetwork(selected_network).iter_hosts()]
 
     for server in server_list.keys():
         netaddrs = server_list[server]
-        for netaddr in netaddrs:
-            remote_ip = netaddr.split('/')[0]
+        for net in netaddrs:
+            remote_ip = net.split('/')[0]
             if remote_ip in valid_ip_list:
                 new_server_list[server] = remote_ip
 
@@ -302,7 +312,7 @@ def prepare_synthesis():
 
 
 def scrub_timestamp():
-    ''' Scrubing deletes server that didn't sent keepalive on time '''
+    '''Scrubing deletes server that didn't sent keepalive on time.'''
     global discovery
     global timestamp
     global server_list
@@ -319,7 +329,7 @@ def scrub_timestamp():
         ''' Let's check all entries we knew '''
         for key in timestamp.keys():
             ''' If we missed two consecutive keep alive,'''
-            if current_time > timestamp[key]+(KEEP_ALIVE*3):
+            if current_time > timestamp[key] + (KEEP_ALIVE * 3):
                 ''' We need to delete this server '''
                 sys.stderr.write('Deleting too old entry : %s\n' % key)
                 del timestamp[key]
@@ -342,26 +352,29 @@ def scrub_timestamp():
                     ''' We are no more in discovery '''
                     '''that will kill the client '''
                     discovery = False
-            elif current_time-previous_time >= DISCOVERY_TIME:
+            elif current_time - previous_time >= DISCOVERY_TIME:
                     ''' We are no more in discovery, '''
                     '''that will kill the client '''
                     discovery = False
 
             if discovery is False:
-                sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+                sock = socket.socket(
+                    socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
                 sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
 
                 if system_count == 0:
                     sys.stderr.write("No system detected, exiting\n")
                     message = {}
                     message['NOTHING_TO_DO'] = True
-                    sock.sendto(cPickle.dumps(server_list), (MCAST_GRP, MCAST_PORT))
+                    sock.sendto(cPickle.dumps(server_list),
+                                (MCAST_GRP, MCAST_PORT))
                     return
                 if system_count == 1:
                     message = {}
                     message['NOTHING_TO_DO'] = True
                     sys.stderr.write("No remote system detected, exiting\n")
-                    sock.sendto(cPickle.dumps(message), (MCAST_GRP, MCAST_PORT))
+                    sock.sendto(cPickle.dumps(message),
+                                (MCAST_GRP, MCAST_PORT))
                     return
                 sys.stderr.write("About to send the synthesis\n")
 
@@ -369,18 +382,21 @@ def scrub_timestamp():
 
                 ''' We need to wait two keep alive to '''
                 '''insure client completed his task '''
-                time.sleep(2*KEEP_ALIVE)
+                time.sleep(2 * KEEP_ALIVE)
 
                 ''' If a synthesis got received in between, '''
                 '''there is no more thing to do '''
                 if synthesis:
-                    sys.stderr.write("Received synthesis in between, aborting our\n")
+                    sys.stderr.write(
+                        "Received synthesis in between, aborting our\n")
                     return
 
                 ''' It's time to send the synthesis to the other nodes '''
                 leader = True
-                sock.sendto(cPickle.dumps(server_list), (MCAST_GRP, MCAST_PORT))
-                sys.stderr.write("End of Discovery with %d systems!\n" % system_count)
+                sock.sendto(cPickle.dumps(server_list),
+                            (MCAST_GRP, MCAST_PORT))
+                sys.stderr.write("End of Discovery with %d systems!\n" %
+                                 system_count)
                 return
         ''' Let's wait a KEEP_ALIVE seconds before scrubbing again '''
         time.sleep(KEEP_ALIVE)
@@ -413,7 +429,8 @@ def start_bench_server(port):
 def spawn_bench_servers(port_list):
     threads = {}
     for port in port_list:
-        threads[port] = threading.Thread(target=start_bench_server, args=tuple([port]))
+        threads[port] = threading.Thread(
+            target=start_bench_server, args=tuple([port]))
         threads[port].start()
 
 
@@ -423,33 +440,38 @@ def stop_bench_servers():
 
 def start_bench_client(ip, port):
     sys.stderr.write("Starting bench client on server %s:%s\n" % (ip, port))
-    cmd_netperf = subprocess.Popen('netperf -l %d -H %s -p %s -t TCP_STREAM' % (int(BENCH_DURATION), ip, port),
-            shell=True, stdout=subprocess.PIPE)
+    cmd_netperf = subprocess.Popen(
+        'netperf -l %d -H %s -p %s -t TCP_STREAM' % (int(BENCH_DURATION),
+                                                     ip, port),
+        shell=True, stdout=subprocess.PIPE)
 
-#    [root@localhost ~]# netperf -l 10 -H localhost  -f M -t TCP_STREAM
-#    MIGRATED TCP STREAM TEST from 0.0.0.0 (0.0.0.0) port 0 AF_INET to localhost.localdomain (127.0.0.1) port 0 AF_INET
-#    Recv   Send    Send
-#    Socket Socket  Message  Elapsed
-#    Size   Size    Size     Time     Throughput
-#    bytes  bytes   bytes    secs.    MBytes/sec
-#
+# [root@localhost ~]# netperf -l 10 -H localhost  -f M -t TCP_STREAM
+# MIGRATED TCP STREAM TEST from 0.0.0.0 (0.0.0.0) \
+# port 0 AF_INET to localhost.localdomain (127.0.0.1)
+# port 0 AF_INET
+# Recv   Send    Send
+# Socket Socket  Message  Elapsed
+# Size   Size    Size     Time     Throughput
+# bytes  bytes   bytes    secs.    MBytes/sec
 #     87380  16384  16384    10.00    4882.51
     for line in cmd_netperf.stdout:
         if "87380" in line:
-            recv_sock_size, send_sock_size, send_msg_size, time, bw = line.rstrip('\n').split()
+            (recv_sock_size, send_sock_size,
+             send_msg_size, time, bw) = line.rstrip('\n').split()
             bw_results_semaphore.acquire()
             bw_results.append(float(bw))
             bw_results_semaphore.release()
 
 
 def spawn_bench_client():
-    port = BENCH_PORT_BASE+server_list.keys().index(my_mac_addr)
+    port = BENCH_PORT_BASE + server_list.keys().index(my_mac_addr)
     threads = {}
     nb = 0
     for server in server_list:
         if my_mac_addr in server:
             continue
-        threads[nb] = threading.Thread(target=start_bench_client, args=[server_list[server], port])
+        threads[nb] = threading.Thread(
+            target=start_bench_client, args=[server_list[server], port])
         threads[nb].start()
         nb += 1
 
@@ -461,14 +483,21 @@ def spawn_bench_client():
 
     hw.append(('network', 'tcp_bench', 'bw_host', '%s' % numpy.sum(arr)))
     hw.append(('network', 'tcp_bench', 'streams_count', '%d' % nb))
-    hw.append(('network', 'tcp_bench', 'bw_stream_min', '%s' % numpy.amin(arr)))
-    hw.append(('network', 'tcp_bench', 'bw_stream_max', '%s' % numpy.amax(arr)))
-    hw.append(('network', 'tcp_bench', 'bw_stream_average', '%s' % numpy.average(arr)))
-    hw.append(('network', 'tcp_bench', 'bw_stream_median', '%s' % numpy.median(arr)))
-    hw.append(('network', 'tcp_bench', 'bw_stream_stddev', '%s' % numpy.std(arr)))
-    hw.append(('network', 'tcp_bench', 'bw_stream_raw_values', '%s' % bw_results))
+    hw.append(('network', 'tcp_bench', 'bw_stream_min', '%s' %
+              numpy.amin(arr)))
+    hw.append(('network', 'tcp_bench', 'bw_stream_max', '%s' %
+              numpy.amax(arr)))
+    hw.append(('network', 'tcp_bench', 'bw_stream_average', '%s' %
+              numpy.average(arr)))
+    hw.append(('network', 'tcp_bench', 'bw_stream_median', '%s' %
+              numpy.median(arr)))
+    hw.append(('network', 'tcp_bench', 'bw_stream_stddev', '%s' %
+              numpy.std(arr)))
+    hw.append(('network', 'tcp_bench', 'bw_stream_raw_values', '%s' %
+              bw_results))
     hw.append(('network', 'tcp_bench', 'subnet', '%s' % selected_subnet))
-    hw.append(('network', 'tcp_bench', 'hosts_list', '%s' % server_list.items()))
+    hw.append(('network', 'tcp_bench', 'hosts_list', '%s' %
+              server_list.items()))
     sys.stderr.write('Benchmmark completed !\n')
 
 
@@ -518,7 +547,8 @@ def spawn_bench_synchronize():
     wait_go = threading.Thread(target=wait_for_go, args=())
     wait_go.start()
 
-    send_ready_to_bench = threading.Thread(target=start_client, args=tuple(['READY_TO_BENCH']))
+    send_ready_to_bench = threading.Thread(
+        target=start_client, args=tuple(['READY_TO_BENCH']))
     send_ready_to_bench.start()
 
 
@@ -534,13 +564,14 @@ def _main():
 
     try:
         max_clients = int(os.environ['MAX_CLIENTS'])
-    except:
+    except Exception:
         max_clients = 0
 
     hw = eval(open(sys.argv[1]).read(-1))
 
     ''' Let's start the client '''
-    client = threading.Thread(target=start_client, args=tuple(['DISCOVERY', max_clients]))
+    client = threading.Thread(
+        target=start_client, args=tuple(['DISCOVERY', max_clients]))
     client.start()
 
     ''' Let's start scrubbing the server list '''
@@ -557,11 +588,14 @@ def _main():
     if (len(server_list) > 1):
         print_result()
 
-        if not my_mac_addr in server_list:
-            sys.stderr.write("Local mac address %s is not part of the final list, let's exit\n" % my_mac_addr)
+        if my_mac_addr not in server_list:
+            msg = "Local mac address %s is not part of the final list, let's "
+            "exit\n"
+            sys.stderr.write(msg % my_mac_addr)
             sys.exit(0)
 
-        sys.stderr.write("I'm server no %d\n" % server_list.keys().index(my_mac_addr))
+        sys.stderr.write("I'm server no %d\n" %
+                         server_list.keys().index(my_mac_addr))
         if leader:
             sys.stderr.write("I'm also the leader !\n")
 

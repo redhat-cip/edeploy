@@ -18,14 +18,12 @@
 
 '''Main entry point for hardware and system detection routines in eDeploy.'''
 
-import pprint
-import sys
-import subprocess
 import platform
+import pprint
 import re
+import subprocess
+import sys
 
-import diskinfo
-import hpacucli
 import os
 import psutil
 
@@ -51,7 +49,7 @@ def get_disks_name(hw__, without_bootable=False):
         if (entry[0] == 'disk' and entry[2] == 'size'):
             if without_bootable and is_booted_storage_device(entry[1]):
                 sys.stderr.write("Skipping disk %s in destructive mode, "
-                        "this is the booted device !\n" % entry[1])
+                                 "this is the booted device !\n" % entry[1])
             elif 'I:' in entry[1]:
                 if DEBUG:
                     sys.stderr.write("Ignoring HP hidden disk %s\n" % entry[1])
@@ -107,24 +105,25 @@ def run_sysbench(hw_, max_time, cpu_count, processor_num=-1):
     taskset = ''
     if (processor_num < 0):
         sys.stderr.write('Benchmarking all CPUs for '
-        '%d seconds (%d threads)\n' % (max_time, cpu_count))
+                         '%d seconds (%d threads)\n' % (max_time, cpu_count))
     else:
-        sys.stderr.write('Benchmarking CPU %d for %d seconds (%d threads)\n'
-                % (processor_num, max_time, cpu_count))
+        sys.stderr.write('Benchmarking CPU %d for %d seconds (%d threads)\n' %
+                         (processor_num, max_time, cpu_count))
         taskset = 'taskset %s' % hex(1 << processor_num)
 
-    sysbench_cmd = subprocess.Popen('%s sysbench --max-time=%d --max-requests=1000000 --num-threads=%d --test=cpu --cpu-max-prime=15000 run'
-            % (taskset, max_time, cpu_count),
-            shell=True, stdout=subprocess.PIPE)
+    cmds = '%s sysbench --max-time=%d --max-requests=1000000 --num-threads=%d '
+    '--test=cpu --cpu-max-prime=15000 run'
+    sysbench_cmd = subprocess.Popen(cmds % (taskset, max_time, cpu_count),
+                                    shell=True, stdout=subprocess.PIPE)
     for line in sysbench_cmd.stdout:
         if "total number of events" in line:
             title, perf = line.rstrip('\n').replace(' ', '').split(':')
             if processor_num == -1:
                 hw_.append(('cpu', 'logical', 'loops_per_sec',
-                    str(int(perf) / max_time)))
+                            str(int(perf) / max_time)))
             else:
-                hw_.append(('cpu', 'logical_%d' % processor_num, 'loops_per_sec',
-                    str(int(perf) / max_time)))
+                hw_.append(('cpu', 'logical_%d' % processor_num,
+                            'loops_per_sec', str(int(perf) / max_time)))
 
 
 def cpu_perf(hw_, testing_time=5, burn_test=False):
@@ -135,15 +134,16 @@ def cpu_perf(hw_, testing_time=5, burn_test=False):
     if burn_test is False:
         if result is not None:
             sys.stderr.write('CPU Performance: %d logical '
-                    'CPU to test (ETA: %d seconds)\n'
-                    % (int(result), (int(result)+1)*testing_time))
+                             'CPU to test (ETA: %d seconds)\n'
+                             % (int(result), (int(result) + 1) * testing_time))
             for cpu_nb in range(int(result)):
                 get_bogomips(hw_, cpu_nb)
                 get_cache_size(hw_, cpu_nb)
                 run_sysbench(hw_, testing_time, 1, cpu_nb)
     else:
         sys.stderr.write('CPU Burn: %d logical'
-                ' CPU to test (ETA: %d seconds)\n' % (int(result), testing_time))
+                         ' CPU to test (ETA: %d seconds)\n' % (
+                             int(result), testing_time))
 
     run_sysbench(hw_, testing_time, int(result))
 
@@ -160,7 +160,8 @@ def check_mem_size(block_size, cpu_count):
     elif unit[0] == 'G':
         unit_in_bytes = 1024 * 1024 * 1024
 
-    size_in_bytes = unit_in_bytes * int(dsplit.findall(block_size)[0]) * cpu_count
+    size_in_bytes = unit_in_bytes * \
+        int(dsplit.findall(block_size)[0]) * cpu_count
     if (size_in_bytes > available_memory):
         return False
 
@@ -173,26 +174,30 @@ def run_memtest(hw_, max_time, block_size, cpu_count, processor_num=-1):
     taskset = ''
     if (processor_num < 0):
         if check_mem is False:
-            sys.stderr.write("Avoid Benchmarking memory @%s from all CPUs, not enough memory\n"
-                    % block_size)
+            msg = "Avoid Benchmarking memory @%s "
+            "from all CPUs, not enough memory\n"
+            sys.stderr.write(msg % block_size)
             return
         sys.stderr.write('Benchmarking memory @%s from all CPUs '
-                'for %d seconds (%d threads)\n'
-                % (block_size, max_time, cpu_count))
+                         'for %d seconds (%d threads)\n'
+                         % (block_size, max_time, cpu_count))
     else:
         if check_mem is False:
-            sys.stderr.write("Avoid Benchmarking memory @%s from CPU %d, not enough memory\n"
-                    % (block_size, processor_num))
+            msg = "Avoid Benchmarking memory @%s "
+            "from CPU %d, not enough memory\n"
+            sys.stderr.write(msg % (block_size, processor_num))
             return
 
         sys.stderr.write('Benchmarking memory @%s from CPU %d'
-                ' for %d seconds (%d threads)\n'
-                % (block_size, processor_num, max_time, cpu_count))
+                         ' for %d seconds (%d threads)\n'
+                         % (block_size, processor_num, max_time, cpu_count))
         taskset = 'taskset %s' % hex(1 << processor_num)
 
-    sysbench_cmd = subprocess.Popen('%s sysbench --max-time=%d --max-requests=1000000 --num-threads=%d --test=memory --memory-block-size=%s run'
-            % (taskset, max_time, cpu_count, block_size),
-                shell=True, stdout=subprocess.PIPE)
+    _cmd = '%s sysbench --max-time=%d --max-requests=1000000 '
+    '--num-threads=%d --test=memory --memory-block-size=%s run'
+    sysbench_cmd = subprocess.Popen(_cmd % (taskset, max_time,
+                                            cpu_count, block_size),
+                                    shell=True, stdout=subprocess.PIPE)
 
     for line in sysbench_cmd.stdout:
         if "transferred" in line:
@@ -200,37 +205,42 @@ def run_memtest(hw_, max_time, block_size, cpu_count, processor_num=-1):
             perf, useless = right.split('.')
             if processor_num == -1:
                 hw_.append(('cpu', 'logical', 'threaded_bandwidth_%s'
-                    % block_size, perf))
+                            % block_size, perf))
             else:
                 hw_.append(('cpu', 'logical_%d' % processor_num, 'bandwidth_%s'
-                    % block_size, perf))
+                            % block_size, perf))
 
 
 def run_forked_memtest(hw_, max_time, block_size, cpu_count):
     'Running forked memtest on a processor'
     if check_mem_size(block_size, cpu_count) is False:
-        sys.stderr.write('Avoid benchmarking memory @%s from all CPUs (%d processes), not enough memory'
-                % (block_size, cpu_count))
+        cmd = 'Avoid benchmarking memory @%s'
+        'from all CPUs (%d processes), not enough memory'
+        sys.stderr.write(cmd % (block_size, cpu_count))
         return
     sys.stderr.write('Benchmarking memory @%s from all CPUs'
-            ' for %d seconds (%d processes)\n'
-            % (block_size, max_time, cpu_count))
+                     ' for %d seconds (%d processes)\n'
+                     % (block_size, max_time, cpu_count))
     sysbench_cmd = '('
     for cpu in range(cpu_count):
-        sysbench_cmd += 'sysbench --max-time=%d --max-requests=1000000 --num-threads=1 --test=memory --memory-block-size=%s run &' % (max_time, block_size)
+        _cmd = 'sysbench --max-time=%d --max-requests=1000000 --num-threads=1'
+        '--test=memory --memory-block-size=%s run &'
+        sysbench_cmd += _cmd % (max_time, block_size)
 
     sysbench_cmd.rstrip('&')
     sysbench_cmd += ')'
 
     global_perf = 0
-    process = subprocess.Popen(sysbench_cmd, shell=True, stdout=subprocess.PIPE)
+    process = subprocess.Popen(
+        sysbench_cmd, shell=True, stdout=subprocess.PIPE)
     for line in process.stdout:
         if "transferred" in line:
             title, right = line.rstrip('\n').replace(' ', '').split('(')
             perf, useless = right.split('.')
             global_perf += int(perf)
 
-    hw_.append(('cpu', 'logical', 'forked_bandwidth_%s' % (block_size), str(global_perf)))
+    hw_.append(('cpu', 'logical', 'forked_bandwidth_%s' %
+               (block_size), str(global_perf)))
 
 
 def get_ddr_timing(hw_):
@@ -238,9 +248,9 @@ def get_ddr_timing(hw_):
     sys.stderr.write('Reporting DDR Timings\n')
     found = False
     cmd = subprocess.Popen('ddr-timings-%s' % platform.machine(),
-                         shell=True, stdout=subprocess.PIPE)
-#DDR   tCL   tRCD  tRP   tRAS  tRRD  tRFC  tWR   tWTPr tRTPr tFAW  B2B
-# #0 |  11    15    15    31     7   511    11    31    15    63    31
+                           shell=True, stdout=subprocess.PIPE)
+# DDR   tCL   tRCD  tRP   tRAS  tRRD  tRFC  tWR   tWTPr tRTPr tFAW  B2B
+# 0 |  11    15    15    31     7   511    11    31    15    63    31
 
     for line in cmd.stdout:
         if 'is a Triple' in line:
@@ -264,7 +274,9 @@ def get_ddr_timing(hw_):
             continue
 
         if (found is True):
-            ddr_channel, tCL, tRCD, tRP, tRAS, tRRD, tRFC, tWR, tWTPr, tRTPr, tFAW, B2B = line.rstrip('\n').replace('|', ' ').split()
+            (ddr_channel, tCL, tRCD, tRP, tRAS,
+             tRRD, tRFC, tWR, tWTPr,
+             tRTPr, tFAW, B2B) = line.rstrip('\n').replace('|', ' ').split()
             ddr_channel = ddr_channel.replace('#', '')
             hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tCL', tCL))
             hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tRCD', tRCD))
@@ -284,7 +296,8 @@ def mem_perf_burn(hw_, testing_time=10):
     result = get_value(hw_, 'cpu', 'logical', 'number')
     if result is not None:
         sys.stderr.write('Memory Burn: %d logical CPU'
-                ' to test (ETA: %d seconds)\n' % (int(result), testing_time))
+                         ' to test (ETA: %d seconds)\n' % (
+                             int(result), testing_time))
         run_memtest(hw_, testing_time, '128M', int(result))
 
 
@@ -294,11 +307,11 @@ def mem_perf(hw_, testing_time=1):
     block_size_list = ['1K', '4K', '1M', '16M', '128M', '1G', '2G']
     result = get_value(hw_, 'cpu', 'logical', 'number')
     if result is not None:
-        eta = int(result)*len(block_size_list)*testing_time
-        eta += 2*(all_cpu_testing_time*len(block_size_list))
+        eta = int(result) * len(block_size_list) * testing_time
+        eta += 2 * (all_cpu_testing_time * len(block_size_list))
         sys.stderr.write('Memory Performance: %d logical CPU'
-                ' to test (ETA: %d seconds)\n'
-                % (int(result), int(eta)))
+                         ' to test (ETA: %d seconds)\n'
+                         % (int(result), int(eta)))
         for cpu_nb in range(int(result)):
             for block_size in block_size_list:
                 run_memtest(hw_, testing_time, block_size, 1, cpu_nb)
@@ -311,7 +324,7 @@ def mem_perf(hw_, testing_time=1):
 
             for block_size in block_size_list:
                 run_forked_memtest(hw_, all_cpu_testing_time,
-                        block_size, int(result))
+                                   block_size, int(result))
 
     get_ddr_timing(hw_)
 
@@ -320,27 +333,33 @@ def run_fio(hw_, disks_list, mode, io_size, time):
     filelist = [f for f in os.listdir(".") if f.endswith(".fio")]
     for myfile in filelist:
         os.remove(myfile)
-    fio = "fio --ioengine=libaio --invalidate=1 --ramp_time=%d --iodepth=32 --runtime=%d --time_based --direct=1 --bs=%s --rw=%s" % (RAMP_TIME, time, io_size, mode)
+    fio = "fio --ioengine=libaio --invalidate=1 --ramp_time=%d --iodepth=32 "
+    "--runtime=%d --time_based --direct=1 "
+    "--bs=%s --rw=%s" % (RAMP_TIME, time, io_size, mode)
 
     global_disk_list = ''
     for disk in disks_list:
-        if not '/dev/' in disk:
+        if '/dev/' not in disk:
             disk = '/dev/%s' % disk
         short_disk = disk.replace('/dev/', '')
         fio = "%s --name=MYJOB-%s --filename='%s'" % (fio, short_disk, disk)
         global_disk_list += '%s,' % short_disk
     global_disk_list = global_disk_list.rstrip(',')
-    sys.stderr.write('Benchmarking storage %s for %s seconds in %s mode with blocksize=%s\n' % (global_disk_list, time, mode, io_size))
+    sys.stderr.write(
+        'Benchmarking storage %s for %s seconds in '
+        '%s mode with blocksize=%s\n' %
+        (global_disk_list, time, mode, io_size))
     fio_cmd = subprocess.Popen(fio,
-                        shell=True, stdout=subprocess.PIPE)
+                               shell=True, stdout=subprocess.PIPE)
     current_disk = ''
     for line in fio_cmd.stdout:
         if ('MYJOB-' in line) and ('pid=' in line):
-            #MYJOB-sda: (groupid=0, jobs=1): err= 0: pid=23652: Mon Sep  9 16:21:42 2013
+            # MYJOB-sda: (groupid=0, jobs=1): err= 0: pid=23652: Mon Sep  9
+            # 16:21:42 2013
             current_disk = re.search('MYJOB-(.*): \(groupid', line).group(1)
             continue
         if ("read : io=" in line) or ("write: io=" in line):
-             #read : io=169756KB, bw=16947KB/s, iops=4230, runt= 10017msec
+             # read : io=169756KB, bw=16947KB/s, iops=4230, runt= 10017msec
             if (len(disks_list) > 1):
                 mode_str = "simultaneous_%s_%s" % (mode, io_size)
             else:
@@ -348,9 +367,9 @@ def run_fio(hw_, disks_list, mode, io_size, time):
 
             try:
                 perf = re.search('bw=(.*?B/s),', line).group(1)
-            except:
+            except Exception:
                 sys.stderr.write('Failed at detecting '
-                        'bwps pattern with %s\n' % line)
+                                 'bwps pattern with %s\n' % line)
             else:
                 multiply = 1
                 divide = 1
@@ -361,18 +380,19 @@ def run_fio(hw_, disks_list, mode, io_size, time):
                 elif "B/s" in perf:
                     divide = 1024
                 try:
-                    iperf = perf.replace('KB/s', '').replace('MB/s', '').replace('B/s', '')
-                except:
+                    iperf = perf.replace(
+                        'KB/s', '').replace('MB/s', '').replace('B/s', '')
+                except Exception:
                     True
-                hw_.append(('disk', current_disk, mode_str+'_KBps',
-                    str(int(float(float(iperf)*multiply/divide)))))
+                hw_.append(('disk', current_disk, mode_str + '_KBps',
+                            str(int(float(float(iperf) * multiply / divide)))))
 
             try:
-                hw_.append(('disk', current_disk, mode_str+'_IOps',
-                    re.search('iops=(.*),', line).group(1).strip(' ')))
-            except:
+                hw_.append(('disk', current_disk, mode_str + '_IOps',
+                            re.search('iops=(.*),', line).group(1).strip(' ')))
+            except Exception:
                 sys.stderr.write('Failed at detecting iops '
-                        'pattern with %s\n' % line)
+                                 'pattern with %s\n' % line)
 
 
 def get_output_filename(hw_):
@@ -394,15 +414,16 @@ def get_output_filename(hw_):
     if mac:
         sysname += mac.replace(':', '-')
 
-    return sysname+".hw_"
+    return sysname + ".hw_"
 
 
 def is_booted_storage_device(disk):
-    cmdline = "grep -w /ahcexport /proc/mounts | cut -d ' ' -f 1 | sed -e 's/[0-9]*//g'"
-    if not '/dev/' in disk:
+    cmdline = "grep -w /ahcexport /proc/mounts | cut -d ' ' -f 1 "
+    "| sed -e 's/[0-9]*//g'"
+    if '/dev/' not in disk:
         disk = '/dev/%s' % disk
     grep_cmd = subprocess.Popen(cmdline,
-            shell=True, stdout=subprocess.PIPE)
+                                shell=True, stdout=subprocess.PIPE)
     for booted_disk in grep_cmd.stdout:
         booted_disk = booted_disk.rstrip('\n').strip()
         if booted_disk == disk:
@@ -417,9 +438,11 @@ def storage_perf_burn(hw_, allow_destructive, running_time=10):
         running_time = running_time / 2
     disks = get_disks_name(hw_)
     sys.stderr.write('Running storage burn on %d disks in'
-            ' %s mode for %d seconds\n' % (len(disks), mode, 2*running_time))
+                     ' %s mode for %d seconds\n' % (
+                         len(disks), mode, 2 * running_time))
     if allow_destructive:
-        run_fio(hw_, get_disks_name(hw_, True), "randwrite", "4k", running_time)
+        run_fio(hw_, get_disks_name(hw_, True),
+                "randwrite", "4k", running_time)
         run_fio(hw_, get_disks_name(hw_, True), "write", "1M", running_time)
 
     run_fio(hw_, disks, "randread", "4k", running_time)
@@ -430,23 +453,24 @@ def storage_perf(hw_, allow_destructive, running_time=10):
     'Reporting disk performance'
     mode = "non destructive"
     # Let's count the number of runs in safe mode
-    total_runtime = len(get_disks_name(hw_))*(running_time+RAMP_TIME)*2
+    total_runtime = len(get_disks_name(hw_)) * (running_time + RAMP_TIME) * 2
     disks = get_disks_name(hw_)
     if (len(disks) > 1):
-        total_runtime += 2*(running_time+RAMP_TIME)
+        total_runtime += 2 * (running_time + RAMP_TIME)
 
     if allow_destructive:
-        total_runtime = total_runtime*2
+        total_runtime = total_runtime * 2
         mode = 'destructive'
 
     sys.stderr.write('Running storage bench on %d disks in'
-            ' %s mode for %d seconds\n' % (len(disks), mode, total_runtime))
+                     ' %s mode for %d seconds\n' % (
+                         len(disks), mode, total_runtime))
     for disk in disks:
         is_booted_storage_device(disk)
         if allow_destructive:
             if is_booted_storage_device(disk):
                 sys.stderr.write("Skipping disk %s in destructive mode,"
-                        " this is the booted device !" % disk)
+                                 " this is the booted device !" % disk)
             else:
                 run_fio(hw_, ['%s' % disk], "randwrite", "4k", running_time)
                 run_fio(hw_, ['%s' % disk], "write", "1M", running_time)
@@ -471,7 +495,7 @@ def _main():
     try:
         if os.environ['DESTRUCTIVE_MODE']:
             allow_destructive = True
-    except:
+    except Exception:
         True
 
     hrdw = eval(open(sys.argv[1]).read(-1))
@@ -482,7 +506,7 @@ def _main():
     mode = 'cpu,memory,storage'
     try:
         mode = sys.argv[2]
-    except:
+    except Exception:
         True
 
     if 'cpu-burn' in mode:

@@ -111,8 +111,8 @@ def run_sysbench(hw_, max_time, cpu_count, processor_num=-1):
                          (processor_num, max_time, cpu_count))
         taskset = 'taskset %s' % hex(1 << processor_num)
 
-    cmds = '%s sysbench --max-time=%d --max-requests=1000000 --num-threads=%d '
-    '--test=cpu --cpu-max-prime=15000 run'
+    cmds = '%s sysbench --max-time=%d --max-requests=1000000 ' \
+           '--num-threads=%d --test=cpu --cpu-max-prime=15000 run'
     sysbench_cmd = subprocess.Popen(cmds % (taskset, max_time, cpu_count),
                                     shell=True, stdout=subprocess.PIPE)
     for line in sysbench_cmd.stdout:
@@ -174,8 +174,8 @@ def run_memtest(hw_, max_time, block_size, cpu_count, processor_num=-1):
     taskset = ''
     if (processor_num < 0):
         if check_mem is False:
-            msg = "Avoid Benchmarking memory @%s "
-            "from all CPUs, not enough memory\n"
+            msg = ("Avoid Benchmarking memory @%s "
+                   "from all CPUs, not enough memory\n")
             sys.stderr.write(msg % block_size)
             return
         sys.stderr.write('Benchmarking memory @%s from all CPUs '
@@ -183,8 +183,8 @@ def run_memtest(hw_, max_time, block_size, cpu_count, processor_num=-1):
                          % (block_size, max_time, cpu_count))
     else:
         if check_mem is False:
-            msg = "Avoid Benchmarking memory @%s "
-            "from CPU %d, not enough memory\n"
+            msg = ("Avoid Benchmarking memory @%s "
+                   "from CPU %d, not enough memory\n")
             sys.stderr.write(msg % (block_size, processor_num))
             return
 
@@ -193,8 +193,8 @@ def run_memtest(hw_, max_time, block_size, cpu_count, processor_num=-1):
                          % (block_size, processor_num, max_time, cpu_count))
         taskset = 'taskset %s' % hex(1 << processor_num)
 
-    _cmd = '%s sysbench --max-time=%d --max-requests=1000000 '
-    '--num-threads=%d --test=memory --memory-block-size=%s run'
+    _cmd = '%s sysbench --max-time=%d --max-requests=1000000 ' \
+           '--num-threads=%d --test=memory --memory-block-size=%s run'
     sysbench_cmd = subprocess.Popen(_cmd % (taskset, max_time,
                                             cpu_count, block_size),
                                     shell=True, stdout=subprocess.PIPE)
@@ -223,8 +223,8 @@ def run_forked_memtest(hw_, max_time, block_size, cpu_count):
                      % (block_size, max_time, cpu_count))
     sysbench_cmd = '('
     for cpu in range(cpu_count):
-        _cmd = 'sysbench --max-time=%d --max-requests=1000000 --num-threads=1'
-        '--test=memory --memory-block-size=%s run &'
+        _cmd = 'sysbench --max-time=%d --max-requests=1000000 ' \
+               '--num-threads=1 --test=memory --memory-block-size=%s run &'
         sysbench_cmd += _cmd % (max_time, block_size)
 
     sysbench_cmd.rstrip('&')
@@ -333,9 +333,9 @@ def run_fio(hw_, disks_list, mode, io_size, time):
     filelist = [f for f in os.listdir(".") if f.endswith(".fio")]
     for myfile in filelist:
         os.remove(myfile)
-    fio = "fio --ioengine=libaio --invalidate=1 --ramp_time=%d --iodepth=32 "
-    "--runtime=%d --time_based --direct=1 "
-    "--bs=%s --rw=%s" % (RAMP_TIME, time, io_size, mode)
+    fio = "fio --ioengine=libaio --invalidate=1 --ramp_time=%d --iodepth=32 " \
+          "--runtime=%d --time_based --direct=1 " \
+          "--bs=%s --rw=%s" % (RAMP_TIME, time, io_size, mode)
 
     global_disk_list = ''
     for disk in disks_list:

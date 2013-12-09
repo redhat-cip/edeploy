@@ -171,7 +171,7 @@ mount /dev/disk/by-label/AHCEXPORT /ahcexport || rm -rf /ahcexport
 step "Detecting hardware"
 
 cd /
-./detect.py > /hw.py
+./detect.py > /hw.py || give_up "Failed to detect hardware"
 
 show_kernel_modules
 
@@ -179,7 +179,7 @@ show_git_rev
 
 step "Benchmarking system"
 ./netdetect.py hw.py > /net.py
-./health-check.py /net.py > /health.py
+./health-check.py /net.py > /health.py || give_up "Failed to run health-check"
 
 save_results
 

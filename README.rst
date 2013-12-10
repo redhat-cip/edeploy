@@ -47,8 +47,7 @@ Root privilege
 ++++++++++++++
 
 ``make`` calls ``debootstrap``. This command needs root privilege. You can
-either work as root or use ``sudo -E make``. -E parameter is important to
-ensure the DISPLAY environment variable will be properly exported.
+either work as root or use ``sudo``.
 
 How to start
 ------------

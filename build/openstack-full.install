@@ -64,14 +64,16 @@ packages=(
         swift-plugin-s3 memcached keystone ceilometer-api \
         ceilometer-agent-central ceilometer-collector mysql-server \
         mongodb-server mongodb-clients swift-account swift-container swift-object \
-        xfsprogs libdbd-mysql-perl ruby-sqlite3 ruby-activerecord"
+        xfsprogs libdbd-mysql-perl ruby-sqlite3 ruby-activerecord \
+        rabbitmq-server rsync"
     ["rpm"]="openstack-nova-compute qemu-kvm python-cinderclient \
         openstack-ceilometer-compute openstack-neutron openstack-proxy-node \
         openstack-swift-proxy memcached openstack-keystone \
         openstack-ceilometer-api openstack-ceilometer-agent-central \
         openstack-ceilometer-collector mysql-server mongo-10gen mongo-10gen-server \
         openstack-swift-account openstack-swift-container openstack-swift-object \
-        xfsprogs ruby-sqlite3 ruby-activerecord"
+        xfsprogs ruby-sqlite3 ruby-activerecord puppetdb ntp rabbitmq-server \
+        rsync xinetd"
 )
 
 update_repositories $dir
@@ -95,7 +97,7 @@ case "$OS" in
           swift-account-auditor swift-object-updater nova-xenvncproxy \
           nova-conductor swift-account-reaper swift-proxy glance-api \
           nova-consoleauth heat-api-cfn libvirt-bin libvirt-guests \
-          rubygem-activerecord ruby-sqlite3"
+          "
 
     for s in ${services}; do
         do_chroot $dir update-rc.d $s disable
@@ -114,7 +116,7 @@ case "$OS" in
           openstack-swift-container-updater openstack-swift-object \
           openstack-swift-object-auditor openstack-swift-object-expirer \
           openstack-swift-object-replicator openstack-swift-object-updater \
-          openstack-swift-proxy radvd"
+          openstack-swift-proxy radvd puppetdb rabbitmq-server"
 
     for s in ${services}; do
         do_chroot $dir chkconfig $s off

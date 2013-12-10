@@ -116,7 +116,8 @@ case "$OS" in
           openstack-swift-container-updater openstack-swift-object \
           openstack-swift-object-auditor openstack-swift-object-expirer \
           openstack-swift-object-replicator openstack-swift-object-updater \
-          openstack-swift-proxy radvd puppetdb rabbitmq-server"
+          openstack-swift-proxy radvd puppetdb rabbitmq-server \
+          openstack-neutron-openvswitch"
 
     for s in ${services}; do
         do_chroot $dir chkconfig $s off

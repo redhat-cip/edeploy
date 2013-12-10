@@ -59,7 +59,12 @@ def detect_hpa(hw_lst):
             sys.stderr.write("Info: No hpa controller found\n")
             return False
 
-        for controller in controllers:
+    except hpacucli.Error as expt:
+        sys.stderr.write('Info: detect_hpa : %s\n' % expt.value)
+        return False
+
+    for controller in controllers:
+        try:
             slot = 'slot=%d' % controller[0]
             for _, disks in cli.ctrl_pd_all_show(slot):
                 for disk in disks:
@@ -68,10 +73,10 @@ def detect_hpa(hw_lst):
                                    str(controller[0])))
                     hw_lst.append(('disk', disk[0], 'size',
                                    size_in_gb(disk[2])))
-        return True
-    except hpacucli.Error as expt:
-        sys.stderr.write('Info: detect_hpa : %s\n' % expt.value)
-        return False
+        except hpacucli.Error as expt:
+            sys.stderr.write('Info: detect_hpa : controller %d : %s\n' % (controller[0], expt.value))
+
+    return True
 
 
 def detect_disks(hw_lst):

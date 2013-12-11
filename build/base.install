@@ -158,6 +158,7 @@ install_base_packages() {
         echo 'exit 0' > "${target}"/etc/default/grub.d/edeploy.cfg
         install_packages $target "$packages"
         echo  "en_US.utf8 UTF-8" >> $target/etc/locale.gen
+        echo  'LANG=en_US.UTF-8' > $target/etc/default/locale
         do_chroot "$target" locale-gen
         rm -f "${target}"/etc/default/grub.d/edeploy.cfg
     else if [ "$(package_type)" = "rpm" ]; then

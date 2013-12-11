@@ -33,6 +33,10 @@ case "$OS" in
 #    cat > ${dir}/etc/apt/sources.list.d/mongodb.list <<EOF
 #deb http://downloads-distro.mongodb.org/repo/debian-sysvinit dist 10gen
 #EOF
+
+     cat > ${dir}/etc/apt/sources.list.d/maria.list <<EOF
+deb [trusted=yes] http://ftp.igh.cnrs.fr/pub/mariadb/repo/5.5/debian wheezy main
+EOF
     ;;
     "Ubuntu")
 #    cat > ${dir}/etc/apt/sources.list.d/mongodb.list <<EOF
@@ -62,10 +66,10 @@ packages=(
     ["deb"]="openstack-compute-node openstack-proxy-node xinetd swift-proxy \
         ceilometer-alarm-evaluator ceilometer-alarm-notifier \
         swift-plugin-s3 memcached keystone ceilometer-api \
-        ceilometer-agent-central ceilometer-collector mysql-server \
+        ceilometer-agent-central ceilometer-collector mariadb-server \
         mongodb-server mongodb-clients swift-account swift-container swift-object \
         xfsprogs libdbd-mysql-perl ruby-sqlite3 ruby-activerecord \
-        rabbitmq-server rsync mysql-client euca2ools pm-utils screen unzip"
+        rabbitmq-server rsync mariadb-client euca2ools pm-utils screen unzip"
     ["rpm"]="openstack-nova-compute qemu-kvm python-cinderclient \
         openstack-ceilometer-compute openstack-neutron openstack-proxy-node \
         openstack-swift-proxy memcached openstack-keystone \

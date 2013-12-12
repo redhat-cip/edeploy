@@ -71,7 +71,7 @@ $(INST)/base.done: base.install policy-rc.d edeploy
 	touch $(INST)/base.done
 
 #sample: $(INST)/sample.done
-#$(INST)/sample.done: sample.install $(INST)/sample.done
+#$(INST)/sample.done: sample.install $(INST)/base.done
 #	./sample.install $(INST)/base $(INST)/sample $(VERS)
 #	touch $(INST)/sample.done
 

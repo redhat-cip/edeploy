@@ -7,19 +7,19 @@ add_main_repository() {
   fi
 
   case "$dist" in
-    wheezy|squeeze|jessie)
+    $supported_debian_dists)
         echo "http://cdn.debian.net/debian"
         return 0
     ;;
-    lucid|precise|quantal|raring|saucy|trusty)
+    $supported_ubuntu_dists)
         echo "http://archive.ubuntu.com/ubuntu"
         return 0
     ;;
-    centos)
+    $supported_centos_dists)
         echo "http://mirror.centos.org/centos/6.5/os/x86_64/Packages/centos-release-6-5.el6.centos.11.1.x86_64.rpm"
         return 0
     ;;
-    redhat)
+    $supported_redhat_dists)
         if [ ! -z "$ISO_PATH" ]; then
             echo "${target}/repo/Packages/redhat-release-server-6Server-6.5.0.1.el6.x86_64.rpm"
         else
@@ -43,15 +43,15 @@ get_openstack_repository() {
   fi
 
   case "$dist" in
-    wheezy|squeeze|jessie)
+    $supported_debian_dists)
         echo "deb http://cloud.pkgs.enovance.com/${RELEASE}-${openstack_release}/ ${openstack_release} main"
         return 0
     ;;
-    lucid|precise|quantal|raring|saucy|trusty)
+    $supported_ubuntu_dists)
         echo "deb http://cloud.pkgs.enovance.com/${RELEASE}-${openstack_release}/ ${openstack_release} main"
         return 0
     ;;
-    centos|redhat)
+    $supported_centos_dists|$supported_redhat_dists)
         current_rpm_release="undef"
         cloud_init_release="0.7.2-2.el6"
         case "$openstack_release" in
@@ -78,7 +78,7 @@ add_epel_repository() {
   local dist=$1
   local target=$2
   case "$dist" in
-    centos|redhat)
+    $supported_centos_dists|$supported_redhat_dists)
         install_packages $target http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
     ;;
   *)
@@ -94,7 +94,7 @@ unregister_satellite() {
     # Let's to the basic tests here
     # This have only a meaning for redhat systems
     case "$dist" in
-        redhat)
+        $supported_redhat_dists)
 
         # Let's remove the systemid from the chroot
         if [ -f $target/etc/sysconfig/rhn/systemid ]; then
@@ -124,7 +124,7 @@ add_satellite_repository() {
   local dist=$1
   local target=$2
   case "$dist" in
-    redhat)
+    $supported_redhat_dists)
       if [ -z "$SATELLITE_USERNAME" ] || [ -z "$SATELLITE_PASSWORD" ]; then
         echo "You should provide SATELLITE_USERNAME and SATELLITE_PASSWORD to get a satellite support"
         return

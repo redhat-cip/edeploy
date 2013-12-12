@@ -1,0 +1,9 @@
+# -*- shell-script -*-
+
+# We need the extglob to use supported_debian_dists in case() statement
+shopt -s extglob
+export supported_debian_dists='+(squeeze|wheezy|jessie)'
+export supported_ubuntu_dists='+(lucid|precise|quantal|raring|saucy|trusty)'
+export supported_redhat_dists='redhat'
+export supported_centos_dists='centos'
+export all_supported_dists="$supported_debian_dists|$supported_ubuntu_dists|$supported_redhat_dists|$supported_centos_dists"

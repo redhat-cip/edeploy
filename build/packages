@@ -32,10 +32,10 @@ package_type() {
         DISTRO="$RELEASE"
     fi
     case "$DISTRO" in
-        wheezy|precise)
+        $supported_ubuntu_dists|$supported_debian_dists)
             echo "deb"
         ;;
-        centos|redhat)
+        $supported_centos_dists|$supported_redhat_dists)
             echo "rpm"
         ;;
         *)
@@ -50,10 +50,10 @@ package_tool() {
         DISTRO="$RELEASE"
     fi
     case "$DISTRO" in
-        wheezy|precise)
+        $supported_ubuntu_dists|$supported_debian_dists)
             echo "apt"
         ;;
-        centos|redhat)
+        $supported_centos_dists|$supported_redhat_dists)
             echo "yum"
         ;;
         *)

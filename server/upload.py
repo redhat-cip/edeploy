@@ -407,7 +407,7 @@ def main():
     times = '*'
     name = None
     for name, times in names:
-        if times == '*' or times > 0:
+        if times == '*' or int(times) > 0:
             specs = eval(open(cfg_dir + name + '.specs', 'r').read(-1))
             var = {}
             var2 = {}
@@ -423,7 +423,7 @@ def main():
         var2 = var
 
     if times != '*':
-        names[idx] = (name, times - 1)
+        names[idx] = (name, int(times) - 1)
 
     cmdb = load_cmdb(cfg_dir, name)
     if cmdb:

@@ -77,7 +77,7 @@ packages=(
         openstack-ceilometer-collector mysql-server mongo-10gen mongo-10gen-server \
         openstack-swift-account openstack-swift-container openstack-swift-object \
         xfsprogs ruby-sqlite3 ruby-activerecord puppetdb ntp rabbitmq-server \
-        rsync xinetd"
+        openstack-neutron-openvswitch rsync xinetd"
 )
 
 update_repositories $dir
@@ -121,7 +121,7 @@ case "$OS" in
           openstack-swift-object-auditor openstack-swift-object-expirer \
           openstack-swift-object-replicator openstack-swift-object-updater \
           openstack-swift-proxy radvd puppetdb rabbitmq-server \
-          openstack-neutron-openvswitch"
+          neutron-openvswitch-agent neutron-ovs-cleanup"
 
     for s in ${services}; do
         do_chroot $dir chkconfig $s off

@@ -167,8 +167,7 @@ find $PWD/../config \
     -maxdepth 1 \
     -name '*.hw' -or \
     -name 'state' -or \
-    -name 'kvm-test.cmdb' \
-    -exec chmod a+rw {} \;
+    -name 'kvm-test.cmdb' | xargs chmod a+rw
 
 ln -sf $PWD/edeploy.conf /etc/
 }

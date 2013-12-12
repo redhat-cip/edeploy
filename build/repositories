@@ -1,7 +1,7 @@
 add_main_repository() {
   local dist=$1
 
-  if [ -n "$REPOSITORY" ]; then
+  if [ -n "$REPOSITORY" -a "$dist" != redhat ]; then
     echo "$REPOSITORY"
     return
   fi
@@ -20,8 +20,8 @@ add_main_repository() {
         return 0
     ;;
     $supported_redhat_dists)
-        if [ ! -z "$ISO_PATH" ]; then
-            echo "${target}/repo/Packages/redhat-release-server-6Server-6.5.0.1.el6.x86_64.rpm"
+        if [ -n "$ISO_PATH" ]; then
+            echo "${ISO_PATH}/repo/Packages/redhat-release-server-6Server-6.5.0.1.el6.x86_64.rpm"
         else
             echo "${REPOSITORY}/Packages/redhat-release-server-6Server-6.5.0.1.el6.x86_64.rpm"
         fi

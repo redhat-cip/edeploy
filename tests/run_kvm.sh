@@ -18,7 +18,7 @@
 
 set -e
 DISK=kvm_storage.img
-DISK_SIZE=2000 # in MB
+DISK_SIZE=4000 # in MB
 HTTP_PORT=9000
 INST=$1
 MODE=$2

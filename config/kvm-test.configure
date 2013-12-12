@@ -20,7 +20,7 @@ for disk, path in ((bootable_disk, '/chroot'), ):
     run('dmsetup remove_all || /bin/true')
     run('pvcreate -ff -y --dataalignment 512k %s%d' % (disk, 3))
     run('vgcreate -f -y --dataalignment 512k rootfs %s%d' % (disk, 3))
-    run('lvcreate rootfs -n slash -L 1.4G')
+    run('lvcreate rootfs -n slash -L 3.4G')
     run('lvcreate rootfs -n swap -L 128M')
     print "Creating FS"
     run('mkfs.ext4 -L boot -m 0 %s%d' % (disk,2))

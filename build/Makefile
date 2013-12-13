@@ -70,6 +70,11 @@ $(INST)/base.done: base.install policy-rc.d edeploy
 	./base.install $(INST)/base $(DIST) $(VERS)
 	touch $(INST)/base.done
 
+deploy: $(INST)/deploy.done
+$(INST)/deploy.done: deploy.install $(INST)/base.done
+	./deploy.install $(INST)/base $(INST)/deploy $(VERS)
+	touch $(INST)/deploy.done
+
 #sample: $(INST)/sample.done
 #$(INST)/sample.done: sample.install $(INST)/base.done
 #	./sample.install $(INST)/base $(INST)/sample $(VERS)

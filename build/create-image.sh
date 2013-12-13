@@ -16,34 +16,111 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-if [ $# != 2 ]; then
-    echo "Usage: $0 <top directory> <image file to create>" 1>&2
+. common
+
+do_fatal_error() {
+    echo "$@" 1>&2
     exit 1
+}
+
+setup_network() {
+if [ "$NETWORK_CONFIG" = "auto" ]; then
+    # Fix network to start eth0 in DHCP
+
+    if [ -r "$MDIR"/etc/network/interfaces ]; then
+    cat > "$MDIR"/etc/network/interfaces <<EOF
+# interfaces(5) file used by ifup(8) and ifdown(8)
+auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet dhcp
+EOF
+    fi
+fi
+}
+
+clean_temporary() {
+    umount "$MDIR/"dev
+    umount "$MDIR/"proc
+    umount "$MDIR"
+
+    losetup -d $DEV
+    kpartx -d "$IMG"
+    rmdir "$MDIR"
+}
+
+do_cleanup() {
+    ret=$?
+    echo "#################"
+    echo "# Entering TRAP #"
+    echo "#################"
+    clear_trap
+
+    if [ -f $IMG ]; then
+       rm -f $IMG
+    fi
+
+    clean_temporary
+    echo "###############"
+    echo "# End of TRAP #"
+    echo "###############"
+    exit $ret
+}
+
+if [ $# != 3 ]; then
+    do_fatal_error "Usage: $0 <top directory> <image file to create> <configuration_file>"
 fi
 
 DIR="$1"
 IMG="$2"
+CONFIG="$3"
+
+. $CONFIG
+
+# QCOW2 as default image format
+IMAGE_FORMAT=${IMAGE_FORMAT:-qcow2}
+ROOT_FS_SIZE=${ROOT_FS_SIZE:-auto}
+NETWORK_CONFIG=${NETWORK_CONFIG:-auto}
 
 if [ -f "$IMG" ]; then
-    echo "Error: $IMG already exists" 1>&2
-    exit 1
+    do_fatal_error "Error: $IMG already exists"
 fi
 
 if [ ! -d "$DIR" ] ;then
-    echo "Error: directory $DIR doesn't exist" 1>&2
-    exit 1
+    do_fatal_error "Error: directory $DIR doesn't exist"
 fi
+
+check_binary dd
+check_binary parted
+check_binary chroot
+check_binary kpartx
+check_binary qemu-img
+check_binary losetup
+check_binary mkfs.ext3
+check_binary rsync
 
 set -e
 set -x
 
 # Compute the size of the directory
-
 SIZE=$(du -s -BM "$DIR" | cut -f1 | sed -s 's/.$//')
 
-# add 20% to be sure that metadata from the filesystem fit
+# Did the root fs size got user defined ?
+if [ "$ROOT_FS_SIZE" != "auto" ]; then
+    # Does the enforced size is big enough ?
+    if [ $ROOT_FS_SIZE -lt $SIZE ]; then
+        do_fatal_error "Destination root filesystem size ($ROOT_FS_SIZE) is smaller than the operating system itself ($SIZE)"
+    fi
 
-SIZE=$(($SIZE * 120 / 100))
+    # The destination size is now set to the user defined value
+    SIZE=$ROOT_FS_SIZE
+else
+    # add 20% to be sure that metadata from the filesystem fit
+    SIZE=$(($SIZE * 120 / 100))
+fi
+
+trap do_cleanup 0
 
 # Create the image file
 dd if=/dev/zero of=$IMG count=$SIZE bs=1M
@@ -77,7 +154,7 @@ cat > "$MDIR"/boot/grub/device.map <<EOF
 (hd0,1) $DEV
 EOF
 
-chroot "$MDIR" grub-install --no-floppy "$DISK"
+do_chroot "$MDIR" grub-install --no-floppy "$DISK"
 
 # Configure Grub
 
@@ -86,7 +163,7 @@ export GRUB_DEVICE_UUID=$UUID
 echo $GRUB_DEVICE_UUID
 
 if [ ! -r "$MDIR"/boot/grub/grub.cfg ]; then
-    chroot "$MDIR" grub-mkconfig -o /boot/grub/grub.cfg || :
+    do_chroot "$MDIR" grub-mkconfig -o /boot/grub/grub.cfg || :
 fi
 
 # Fix generated grub.cfg
@@ -97,28 +174,11 @@ sync
 # Fixes according to
 # http://docs.openstack.org/image-guide/content/ch_openstack_images.html
 
-# Fix network to start eth0 in DHCP
-
-if [ -r "$MDIR"/etc/network/interfaces ]; then
-    cat > "$MDIR"/etc/network/interfaces <<EOF
-# interfaces(5) file used by ifup(8) and ifdown(8)
-auto lo
-iface lo inet loopback
-
-auto eth0
-iface eth0 inet dhcp
-EOF
-fi
+setup_network
 
 # Cleanup everything
+clean_temporary
 
-umount "$MDIR/"dev
-umount "$MDIR/"proc
-umount "$MDIR"
+qemu-img convert -O $IMAGE_FORMAT "$IMG" "$IMG".$IMAGE_FORMAT
 
-losetup -d $DEV
-kpartx -d "$IMG"
-rmdir "$MDIR"
-
-qemu-img convert -O qcow2 "$IMG" "$IMG".qcow2
-mv -f "$IMG".qcow2 "$IMG"
+clear_trap

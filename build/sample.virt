@@ -1,0 +1,11 @@
+# Size of the root filesystem in MB or auto
+#ROOT_FS_SIZE=1000
+ROOT_FS_SIZE=auto
+
+# Output format supported by qemu-img
+# Use 'qemu-img --help | grep Supported | cut -d ":" -f2' to get the full list
+IMAGE_FORMAT=qcow2
+
+# Network Configuration
+# Only auto is supported now
+NETWORK_CONFIG=auto

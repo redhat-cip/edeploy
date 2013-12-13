@@ -249,6 +249,14 @@ cleanup() {
 
         clean_mount_points
 
+        if [ ! -z "$VIRTUALIZED" ]; then
+            if [ ! -f "$VIRTUALIZED" ]; then
+                echo "VIRTUALIZED images requested but the pointed file ($VIRTUALIZED) doesn't exists"
+            else
+                ./create-image.sh $dir ${INST}/${ROLE}-${version} $VIRTUALIZED
+            fi
+        fi
+
         if [ -z "$STRIPPED_TARGET" ]; then
             rm -f ${INST}/${ROLE}-${version}.edeploy*
             cd ${dir}

@@ -21,7 +21,8 @@ add_main_repository() {
     ;;
     $supported_redhat_dists)
         if [ -n "$ISO_PATH" ]; then
-            echo "${ISO_PATH}/repo/Packages/redhat-release-server-6Server-6.5.0.1.el6.x86_64.rpm"
+            # We use the target variable here since we shall provide the path from the chroot, not from the host
+            echo "${target}/repo/Packages/redhat-release-server-6Server-6.5.0.1.el6.x86_64.rpm"
         else
             echo "${REPOSITORY}/Packages/redhat-release-server-6Server-6.5.0.1.el6.x86_64.rpm"
         fi

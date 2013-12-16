@@ -73,6 +73,10 @@ EOF
             #add_satellite_channel $dir rhel-x86_64-server-6-ost-4
             add_satellite_channel $dir rhel-x86_64-server-6-ost-beta
             setup_puppet_rpm $dir
+
+            # We want to use rabbitmq on Redhat instead of QPID
+            install_packages $dir rabbitmq-server
+            remove_epel_repository $DIST $dir
          ;;
 
         *)

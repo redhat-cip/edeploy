@@ -75,12 +75,25 @@ get_openstack_repository() {
   esac
 }
 
+EPEL_RELEASE=6-8
 add_epel_repository() {
   local dist=$1
   local target=$2
   case "$dist" in
     $supported_centos_dists|$supported_redhat_dists)
-        install_packages $target http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+        install_packages $target http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-$EPEL_RELEASE.noarch.rpm
+    ;;
+  *)
+    ;;
+  esac
+}
+
+remove_epel_repository() {
+  local dist=$1
+  local target=$2
+  case "$dist" in
+    $supported_centos_dists|$supported_redhat_dists)
+        remove_packages $target epel-release-$EPEL_RELEASE
     ;;
   *)
     ;;

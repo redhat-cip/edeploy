@@ -55,7 +55,7 @@ EOF
             do_chroot ${dir} apt-key adv --recv-keys --keyserver keyserver.ubuntu.com E52660B15D964F0B
             get_openstack_repository $DIST $OS_VERS > ${dir}/etc/apt/sources.list.d/openstack.list
         ;;
-        "CentOS"|"RedHatEnterpriseServer")
+        "CentOS")
             if [ "$(get_redhat_major_version $CODENAME)" == "6" ]; then
                 install_packages ${dir} http://yum.puppetlabs.com/el/6/products/x86_64/puppetlabs-release-6-7.noarch.rpm
                 install_packages $dir "puppet"
@@ -64,6 +64,11 @@ EOF
                 install_packages $dir $(get_openstack_repository $DIST $OS_VERS)
             fi
          ;;
+         "RedHatEnterpriseServer")
+             #add_satellite_channel $dir rhel-x86_64-server-6-ost-4
+             add_satellite_channel $dir rhel-x86_64-server-6-ost-beta
+         ;;
+
         *)
             fatal_error "OS ($OS) or Release ($OS) not supported"
          ;;

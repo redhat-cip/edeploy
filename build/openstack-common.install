@@ -35,6 +35,17 @@ fi
 
 install_ib_if_needed $ORIG $dir
 
+setup_puppet_rpm() {
+    local dir=$1
+    if [ "$(get_redhat_major_version $CODENAME)" == "6" ]; then
+        install_packages ${dir} http://yum.puppetlabs.com/el/6/products/x86_64/puppetlabs-release-6-7.noarch.rpm
+        install_packages $dir "puppet"
+        remove_packages $dir puppetlabs-release-6-7.noarch
+        add_epel_repository $DIST $dir
+        install_packages $dir $(get_openstack_repository $DIST $OS_VERS)
+    fi
+}
+
 prepare_packages () {
     case "$OS" in
         "Debian")
@@ -56,17 +67,12 @@ EOF
             get_openstack_repository $DIST $OS_VERS > ${dir}/etc/apt/sources.list.d/openstack.list
         ;;
         "CentOS")
-            if [ "$(get_redhat_major_version $CODENAME)" == "6" ]; then
-                install_packages ${dir} http://yum.puppetlabs.com/el/6/products/x86_64/puppetlabs-release-6-7.noarch.rpm
-                install_packages $dir "puppet"
-                remove_packages $dir puppetlabs-release-6-7.noarch
-                add_epel_repository $DIST $dir
-                install_packages $dir $(get_openstack_repository $DIST $OS_VERS)
-            fi
+            setup_puppet_rpm $dir
          ;;
          "RedHatEnterpriseServer")
-             #add_satellite_channel $dir rhel-x86_64-server-6-ost-4
-             add_satellite_channel $dir rhel-x86_64-server-6-ost-beta
+            #add_satellite_channel $dir rhel-x86_64-server-6-ost-4
+            add_satellite_channel $dir rhel-x86_64-server-6-ost-beta
+            setup_puppet_rpm $dir
          ;;
 
         *)

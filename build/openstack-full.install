@@ -63,21 +63,87 @@ esac
 
 declare -A packages
 packages=(
-    ["deb"]="openstack-compute-node openstack-proxy-node xinetd swift-proxy \
-        ceilometer-alarm-evaluator ceilometer-alarm-notifier \
-        swift-plugin-s3 memcached keystone ceilometer-api \
-        ceilometer-agent-central ceilometer-collector mariadb-server \
-        mongodb-server mongodb-clients swift-account swift-container swift-object \
-        xfsprogs libdbd-mysql-perl ruby-sqlite3 ruby-activerecord \
-        rabbitmq-server rsync mariadb-client euca2ools pm-utils screen unzip"
-    ["rpm"]="openstack-nova-compute qemu-kvm python-cinderclient \
-        openstack-ceilometer-compute openstack-neutron openstack-proxy-node \
-        openstack-swift-proxy memcached openstack-keystone \
-        openstack-ceilometer-api openstack-ceilometer-agent-central \
-        openstack-ceilometer-collector mysql-server mongo-10gen mongo-10gen-server \
-        openstack-swift-account openstack-swift-container openstack-swift-object \
-        xfsprogs ruby-sqlite3 ruby-activerecord puppetdb ntp rabbitmq-server \
-        openstack-neutron-openvswitch rsync xinetd"
+    ["deb"]="ceilometer-agent-central \
+        ceilometer-alarm-evaluator \
+        ceilometer-alarm-notifier \
+        ceilometer-api \
+        ceilometer-collector \ mariadb-server \
+        euca2ools \
+        keystone \
+        libdbd-mysql-perl \
+        mariadb-client \
+        memcached \
+        mongodb-clients \
+        mongodb-server \
+        openstack-compute-node \
+        openstack-proxy-node \
+        pm-utils \
+        rabbitmq-server \
+        rsync \
+        ruby-activerecord \
+        ruby-sqlite3 \
+        screen \
+        swift-account \
+        swift-container \
+        swift-object \
+        swift-plugin-s3 \
+        swift-proxy \
+        unzip
+        xfsprogs \
+        xinetd"
+
+    ["Centos"]="memcached \
+        mongo-10gen \
+        mongo-10gen-server \
+        mysql-server \
+        ntp \
+        openstack-ceilometer-agent-central \
+        openstack-ceilometer-api \
+        openstack-ceilometer-collector \
+        openstack-ceilometer-compute \
+        openstack-keystone \
+        openstack-neutron \
+        openstack-neutron-openvswitch \
+        openstack-nova-compute \
+        openstack-swift-account \
+        openstack-swift-container \
+        openstack-swift-object \
+        openstack-swift-proxy \
+        puppetdb \
+        python-cinderclient \
+        qemu-kvm \
+        rabbitmq-server \
+        rsync \
+        ruby-activerecord \
+        ruby-sqlite3 \
+        xfsprogs \
+        xinetd"
+
+    ["RedHatEnterpriseServer"]="memcached \
+        mongo-10gen \
+        mongo-10gen-server \
+        mysql-server \
+        ntp \
+        openstack-ceilometer-central \
+        openstack-ceilometer-api \
+        openstack-ceilometer-collector \
+        openstack-ceilometer-compute \
+        openstack-keystone \
+        openstack-neutron \
+        openstack-neutron-openvswitch \
+        openstack-nova-compute \
+        openstack-swift-account \
+        openstack-swift-container \
+        openstack-swift-object \
+        openstack-swift-proxy \
+        puppetdb \
+        python-cinderclient \
+        qemu-kvm \
+        rabbitmq-server \
+        rsync \
+        ruby193-rubygem-activerecord \
+        xfsprogs \
+        xinetd"
 )
 
 # As the openstack repository is part of the rhn, we need to register it again
@@ -87,7 +153,12 @@ if [ "$OS" = "RedHatEnterpriseServer" ]; then
 fi
 
 update_repositories $dir
-install_packages $dir ${packages[$(package_type)]}
+
+if ["$package_type" = "deb" ]; then
+    install_packages $dir ${packages[$(package_type)]}
+else
+    install_packages $dir ${packages[$OS]}
+fi
 
 case "$OS" in
     "Debian"|"Ubuntu")

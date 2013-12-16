@@ -121,6 +121,17 @@ unregister_satellite() {
     fi
 }
 
+add_satellite_channel() {
+      local dir=$1
+      local channel=$2
+      yum_channel=$(echo $channel | rev | cut -d "-" -f 2- | rev)
+      yum_channel="${yum_channel}-rpms"
+      do_chroot $dir "rhn-channel --add --channel=$channel -u $SATELLITE_USERNAME -p $SATELLITE_PASSWORD"
+      install_packages $dir "yum-utils"
+      do_chroot $dir "yum-config-manager --enable $yum_channel"
+      update_system $dir
+}
+
 add_satellite_repository() {
   local dist=$1
   local target=$2
@@ -132,13 +143,9 @@ add_satellite_repository() {
       fi
 
       install_packages $target rhn-setup
-      do_chroot $dir "rhnreg_ks --profilename=edeploy-$HOSTNAME --username=$SATELLITE_USERNAME --password=$SATELLITE_PASSWORD"
-      do_chroot $dir "rhn-channel --add --channel=rhel-x86_64-server-optional-6 -u $SATELLITE_USERNAME -p $SATELLITE_PASSWORD"
-      do_chroot $dir "rhn-channel --add --channel=rhel-x86_64-server-sfs-6 -u $SATELLITE_USERNAME -p $SATELLITE_PASSWORD"
-      install_packages $dir "yum-utils"
-      do_chroot $dir "yum-config-manager --enable rhel-6-server-optional-rpms"
-      do_chroot $dir "yum-config-manager --enable rhel-6-server-sfs-rpms"
-      update_system $dir
+      do_chroot $target "rhnreg_ks --profilename=edeploy-$HOSTNAME --username=$SATELLITE_USERNAME --password=$SATELLITE_PASSWORD"
+      add_satellite_channel $target rhel-x86_64-server-optional-6
+      add_satellite_channel $target rhel-x86_64-server-sfs-6
     ;;
   *)
     ;;

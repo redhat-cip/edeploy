@@ -141,7 +141,6 @@ packages=(
         qemu-kvm \
         rabbitmq-server \
         rsync \
-        ruby193-rubygem-activerecord \
         xfsprogs \
         xinetd"
 )

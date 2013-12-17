@@ -27,7 +27,7 @@ cleanup() {
 trap cleanup 0
 
 if [ -z "$ROLES" ]; then
-    ROLES="pxe openstack-controller openstack-swift-proxy openstack-swift-storage galera haproxy ceph puppet-master"
+    ROLES="pxe openstack-full galera haproxy ceph puppet-master"
 fi
 set -x
 

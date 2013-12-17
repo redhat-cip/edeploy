@@ -49,7 +49,7 @@ EOF
       fi
       ;;
     *)
-    fatal_error "OS or Release not supported"
+        fatal_error "OS ($OS) or Release not supported"
     ;;
 esac
 

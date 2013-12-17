@@ -100,11 +100,6 @@ $(INST)/openstack-full.done: openstack-full.install $(INST)/openstack-common.don
 	./openstack-full.install $(INST)/openstack-common $(INST)/openstack-full $(VERS)
 	touch $(INST)/openstack-full.done
 
-openstack-controller: $(INST)/openstack-controller.done
-$(INST)/openstack-controller.done: openstack-controller.install $(INST)/openstack-common.done
-	./openstack-controller.install $(INST)/openstack-common $(INST)/openstack-controller $(VERS)
-	touch $(INST)/openstack-controller.done
-
 openstack-swift-proxy: $(INST)/openstack-swift-proxy.done
 $(INST)/openstack-swift-proxy.done: openstack-swift-proxy.install $(INST)/openstack-common.done
 	./openstack-swift-proxy.install $(INST)/openstack-common $(INST)/openstack-swift-proxy $(VERS)
@@ -115,25 +110,10 @@ $(INST)/openstack-swift-storage.done: openstack-swift-storage.install $(INST)/op
 	./openstack-swift-storage.install $(INST)/openstack-common $(INST)/openstack-swift-storage $(VERS)
 	touch $(INST)/openstack-swift-storage.done
 
-openstack-compute: $(INST)/openstack-compute.done
-$(INST)/openstack-compute.done: openstack-compute.install $(INST)/openstack-common.done
-	./openstack-compute.install $(INST)/openstack-common $(INST)/openstack-compute $(VERS)
-	touch $(INST)/openstack-compute.done
-
 mysql: $(INST)/mysql.done
 $(INST)/mysql.done: mysql.install $(INST)/base.done
 	./mysql.install $(INST)/base $(INST)/mysql $(VERS)
 	touch $(INST)/mysql.done
-
-galera: $(INST)/galera.done
-$(INST)/galera.done: galera.install $(INST)/base.done
-	./galera.install $(INST)/base $(INST)/galera $(VERS)
-	touch $(INST)/galera.done
-
-haproxy: $(INST)/haproxy.done
-$(INST)/haproxy.done: haproxy.install $(INST)/base.done
-	./haproxy.install $(INST)/base $(INST)/haproxy $(VERS)
-	touch $(INST)/haproxy.done
 
 ceph: $(INST)/ceph.done
 $(INST)/ceph.done: ceph.install $(INST)/base.done
@@ -179,6 +159,5 @@ clean:
 distclean: clean
 	-rm -rf $(INST)/*
 
-.PHONY: base img base cloud devstack openstack-common openstack-controller openstack-swift-proxy\
-    openstack-swift-storage openstack-compute mysql galera haproxy ceph docker puppet-master\
+.PHONY: base img base cloud devstack openstack-common openstack-full mysql ceph docker puppet-master\
 	server test stress-http benchmark dist clean distclean

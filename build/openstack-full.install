@@ -167,7 +167,7 @@ fi
 
 update_repositories $dir
 
-if ["$package_type" = "deb" ]; then
+if [ "$package_type" = "deb" ]; then
     install_packages $dir ${packages[$(package_type)]}
 else
     install_packages $dir ${packages[$OS]}

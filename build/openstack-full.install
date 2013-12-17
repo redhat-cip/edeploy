@@ -106,7 +106,8 @@ packages=(
         xfsprogs \
         xinetd"
 
-    ["Centos"]="memcached \
+    ["Centos"]="apache2 \
+        memcached \
         mongo-10gen \
         mongo-10gen-server \
         mysql-server \
@@ -115,6 +116,7 @@ packages=(
         openstack-ceilometer-api \
         openstack-ceilometer-collector \
         openstack-ceilometer-compute \
+        openstack-dashboard \
         openstack-keystone \
         openstack-neutron \
         openstack-neutron-openvswitch \
@@ -133,7 +135,9 @@ packages=(
         xfsprogs \
         xinetd"
 
-    ["RedHatEnterpriseServer"]="memcached \
+    ["RedHatEnterpriseServer"]="
+        apache2 \
+        memcached \
         mongo-10gen \
         mongo-10gen-server \
         mysql-server \
@@ -142,6 +146,7 @@ packages=(
         openstack-ceilometer-api \
         openstack-ceilometer-collector \
         openstack-ceilometer-compute \
+        openstack-dashboard \
         openstack-keystone \
         openstack-neutron \
         openstack-neutron-openvswitch \

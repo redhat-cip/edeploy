@@ -140,6 +140,10 @@ NIviaUUV7kxMXt949GQX
 EOF
     ;;
     "Ubuntu")
+     do_chroot $dir "apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db"
+     cat > ${dir}/etc/apt/sources.list.d/maria.list <<EOF
+deb [trusted=yes] http://ftp.igh.cnrs.fr/pub/mariadb/repo/5.5/ubuntu $DIST main
+EOF
     ;;
     "CentOS"|"RedHatEnterpriseServer")
       if [ "$(get_redhat_major_version $CODENAME)" == "6" ]; then

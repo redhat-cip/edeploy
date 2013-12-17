@@ -64,6 +64,7 @@ esac
 declare -A packages
 packages=(
     ["deb"]="\
+        apache2 \
         build-essential \
         ceilometer-agent-central \
         ceilometer-alarm-evaluator \
@@ -82,7 +83,12 @@ packages=(
         neutron-lbaas-agent \
         neutron-metadata-agent \
         neutron-plugin-vpn-agent \
+        openstack-dashboard \
+        openstack-dashboard-apache \
+        openstack-cloud-identity \
+        openstack-cloud-services \
         openstack-compute-node \
+        openstack-proxy-node \
         openvswitch-datapath-dkms \
         openstack-proxy-node \
         pm-utils \

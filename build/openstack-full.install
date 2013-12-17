@@ -147,6 +147,15 @@ EOF
     ;;
     "CentOS"|"RedHatEnterpriseServer")
       if [ "$(get_redhat_major_version $CODENAME)" == "6" ]; then
+          cat > ${dir}/etc/yum.repos.d/mariadb.repo <<EOF
+# MariaDB 5.5 RedHat repository list - created 2013-12-17 16:18 UTC
+# http://mariadb.org/mariadb/repositories/
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/5.5/rhel6-amd64
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
             cat > ${dir}/etc/yum.repos.d/mongodb.repo <<EOF
 [mongodb]
 name=MongoDB Repository
@@ -211,6 +220,8 @@ packages=(
 
     ["Centos"]="apache2 \
         memcached \
+        mariadb-client \
+        mariadb-server \
         mongo-10gen \
         mongo-10gen-server \
         mysql-server \
@@ -240,6 +251,8 @@ packages=(
 
     ["RedHatEnterpriseServer"]="
         apache2 \
+        mariadb-client \
+        mariadb-server \
         memcached \
         mongo-10gen \
         mongo-10gen-server \

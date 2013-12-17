@@ -271,14 +271,10 @@ fi
 
 update_repositories $dir
 
-if [ "$(package_type)" = "deb" ]; then
-    install_packages $dir ${packages[$(package_type)]}
-else
-    install_packages $dir ${packages[$OS]}
-fi
-
 case "$OS" in
     "Debian"|"Ubuntu")
+        install_packages $dir ${packages["deb"]}
+
         services="apache2 \
             ceilometer-agent-central \
             ceilometer-agent-compute \
@@ -336,6 +332,8 @@ case "$OS" in
     done
     ;;
     "CentOS"|"RedHatEnterpriseServer")
+        install_packages $dir ${packages[$OS]}
+
         services="cloud-config \
             cloud-final \
             cloud-init \

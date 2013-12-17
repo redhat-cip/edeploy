@@ -247,6 +247,7 @@ cleanup() {
             save_package_list $dir
         fi
 
+        echo > "${dir}"/etc/resolv.conf
         clean_mount_points
 
         if [ ! -z "$VIRTUALIZED" ]; then

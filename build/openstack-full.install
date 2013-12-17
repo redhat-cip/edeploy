@@ -161,44 +161,104 @@ fi
 
 case "$OS" in
     "Debian"|"Ubuntu")
-
-        services="swift-account-replicator apache2 heat-api openvswitch-switch \
-          glance-registry nova-scheduler \
-          swift-container neutron-dhcp-agent nova-novncproxy \
-          mongodb swift-container-auditor ceilometer-agent-central \
-          heat-api-cloudwatch neutron-l3-agent nova-spicehtml5proxy \
-          swift-container-replicator ceilometer-agent-compute heat-engine \
-          xinetd neutron-plugin-openvswitch-agent cloud-final \
-          rabbitmq-server swift-container-updater ceilometer-alarm-evaluator \
-          ipmievd cloud-config neutron-server swift-object \
-          ceilometer-alarm-notifier keystone nova-api swift-object-auditor \
-          ceilometer-api memcached nova-cert swift-account \
-          swift-object-replicator ceilometer-collector mysql nova-compute \
-          swift-account-auditor swift-object-updater nova-xenvncproxy \
-          nova-conductor swift-account-reaper swift-proxy glance-api \
-          nova-consoleauth heat-api-cfn libvirt-bin libvirt-guests \
-          "
-
+        services="apache2 \
+            ceilometer-agent-central \
+            ceilometer-agent-compute \
+            ceilometer-alarm-evaluator \
+            ceilometer-alarm-notifier \
+            ceilometer-api \
+            ceilometer-collector \
+            cloud-config \
+            cloud-final \
+            glance-api \
+            glance-registry \
+            heat-api \
+            heat-api-cfn \
+            heat-api-cloudwatch \
+            heat-engine \
+            ipmievd \
+            keystone \
+            libvirt-bin \
+            libvirt-guests \
+            memcached \
+            mongodb \
+            mysql \
+            neutron-dhcp-agent \
+            neutron-l3-agent \
+            neutron-plugin-openvswitch-agent \
+            neutron-server \
+            nova-api \
+            nova-cert \
+            nova-compute \
+            nova-conductor \
+            nova-consoleauth \
+            nova-novncproxy \
+            nova-scheduler \
+            nova-spicehtml5proxy \
+            nova-xenvncproxy \
+            openvswitch-switch \
+            rabbitmq-server \
+            swift-account \
+            swift-account-auditor \
+            swift-account-reaper \
+            swift-account-replicator \
+            swift-container \
+            swift-container-auditor \
+            swift-container-replicator \
+            swift-container-updater \
+            swift-object \
+            swift-object-auditor \
+            swift-object-replicator \
+            swift-object-updater \
+            swift-proxy \
+            xinetd \
+            "
     for s in ${services}; do
         do_chroot $dir update-rc.d $s disable
     done
     ;;
     "CentOS"|"RedHatEnterpriseServer")
-        services="cloud-config cloud-final cloud-init cloud-init-local \
-          iscsi iscsid libvirt-guests libvirtd memcached mongod mysqld \
-          neutron-dhcp-agent neutron-l3-agent neutron-lbaas-agent \
-          neutron-metadata-agent neutron-server openstack-ceilometer-api \
-          openstack-ceilometer-collector openstack-ceilometer-compute \
-          openstack-keystone openstack-nova-compute openstack-swift-account \
-          openstack-swift-account-auditor openstack-swift-account-reaper \
-          openstack-swift-account-replicator openstack-swift-container \
-          openstack-swift-container-auditor openstack-swift-container-replicator \
-          openstack-swift-container-updater openstack-swift-object \
-          openstack-swift-object-auditor openstack-swift-object-expirer \
-          openstack-swift-object-replicator openstack-swift-object-updater \
-          openstack-swift-proxy radvd puppetdb rabbitmq-server \
-          neutron-openvswitch-agent neutron-ovs-cleanup"
-
+        services="cloud-config \
+            cloud-final \
+            cloud-init \
+            cloud-init-local \
+            iscsi \
+            iscsid \
+            libvirtd \
+            libvirt-guests \
+            memcached \
+            mongod \
+            mysqld \
+            neutron-dhcp-agent \
+            neutron-l3-agent \
+            neutron-lbaas-agent \
+            neutron-metadata-agent \
+            neutron-openvswitch-agent \
+            neutron-ovs-cleanup \
+            neutron-server \
+            openstack-ceilometer-api \
+            openstack-ceilometer-collector \
+            openstack-ceilometer-compute \
+            openstack-keystone \
+            openstack-nova-compute \
+            openstack-swift-account \
+            openstack-swift-account-auditor \
+            openstack-swift-account-reaper \
+            openstack-swift-account-replicator \
+            openstack-swift-container \
+            openstack-swift-container-auditor \
+            openstack-swift-container-replicator \
+            openstack-swift-container-updater \
+            openstack-swift-object \
+            openstack-swift-object-auditor \
+            openstack-swift-object-expirer \
+            openstack-swift-object-replicator \
+            openstack-swift-object-updater \
+            openstack-swift-proxy \
+            puppetdb \
+            rabbitmq-server \
+            radvd \
+            "
     for s in ${services}; do
         do_chroot $dir chkconfig $s off
     done

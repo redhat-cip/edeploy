@@ -32,7 +32,7 @@ case "$OS" in
     "Debian")
      do_chroot $dir "apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db"
      cat > ${dir}/etc/apt/sources.list.d/maria.list <<EOF
-deb [trusted=yes] http://ftp.igh.cnrs.fr/pub/mariadb/repo/5.5/debian wheezy main
+deb [trusted=yes] http://ftp.igh.cnrs.fr/pub/mariadb/repo/5.5/debian $DIST main
 EOF
     ;;
     "Ubuntu")

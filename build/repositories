@@ -75,6 +75,34 @@ get_openstack_repository() {
   esac
 }
 
+
+PUPPET_RELEASE=6-7
+add_puppet_repository() {
+    local dist=$1
+    local dir=$2
+    case "$dist" in
+        $supported_centos_dists|$supported_redhat_dists)
+            install_packages ${dir} http://yum.puppetlabs.com/el/6/products/x86_64/puppetlabs-release-$PUPPET_RELEASE.noarch.rpm
+        ;;
+        *)
+        ;;
+    esac
+}
+
+remove_puppet_repository() {
+    local dist=$1
+    local target=$2
+    case "$dist" in
+        $supported_centos_dists|$supported_redhat_dists)
+            remove_packages $target puppetlabs-release-$PUPPET_RELEASE
+        ;;
+        *)
+        ;;
+    esac
+
+}
+
+
 EPEL_RELEASE=6-8
 add_epel_repository() {
   local dist=$1

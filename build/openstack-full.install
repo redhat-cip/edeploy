@@ -250,7 +250,9 @@ case "$OS" in
     done
     ;;
     "CentOS"|"RedHatEnterpriseServer")
-        install_packages $dir ${packages[$OS]}
+        add_puppet_repository $DIST $dir
+        install_packages $dir puppetdb
+        remove_puppet_repository $DIST $dir
 
         services="cloud-config \
             cloud-final \

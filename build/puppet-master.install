@@ -56,10 +56,10 @@ case "$OS" in
     ;;
     "CentOS"|"RedHatEnterpriseServer")
         if [ "$(get_redhat_major_version $CODENAME)" == "6" ]; then
-            install_packages $dir http://yum.puppetlabs.com/el/6/products/i386/puppetlabs-release-6-7.noarch.rpm
+            add_puppet_repostory $DIST $dir
             add_epel_repository $DIST $dir
             install_packages $dir puppet-server mysql-server git cloud-init augeas
-            remove_packages  $dir puppetlabs-release-6-7.noarch -y
+            remove_puppet_repository $DIST $dir
         fi
    ;;
    *)

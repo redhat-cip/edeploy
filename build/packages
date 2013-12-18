@@ -84,7 +84,7 @@ disable_services_from_package() {
     local chroot=$1
     local package=$2
     case "$OS" in
-        "Debian|Ubuntu")
+        "Debian"|"Ubuntu")
             for service in $(do_chroot ${chroot} dpkg -L $package | grep '^/etc/init.d/'); do
                 echo -n "Package $package :"
                 disable_service $chroot $(basename $service);

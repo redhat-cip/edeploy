@@ -170,7 +170,11 @@ EOF
     ;;
 esac
 
-
+if [ "$OS" = Debian ]; then
+    headers=linux-headers-3.2.0-4-all-amd64
+else
+    headers=
+fi
 
 declare -A packages
 packages=(
@@ -185,7 +189,7 @@ packages=(
         euca2ools \
         keystone \
         libdbd-mysql-perl \
-        linux-headers-3.2.0-4-all-amd64 \
+        $headers \
         mariadb-client \
         mariadb-server \
         mysql-client \

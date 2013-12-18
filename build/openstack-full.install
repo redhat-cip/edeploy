@@ -191,114 +191,21 @@ update_repositories $dir
 
 case "$OS" in
     "Debian"|"Ubuntu")
-        install_packages $dir ${packages["deb"]}
-
-        services="apache2 \
-            ceilometer-agent-central \
-            ceilometer-agent-compute \
-            ceilometer-alarm-evaluator \
-            ceilometer-alarm-notifier \
-            ceilometer-api \
-            ceilometer-collector \
-            cloud-config \
-            cloud-final \
-            glance-api \
-            glance-registry \
-            heat-api \
-            heat-api-cfn \
-            heat-api-cloudwatch \
-            heat-engine \
-            ipmievd \
-            keystone \
-            libvirt-bin \
-            libvirt-guests \
-            memcached \
-            mongodb \
-            mysql \
-            neutron-dhcp-agent \
-            neutron-l3-agent \
-            neutron-plugin-openvswitch-agent \
-            neutron-server \
-            nova-api \
-            nova-cert \
-            nova-compute \
-            nova-conductor \
-            nova-consoleauth \
-            nova-novncproxy \
-            nova-scheduler \
-            nova-spicehtml5proxy \
-            nova-xenvncproxy \
-            openvswitch-switch \
-            rabbitmq-server \
-            swift-account \
-            swift-account-auditor \
-            swift-account-reaper \
-            swift-account-replicator \
-            swift-container \
-            swift-container-auditor \
-            swift-container-replicator \
-            swift-container-updater \
-            swift-object \
-            swift-object-auditor \
-            swift-object-replicator \
-            swift-object-updater \
-            swift-proxy \
-            xinetd \
-            "
-    for s in ${services}; do
-        do_chroot $dir update-rc.d $s disable
-    done
+        install_packages_disabled $dir ${packages["deb"]}
     ;;
     "CentOS"|"RedHatEnterpriseServer")
         add_puppet_repository $DIST $dir
         install_packages $dir puppetdb
         remove_puppet_repository $DIST $dir
 
-        services="cloud-config \
-            cloud-final \
-            cloud-init \
-            cloud-init-local \
-            iscsi \
-            iscsid \
-            libvirtd \
-            libvirt-guests \
-            memcached \
-            mongod \
-            mysqld \
-            neutron-dhcp-agent \
-            neutron-l3-agent \
-            neutron-lbaas-agent \
-            neutron-metadata-agent \
-            neutron-openvswitch-agent \
-            neutron-ovs-cleanup \
-            neutron-server \
-            openstack-ceilometer-api \
-            openstack-ceilometer-collector \
-            openstack-ceilometer-compute \
-            openstack-keystone \
-            openstack-nova-compute \
-            openstack-swift-account \
-            openstack-swift-account-auditor \
-            openstack-swift-account-reaper \
-            openstack-swift-account-replicator \
-            openstack-swift-container \
-            openstack-swift-container-auditor \
-            openstack-swift-container-replicator \
-            openstack-swift-container-updater \
-            openstack-swift-object \
-            openstack-swift-object-auditor \
-            openstack-swift-object-expirer \
-            openstack-swift-object-replicator \
-            openstack-swift-object-updater \
-            openstack-swift-proxy \
-            puppetdb \
-            rabbitmq-server \
-            radvd \
-            "
-    for s in ${services}; do
-        do_chroot $dir chkconfig $s off
-    done
-    do_chroot $dir chkconfig puppet on
+        # We want to use rabbitmq on Redhat instead of QPID
+        add_epel_repository $DIST $dir
+        install_packages_disabled $dir rabbitmq-server
+        remove_epel_repository $DIST $dir
+
+        install_packages_disabled $dir ${packages[$OS]}
+
+        do_chroot $dir chkconfig puppet on
     ;;
     *)
     fatal_error "OS or Release not supported"

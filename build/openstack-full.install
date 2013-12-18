@@ -34,6 +34,10 @@ case "$OS" in
      cat > ${dir}/etc/apt/sources.list.d/maria.list <<EOF
 deb http://ftp.igh.cnrs.fr/pub/mariadb/repo/5.5/debian $DIST main
 EOF
+     do_chroot $dir "apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10"
+     cat > ${dir}/etc/apt/sources.list.d/mongodb.list <<EOF
+deb http://downloads-distro.mongodb.org/repo/debian-sysvinit dist 10gen
+EOF
     ;;
     "Ubuntu")
      do_chroot $dir "apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db"
@@ -83,28 +87,40 @@ packages=(
         ceilometer-api \
         ceilometer-collector \
         euca2ools \
+        glance \
+        $headers \
+        heat-api \
+        heat-api-cfn \
+        heat-api-cloudwatch \
+        heat-engine \
         keystone \
         libdbd-mysql-perl \
-        $headers \
         mariadb-client \
         mariadb-server \
-        mysql-client \
         memcached \
-        mongodb-clients \
-        mongodb-server \
+        mongodb-10gen \
+        mysql-client \
         neutron-lbaas-agent \
         neutron-metadata-agent \
         neutron-plugin-vpn-agent \
+        nova-api \
+        nova-conductor \
+        nova-consoleauth \
+        nova-consoleproxy \
+        nova-scheduler \
+        openstack-compute-node \
         openstack-dashboard \
         openstack-dashboard-apache \
-        openstack-cloud-identity \
-        openstack-cloud-services \
-        openstack-compute-node \
-        openstack-proxy-node \
+        openstack-pkg-tools \
         openvswitch-datapath-dkms \
-        openstack-proxy-node \
         pacemaker \
         pm-utils \
+        quantum-dhcp-agent \
+        quantum-l3-agent \
+        quantum-metadata-agent \
+        quantum-plugin-openvswitch \
+        quantum-plugin-openvswitch-agent \
+        quantum-server \
         rabbitmq-server \
         rsync \
         ruby-activerecord \
@@ -115,9 +131,10 @@ packages=(
         swift-object \
         swift-plugin-s3 \
         swift-proxy \
-        unzip
+        unzip \
         xfsprogs \
-        xinetd"
+        xinetd
+"
 
     ["Centos"]="httpd \
         memcached \

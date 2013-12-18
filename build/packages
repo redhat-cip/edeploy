@@ -73,7 +73,7 @@ disable_service() {
             do_chroot ${chroot} chkconfig $service off
          ;;
          *)
-            fatal_error "Unsupported OS $(OS) in disable_service()"
+	    fatal_error "Unsupported OS ${OS} in disable_service()"
          ;;
     esac
     echo "Disabled service $service"
@@ -97,7 +97,7 @@ disable_services_from_package() {
             done
          ;;
          *)
-            fatal_error "Unsupported OS $(OS) in disable_services_from_package()"
+	    fatal_error "Unsupported OS ${OS} in disable_services_from_package()"
          ;;
     esac
 

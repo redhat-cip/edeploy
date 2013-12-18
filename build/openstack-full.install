@@ -103,6 +103,7 @@ packages=(
         openstack-proxy-node \
         openvswitch-datapath-dkms \
         openstack-proxy-node \
+        pacemaker \
         pm-utils \
         rabbitmq-server \
         rsync \

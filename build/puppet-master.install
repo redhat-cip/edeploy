@@ -48,7 +48,7 @@ case "$OS" in
         do_chroot ${dir} wget --no-verbose http://apt.puppetlabs.com/puppetlabs-release-$RELEASE.deb
         do_chroot ${dir} dpkg -i puppetlabs-release-$RELEASE.deb
         do_chroot ${dir} rm puppetlabs-release-$RELEASE.deb
-        PACKAGES="puppetmaster puppetmaster-passenger puppet augeas-tools mysql-server libmysql-ruby libactiverecord-ruby git ntp cloud-init"
+        PACKAGES="puppetmaster puppetmaster-passenger puppet augeas-tools mysql-server libmysql-ruby libactiverecord-ruby git ntp"
         install_packages $dir $PACKAGES
         do_chroot ${dir} a2dissite puppetmaster
         do_chroot ${dir} service apache2 reload
@@ -58,7 +58,7 @@ case "$OS" in
         if [ "$(get_redhat_major_version $CODENAME)" == "6" ]; then
             add_puppet_repostory $DIST $dir
             add_epel_repository $DIST $dir
-            install_packages $dir puppet-server mysql-server git cloud-init augeas
+            install_packages $dir puppet-server mysql-server git augeas
             remove_puppet_repository $DIST $dir
         fi
    ;;

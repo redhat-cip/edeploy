@@ -179,3 +179,18 @@ update_repositories() {
         ;;
     esac
 }
+
+disable_repository() {
+    CHROOT=$1
+    repository=$2
+    case "$(package_tool)" in
+        apt)
+        ;;
+        yum)
+            do_chroot $CHROOT yum-config-manager --disable $repository
+        ;;
+        *)
+            fatal_error "$(package_tool) isn't supported in disable_repository()"
+        ;;
+    esac
+}

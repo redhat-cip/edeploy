@@ -57,7 +57,6 @@ case "$OS" in
     "CentOS"|"RedHatEnterpriseServer")
         if [ "$(get_redhat_major_version $CODENAME)" == "6" ]; then
             add_puppet_repostory $DIST $dir
-            add_epel_repository $DIST $dir
             install_packages $dir puppet-server mysql-server git augeas
             remove_puppet_repository $DIST $dir
         fi
@@ -150,5 +149,7 @@ cloud_final_modules:
 EOF
 }
 
+add_epel_repository $DIST $dir
 install_puppet
 configure_cloudinit
+remove_epel_repository $DIST $dir

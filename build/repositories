@@ -52,7 +52,10 @@ get_openstack_repository() {
         echo "deb http://cloud.pkgs.enovance.com/${RELEASE}-${openstack_release}/ ${openstack_release} main"
         return 0
     ;;
-    $supported_centos_dists|$supported_redhat_dists)
+    $supported_redhat_dists)
+        return 0
+    ;;
+    $supported_centos_dists)
         current_rpm_release="undef"
         cloud_init_release="0.7.2-2.el6"
         case "$openstack_release" in

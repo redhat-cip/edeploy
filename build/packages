@@ -62,6 +62,59 @@ package_tool() {
     esac
 }
 
+disable_service() {
+    local chroot=$1
+    local service=$2
+    case "$OS" in
+        "Debian"|"Ubuntu")
+            do_chroot ${chroot} update-rc.d $service disable
+         ;;
+        "CentOS"|"RedHatEnterpriseServer")
+            do_chroot ${chroot} chkconfig $service off
+         ;;
+         *)
+            fatal_error "Unsupported OS $(OS) in disable_service()"
+         ;;
+    esac
+    echo "Disabled service $service"
+
+}
+
+disable_services_from_package() {
+    local chroot=$1
+    local package=$2
+    case "$OS" in
+        "Debian|Ubuntu")
+            for service in $(do_chroot ${chroot} dpkg -L $package | grep '^/etc/init.d/'); do
+                echo -n "Package $package :"
+                disable_service $chroot $(basename $service);
+            done
+         ;;
+        "CentOS"|"RedHatEnterpriseServer")
+            for service in $(do_chroot ${chroot} rpm -ql $package | grep '^/etc/rc.d/init.d/'); do
+                echo -n "Package $package :"
+                disable_service $chroot $(basename $service);
+            done
+         ;;
+         *)
+            fatal_error "Unsupported OS $(OS) in disable_services_from_package()"
+         ;;
+    esac
+
+}
+
+install_packages_disabled() {
+    local chroot=$1
+    shift
+    local packages=$@
+
+    install_packages $chroot $packages
+
+    for package in $packages; do
+        disable_services_from_package $chroot $package
+    done
+}
+
 install_packages() {
     local chroot=$1
     shift

@@ -24,11 +24,7 @@ ROLE=base
 
 ORIG=$(cd $(dirname $0); pwd)
 
-. common
-
-check_binary() {
-	type -p $1 || fatal_error "$1 is missing"
-}
+. $ORIG/common
 
 init_redhat_chroot() {
     local target=$1

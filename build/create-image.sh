@@ -16,7 +16,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-. common
+ORIG=$(cd $(dirname $0); pwd)
+
+. $ORIG/common
 
 do_fatal_error() {
     echo "$@" 1>&2

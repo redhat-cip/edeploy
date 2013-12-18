@@ -1,7 +1,7 @@
 # -*- shell-script -*-
 
 export DEBIAN_FRONTEND=noninteractive
-. repositories
+. $ORIG/repositories
 
 get_redhat_major_version() {
     echo $1 | sed -e 's/\(.*\)\..*/\1/g'

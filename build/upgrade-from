@@ -22,14 +22,14 @@ FROM="$2"
 TO="$3"
 DEST="$4"
 
-BUILDDIR=$(cd $(dirname $0); pwd)
+ORIG=$(cd $(dirname $0); pwd)
 FDIR=${DEST}/install/${FROM}/${ROLE}
 TDIR=${DEST}/install/${TO}/${ROLE}
-METADATA_DIR=${BUILDDIR}/../metadata/${FROM}/${ROLE}/${TO}
+METADATA_DIR=${ORIG}/../metadata/${FROM}/${ROLE}/${TO}
 EXCLUDE_FILE=${METADATA_DIR}/exclude
 ADD_ONLY_FILE=${METADATA_DIR}/add_only
 
-. $BUILDDIR/common
+. $ORIG/common
 
 # for compatibility with cleanup and common_setup from common
 dir=${TDIR}
@@ -37,7 +37,7 @@ version=${TO}
 
 setup_add_only() {
     if [ ! -f $ADD_ONLY_FILE ]; then
-        PRIOR_ADD=$(find ${BUILDDIR}/../metadata/*/${ROLE}/${FROM}/add_only || true)
+        PRIOR_ADD=$(find ${ORIG}/../metadata/*/${ROLE}/${FROM}/add_only || true)
         if [ ! -z $PRIOR_ADD ]; then
             echo "Found an add_only file for release ${FROM}"
             echo "Let's use it as default for this version too"
@@ -59,7 +59,7 @@ EOF
 }
 setup_exclude() {
     if [ ! -f $EXCLUDE_FILE ]; then
-        PRIOR_EXCLUDE=$(find ${BUILDDIR}/../metadata/*/${ROLE}/${FROM}/exclude || true)
+        PRIOR_EXCLUDE=$(find ${ORIG}/../metadata/*/${ROLE}/${FROM}/exclude || true)
         if [ ! -z $PRIOR_EXCLUDE ]; then
             echo "Found an exclude file for release ${FROM}"
             echo "Let's use it as default for this version too"
@@ -137,7 +137,7 @@ common_setup
 
 update_repositories $TDIR
 
-cp -p ${BUILDDIR}/edeploy ${TDIR}/usr/sbin/
+cp -p ${ORIG}/edeploy ${TDIR}/usr/sbin/
 
 script="$BASE".d/${ROLE}_${FROM}_${TO}.upgrade
 

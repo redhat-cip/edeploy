@@ -119,13 +119,12 @@ packages=(
         xfsprogs \
         xinetd"
 
-    ["Centos"]="apache2 \
+    ["Centos"]="httpd \
         memcached \
-        mariadb-client \
-        mariadb-server \
+        MariaDB-client \
+        MariaDB-server \
         mongo-10gen \
         mongo-10gen-server \
-        mysql-server \
         ntp \
         openstack-ceilometer-agent-central \
         openstack-ceilometer-api \
@@ -140,10 +139,8 @@ packages=(
         openstack-swift-container \
         openstack-swift-object \
         openstack-swift-proxy \
-        puppetdb \
         python-cinderclient \
         qemu-kvm \
-        rabbitmq-server \
         rsync \
         ruby-activerecord \
         ruby-sqlite3 \
@@ -151,13 +148,12 @@ packages=(
         xinetd"
 
     ["RedHatEnterpriseServer"]="
-        apache2 \
-        mariadb-client \
-        mariadb-server \
+        httpd \
+        MariaDB-client \
+        MariaDB-server \
         memcached \
         mongo-10gen \
         mongo-10gen-server \
-        mysql-server \
         ntp \
         openstack-ceilometer-central \
         openstack-ceilometer-api \
@@ -172,10 +168,8 @@ packages=(
         openstack-swift-container \
         openstack-swift-object \
         openstack-swift-proxy \
-        puppetdb \
         python-cinderclient \
         qemu-kvm \
-        rabbitmq-server \
         rsync \
         xfsprogs \
         xinetd"

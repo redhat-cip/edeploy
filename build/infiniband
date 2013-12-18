@@ -19,7 +19,10 @@
 dir="$1"
 PACKAGES=
 
-. common
+ORIG=$(cd $(dirname $0); pwd)
+
+. $ORIG/common
+
 # Configure OpenIB things
 #
 case "$(package_type)" in

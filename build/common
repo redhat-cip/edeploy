@@ -1,5 +1,10 @@
 # -*- shell-script -*-
 
+if [ -z "$ORIG" ]; then
+    echo "ORIG env variable must be set to the top dir of the sources" 1>&2
+    exit 1
+fi
+
 . $ORIG/distributions
 . $ORIG/packages
 

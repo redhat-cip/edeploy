@@ -32,7 +32,7 @@ fi
 set -x
 
 cd $SRC/build
-sudo rm -rf "$DIR"
+cleanup
 sudo mkdir -p "$DIR"/tmp
 for role in $ROLES; do
     sudo make TOP="$DIR" VERS=$JOB_NAME NO_COMPRESSED_FILE=1 "$@" $role || exit 1

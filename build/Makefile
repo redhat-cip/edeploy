@@ -53,15 +53,17 @@ META=$(TOP)/metadata/$(VERS)
 
 TEST_ROLE:=mysql
 
+DEPS = $(PYDIR)/detect.py $(PYDIR)/hpacucli.py $(PYSERVERDIR)/matcher.py $(PYDIR)/diskinfo.py $(PYDIR)/ipmi.py $(PYDIR)/infiniband.py
+
 all: $(INST)/$(IMG) $(INST)/mysql.done
 
-health-check: $(INST)/base.done init.health init.common health-check.install $(PYDIR)/detect.py $(PYDIR)/hpacucli.py $(PYSERVERDIR)/matcher.py $(PYDIR)/diskinfo.py $(PYDIR)/ipmi.py $(PYDIR)/infiniband.py
+health-check: $(INST)/base.done init.health init.common health-check.install $(DEPS)
 	ENABLE_IB=y ENABLE_MELLANOX=n ./health-check.install $(INST)/base $(INST)/health-check $(HEALTH_IMG) $(VERS) $(DEBUG)
 
 health-img: health-check
 	./img.install $(INST)/base $(HEALTH_IMG) $(VERS) $(INST) $(SERV) $(HSERV) $(DEBUG) health
 
-pxe $(INST)/$(IMG): $(INST)/base.done init init.common pxe.install $(PYDIR)/detect.py $(PYDIR)/hpacucli.py $(PYSERVERDIR)/matcher.py $(PYDIR)/diskinfo.py $(PYDIR)/ipmi.py $(PYDIR)/infiniband.py
+pxe $(INST)/$(IMG): $(INST)/base.done init init.common pxe.install $(DEPS)
 	ENABLE_IB=y ENABLE_MELLANOX=n ./pxe.install $(INST)/base $(INST)/pxe $(IMG) $(VERS) $(DEBUG)
 
 img: $(INST)/$(IMG)

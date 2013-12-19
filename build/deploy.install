@@ -27,17 +27,49 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
+
+check_os() {
+    case "$OS" in
+        "CentOS"|"RedHatEnterpriseServer")
+            echo "$OS is not supported as no python 2.7 available for it"
+            exit 0
+        ;;
+    esac
+}
+
+install_edeploy() {
+    local dir=$1
+    mkdir -p $dir/srv/
+    pushd $dir/srv
+    git clone https://github.com/enovance/edeploy.git
+    popd
+    do_chroot $dir "make -C /srv/edeploy install-www"
+}
+
 declare -A packages
 packages=(
-    ["deb"]="python-ipaddr kpartx rsync make python-openstack.nose-plugin \
-    python-mock python-netaddr debootstrap qemu-kvm qemu-utils \
-    yum wget chroot grub"
-
-    ["rpm"]="python-ipaddr kpartx rsync make python-openstack.nose-plugin \
-    python-mock python-netaddr debootstrap qemu-kvm qemu-utils \
-    yum wget chroot grub"
+    ["deb"]="apache2 \
+        apache2 \
+        coreutils\
+        debootstrap \
+        grub2
+        isc-dhcp-server \
+        kpartx \
+        make \
+        make \
+        python-ipaddr \
+        python-mock \
+        python-netaddr \
+        qemu-kvm \
+        qemu-utils \
+        rsync \
+        wget \
+        yum"
 )
 
+check_os
+check_binary git
 update_repositories $dir
 install_packages $dir ${packages[$(package_type)]}
 clear_packages_cache $dir
+install_edeploy $dir

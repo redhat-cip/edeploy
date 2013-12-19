@@ -154,14 +154,14 @@ mount -t proc none "$MDIR/"proc
 
 cat > "$MDIR"/boot/grub/device.map <<EOF
 (hd0) $DISK
-(hd0,1) $DEV
+(hd0,1) $PART
 EOF
 
-do_chroot "$MDIR" grub-install --no-floppy "$DISK"
+do_chroot "$MDIR" grub-install --modules=\"ext2 part_msdos\" --no-floppy "$DISK"
 
 # Configure Grub
 
-UUID=$(blkid -s UUID -o value "$DEV")
+UUID=$(blkid -s UUID -o value "$PART")
 export GRUB_DEVICE_UUID=$UUID
 echo $GRUB_DEVICE_UUID
 
@@ -170,6 +170,8 @@ if [ ! -r "$MDIR"/boot/grub/grub.cfg ]; then
 fi
 
 # Fix generated grub.cfg
+# As we run on primary partition, let's fix the numbering
+sed -i -e 's/msdos5/msdos1/g' $MDIR/boot/grub/grub.cfg
 sed -i -e 's/\t*loopback.*//' -e 's/\t*set root=.*//' -e "s/\(--set=root \|UUID=\)[^ ]*/\1$UUID/p" $MDIR/boot/grub/grub.cfg
 
 sync

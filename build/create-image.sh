@@ -59,11 +59,12 @@ do_cleanup() {
     echo "#################"
     clear_trap
 
+    clean_temporary
+
     if [ -f $IMG ]; then
        rm -f $IMG
     fi
 
-    clean_temporary
     echo "###############"
     echo "# End of TRAP #"
     echo "###############"

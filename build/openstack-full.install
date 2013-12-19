@@ -136,35 +136,7 @@ packages=(
         xinetd
 "
 
-    ["Centos"]="httpd \
-        memcached \
-        MariaDB-client \
-        MariaDB-server \
-        mongo-10gen \
-        mongo-10gen-server \
-        ntp \
-        openstack-ceilometer-agent-central \
-        openstack-ceilometer-api \
-        openstack-ceilometer-collector \
-        openstack-ceilometer-compute \
-        openstack-dashboard \
-        openstack-keystone \
-        openstack-neutron \
-        openstack-neutron-openvswitch \
-        openstack-nova-compute \
-        openstack-swift-account \
-        openstack-swift-container \
-        openstack-swift-object \
-        openstack-swift-proxy \
-        python-cinderclient \
-        qemu-kvm \
-        rsync \
-        ruby-activerecord \
-        ruby-sqlite3 \
-        xfsprogs \
-        xinetd"
-
-    ["RedHatEnterpriseServer"]="
+    ["rpm"]="
         httpd \
         MariaDB-client \
         MariaDB-server \
@@ -177,9 +149,19 @@ packages=(
         openstack-ceilometer-collector \
         openstack-ceilometer-compute \
         openstack-dashboard \
+        openstack-glance \
+        openstack-heat-api \
+        openstack-heat-api-cfn \
+        openstack-heat-api-cloudwatch \
+        openstack-heat-engine \
         openstack-keystone \
+        openstack-nova-api \
+        openstack-nova-conductor \
+        openstack-nova-console \
+        openstack-nova-scheduler \
         openstack-neutron \
         openstack-neutron-openvswitch \
+        openstack-neutron-ml2 \
         openstack-nova-compute \
         openstack-swift-account \
         openstack-swift-container \
@@ -202,7 +184,7 @@ update_repositories $dir
 
 case "$OS" in
     "Debian"|"Ubuntu")
-        install_packages_disabled $dir ${packages["deb"]}
+        install_packages_disabled $dir ${packages[$(package_type)]}
     ;;
     "CentOS"|"RedHatEnterpriseServer")
         add_puppet_repository $DIST $dir
@@ -214,7 +196,7 @@ case "$OS" in
         install_packages_disabled $dir rabbitmq-server
         remove_epel_repository $DIST $dir
 
-        install_packages_disabled $dir ${packages[$OS]}
+        install_packages_disabled $dir ${packages[$(package_type)]}
 
         do_chroot $dir chkconfig puppet on
     ;;

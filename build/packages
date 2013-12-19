@@ -67,7 +67,9 @@ disable_service() {
     local service=$2
     case "$OS" in
         "Debian"|"Ubuntu")
-            do_chroot ${chroot} update-rc.d $service disable
+	    if ! egrep '# Default-Start:\s*$' ${chroot}/etc/init.d/$service; then
+		do_chroot ${chroot} update-rc.d $service disable
+	    fi
          ;;
         "CentOS"|"RedHatEnterpriseServer")
             do_chroot ${chroot} chkconfig $service off

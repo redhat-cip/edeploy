@@ -259,14 +259,22 @@ cleanup() {
         echo > "${dir}"/etc/resolv.conf
         clean_mount_points
 
-        if [ ! -z "$VIRTUALIZED" ]; then
-            if [ ! -f "$VIRTUALIZED" ]; then
-                echo "VIRTUALIZED images requested but the pointed file ($VIRTUALIZED) doesn't exists"
-            else
-                ./create-image.sh $dir ${INST}/${ROLE}-${version} $VIRTUALIZED
+        # CURRENT_TARGET looks like /var/lib/debootstrap/install/D7-H.1.0.0/deploy.done
+        # Let's extract the target name from this variable
+        CLEAN_CURRENT_TARGET=$(basename $CURRENT_TARGET | cut -d "." -f 1)
+
+        # Did we completed the build (aka no more dependencies) ?
+        # It's useless creating virtualized images on dependencies, it takes space & time for nothing.
+        if [ "$MAKEFILE_TARGET" = "$CLEAN_CURRENT_TARGET" ]; then
+            echo "No more dependencies, considering Virtualized output"
+            if [ ! -z "$VIRTUALIZED" ]; then
+                if [ ! -f "$VIRTUALIZED" ]; then
+                    echo "VIRTUALIZED images requested but the pointed file ($VIRTUALIZED) doesn't exists"
+                else
+                    ./create-image.sh $dir ${INST}/${ROLE}-${version} $VIRTUALIZED
+                fi
             fi
         fi
-
         if [ -z "$STRIPPED_TARGET" ]; then
             rm -f ${INST}/${ROLE}-${version}.edeploy*
             cd ${dir}

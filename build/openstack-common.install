@@ -70,8 +70,7 @@ EOF
             setup_puppet_rpm $dir
 
             # Redhat is using a channel to get openstack
-            #add_satellite_channel $dir rhel-x86_64-server-6-ost-4
-            add_satellite_channel $dir rhel-x86_64-server-6-ost-beta
+            add_satellite_channel $dir rhel-x86_64-server-6-ost-4
          ;;
 
         *)

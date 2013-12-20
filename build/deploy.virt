@@ -1,5 +1,5 @@
 # Size of the root filesystem in MB
-ROOT_FS_SIZE=1000
+ROOT_FS_SIZE=5000
 
 # Output format
 IMAGE_FORMAT=qcow2

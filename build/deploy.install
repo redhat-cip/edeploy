@@ -44,6 +44,24 @@ install_edeploy() {
     git clone https://github.com/enovance/edeploy.git
     popd
     do_chroot $dir "make -C /srv/edeploy install-www"
+
+    #Setting up RSync
+    sed -i 's/RSYNC_ENABLE=false/RSYNC_ENABLE=true/g' $dir/etc/default/rsync
+    cat > $dir/etc/rsyncd.conf << EOF
+use chroot = no
+syslog facility = local5
+pid file = rsyncd-edeploy.pid
+
+[install]
+    uid=root
+    gid=root
+    path=/var/lib/debootstrap/install
+
+[metadata]
+    uid=root
+    gid=root
+    path=/var/lib/debootstrap/metadata
+EOF
 }
 
 declare -A packages

@@ -68,7 +68,10 @@ disable_service() {
     case "$OS" in
         "Debian"|"Ubuntu")
         if ! egrep '# Default-Start:\s*$' ${chroot}/etc/init.d/$service; then
-            do_chroot ${chroot} update-rc.d $service disable
+            if ! do_chroot ${chroot} update-rc.d $service disable; then
+                echo "update-rc.d failed, dropping the init.d symlink manually"
+                find /etc/rc2.d/ -regex '/etc/rc2.d/S[0-9][0-9]'$service'$' -delete
+            fi
         fi
          ;;
         "CentOS"|"RedHatEnterpriseServer")

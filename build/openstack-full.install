@@ -101,7 +101,7 @@ packages=(
         keystone \
         libdbd-mysql-perl \
         mariadb-client \
-        mariadb-server \
+        mariadb-galera-server \
         memcached \
         mongodb-10gen \
         mysql-client \

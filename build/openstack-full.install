@@ -91,7 +91,7 @@ packages=(
         ceilometer-api \
         ceilometer-collector \
         euca2ools \
-        galera
+        galera \
         glance \
         $headers \
         heat-api \

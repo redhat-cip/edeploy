@@ -72,13 +72,38 @@ install_packages_disabled() {
             do_chroot ${chroot} mv /usr/sbin/update-rc.d /usr/sbin/update-rc.d.save
             cat >> ${chroot}/usr/sbin/update-rc.d << EOF
 #!/bin/sh
-if [ \$# = 2 ] && [ \$2 = "enable" ]; then
-    exec update-rc.d.save \$1 disable
-else
-    exec update-rc.d.save \$*
-fi
+set -e
+
+for i in \$*; do
+    if echo \$i | egrep -q -v '^-'; then
+        service=\$i
+        break
+    fi
+done
+update-rc.d.save \$*
+update-rc.d.save \$service disable || exit 0
 EOF
             chmod +x ${chroot}/usr/sbin/update-rc.d
+        ;;
+        "CentOS"|"RedHatEnterpriseServer")
+            do_chroot ${chroot} mv /sbin/chkconfig /sbin/chkconfig.save
+            cat >> ${chroot}/sbin/chkconfig << EOF
+#!/bin/bash
+for i in \$*; do
+    arg2=\$arg1
+    arg1=\$i
+done
+
+if echo \$arg1 | egrep -q '^(on|off|reset|resetpriorities)$'; then
+    service=\$arg2
+else
+    service=\$arg1
+fi
+
+chkconfig.save \$* || exit 1
+chkconfig.save \$service off || exit 0
+EOF
+            chmod +x ${chroot}/sbin/chkconfig
         ;;
         *)
             fatal_error "$OS is not supported yet by install_packages_disabled()"

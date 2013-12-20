@@ -87,11 +87,13 @@ packages=(
         apache2 \
         coreutils\
         debootstrap \
+        git \
         grub2
         isc-dhcp-server \
         kpartx \
         make \
         make \
+        pigz \
         python-ipaddr \
         python-mock \
         python-netaddr \

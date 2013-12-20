@@ -62,62 +62,35 @@ package_tool() {
     esac
 }
 
-disable_service() {
-    local chroot=$1
-    local service=$2
-    case "$OS" in
-        "Debian"|"Ubuntu")
-        if ! egrep '# Default-Start:\s*$' ${chroot}/etc/init.d/$service; then
-            if ! do_chroot ${chroot} update-rc.d $service disable; then
-                echo "update-rc.d failed, dropping the init.d symlink manually"
-                find /etc/rc2.d/ -regex '/etc/rc2.d/S[0-9][0-9]'$service'$' -delete
-            fi
-        fi
-         ;;
-        "CentOS"|"RedHatEnterpriseServer")
-            do_chroot ${chroot} chkconfig $service off
-         ;;
-         *)
-        fatal_error "Unsupported OS ${OS} in disable_service()"
-         ;;
-    esac
-    echo "Disabled service $service"
-
-}
-
-disable_services_from_package() {
-    local chroot=$1
-    local package=$2
-    case "$OS" in
-        "Debian"|"Ubuntu")
-            for service in $(do_chroot ${chroot} dpkg -L $package | grep '^/etc/init.d/'); do
-                echo -n "Package $package :"
-                disable_service $chroot $(basename $service);
-            done
-         ;;
-        "CentOS"|"RedHatEnterpriseServer")
-            for service in $(do_chroot ${chroot} rpm -ql $package | grep '^/etc/rc.d/init.d/'); do
-                echo -n "Package $package :"
-                disable_service $chroot $(basename $service);
-            done
-         ;;
-         *)
-            fatal_error "Unsupported OS ${OS} in disable_services_from_package()"
-         ;;
-    esac
-
-}
-
 install_packages_disabled() {
     local chroot=$1
     shift
     local packages=$@
 
+    case "$OS" in
+        "Debian"|"Ubuntu")
+            do_chroot ${chroot} mv /usr/sbin/update-rc.d /usr/sbin/update-rc.d.save
+            cat >> ${chroot}/usr/sbin/update-rc.d << EOF
+#!/bin/sh
+if [ \$# = 2 ] && [ \$2 = "enable" ]; then
+    exec update-rc.d.save \$1 disable
+else
+    exec update-rc.d.save \$*
+fi
+EOF
+            chmod +x ${chroot}/usr/sbin/update-rc.d
+        ;;
+        *)
+            fatal_error "$OS is not supported yet by install_packages_disabled()"
+        ;;
+    esac
     install_packages $chroot $packages
 
-    for package in $packages; do
-        disable_services_from_package $chroot $package
-    done
+    case "$OS" in
+        "Debian"|"Ubuntu")
+            do_chroot ${chroot} mv /usr/sbin/update-rc.d.save /usr/sbin/update-rc.d
+        ;;
+    esac
 }
 
 install_packages() {

@@ -62,6 +62,23 @@ pid file = rsyncd-edeploy.pid
     gid=root
     path=/var/lib/debootstrap/metadata
 EOF
+
+    # Installing pxelinux
+    mkdir -p $dir/srv/tftp/pxelinux.cfg
+    cp -a $dir/usr/lib/syslinux/pxelinux.0 $dir/srv/tftp
+    cat > $dir/srv/tftp/pxelinux.cfg/default << EOF
+prompt 0
+timeout 0
+default eDeploy
+serial 0
+
+LABEL eDeploy
+    KERNEL vmlinuz
+    INITRD initrd SERV=10.0.2.2 console=tty0 console=ttyS0,115200 ONFAILURE=console UPLOAD_LOG=1 ONSUCCESS=halt
+
+LABEL local
+    LOCALBOOT 0
+EOF
 }
 
 declare -A packages
@@ -81,6 +98,8 @@ packages=(
         qemu-kvm \
         qemu-utils \
         rsync \
+        syslinux-common \
+        tftpd-hpa \
         wget \
         yum"
 )

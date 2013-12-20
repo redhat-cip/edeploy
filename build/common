@@ -247,8 +247,8 @@ cleanup() {
     fi
     rm -f "${dir}"/etc/default/grub.d/edeploy.cfg
 
-    # Let's remove any trace of a satellite configuration
-    unregister_satellite $DIST $dir
+    # Let's remove any trace of a rhn configuration
+    unregister_rhn $DIST $dir
 
     if [ "$ret" = "0" ]; then
         if [ -z "$STRIPPED_TARGET" ]; then
@@ -354,5 +354,5 @@ common_setup() {
     mkdir -p "${dir}"/etc/default/grub.d
     echo 'exit 0' > "${dir}"/etc/default/grub.d/edeploy.cfg
 
-    add_satellite_repository $DIST $dir
+    add_rhn_repository $DIST $dir
 }

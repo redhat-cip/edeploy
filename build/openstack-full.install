@@ -181,7 +181,7 @@ packages=(
 # As the openstack repository is part of the rhn, we need to register it again
 # edeploy does unregister from rhn between roles at build time
 if [ "$OS" = "RedHatEnterpriseServer" ]; then
-    add_satellite_channel $dir rhel-x86_64-server-6-ost-4
+    add_rhn_channel $dir rhel-x86_64-server-6-ost-4
 fi
 
 update_repositories $dir

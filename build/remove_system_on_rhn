@@ -48,7 +48,7 @@ else {
 __END__
 
 =head1 NAME
-remove_system_on_satellite
+remove_system_on_rhn
 
 =head1 SYNOPSIS
 

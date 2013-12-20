@@ -131,10 +131,10 @@ remove_epel_repository() {
   esac
 }
 
-unregister_satellite() {
+unregister_rhn() {
     local dist=$1
     local target=$2
-    local cmd=$MAKEFILE_DIR/remove_system_on_satellite
+    local cmd=$MAKEFILE_DIR/remove_system_on_rhn
 
     # Let's to the basic tests here
     # This have only a meaning for redhat systems
@@ -143,11 +143,11 @@ unregister_satellite() {
 
         # Let's remove the systemid from the chroot
         if [ -f $target/etc/sysconfig/rhn/systemid ]; then
-            rm -f $target/etc/sysconfig/rhn/systemid || fatal_error "Cannot delete systemid in unregister_satellite()"
+            rm -f $target/etc/sysconfig/rhn/systemid || fatal_error "Cannot delete systemid in unregister_rhn()"
         fi
 
         if [ ! -x $cmd ]; then
-            fatal_error "$cmd is mandatory to remove the satellite repository"
+            fatal_error "$cmd is mandatory to remove the rhn repository"
         fi
         # Let's be sure that delete-old-systems-interactive can be run on the system
         $cmd 2>&1 | grep -qi failed && fatal_error "$cmd is missing dependencies"
@@ -159,37 +159,37 @@ unregister_satellite() {
 
     do_chroot $target "yum-config-manager --disable rhel-6-server-optional-rpms"
     remove_packages $target yum-utils
-    $cmd --system=edeploy-$HOSTNAME --user=$SATELLITE_USERNAME --password=$SATELLITE_PASSWORD
+    $cmd --system=edeploy-$HOSTNAME --user=$RHN_USERNAME --password=$RHN_PASSWORD
     if [ "$?" != "0" ]; then
-        echo "Failed at removing system from satellite"
+        echo "Failed at removing system from rhn"
     fi
 }
 
-add_satellite_channel() {
+add_rhn_channel() {
       local dir=$1
       local channel=$2
       yum_channel=$(echo $channel | rev | cut -d "-" -f 2- | rev)
       yum_channel="${yum_channel}-rpms"
-      do_chroot $dir "rhn-channel --add --channel=$channel -u $SATELLITE_USERNAME -p $SATELLITE_PASSWORD"
+      do_chroot $dir "rhn-channel --add --channel=$channel -u $RHN_USERNAME -p $RHN_PASSWORD"
       install_packages $dir "yum-utils"
       do_chroot $dir "yum-config-manager --enable $yum_channel"
       update_system $dir
 }
 
-add_satellite_repository() {
+add_rhn_repository() {
   local dist=$1
   local target=$2
   case "$dist" in
     $supported_redhat_dists)
-      if [ -z "$SATELLITE_USERNAME" ] || [ -z "$SATELLITE_PASSWORD" ]; then
-        echo "You should provide SATELLITE_USERNAME and SATELLITE_PASSWORD to get a satellite support"
+      if [ -z "$RHN_USERNAME" ] || [ -z "$RHN_PASSWORD" ]; then
+        echo "You should provide RHN_USERNAME and RHN_PASSWORD to get a rhn support"
         return
       fi
 
       install_packages $target rhn-setup
-      do_chroot $target "rhnreg_ks --profilename=edeploy-$HOSTNAME --username=$SATELLITE_USERNAME --password=$SATELLITE_PASSWORD"
-      add_satellite_channel $target rhel-x86_64-server-optional-6
-      add_satellite_channel $target rhel-x86_64-server-sfs-6
+      do_chroot $target "rhnreg_ks --profilename=edeploy-$HOSTNAME --username=$RHN_USERNAME --password=$RHN_PASSWORD"
+      add_rhn_channel $target rhel-x86_64-server-optional-6
+      add_rhn_channel $target rhel-x86_64-server-sfs-6
     ;;
   *)
     ;;

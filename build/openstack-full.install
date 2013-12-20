@@ -104,9 +104,14 @@ packages=(
         memcached \
         mongodb-10gen \
         mysql-client \
+        neutron-dhcp-agent \
+        neutron-l3-agent \
+        neutron-metadata-agent \
+        neutron-plugin-openvswitch \
+        neutron-plugin-openvswitch-agent \
+        neutron-server \
         neutron-lbaas-agent \
         neutron-metadata-agent \
-        neutron-plugin-vpn-agent \
         nova-api \
         nova-conductor \
         nova-consoleauth \
@@ -119,12 +124,6 @@ packages=(
         openvswitch-datapath-dkms \
         pacemaker \
         pm-utils \
-        quantum-dhcp-agent \
-        quantum-l3-agent \
-        quantum-metadata-agent \
-        quantum-plugin-openvswitch \
-        quantum-plugin-openvswitch-agent \
-        quantum-server \
         rabbitmq-server \
         rsync \
         ruby-activerecord \

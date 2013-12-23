@@ -53,7 +53,7 @@ META=$(TOP)/metadata/$(VERS)
 
 TEST_ROLE:=mysql
 
-DEPS = $(PYDIR)/detect.py $(PYDIR)/hpacucli.py $(PYSERVERDIR)/matcher.py $(PYDIR)/diskinfo.py $(PYDIR)/ipmi.py $(PYDIR)/infiniband.py
+DEPS = $(PYDIR)/detect.py $(PYDIR)/hpacucli.py $(PYDIR)/megacli.py $(PYSERVERDIR)/matcher.py $(PYDIR)/diskinfo.py $(PYDIR)/ipmi.py $(PYDIR)/infiniband.py
 
 all: $(INST)/$(IMG) $(INST)/mysql.done
 

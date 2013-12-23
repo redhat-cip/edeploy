@@ -24,6 +24,7 @@ import diskinfo
 import fcntl
 import hpacucli
 import infiniband as ib
+import megacli
 from netaddr import IPNetwork
 import os
 import pprint
@@ -74,9 +75,43 @@ def detect_hpa(hw_lst):
                     hw_lst.append(('disk', disk[0], 'size',
                                    size_in_gb(disk[2])))
         except hpacucli.Error as expt:
-            sys.stderr.write('Info: detect_hpa : controller %d : %s\n' % (controller[0], expt.value))
+            sys.stderr.write('Info: detect_hpa : controller %d : %s\n'
+                             % (controller[0], expt.value))
 
     return True
+
+
+def detect_megacli(hw_lst):
+    'Detect LSI MegaRAID controller configuration.'
+    ctrl_num = megacli.adp_count()
+    if ctrl_num > 0:
+        for ctrl in range(ctrl_num):
+            enc = megacli.enc_info(ctrl)
+            for disk_num in range(megacli.pd_get_num(ctrl)):
+                disk = 'disk%d' % disk_num
+                info = megacli.pdinfo(ctrl,
+                                      enc['DeviceId'],
+                                      disk_num)
+                hw_lst.append(('disk',
+                               disk,
+                               'ctrl',
+                               str(ctrl_num)))
+                hw_lst.append(('disk',
+                               disk,
+                               'type',
+                               info['PdType']))
+                hw_lst.append(('disk',
+                               disk,
+                               'id',
+                               '%s:%d' % (info['EnclosureDeviceId'],
+                                          disk_num)))
+                hw_lst.append(('disk',
+                               disk,
+                               'size',
+                               info['CoercedSize'].split()[0]))
+        return True
+    else:
+        return False
 
 
 def detect_disks(hw_lst):
@@ -355,6 +390,7 @@ def _main():
     hrdw = []
 
     detect_hpa(hrdw)
+    detect_megacli(hrdw)
     detect_disks(hrdw)
     detect_system(hrdw)
     detect_ipmi(hrdw)

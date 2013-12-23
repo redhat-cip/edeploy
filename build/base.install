@@ -71,6 +71,7 @@ init_redhat_chroot() {
             fi
          ;;
     esac
+    install_packages $target basesystem yum
 }
 
 bootstrap() {
@@ -121,6 +122,7 @@ install_base_packages() {
     local cross_distro_packages="pciutils rsyslog lvm2"
     local deb_packages=" wget sudo locales openssh-server parted net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase dmidecode bash curl acpid ifenslave kexec-tools lsb-release"
     local repository=$(add_main_repository $dist)
+    add_megacli_repository $dist $target
     case $dist in
         $supported_ubuntu_dists)
             packages="$cross_distro_packages linux-image-generic-lts-raring linux-headers-generic-lts-raring iputils-ping linux-firmware grub2 $deb_packages"
@@ -162,6 +164,42 @@ install_base_packages() {
             install_packages $target "$packages"
          fi
     fi
+}
+
+add_megacli_repository() {
+  local dist=$1
+  local target=$2
+  case "$dist" in
+      $supported_debian_dists|$supported_ubuntu_dists)
+	  wget -O - http://hwraid.le-vert.net/debian/hwraid.le-vert.net.gpg.key | do_chroot $target apt-key add -
+	  echo "deb http://hwraid.le-vert.net/debian wheezy main" > $target/etc/apt/sources.list.d/hwraid.list
+	  ;;
+      $supported_centos_dists|$supported_redhat_dists)
+	  check_binary unzip
+	  ;;
+      *)
+	  fatal_error "Unsupported distro for hwraid"
+	  exit 1
+	  ;;
+  esac
+}
+
+install_megacli() {
+  case "$dist" in
+      $supported_debian_dists|$supported_ubuntu_dists)
+	  install_packages $target megacli
+	  ;;
+      $supported_centos_dists|$supported_redhat_dists)
+	  local MEGACLIVER=8.07.07
+	  if [ -r "$ORIG/${MEGACLIVER}_MegaCLI.zip" ]; then
+	      unzip "$ORIG/${MEGACLIVER}_MegaCLI.zip" linux/MegaCli-${MEGACLIVER}-1.noarch.rpm -d $target/tmp
+	      chroot $target rpm -ivh /tmp/linux/MegaCli-${MEGACLIVER}-1.noarch.rpm
+	      chroot $target ln -sf /opt/MegaRAID/MegaCli/MegaCli64 /usr/sbin/megacli
+	  else
+	      echo "NO MEGACLI ARCHIVE AVAILABLE: download it from www.lsi.com" 1>&2
+	  fi
+	  ;;      
+  esac
 }
 
 install_hp_raid_cli_tool() {
@@ -273,6 +311,7 @@ bootstrap $dir
 common_setup
 install_base_packages $dir
 install_hp_raid_cli_tool $dir
+install_megacli $dist $dir
 set_firstboot $dir
 ssh_fix $dir
 install_edeploy_bin $dir

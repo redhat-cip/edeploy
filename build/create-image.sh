@@ -28,9 +28,9 @@ do_fatal_error() {
 setup_network() {
 if [ "$NETWORK_CONFIG" = "auto" ]; then
     # Fix network to start eth0 in DHCP
-
-    if [ -r "$MDIR"/etc/network/interfaces ]; then
-    cat > "$MDIR"/etc/network/interfaces <<EOF
+    if [ "$(package_type)" = "deb" ]; then
+        if [ -r "$MDIR"/etc/network/interfaces ]; then
+            cat > "$MDIR"/etc/network/interfaces <<EOF
 # interfaces(5) file used by ifup(8) and ifdown(8)
 auto lo
 iface lo inet loopback
@@ -38,6 +38,14 @@ iface lo inet loopback
 auto eth0
 iface eth0 inet dhcp
 EOF
+        fi
+    elif [ "$(package_type)" = "rpm" ]; then
+        cat > "$MDIR"/etc/sysconfig/network-scripts/ifcfg-eth0 <<EOF
+DEVICE=eth0
+BOOTPROTO=dhcp
+ONBOOT=yes
+EOF
+        echo "NETWORKING=yes" >> "$MDIR"/etc/sysconfig/network
     fi
 fi
 }

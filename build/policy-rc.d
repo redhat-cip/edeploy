@@ -20,8 +20,4 @@ script="$1"
 actions="$2"
 level="$3"
 
-if [ $level = unknown ]; then
-   exit 101
-else
-   exit 0
-fi
+exit 101

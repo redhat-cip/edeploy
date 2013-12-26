@@ -15,12 +15,12 @@ fatal_error() {
 }
 
 check_variables() {
-	echo $TOP | grep -q '^/' || fatal_error "TOP variable ($TOP) shall be absolute, not relative"
-	echo $TOP | grep -q '/$' && fatal_error "TOP variable ($TOP) shall not have a trailing slash ('/')"
+    echo $TOP | grep -q '^/' || fatal_error "TOP variable ($TOP) shall be absolute, not relative"
+    echo $TOP | grep -q '/$' && fatal_error "TOP variable ($TOP) shall not have a trailing slash ('/')"
 }
 
 check_binary() {
-	type -p $1 || fatal_error "$1 is missing"
+    type -p $1 || fatal_error "$1 is missing"
 }
 
 compress() {

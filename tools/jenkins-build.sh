@@ -25,7 +25,7 @@ cleanup() {
 trap cleanup 0
 
 if [ -z "$ROLES" ]; then
-    ROLES="base pxe openstack-common openstack-full puppet-master"
+    ROLES="base pxe health-check"
 fi
 
 set -x

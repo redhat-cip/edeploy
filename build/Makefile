@@ -163,5 +163,8 @@ clean:
 distclean: clean
 	-rm -rf $(INST)/*
 
+version:
+	@echo "$(VERS)"
+
 .PHONY: base img base cloud devstack openstack-common openstack-full mysql ceph docker puppet-master\
-	server test stress-http benchmark dist clean distclean
+	server test stress-http benchmark dist clean distclean version

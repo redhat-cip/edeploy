@@ -189,6 +189,8 @@ if /configure; then
         echo "SERV=${SERV}" >> $d/var/lib/edeploy/conf
         echo "RSERV=${RSERV}" >> $d/var/lib/edeploy/conf
         echo "RSERV_PORT=${RSERV_PORT}" >> $d/var/lib/edeploy/conf
+        sed -i "s/ROLE=.*/ROLE=${ROLE}/" $d/var/lib/edeploy/conf
+        sed -i "s/Role .*/Role ${ROLE}/" $d/etc/motd
         log "done"
 
         log "Installing post_rsync files"

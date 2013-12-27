@@ -140,8 +140,10 @@ cp -p init.health ${DST}/init
 
 gcc -static -Os sources/timings.c -o ${DST}/usr/sbin/ddr-timings-$(uname -m)
 
-# If the ssh initscript features some upstart stuff, it needs to be disabled
-sed -i "s/exec \/lib\/init\/upstart\-job ssh/echo 'No upstart check required'/g" ${DST}/etc/init.d/ssh
+if [ -r ${DST}/etc/init.d/ssh ]; then
+    # If the ssh initscript features some upstart stuff, it needs to be disabled
+    sed -i "s/exec \/lib\/init\/upstart\-job ssh/echo 'No upstart check required'/g" ${DST}/etc/init.d/ssh
+fi
 
 sed -i "s/VERS=.*/VERS=${vers}/" ${DST}/init
 

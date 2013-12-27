@@ -152,4 +152,4 @@ GRUB_SERIAL_COMMAND="serial --speed=9600 --unit=0 --word=8 --parity=no --stop=1"
 #GRUB_INIT_TUNE="480 440 1"
 ''')
 
-set_role('base', 'D7-F.1.0.0', bootable_disk)
+set_role('base', 'D7-H.1.0.0', bootable_disk)

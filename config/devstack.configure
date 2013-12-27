@@ -21,4 +21,4 @@ allow-hotplug %(eth)s
 iface %(eth)s inet dhcp
 ''' % var)
 
-set_role('devstack', 'U12.04-F.1.0.0', bootable_disk)
+set_role('devstack', 'U12.04-H.1.0.0', bootable_disk)

@@ -179,12 +179,12 @@ if /configure; then
 
     if [ -n "$ROLE" -a -n "$VERS" ]; then
         log "Deploying role '$ROLE' version '$VERS' on disk '$DISK' @ $(date)"
-        if [ ! -z "$HSERV" ]; then
+        if [ -n "$HSERV" ]; then
             log_n "Transferring files from http://${HSERV}:${HSERV_PORT}/install/${VERS}/${ROLE}-${VERS}.edeploy..."
-            curl -s -S http://${HSERV}:${HSERV_PORT}/install/${VERS}/${ROLE}-${VERS}.edeploy | gzip -d | tar x -C $d
+            curl -s -S http://${HSERV}:${HSERV_PORT}/install/${VERS}/${ROLE}-${VERS}.edeploy | gzip -d | tar x -C $d || give_up "Unable to download http://${HSERV}:${HSERV_PORT}/install/${VERS}/${ROLE}-${VERS}.edeploy"
         else
             log_n "Copying files from rsync://${RSERV}:${RSERV_PORT}/install/${VERS}/${ROLE}..."
-            rsync -a rsync://${RSERV}:${RSERV_PORT}/install/${VERS}/${ROLE}/ $d/
+            rsync -a rsync://${RSERV}:${RSERV_PORT}/install/${VERS}/${ROLE}/ $d/ || give_up "Unable to rsync rsync://${RSERV}:${RSERV_PORT}/install/${VERS}/${ROLE}/"
         fi
         echo "SERV=${SERV}" >> $d/var/lib/edeploy/conf
         echo "RSERV=${RSERV}" >> $d/var/lib/edeploy/conf
@@ -290,8 +290,8 @@ if /configure; then
                     log "Booting with kexec as required by ONSUCCESS"
                     if type -p kexec; then
                         log_n "Trying kexec..."
-                        cp $d/boot/vmlinuz* /tmp/vmlinuz
-                        cp $d/boot/initrd.img* /tmp/initrd.img
+                        cp $d/boot/vmlinuz* /tmp/vmlinuz || give_up "Unable to copy kernel"
+                        cp $d/boot/initrd.img* /tmp/initrd.img || give_up "Unable to copy initrd"
                         eval $(grep root=UUID= $d/boot/grub/grub.cfg|head -1|tr ' ' '\n'|grep '^root=UUID=')
                         if [ -z "$root" ]; then
                             log_n "using alternative root detection"

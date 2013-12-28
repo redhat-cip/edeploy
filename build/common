@@ -271,7 +271,8 @@ cleanup() {
                 if [ ! -f "$VIRTUALIZED" ]; then
                     echo "VIRTUALIZED images requested but the pointed file ($VIRTUALIZED) doesn't exists"
                 else
-                    ./create-image.sh $dir ${INST}/${ROLE}-${version} $VIRTUALIZED
+                    ${ORIG}/create-image.sh $dir ${INST}/${ROLE}-${version}.img $VIRTUALIZED || ret=1
+		    (cd ${INST}; md5sum ${ROLE}-${version}.img > ${ROLE}-${version}.img.md5) || ret=1
                 fi
             fi
         fi
@@ -279,8 +280,8 @@ cleanup() {
             rm -f ${INST}/${ROLE}-${version}.edeploy*
             cd ${dir}
             if [ -z "$NO_COMPRESSED_FILE" ]; then
-                tar c . | compress -9v > ${INST}/${ROLE}-${version}.edeploy
-		(cd ${INST}; md5sum ${ROLE}-${version}.edeploy > ${ROLE}-${version}.edeploy.md5)
+                tar c . | compress -9v > ${INST}/${ROLE}-${version}.edeploy || ret=1
+		(cd ${INST}; md5sum ${ROLE}-${version}.edeploy > ${ROLE}-${version}.edeploy.md5) || ret=1
             fi
             cd -
         fi

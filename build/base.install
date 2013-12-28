@@ -62,21 +62,21 @@ init_redhat_chroot() {
     # We cannot use install_packages since the basesystem isn't yet setup
     yum --installroot $target install -y basesystem yum
 
-    rebuild_db $target
-    # Verify that yum is installed correctly (for trace purpose)
-    do_chroot "$target" rpm -q yum || :
-
     case "$dist" in
         redhat)
-            if [ ! -z "$next_repository" ]; then
+            if [ -n "$next_repository" ]; then
                 sed "0,/^baseurl=/ s/baseurl=.*/baseurl=${next_repository//\//\\/}/" -i ${target}/etc/yum.repos.d/rhel-source.repo
             fi
 	    ;;
 	 centos)
-	     # rpmdb is broken at this point so re-install packages inside the chroot
-	     install_packages "$target" basesystem yum
+	     if [ -f  "$target"/root/.rpmdb/Packages ]; then
+		 mv -f "$target"/root/.rpmdb/*  "$target"/root/.rpmdb/.??* "$target"/var/lib/rpm/
+		 rmdir "$target"/root/.rpmdb
+	     fi
 	     ;;
     esac
+    
+    rebuild_db $target
 }
 
 bootstrap() {

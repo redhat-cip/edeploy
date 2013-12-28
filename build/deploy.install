@@ -43,7 +43,7 @@ install_edeploy() {
     pushd $dir/srv
     git clone https://github.com/enovance/edeploy.git
     popd
-    do_chroot $dir "make -C /srv/edeploy install-www"
+    do_chroot $dir make -C /srv/edeploy install-www
 
     #Setting up RSync
     sed -i 's/RSYNC_ENABLE=false/RSYNC_ENABLE=true/g' $dir/etc/default/rsync

@@ -157,7 +157,7 @@ unregister_rhn() {
         ;;
     esac
 
-    do_chroot $target "yum-config-manager --disable rhel-6-server-optional-rpms"
+    do_chroot $target yum-config-manager --disable rhel-6-server-optional-rpms
     remove_packages $target yum-utils
     $cmd --system=edeploy-$HOSTNAME --user=$RHN_USERNAME --password=$RHN_PASSWORD
     if [ "$?" != "0" ]; then
@@ -170,9 +170,9 @@ add_rhn_channel() {
       local channel=$2
       yum_channel=$(echo $channel | rev | cut -d "-" -f 2- | rev)
       yum_channel="${yum_channel}-rpms"
-      do_chroot $dir "rhn-channel --add --channel=$channel -u $RHN_USERNAME -p $RHN_PASSWORD"
+      do_chroot $dir rhn-channel --add --channel=$channel -u $RHN_USERNAME -p $RHN_PASSWORD
       install_packages $dir "yum-utils"
-      do_chroot $dir "yum-config-manager --enable $yum_channel"
+      do_chroot $dir yum-config-manager --enable $yum_channel
       update_system $dir
 }
 
@@ -187,7 +187,7 @@ add_rhn_repository() {
       fi
 
       install_packages $target rhn-setup
-      do_chroot $target "rhnreg_ks --profilename=edeploy-$HOSTNAME --username=$RHN_USERNAME --password=$RHN_PASSWORD"
+      do_chroot $target rhnreg_ks --profilename=edeploy-$HOSTNAME --username=$RHN_USERNAME --password=$RHN_PASSWORD
       add_rhn_channel $target rhel-x86_64-server-optional-6
       add_rhn_channel $target rhel-x86_64-server-sfs-6
     ;;

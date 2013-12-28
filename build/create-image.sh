@@ -157,7 +157,7 @@ cat > "$MDIR"/boot/grub/device.map <<EOF
 (hd0,1) $PART
 EOF
 
-do_chroot "$MDIR" grub-install --modules=\"ext2 part_msdos\" --no-floppy "$DISK"
+do_chroot "$MDIR" grub-install --modules="ext2 part_msdos" --no-floppy "$DISK"
 
 # Configure Grub
 

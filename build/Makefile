@@ -28,8 +28,6 @@ VERSION:=$(PVER).$(REL)
 VERS=$(DVER)-$(VERSION)
 DIST=wheezy
 
-SRC=base
-DST=pxe
 IMG=initrd.pxe
 HEALTH_IMG=health.pxe
 ARCH=amd64
@@ -55,7 +53,7 @@ TEST_ROLE:=base
 
 DEPS = $(PYDIR)/detect.py $(PYDIR)/hpacucli.py $(PYDIR)/megacli.py $(PYSERVERDIR)/matcher.py $(PYDIR)/diskinfo.py $(PYDIR)/ipmi.py $(PYDIR)/infiniband.py
 
-ROLES = base pxe health-check
+ROLES = base pxe health-check deploy
 
 all: $(ROLES)
 

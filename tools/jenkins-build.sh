@@ -26,6 +26,16 @@ trap cleanup 0
 
 if [ -z "$ROLES" ]; then
     ROLES="base pxe health-check"
+    # Build the deploy role under Debian and Ubuntu only
+    if [ -r /etc/debian_version ]; then
+	ROLES="$ROLES deploy"
+	if ! type -p ansible; then
+	    if ! type -p pip; then
+		apt-get install python-pip
+	    fi
+	    pip install ansible
+	fi
+    fi
 fi
 
 set -x

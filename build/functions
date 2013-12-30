@@ -23,6 +23,10 @@ if [ -z "$dir" -o ! -d "$src" -o -z "$version" ]; then
    exit 1
 fi
 
+if [ -z "${SRC}" ]; then
+    SRC="${ORIG}"
+fi
+
 check_variables
 
 set -e
@@ -32,6 +36,6 @@ rsync -a --delete ${src}/ ${dir}/
 echo ": done"
 
 echo ${ROLE} > ${dir}/etc/hostname
-cat ${ORIG}/${ROLE}.exclude >> "$dir/var/lib/edeploy/${version}/exclude"
+cat ${SRC}/${ROLE}.exclude >> "$dir/var/lib/edeploy/${version}/exclude"
 
 common_setup

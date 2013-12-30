@@ -50,6 +50,15 @@ rsync -aH --delete-before ${SRC}/ ${DST2}/
 dir=$DST2
 common_setup
 
+# netperf is in multiverse
+if [ "$OS" = "Ubuntu" ]; then
+    repository=$(add_main_repository $DIST)
+    cat > ${dir}/etc/apt/sources.list.d/multiverse.list << EOF
+deb $repository precise multiverse
+deb $repository precise-updates multiverse
+EOF
+fi
+
 PACKAGES="sysbench fio python-psutil netperf python-netaddr ethtool python-numpy sdparm gzip lshw hdparm"
 add_epel_repository $DIST $dir
 update_repositories $dir
@@ -131,8 +140,10 @@ cp -p init.health ${DST}/init
 
 gcc -static -Os sources/timings.c -o ${DST}/usr/sbin/ddr-timings-$(uname -m)
 
-# If the ssh initscript features some upstart stuff, it needs to be disabled
-sed -i "s/exec \/lib\/init\/upstart\-job ssh/echo 'No upstart check required'/g" ${DST}/etc/init.d/ssh
+if [ -r ${DST}/etc/init.d/ssh ]; then
+    # If the ssh initscript features some upstart stuff, it needs to be disabled
+    sed -i "s/exec \/lib\/init\/upstart\-job ssh/echo 'No upstart check required'/g" ${DST}/etc/init.d/ssh
+fi
 
 sed -i "s/VERS=.*/VERS=${vers}/" ${DST}/init
 

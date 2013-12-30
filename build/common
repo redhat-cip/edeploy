@@ -15,12 +15,12 @@ fatal_error() {
 }
 
 check_variables() {
-	echo $TOP | grep -q '^/' || fatal_error "TOP variable ($TOP) shall be absolute, not relative"
-	echo $TOP | grep -q '/$' && fatal_error "TOP variable ($TOP) shall not have a trailing slash ('/')"
+    echo $TOP | grep -q '^/' || fatal_error "TOP variable ($TOP) shall be absolute, not relative"
+    echo $TOP | grep -q '/$' && fatal_error "TOP variable ($TOP) shall not have a trailing slash ('/')"
 }
 
 check_binary() {
-	type -p $1 || fatal_error "$1 is missing"
+    type -p $1 || fatal_error "$1 is missing"
 }
 
 compress() {
@@ -179,10 +179,9 @@ install_ib_if_needed() {
 }
 
 do_chroot() {
-    local dir=$1
+    local dir="$1"
     shift
-    local remain=$@
-    PATH=/bin/:/sbin:$PATH chroot $dir bash -c "export LANG=C; export LC_ALL=C; export LC_CTYPE=C; export LANGUAGE=C; $remain"
+    PATH=/bin/:/sbin:$PATH LANG=C LC_ALL=C LC_CTYPE=C LANGUAGE=C chroot "$dir" "$@"
 }
 
 clean_mount_points() {
@@ -271,7 +270,8 @@ cleanup() {
                 if [ ! -f "$VIRTUALIZED" ]; then
                     echo "VIRTUALIZED images requested but the pointed file ($VIRTUALIZED) doesn't exists"
                 else
-                    ./create-image.sh $dir ${INST}/${ROLE}-${version} $VIRTUALIZED
+                    ${ORIG}/create-image.sh $dir ${INST}/${ROLE}-${version}.img $VIRTUALIZED || ret=1
+		    (cd ${INST}; md5sum ${ROLE}-${version}.img > ${ROLE}-${version}.img.md5) || ret=1
                 fi
             fi
         fi
@@ -279,8 +279,8 @@ cleanup() {
             rm -f ${INST}/${ROLE}-${version}.edeploy*
             cd ${dir}
             if [ -z "$NO_COMPRESSED_FILE" ]; then
-                tar c . | compress -9v > ${INST}/${ROLE}-${version}.edeploy
-		(cd ${INST}; md5sum ${ROLE}-${version}.edeploy > ${ROLE}-${version}.edeploy.md5)
+                tar c . | compress -9v > ${INST}/${ROLE}-${version}.edeploy || ret=1
+		(cd ${INST}; md5sum ${ROLE}-${version}.edeploy > ${ROLE}-${version}.edeploy.md5) || ret=1
             fi
             cd -
         fi

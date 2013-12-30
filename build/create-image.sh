@@ -170,10 +170,10 @@ if [ -x ${MDIR}/usr/sbin/grub-mkconfig ]; then
     # Install grub2
     cat > "$MDIR"/boot/grub/device.map <<EOF
 (hd0) $DISK
-(hd0,1) $DEV
+(hd0,1) $PART
 EOF
 
-    do_chroot "$MDIR" grub-install --modules=\"ext2 part_msdos\" --no-floppy "$DISK"
+    do_chroot "$MDIR" grub-install --modules="ext2 part_msdos" --no-floppy "$DISK"
 
     if [ ! -r "$MDIR"/boot/grub/grub.cfg ]; then
         do_chroot "$MDIR" grub-mkconfig -o /boot/grub/grub.cfg || :

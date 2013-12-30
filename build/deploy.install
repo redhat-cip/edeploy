@@ -27,7 +27,6 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
-
 check_os() {
     case "$OS" in
         "CentOS"|"RedHatEnterpriseServer")
@@ -37,78 +36,62 @@ check_os() {
     esac
 }
 
-install_edeploy() {
-    local dir=$1
-    mkdir -p $dir/srv/
-    pushd $dir/srv
-    git clone https://github.com/enovance/edeploy.git
-    popd
-    do_chroot $dir "make -C /srv/edeploy install-www"
+generate_ansible_host() {
+    file=$1
+    section=$2
+    dir=$3
+    cat > $file <<EOF
+[$section]
 
-    #Setting up RSync
-    sed -i 's/RSYNC_ENABLE=false/RSYNC_ENABLE=true/g' $dir/etc/default/rsync
-    cat > $dir/etc/rsyncd.conf << EOF
-use chroot = no
-syslog facility = local5
-pid file = rsyncd-edeploy.pid
-
-[install]
-    uid=root
-    gid=root
-    path=/var/lib/debootstrap/install
-
-[metadata]
-    uid=root
-    gid=root
-    path=/var/lib/debootstrap/metadata
-EOF
-
-    # Installing pxelinux
-    mkdir -p $dir/srv/tftp/pxelinux.cfg
-    cp -a $dir/usr/lib/syslinux/pxelinux.0 $dir/srv/tftp
-    cat > $dir/srv/tftp/pxelinux.cfg/default << EOF
-prompt 0
-timeout 0
-default eDeploy
-serial 0
-
-LABEL eDeploy
-    KERNEL vmlinuz
-    INITRD initrd SERV=10.0.2.2 console=tty0 console=ttyS0,115200 ONFAILURE=console UPLOAD_LOG=1 ONSUCCESS=halt
-
-LABEL local
-    LOCALBOOT 0
+chroot ansible_ssh_host=$dir
 EOF
 }
 
-declare -A packages
-packages=(
-    ["deb"]="apache2 \
-        apache2 \
-        coreutils\
-        debootstrap \
-        git \
-        grub2
-        isc-dhcp-server \
-        kpartx \
-        make \
-        make \
-        pigz \
-        python-ipaddr \
-        python-mock \
-        python-netaddr \
-        qemu-kvm \
-        qemu-utils \
-        rsync \
-        syslinux-common \
-        tftpd-hpa \
-        wget \
-        yum"
-)
+install_edeploy() {
+    local dir=$1
+
+    if ! type -p ansible-playbook; then
+	echo "ansible isn't installed. Use 'pip install ansible' to do so." 1>&2
+	exit 1
+    fi
+
+    # Install the packages needed by the chroot transport of ansible on the host and
+    # git to checkout pxemngr for its ansible playbook
+    install_packages $dir python-apt ca-certificates git
+
+    # temp file to store ansible chroot config
+    t=$(mktemp)
+
+    # pxemngr part
+
+    generate_ansible_host $t pxemngrservers $dir
+    pushd $dir/srv
+    git clone https://github.com/enovance/pxemngr.git
+    cd pxemngr/ansible
+    # do not start apache in the chroot
+    sed -e 's/service apache2 restart/#/' < pxemngr-install.yml > pxemngr-install2.yml
+    ansible-playbook -c chroot -i $t pxemngr-install2.yml
+    rm -f pxemngr-install2.yml
+    popd
+
+    # edeploy part
+
+    generate_ansible_host $t edeployservers $dir
+    pushd $ORIG/../ansible
+    # do not start rsync in the chroot
+    sed -e 's/notify: start rsync daemon/#/' < edeploy-install.yml > edeploy-install2.yml
+    ansible-playbook -c chroot -i $t edeploy-install2.yml --extra-vars pxemngr=true
+    rm -f $t edeploy-install2.yml
+    popd
+}
+
+install_pxe() {
+    install_packages $dir isc-dhcp-server tftpd-hpa syslinux-common
+    sed -i 's@/srv/tftp@/var/lib/tftpboot@' $dir/etc/default/tftpd-hpa
+    cp -a $dir/usr/lib/syslinux/pxelinux.0 $dir/var/lib/tftpboot/
+}
 
 check_os
-check_binary git
-update_repositories $dir
-install_packages $dir ${packages[$(package_type)]}
-clear_packages_cache $dir
 install_edeploy $dir
+install_pxe $dir
+clear_packages_cache $dir

@@ -34,4 +34,4 @@ NETWORKING=yes
 HOSTNAME=centos64
 ''')
 
-set_role('base', 'C64-F.1.0.0', bootable_disk)
+set_role('base', 'C6.5-H.1.0.0', bootable_disk)

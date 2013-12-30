@@ -71,4 +71,4 @@ open('/post_rsync/etc/hostname','w').write('''%(hostname)s
 ipmi.setup_user(var['ipmi-fake-channel'],'root','pastouche')
 ipmi.setup_network(var['ipmi-fake-channel'],var['ip-ipmi'], var['netmask-ipmi'],var['gateway-ipmi'])
 
-set_role('mysql', 'D7-F.1.0.0', bootable_disk)
+set_role('base', 'D7-H.1.0.0', bootable_disk)

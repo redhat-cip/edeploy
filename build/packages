@@ -204,11 +204,11 @@ is_package_installed() {
     set +e
     case "$(package_tool)" in
         apt)
-            do_chroot $CHROOT "dpkg -l $PACKAGE &>/dev/null"
+            do_chroot $CHROOT dpkg -l $PACKAGE &>/dev/null
             return $?
         ;;
         yum)
-            do_chroot $CHROOT "rpm -qi $PACKAGE &>/dev/null"
+            do_chroot $CHROOT rpm -qi $PACKAGE &>/dev/null
             return $?
         ;;
         *)
@@ -239,7 +239,7 @@ rebuild_db() {
         apt)
         ;;
         yum)
-            do_chroot $CHROOT "rpm --rebuilddb"
+            do_chroot $CHROOT rpm --rebuilddb
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in rebuild_db()"

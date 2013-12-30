@@ -25,4 +25,4 @@ iface %(eth)s inet static
      hwaddress %(mac)s
 ''' % var)
 
-set_role('mysql', 'D7-F.1.0.0', bootable_disk)
+set_role('base', 'D7-H.1.0.0', bootable_disk)

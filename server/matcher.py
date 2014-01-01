@@ -89,8 +89,9 @@ def match_spec(spec, lines, arr, adder=_adder):
     # match a line without variable
     for idx in range(len(lines)):
         if lines[idx] == spec:
+            res = lines[idx]
             del lines[idx]
-            return True
+            return res
     # match a line with a variable, a function or both
     for lidx in range(len(lines)):
         line = lines[lidx]
@@ -134,12 +135,13 @@ def match_spec(spec, lines, arr, adder=_adder):
         else:
             for i, var in varidx:
                 adder(arr, var, line[i])
+            res = lines[lidx]
             del lines[lidx]
-            return True
+            return res
     return False
 
 
-def match_all(lines, specs, arr, arr2, debug=False):
+def match_all(lines, specs, arr, arr2, debug=False, level=0):
     '''Match all lines according to a spec and store variables in
 <arr>. Variables starting with 2 $ like $$vda are stored in arr and
 arr2.'''
@@ -147,11 +149,39 @@ arr2.'''
     # match_spec removes the matched line to not match it again on next
     # calls.
     lines = list(lines)
-    for spec in specs:
-        if not match_spec(spec, lines, arr):
-            if debug:
+    specs = list(specs)
+    copy_arr = dict(arr)
+    points = []
+    # Prevent infinit loops
+    if level == 50:
+        return False
+    # Match lines using specs
+    while len(specs) > 0:
+        copy_specs = list(specs)
+        spec = specs.pop(0)
+        line = match_spec(spec, lines, arr)
+        # No match
+        if not line:
+            # Backtrack on the backtracking points
+            while len(points) > 0:
+                lines, specs, new_arr = points.pop()
+                if match_all(lines, specs, new_arr, arr2, debug, level+1):
+                    # Copy arr back
+                    for k in new_arr:
+                        arr[k] = new_arr[k]
+                    return True
+            if level == 0 and debug:
                 sys.stderr.write('spec: %s not matched\n' % str(spec))
-            return(False)
+            return False
+        else:
+            # Store backtraking points when we find a new variable
+            if arr != copy_arr:
+                copy_lines = list(lines)
+                # Put the matching line at the end of the lines
+                copy_lines.append(line)
+                points.append((copy_lines, copy_specs, copy_arr))
+                copy_arr = arr
+    # Manage $$ variables
     for key in arr:
         if key[0] == '$':
             nkey = key[1:]

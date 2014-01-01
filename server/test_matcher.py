@@ -26,19 +26,19 @@ class TestMatcher(unittest.TestCase):
         lines = [('system', 'product', 'serial', 'CZJ31402CD')]
         spec = ('system', 'product', 'serial', 'CZJ31402CD')
         arr = {}
-        self.assert_(matcher.match_spec(spec, lines, arr))
+        self.assertTrue(matcher.match_spec(spec, lines, arr))
 
     def test_not_equal(self):
         lines = [('system', 'product', 'serial', 'CZJ31402CD')]
         spec = ('system', 'product', 'serial', 'CZJ31402CE')
         arr = {}
-        self.assert_(not matcher.match_spec(spec, lines, arr))
+        self.assertFalse(matcher.match_spec(spec, lines, arr))
 
     def test_var(self):
         lines = [('disk', '1I:1:1', 'size', '1000GB')]
         spec = ('disk', '$disk8', 'size', '1000GB')
         arr = {}
-        self.assert_(matcher.match_spec(spec, lines, arr))
+        self.assertTrue(matcher.match_spec(spec, lines, arr))
         self.assertEqual(arr, {'disk8': '1I:1:1'})
 
     def test_vars(self):
@@ -79,7 +79,7 @@ class TestMatcher(unittest.TestCase):
                  ('disk', '$disk7', 'size', '1000GB'),
                  ('disk', '$disk8', 'size', '1000GB')]
         arr = {}
-        self.assert_(matcher.match_all(lines, specs, arr, {}))
+        self.assertTrue(matcher.match_all(lines, specs, arr, {}))
         self.assertEqual(arr,
                          {'disk1': '2I:1:7',
                           'disk2': '2I:1:8',
@@ -105,7 +105,7 @@ class TestMatcher(unittest.TestCase):
             ('disk', '$disk2', 'size', '1000GB'),
             ]
         arr = {}
-        self.assert_(matcher.match_all(lines, specs, arr, {}))
+        self.assertTrue(matcher.match_all(lines, specs, arr, {}))
         self.assertEqual(arr,
                          {'disk1': '1I:1:2',
                           'disk2': '1I:1:1',
@@ -127,7 +127,7 @@ class TestMatcher(unittest.TestCase):
             ('disk', '2I:1:8', 'slot', '2'),
             ]
         arr = {}
-        self.assert_(matcher.match_all(lines, specs, arr, {}))
+        self.assertTrue(matcher.match_all(lines, specs, arr, {}))
 
     def test_2vars(self):
         specs = [
@@ -137,7 +137,7 @@ class TestMatcher(unittest.TestCase):
             ('disk', 'vda', 'size', '8'),
             ]
         arr = {}
-        self.assert_(matcher.match_all(lines, specs, arr, {}))
+        self.assertTrue(matcher.match_all(lines, specs, arr, {}))
         self.assertEqual(arr,
                          {'size': '8',
                           'disk': 'vda',
@@ -152,7 +152,7 @@ class TestMatcher(unittest.TestCase):
             ]
         arr = {}
         arr2 = {}
-        self.assert_(matcher.match_all(lines, specs, arr, arr2))
+        self.assertTrue(matcher.match_all(lines, specs, arr, arr2))
         self.assertEqual(arr,
                          {'size': '8',
                           'disk': 'vda',
@@ -175,8 +175,8 @@ class TestMatcher(unittest.TestCase):
             ('disk', 'vdb', 'size', '8'),
             ]
         arr = {}
-        self.assert_(not matcher.match_all(lines, specs, arr, {}))
-        self.assert_(matcher.match_all(lines, specs2, arr, {}), lines)
+        self.assertFalse(matcher.match_all(lines, specs, arr, {}))
+        self.assertTrue(matcher.match_all(lines, specs2, arr, {}), lines)
 
     def test_multiple(self):
         spec = ('disk', '$disk', 'size', '8')
@@ -185,7 +185,7 @@ class TestMatcher(unittest.TestCase):
             ('disk', 'vdb', 'size', '8'),
             ]
         arr = {}
-        self.assert_(matcher.match_multiple(lines, spec, arr))
+        self.assertTrue(matcher.match_multiple(lines, spec, arr))
         self.assertEqual(arr['disk'], ['vda', 'vdb'])
 
     def test_gt(self):
@@ -194,7 +194,7 @@ class TestMatcher(unittest.TestCase):
             ('disk', 'vda', 'size', '20'),
             ]
         arr = {}
-        self.assert_(matcher.match_all(lines, specs, arr, {}))
+        self.assertTrue(matcher.match_all(lines, specs, arr, {}))
         self.assertEqual(arr['disk'], 'vda')
 
     def test_ge(self):
@@ -203,7 +203,7 @@ class TestMatcher(unittest.TestCase):
             ('disk', 'vda', 'size', '10'),
             ]
         arr = {}
-        self.assert_(matcher.match_all(lines, specs, arr, {}))
+        self.assertTrue(matcher.match_all(lines, specs, arr, {}))
         self.assertEqual(arr['disk'], 'vda')
 
     def test_lt(self):
@@ -212,7 +212,7 @@ class TestMatcher(unittest.TestCase):
             ('disk', 'vda', 'size', '20'),
             ]
         arr = {}
-        self.assert_(matcher.match_all(lines, specs, arr, {}))
+        self.assertTrue(matcher.match_all(lines, specs, arr, {}))
         self.assertEqual(arr['disk'], 'vda')
 
     def test_le(self):
@@ -221,7 +221,7 @@ class TestMatcher(unittest.TestCase):
             ('disk', 'vda', 'size', '20'),
             ]
         arr = {}
-        self.assert_(matcher.match_all(lines, specs, arr, {}))
+        self.assertTrue(matcher.match_all(lines, specs, arr, {}))
         self.assertEqual(arr['disk'], 'vda')
 
     def test_network(self):
@@ -231,7 +231,7 @@ class TestMatcher(unittest.TestCase):
             ]
         arr = {}
         if matcher._HAS_IPADDR:
-            self.assert_(matcher.match_all(lines, specs, arr, {}))
+            self.assertTrue(matcher.match_all(lines, specs, arr, {}))
             self.assertEqual(arr['eth'], 'eth0')
 
     def test_le_var(self):
@@ -240,7 +240,7 @@ class TestMatcher(unittest.TestCase):
             ('disk', 'vda', 'size', '20'),
             ]
         arr = {}
-        self.assert_(matcher.match_all(lines, specs, arr, {}))
+        self.assertTrue(matcher.match_all(lines, specs, arr, {}))
         self.assertEqual(arr['disk'], 'vda')
         self.assertEqual(arr['size'], '20')
 
@@ -250,7 +250,7 @@ class TestMatcher(unittest.TestCase):
             ('disk', 'vda', 'size', '20'),
             ]
         arr = {}
-        self.assert_(matcher.match_all(lines, specs, arr, {}))
+        self.assertTrue(matcher.match_all(lines, specs, arr, {}))
         self.assertEqual(arr['disk'], 'vda')
 
     def test_in2(self):
@@ -259,8 +259,55 @@ class TestMatcher(unittest.TestCase):
             ('disk', 'vda', 'size', '20'),
             ]
         arr = {}
-        self.assert_(matcher.match_all(lines, specs, arr, {}))
+        self.assertTrue(matcher.match_all(lines, specs, arr, {}))
         self.assertEqual(arr['disk'], 'vda')
+
+    def test_backtrack(self):
+        specs = [
+            ('disk', '$disk', 'size', '8'),
+            ('disk', '$disk', 'type', 'b'),
+            ]
+        lines = [
+            ('disk', 'vda', 'size', '8'),
+            ('disk', 'vda', 'type', 'a'),
+            ('disk', 'vdb', 'size', '8'),
+            ('disk', 'vdb', 'type', 'b'),
+            ]
+        arr = {}
+        self.assertTrue(matcher.match_all(lines, specs, arr, {}))
+        self.assertEqual(arr['disk'], 'vdb', arr)
+
+    def test_backtrack2(self):
+        specs = [
+            ('disk', '$disk', 'size', '8'),
+            ('disk', '$disk', 'type', 'b'),
+            ('disk', '$disk2', 'size', '8'),
+            ]
+        lines = [
+            ('disk', 'vda', 'size', '8'),
+            ('disk', 'vda', 'type', 'a'),
+            ('disk', 'vdb', 'size', '8'),
+            ('disk', 'vdb', 'type', 'b'),
+            ]
+        arr = {}
+        self.assertTrue(matcher.match_all(lines, specs, arr, {}))
+        self.assertEqual(arr['disk2'], 'vda', arr)
+        self.assertEqual(arr['disk'], 'vdb', arr)
+
+    def test_backtrack3(self):
+        specs = [
+            ('disk', '$disk', 'size', '8'),
+            ('disk', '$disk', 'type', 'c'),
+            ('disk', '$disk2', 'size', '8'),
+            ]
+        lines = [
+            ('disk', 'vda', 'size', '8'),
+            ('disk', 'vda', 'type', 'a'),
+            ('disk', 'vdb', 'size', '8'),
+            ('disk', 'vdb', 'type', 'b'),
+            ]
+        arr = {}
+        self.assertFalse(matcher.match_all(lines, specs, arr, {}))
 
 if __name__ == "__main__":
     unittest.main()

@@ -29,21 +29,21 @@ foreach my $system (@$systems) {
     print "Found $system->{'name'}\n";
     if ($system->{'name'} =~ /$system_to_delete/) {
         $serverID = $system->{'id'};
+        my $deleted = $client->call('system.deleteSystems', $session, $serverID);
+        if ($deleted) {
+            print "Server ".$system_to_delete." has been deleted\n";
+        }
+        else {
+            die "Unable to delete server: ".$system_to_delete."\n";
+        }
     }
 }
 
 die "No instance of server $system_to_delete found " if ! $serverID;
 
-my $deleted = $client->call('system.deleteSystems', $session, $serverID);
-$client->call('auth.logout', $session);
+exit 0;
 
-if ($deleted) {
-    print "Server ".$system_to_delete." has been deleted\n";
-    exit 0;
-}
-else {
-    die "Unable to delete server: ".$system_to_delete."\n";
-}
+$client->call('auth.logout', $session);
 
 __END__
 

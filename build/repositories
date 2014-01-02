@@ -186,9 +186,11 @@ add_rhn_repository() {
         return
       fi
 
-      install_packages $target rhn-setup
-      do_chroot $target rhnreg_ks --profilename=edeploy-$HOSTNAME --username=$RHN_USERNAME --password=$RHN_PASSWORD
-      add_rhn_channel $target rhel-x86_64-server-optional-6
+      if [ ! -f "$target/etc/sysconfig/rhn/systemid" ]; then
+          install_packages $target rhn-setup
+          do_chroot $target rhnreg_ks --profilename=edeploy-$HOSTNAME --username=$RHN_USERNAME --password=$RHN_PASSWORD
+          add_rhn_channel $target rhel-x86_64-server-optional-6
+      fi
     ;;
   *)
     ;;

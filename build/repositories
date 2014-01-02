@@ -134,7 +134,7 @@ remove_epel_repository() {
 unregister_rhn() {
     local dist=$1
     local target=$2
-    local cmd=$SDIR/build/remove_system_on_rhn
+    local cmd=${ORIG}/remove_system_on_rhn
 
     # Let's to the basic tests here
     # This have only a meaning for redhat systems

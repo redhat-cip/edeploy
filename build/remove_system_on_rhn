@@ -7,7 +7,7 @@ use strict;
 use Frontier::Client;
 
 my $URL  = 'https://rhn.redhat.com/rpc/api';
-my ($serverID);
+my $serverID;
 my %options;
 my $user = '';
 my $pass = '';

@@ -189,7 +189,6 @@ add_rhn_repository() {
       install_packages $target rhn-setup
       do_chroot $target rhnreg_ks --profilename=edeploy-$HOSTNAME --username=$RHN_USERNAME --password=$RHN_PASSWORD
       add_rhn_channel $target rhel-x86_64-server-optional-6
-      add_rhn_channel $target rhel-x86_64-server-sfs-6
     ;;
   *)
     ;;

@@ -115,6 +115,9 @@ EOF
         "Debian"|"Ubuntu")
             do_chroot ${chroot} mv /usr/sbin/update-rc.d.save /usr/sbin/update-rc.d
         ;;
+        "CentOS"|"RedHatEnterpriseServer")
+            do_chroot ${chroot} mv /sbin/chkconfig.save /sbin/chkconfig
+        ;;
     esac
 }
 

@@ -574,7 +574,7 @@ update_system              update the existing packages                        u
 upgrade_system             upgrading packages to new versions or release       upgrade_system $dir
 clear_package_cache        clear package                                       cache  clear_package_cache $dir
 is_package_installed       check if package installed                          is_package_installed $dir pkg
-add_epel_repository        enable EPEL repository                              add_epel_repository $DIST $dir
+add_epel_repository        enable EPEL repository                              add_epel_repository $dir
 add_rhn_repostitory        register to Redhat Network                          add_rhn_repository $DIST $dir
 unregister_rhn             unregister from Redhat Network                      unregister_rhn $DIST $dir
 rebuild_db_with_local      rebuild rpm database by using rpm from the system   rebuild_db_with_local $dir

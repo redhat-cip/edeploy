@@ -48,7 +48,7 @@ dir=$DST2
 common_setup
 
 PACKAGES="python-netaddr ethtool sdparm gzip lshw xfsprogs hdparm"
-add_epel_repository $DIST $dir
+add_epel_repository $dir
 update_repositories $dir
 install_packages $dir $PACKAGES
 clear_packages_cache $dir

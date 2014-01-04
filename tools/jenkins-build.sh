@@ -50,7 +50,7 @@ for role in $ROLES; do
 	if [ -d "$ARCH" ]; then
 	    VERS=$(sudo make TOP="$DIR" "$@" version)
 	    mkdir -p "$ARCH"/$VERS/
-	    rsync -a "$DIR"/install/$VERS/*.* "$ARCH"/$VERS/
+	    sudo rsync -a "$DIR"/install/$VERS/*.* "$ARCH"/$VERS/
 	    git rev-parse HEAD > "$ARCH"/$VERS/$role.rev
 	fi
     else

@@ -203,9 +203,9 @@ else
         INITRD="/boot/initramfs-${kversion}.img"
         echo "default Linux" >  ${MDIR}/boot/extlinux.conf
         echo "label Linux" >>  ${MDIR}/boot/extlinux.conf
-        echo "  kernel $KERNEL root=UUID=$UUID nomodeset rw $BOOT_ARG" >> ${MDIR}/boot/extlinux.conf
-        echo "  initrd $INITRD" >> ${MDIR}/boot/extlinux.conf
-        extlinux/extlinux --install ${MDIR}/boot
+        echo "  kernel $KERNEL" >> ${MDIR}/boot/extlinux.conf
+        echo "  append initrd=$INITRD root=UUID=$UUID nomodeset rw $BOOT_ARG" >> ${MDIR}/boot/extlinux.conf
+        extlinux --install ${MDIR}/boot
     done
     # install mbr
     dd if=extlinux/mbr.bin of=$IMG conv=notrunc

@@ -638,8 +638,9 @@ server and the bootstrap.
 
 On Debian based systems : `apt-get install tftpd syslinux-common`
 
-On RHEL based systems : `yum install tftp-server syslinux-tftpboot`
-
+On RHEL based systems : `yum install tftp-server syslinux-tftpboot`. You may
+need to enable a optionnal channel like `rhel-x86_64-server-optional-6.5.z` to
+get access to this package.
 
 Make sure you create the file `$TFTPBOOT_ROOT/pxelinux.cfg/default`
 

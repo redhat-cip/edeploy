@@ -658,8 +658,7 @@ An example of what the `pxelinux.cfg/default` file might look like
    LABEL eDeploy
       KERNEL vmlinuz
       INITRD initrd.pxe
-      APPEND SERV=192.168.122.45 HSERV=192.168.122.45
-      ONFAILURE=console ONSUCESS=kexec VERBOSE=1 UPLOAD_LOG=1 HTTP_PATH=/
+      APPEND SERV=192.168.122.45 HSERV=192.168.122.45 ONFAILURE=console ONSUCESS=kexec VERBOSE=1 UPLOAD_LOG=1 HTTP_PATH=/
 
 The pxelinux configuration could be more precise to match a particular
 host or using some network filtering to define profiles. Please refer to

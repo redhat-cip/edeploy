@@ -368,7 +368,7 @@ install_bootloader() {
         rm -rf extlinux
         mkdir -p extlinux
         # Installing extlinux & mbr from source
-        wget --no-verbose ftp://ftp.kernel.org/pub/linux/utils/boot/syslinux/${TESTING_SYSLINUX}/syslinux-${SYSLINUX_VER}.tar.xz
+        wget --no-verbose http://ftp.kernel.org/pub/linux/utils/boot/syslinux/${TESTING_SYSLINUX}/syslinux-${SYSLINUX_VER}.tar.xz
         tar -xf syslinux-${SYSLINUX_VER}.tar.xz
         cp syslinux-${SYSLINUX_VER}/extlinux/extlinux extlinux/
         cp syslinux-${SYSLINUX_VER}/mbr/mbr.bin extlinux/

@@ -137,7 +137,7 @@ setup_pxe() {
 	if [ ! -f tftpboot/pxelinux.0 -o ! -f tftpboot/ldlinux.c32 ]; then
 		mkdir -p tftpboot
 	        # Installing extlinux & mbr from source
-		wget ftp://ftp.kernel.org/pub/linux/utils/boot/syslinux/syslinux-${SYSLINUX_VER}.tar.xz
+		wget http://ftp.kernel.org/pub/linux/utils/boot/syslinux/syslinux-${SYSLINUX_VER}.tar.xz
 		tar -xf syslinux-${SYSLINUX_VER}.tar.xz
 		cp syslinux-${SYSLINUX_VER}/core/pxelinux.0 tftpboot/
 		cp syslinux-${SYSLINUX_VER}/com32/elflink/ldlinux/ldlinux.c32 tftpboot/

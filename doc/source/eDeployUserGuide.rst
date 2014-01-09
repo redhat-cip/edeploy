@@ -635,12 +635,45 @@ you need :
 If we consider a traditional PXE booting, a server shall host the tftp
 server and the bootstrap.
 
+We suggest you to use dnsmasq which is a neat DNS/PXE/TFTP/DHCP server.
 
-On Debian based systems : `apt-get install tftpd syslinux-common`
+On Debian based systems : `apt-get install dnsmasq syslinux-common`
 
-On RHEL based systems : `yum install tftp-server syslinux-tftpboot`. You may
+On RHEL based systems : `yum install dnsmasq syslinux-tftpboot`. You may
 need to enable a optionnal channel like `rhel-x86_64-server-optional-6.5.z` to
 get access to this package.
+
+Your /etc/dnsmasq.conf should look like this example:
+
+.. code:: bash
+
+   interface=eth0
+   no-negcache
+   no-resolv
+   read-ethers
+
+   cache-size = 4096
+   log-async = 25
+
+   domain=example.com,10.193.108.0/24
+
+   dhcp-range=10.193.108.224,10.193.108.239
+
+   # Default gateway
+   dhcp-option=3,"10.193.108.1"
+   dhcp-option=66,"10.193.108.1"
+
+   dhcp-lease-max=1000
+   #dhcp-authoritative
+   dhcp-boot=pxelinux.0
+   dhcp-boot=net:normalarch,pxelinux.0
+   dhcp-boot=net:ia64,$elilo
+   enable-tftp
+   tftp-root=/tftpboot
+
+   dhcp-host=00:50:56:89:9C:8D,compute-01,10.193.108.227
+   dhcp-host=00:50:56:89:3B:E9,compute-02,10.193.108.228
+
 
 Make sure you create the file `$TFTPBOOT_ROOT/pxelinux.cfg/default`
 

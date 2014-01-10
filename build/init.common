@@ -175,6 +175,7 @@ update_ssh_port() {
     sed -i -e 's/^.*Port.*$/Port 2222/' /etc/ssh/sshd_config
     sed -i -e 's/^.*#PermitRootLogin.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
     sed -i -e 's/^.*#PermitEmptyPasswords.*$/PermitEmptyPasswords yes/' /etc/ssh/sshd_config
+    echo 'UseDNS no' >> /etc/ssh/sshd_config
 }
 
 start_ssh_server() {

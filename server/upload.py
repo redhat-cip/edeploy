@@ -382,7 +382,10 @@ def main():
 
     # avoid concurrent accesses
     lock_filename = config_get('SERVER', 'LOCKFILE', '/tmp/edeploy.lock')
-    lockfd = lock(lock_filename)
+    try:
+        lockfd = lock(lock_filename)
+    except Exception, excpt:
+        fatal_error("'Error on server's lock file : %s'" % str(excpt))
 
     def cleanup():
         'Remove lock.'

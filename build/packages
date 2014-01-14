@@ -140,7 +140,8 @@ install_packages() {
 
 remove_packages() {
     local chroot=$1
-    local packages=$2
+    shift
+    local packages=$@
     case "$(package_tool)" in
         apt)
             do_chroot $chroot apt-get remove $packages

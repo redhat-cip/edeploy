@@ -293,7 +293,11 @@ if /configure; then
                     if type -p kexec; then
                         log_n "Trying kexec..."
                         cp $d/boot/vmlinuz* /tmp/vmlinuz || give_up "Unable to copy kernel"
-                        cp $d/boot/initrd.img* /tmp/initrd.img || give_up "Unable to copy initrd"
+			if ls $d/boot/initrd.img*; then
+			    cp $d/boot/initrd.img* /tmp/initrd.img || give_up "Unable to copy initrd"
+			else
+			    cp $d/boot/initramfs* /tmp/initrd.img || give_up "Unable to copy initrd"
+			fi
                         eval $(grep root=UUID= $d/boot/grub/grub.cfg|head -1|tr ' ' '\n'|grep '^root=UUID=')
                         if [ -z "$root" ]; then
                             log_n "using alternative root detection"

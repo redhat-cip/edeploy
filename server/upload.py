@@ -457,7 +457,7 @@ def run(cmd):
         sys.exit(status)
 
 def set_role(role, version, disk):
-    with open('/vars', 'w') as f:
+    with open('/vars', 'a') as f:
         f.write("ROLE=%s\\nVERS=%s\\nDISK=%s\\n" % (role,
                                                     version,
                                                     disk))

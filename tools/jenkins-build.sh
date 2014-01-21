@@ -22,7 +22,7 @@ cleanup() {
     fi
 }
 
-trap cleanup 0
+#trap cleanup 0
 
 if [ -z "$ROLES" ]; then
     ROLES="base pxe health-check"
@@ -41,7 +41,7 @@ fi
 set -x
 
 cd $SRC
-cleanup
+#cleanup
 sudo mkdir -p "$DIR"/install
 RC=0
 BROKEN=

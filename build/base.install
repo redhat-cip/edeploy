@@ -124,13 +124,13 @@ install_base_packages() {
     # So let's copy the current one to insure the setup is good
     cp -f /etc/resolv.conf "$target/etc/"
     local packages=""
-    local cross_distro_packages="pciutils rsyslog lvm2"
-    local deb_packages=" wget sudo locales openssh-server parted net-tools isc-dhcp-client grub-pc kbd rsync ifupdown lshw netbase dmidecode bash curl acpid ifenslave kexec-tools lsb-release man"
+    local cross_distro_packages="acpid bash curl dmidecode kbd lvm2 man openssh-server parted pciutils rsync rsyslog sudo wget"
+    local deb_packages="grub-pc ifenslave ifupdown isc-dhcp-client kexec-tools locales lsb-release lshw netbase net-tools "
     local repository=$(add_main_repository $dist)
     add_megacli_repository $dist $target
     case $dist in
         $supported_ubuntu_dists)
-            packages="$cross_distro_packages linux-image-generic-lts-raring linux-headers-generic-lts-raring iputils-ping linux-firmware grub2 $deb_packages"
+            packages="$cross_distro_packages grub2 iputils-ping linux-firmware linux-headers-generic-lts-raring linux-image-generic-lts-raring $deb_packages"
             echo "deb $repository $dist main" > ${target}/etc/apt/sources.list
             echo "deb $repository $dist-updates main" >> ${target}/etc/apt/sources.list
             echo "deb $repository $dist universe" >> ${target}/etc/apt/sources.list
@@ -139,13 +139,13 @@ install_base_packages() {
             echo "deb http://security.ubuntu.com/ubuntu $dist-security universe" >> ${target}/etc/apt/sources.list
             ;;
        $supported_debian_dists)
-            packages="$cross_distro_packages linux-image-amd64 ipmitool libui-dialog-perl htop acpi-support-base inetutils-ping firmware-bnx2 $deb_packages"
+            packages="$cross_distro_packages acpi-support-base firmware-bnx2 htop inetutils-ping ipmitool libui-dialog-perl linux-image-amd64 $deb_packages"
             echo "deb $repository $dist non-free" > ${target}/etc/apt/sources.list.d/nonfree.list
             echo "deb http://security.debian.org/ $dist/updates main" >  ${target}/etc/apt/sources.list.d/updates.list
             echo "deb $repository $dist-updates main" >> ${target}/etc/apt/sources.list.d/updates.list
             ;;
         $supported_centos_dists|$supported_redhat_dists)
-            packages="$cross_distro_packages passwd kernel redhat-lsb-core wget sudo openssh-server parted coreutils perl e2fsprogs net-tools initscripts upstart vconfig dhclient grub grubby kbd rsync dmidecode bash curl hdparm acpid pciutils module-init-tools iproute"
+            packages="$cross_distro_packages coreutils dhclient e2fsprogs grub grubby hdparm initscripts iproute kernel module-init-tools net-tools passwd perl redhat-lsb-core upstart vconfig"
             ;;
         *)
             echo "unsupported distribution: $dist" 2>&1

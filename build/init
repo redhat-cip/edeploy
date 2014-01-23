@@ -202,7 +202,7 @@ if /configure; then
 
         if [ -n "${METADATA_URL}" ]; then
             log "Setting up cloudinit with METADATAURL=$METADATA_URL"
-            sed -i -e "s@GRUB_CMDLINE_LINUX_DEFAULT=\"\(.*\)\"@GRUB_CMDLINE_LINUX_DEFAULT=\"\1 ds=nocloud-net\\\\;s=${METADATA_URL}\"@" $d/etc/default/grub
+            sed -i -e "s@GRUB_CMDLINE_LINUX_DEFAULT=\"\{0,1\}\([^\"]*\)\"\{0,1\}@GRUB_CMDLINE_LINUX_DEFAULT=\"\1 ds=nocloud-net\\\\;s=${METADATA_URL}\"@" $d/etc/default/grub
             BOOT_ARG="$BOOT_ARG ds=nocloud-net;s=${METADATA_URL}"
         else
             log "No METADATA_URL variable found, no cloud-init configuration done"

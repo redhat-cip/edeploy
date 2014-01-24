@@ -135,8 +135,6 @@ echo "done"
 
 common_setup
 
-update_repositories $TDIR
-
 cp -p ${ORIG}/edeploy ${TDIR}/usr/sbin/
 
 script="$BASE".d/${ROLE}_${FROM}_${TO}.upgrade

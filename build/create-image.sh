@@ -133,8 +133,6 @@ else
     SIZE=$(($SIZE * 120 / 100))
 fi
 
-trap do_cleanup 0
-
 # Create the image file
 dd if=/dev/zero of=$IMG count=$SIZE bs=1M
 
@@ -152,6 +150,8 @@ mkfs.ext3 "$PART"
 MDIR=$(mktemp -d)
 DEV=$(losetup --show --find "$PART")
 mount "$DEV" "$MDIR"
+
+trap do_cleanup 0
 
 # Copy the data
 

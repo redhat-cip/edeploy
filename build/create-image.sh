@@ -67,6 +67,8 @@ do_cleanup() {
     echo "#################"
     clear_trap
 
+    set +e
+
     clean_temporary
 
     if [ -f $IMG ]; then

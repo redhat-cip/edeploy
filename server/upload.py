@@ -409,8 +409,13 @@ def main():
     idx = 0
     times = '*'
     name = None
+    valid_roles = ""
     for name, times in names:
         if times == '*' or int(times) > 0:
+            if len(valid_roles) == 0:
+                valid_roles += " %s" % (name)
+            else:
+                valid_roles += ", %s" % (name)
             specs = eval(open(cfg_dir + name + '.specs', 'r').read(-1))
             var = {}
             var2 = {}
@@ -418,7 +423,7 @@ def main():
                 break
         idx += 1
     else:
-        fatal_error('Unable to match requirements')
+        fatal_error('Unable to match requirements on the following roles : %s' % valid_roles)
 
     forced = (var2 != {})
 

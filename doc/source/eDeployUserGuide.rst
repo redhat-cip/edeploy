@@ -761,6 +761,7 @@ RSERV                IP address of the RSYNC server for Full Directory file tran
 RSERV_PORT           Port to contact the RSYNC server for Full Directory file transfer
 ONSUCCESS            Action to take upon successful installation (kexec\|reboot\|halt\|console)
 ONFAILURE            Action to take upon failed installation (console\|halt)
+KEXEC_KERNEL         The version of the expect kernel to be booted with kexec
 UPLOAD_LOG           Boolean. Upload log file on eDeploy server
 VERBOSE              Boolean. Enable the verbose mode
 DEBUG                Boolean. Enable debug mode (start a ssh_server for further access)
@@ -772,6 +773,12 @@ initrd of the freshly installed system and boot it immediately without
 any power cycle thanks to the kexec technology. This option improve
 greatly system's availability by avoiding a potentially long rebooting
 process thanks to option BIOS ROMs (PXE, SATA & RAID controllers).
+When the deployed operating system features several kernel versions,
+edeploy will by default select the first kernel available. If user
+wants to enforce a particular version, the KEXEC_KERNEL can be used.
+KEXEC_KERNEL arguments expect a kernel version taken from the filename.
+This kernel version shall be unique in the /boot/ directory.
+KEXEC_KERNEL=3.2.0-4 will boot vmlinuz & initrd that hold 3.2.0-4 in its name.
 
 Preparing the eDeploy Server
 ----------------------------

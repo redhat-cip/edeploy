@@ -48,6 +48,7 @@ eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^VERBOSE=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^NOREBOOT=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^ONSUCCESS=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^ONFAILURE=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^KEXEC_KERNEL=")
 
 #compatibilty module
 if [ "$NOREBOOT" = "1" ]; then
@@ -292,12 +293,28 @@ if /configure; then
                     log "Booting with kexec as required by ONSUCCESS"
                     if type -p kexec; then
                         log_n "Trying kexec..."
-                        cp $d/boot/vmlinuz* /tmp/vmlinuz || give_up "Unable to copy kernel"
-			            if ls $d/boot/initrd.img*; then
-			                cp $d/boot/initrd.img* /tmp/initrd.img || give_up "Unable to copy initrd"
-			            else
-			                cp $d/boot/initramfs* /tmp/initrd.img || give_up "Unable to copy initrd"
-			            fi
+                        KVER=""
+                        NB_KERNELS=$(find $d/boot/ -name "vmlinuz*" -type f | wc -l)
+                        if [ "$NB_KERNELS" -gt 1 ]; then
+                            log "."
+                            log_n "Multiple kernels found, "
+                            if [ -z "$KEXEC_KERNEL" ]; then
+                                KVER=`basename $(find $d/boot/ -name "vmlinuz*" -type f | head -1) | sed -e "s/^vmlinuz-\(.*\)/\1/g"`
+                                log "but no KEXEC_KERNEL defined."
+                                log "Selecting first kernel version : $KVER"
+                            else
+                                KVER=$KEXEC_KERNEL
+                                log "using user defined kernel version : $KVER"
+                            fi
+                        fi
+
+                        cp $d/boot/vmlinuz*$KVER* /tmp/vmlinuz || give_up "Kexec: Unable to copy kernel"
+                        if ls $d/boot/initrd*$KVER* &>/dev/null; then
+                            cp $d/boot/initrd*$KVER* /tmp/initrd.img || give_up "Kexec: Unable to copy initrd"
+                        else
+			    cp $d/boot/initramfs*$KVER* /tmp/initrd.img || give_up "Kexec: Unable to copy initrd"
+                        fi
+
                         eval $(grep root=UUID= $d/boot/grub/grub.cfg|head -1|tr ' ' '\n'|grep '^root=UUID=')
                         if [ -z "$root" ]; then
                             log_n "using alternative root detection"

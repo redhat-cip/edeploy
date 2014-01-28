@@ -297,14 +297,16 @@ if /configure; then
                         NB_KERNELS=$(find $d/boot/ -name "vmlinuz*" -type f | wc -l)
                         if [ "$NB_KERNELS" -gt 1 ]; then
                             log "."
-                            log_n "Multiple kernels found, "
+                            log "Kexec: Multiple kernels found :"
+                            KERNEL_LIST=$(find $d/boot/ -name "vmlinuz*" -type f  | sed -e "s/.*vmlinuz-\(.*\)/\1/g")
+                            log "$KERNEL_LIST"
                             if [ -z "$KEXEC_KERNEL" ]; then
-                                KVER=`basename $(find $d/boot/ -name "vmlinuz*" -type f | head -1) | sed -e "s/^vmlinuz-\(.*\)/\1/g"`
-                                log "but no KEXEC_KERNEL defined."
-                                log "Selecting first kernel version : $KVER"
+                                KVER=$(echo $KERNEL_LIST | awk '{print $1}')
+                                log "Kexec: no KEXEC_KERNEL variable defined."
+                                log "Kexec: Selecting first kernel version : $KVER"
                             else
                                 KVER=$KEXEC_KERNEL
-                                log "using user defined kernel version : $KVER"
+                                log "Kexec: Using user defined kernel version : $KVER"
                             fi
                         fi
 

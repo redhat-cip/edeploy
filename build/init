@@ -326,6 +326,12 @@ if /configure; then
                         umount $d/boot
                         umount $d
 
+                        # Adding console= parameters taken from bootstrap cmdline if none already defined
+                        echo $BOOT_ARG | grep -qw "console=" || for console in $(grep -oh "console=\w*" /proc/cmdline); do
+                            log "Adding $console boot argument as defined in bootstrap cmdline"
+                            BOOT_ARG="$BOOT_ARG $console";
+                        done
+
                         if [ -z "$root" ]; then
                             give_up "Kexec: Cannot be executed as no root device found"
                             sleep 5

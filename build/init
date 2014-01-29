@@ -207,9 +207,6 @@ if /configure; then
             BOOT_ARG="$BOOT_ARG ds=nocloud-net;s=${METADATA_URL}"
         else
             log "No METADATA_URL variable found, no cloud-init configuration done"
-            log "Regenerating ssh host keys"
-            ssh-keygen -q -N '' -t dsa -f $d/etc/ssh/ssh_host_dsa_key
-            ssh-keygen -q -N '' -t rsa -f $d/etc/ssh/ssh_host_rsa_key
         fi
 
         mount -obind /dev $d/dev

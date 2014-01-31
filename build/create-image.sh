@@ -56,7 +56,11 @@ clean_temporary() {
     umount "$MDIR"
 
     losetup -d $DEV
-    kpartx -d "$IMG"
+    TRY=5
+    while [ $TRY -gt 0 ] && ! kpartx -d "$IMG"; do
+	sleep 1
+	TRY=$(($TRY - 1))
+    done
     rmdir "$MDIR"
 }
 
@@ -134,7 +138,7 @@ else
 fi
 
 # Create the image file
-dd if=/dev/zero of=$IMG count=$SIZE bs=1M
+fallocate -l $(($SIZE * 1024 * 1024)) $IMG || dd if=/dev/zero of=$IMG count=$SIZE bs=1M
 
 # Create one partition
 
@@ -146,6 +150,12 @@ parted "$DISK" set 1 boot on
 # Format the partition as ext3
 
 PART=/dev/mapper/$(kpartx -av $DISK|cut -f3 -d' ')
+TRY=5
+while [ $TRY -gt 0 -a ! -b $PART ]; do
+    sleep 1
+    TRY=$(($TRY - 1))
+done
+
 mkfs.ext3 "$PART"
 MDIR=$(mktemp -d)
 DEV=$(losetup --show --find "$PART")
@@ -223,8 +233,7 @@ sync
 setup_network
 
 # Cleanup everything
+clear_trap
 clean_temporary
 
 qemu-img convert -O $IMAGE_FORMAT "$IMG" "$IMG".$IMAGE_FORMAT
-
-clear_trap

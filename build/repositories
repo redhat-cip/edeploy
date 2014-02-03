@@ -8,7 +8,7 @@ add_main_repository() {
 
   case "$dist" in
     $supported_debian_dists)
-        echo "http://cdn.debian.net/debian"
+        echo "http://http.debian.net/debian"
         return 0
     ;;
     $supported_ubuntu_dists)

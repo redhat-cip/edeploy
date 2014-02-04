@@ -69,7 +69,7 @@ get_openstack_repository() {
                 fatal_error "Unsupported openstack release ($openstack_release) for $dist distribution"
             ;;
         esac
-        echo "http://rdo.fedorapeople.org/openstack-${openstack_release}/rdo-release-${openstack_release}-${current_rpm_release}.noarch.rpm http://repos.fedorapeople.org/repos/openstack/cloud-init/epel-6/cloud-init-${cloud_init_release}.noarch.rpm"
+        echo "http://rdo.fedorapeople.org/openstack-${openstack_release}/rdo-release-${openstack_release}-${current_rpm_release}.noarch.rpm"
         return 0
     ;;
     *)

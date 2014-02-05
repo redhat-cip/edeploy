@@ -3,6 +3,7 @@
 export DEBIAN_FRONTEND=noninteractive
 . $ORIG/repositories
 
+# A clever way to find the differences between two bash arrays
 array_diff() {
   awk 'BEGIN{RS=ORS=" "}
        {NR==FNR?a[$0]++:a[$0]--}
@@ -91,6 +92,7 @@ update-rc.d.save \$service disable || exit 0
 EOF
             chmod +x ${chroot}/usr/sbin/update-rc.d
 
+            # Saving already installed packages
             packages_before=($(do_chroot ${chroot} dpkg --get-selections | sed '/install$/s///'))
         ;;
         "CentOS"|"RedHatEnterpriseServer")
@@ -122,8 +124,14 @@ EOF
     case "$OS" in
         "Debian"|"Ubuntu")
             do_chroot ${chroot} mv /usr/sbin/update-rc.d.save /usr/sbin/update-rc.d
+
+            # Saving installed packages by "install_packages $chroot $packages"
             packages_after=($(do_chroot ${chroot} dpkg --get-selections | sed '/install$/s///'))
+
+            # Computing the list of installed packages
             packages_new=($(array_diff packages_before[@] packages_after[@]))
+
+            # For each installed package, let's disable the service
             for pkg in ${packages_new[@]}; do
                 disable_upstart_service ${chroot} ${pkg}
             done

@@ -3,6 +3,12 @@
 export DEBIAN_FRONTEND=noninteractive
 . $ORIG/repositories
 
+array_diff() {
+  awk 'BEGIN{RS=ORS=" "}
+       {NR==FNR?a[$0]++:a[$0]--}
+       END{for(k in a)if(a[k])print k}' <(echo -n "${!1}") <(echo -n "${!2}")
+}
+
 get_redhat_major_version() {
     echo $1 | sed -e 's/\(.*\)\..*/\1/g'
 }
@@ -84,6 +90,8 @@ update-rc.d.save \$*
 update-rc.d.save \$service disable || exit 0
 EOF
             chmod +x ${chroot}/usr/sbin/update-rc.d
+
+            packages_before=($(do_chroot ${chroot} dpkg --get-selections | sed '/install$/s///'))
         ;;
         "CentOS"|"RedHatEnterpriseServer")
             do_chroot ${chroot} mv /sbin/chkconfig /sbin/chkconfig.save
@@ -114,6 +122,11 @@ EOF
     case "$OS" in
         "Debian"|"Ubuntu")
             do_chroot ${chroot} mv /usr/sbin/update-rc.d.save /usr/sbin/update-rc.d
+            packages_after=($(do_chroot ${chroot} dpkg --get-selections | sed '/install$/s///'))
+            packages_new=($(array_diff packages_before[@] packages_after[@]))
+            for pkg in ${packages_new[@]}; do
+                disable_upstart_service ${chroot} ${pkg}
+            done
         ;;
         "CentOS"|"RedHatEnterpriseServer")
             do_chroot ${chroot} mv /sbin/chkconfig.save /sbin/chkconfig
@@ -136,6 +149,15 @@ install_packages() {
             fatal_error "$(package_tool) isn't supported in install_packages()"
         ;;
     esac
+}
+
+disable_upstart_service() {
+    local chroot=$1
+    local package=$2
+    for initscript in $(do_chroot $chroot dpkg -L ${package}|grep '/etc/init/'); do
+        override=${initscript%%.conf}
+        echo "manual" > ${chroot}/${override}.override
+    done
 }
 
 remove_packages() {

@@ -51,7 +51,7 @@ fi
 }
 
 clean_temporary() {
-    rm -rf "$MDIR/"dev
+    rm -rf "$MDIR/"dev/*
     umount "$MDIR/"proc
     umount "$MDIR"
 

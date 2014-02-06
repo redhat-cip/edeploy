@@ -71,7 +71,7 @@ upload_log() {
 
     vendor=$(dmidecode -s system-manufacturer | sed 's/ *$//g' | tr ' ' '-' | tr -d '\n')
     product=$(dmidecode -s system-product-name | sed 's/ *$//g' | tr ' ' '-' | tr -d '\n')
-    serial=$(dmidecode -s system-serial-number | sed 's/ *$//g' | tr ' ' '-' | tr -d '\n')
+    serial=$(dmidecode -s system-serial-number | grep -v '#' | sed 's/ *$//g' | tr ' ' '-' | tr -d '\n')
     log_file="${vendor}-${product}-${serial}.log.gz"
     log "Uploading log ($log_file) to server ${SERV}"
 

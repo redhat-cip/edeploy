@@ -123,7 +123,7 @@ step "Start Udev"
 ################################################################################
 # Use the system tag to find the role
 ################################################################################
-serial="$(dmidecode -s system-serial-number)"
+serial="$(dmidecode -s system-serial-number | grep -v '#')"
 
 ################################################################################
 # Hardware detection starts here

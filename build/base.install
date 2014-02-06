@@ -90,6 +90,9 @@ bootstrap() {
         debootstrap --arch ${ARCH:=amd64} --variant=minbase $dist "$target" $repository
         # workaround no signature downloaded
         rm -f "$target"/var/lib/apt/lists/*[es]
+        if [  -n "${HTTP_PROXY}" ]; then
+            echo "Acquire { Retries \"0\"; HTTP { Proxy \"http://${HTTP_PROXY}\"; }; };" >> "$target/etc/apt/apt.conf.d/01proxy"
+        fi
         update_repositories $target
         cp -p ${ORIG}/policy-rc.d ${target}/usr/sbin/
         echo 'APT::Install-Recommends "0" ;' >> "$target/etc/apt/apt.conf"

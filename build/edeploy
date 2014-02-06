@@ -67,8 +67,8 @@ function upgrade() {
 
     # If we run a test upgrade, let's just show what the rsync would have change on the server
     if [ "$TEST_UPGRADE" = "1" ]; then
-        rsync --dry-run -av --delete-after --exclude-from=exclude rsync://${RSERV}:${RSERV_PORT}/install/${TARGET}/${ROLE}/ /
-        rsync --dry-run -av --ignore-existing --include-from=add_only rsync://${RSERV}:${RSERV_PORT}/install/${TARGET}/${ROLE}/ /
+        rsync --dry-run -av --numeric-ids --delete-after --exclude-from=exclude rsync://${RSERV}:${RSERV_PORT}/install/${TARGET}/${ROLE}/ /
+        rsync --dry-run -av --numeric-ids --ignore-existing --include-from=add_only rsync://${RSERV}:${RSERV_PORT}/install/${TARGET}/${ROLE}/ /
         return 0
     fi
 
@@ -76,8 +76,8 @@ function upgrade() {
         ./pre
     fi
 
-    rsync -av --delete-after --exclude-from=exclude rsync://${RSERV}:${RSERV_PORT}/install/${TARGET}/${ROLE}/ / > ${EDEPLOY_DIR}/rsync_${VERS}_${TARGET}.out
-    rsync -av --ignore-existing --include-from=add_only rsync://${RSERV}:${RSERV_PORT}/install/${TARGET}/${ROLE}/ / >> ${EDEPLOY_DIR}/rsync_${VERS}_${TARGET}.out
+    rsync -av --numeric-ids --delete-after --exclude-from=exclude rsync://${RSERV}:${RSERV_PORT}/install/${TARGET}/${ROLE}/ / > ${EDEPLOY_DIR}/rsync_${VERS}_${TARGET}.out
+    rsync -av --numeric-ids --ignore-existing --include-from=add_only rsync://${RSERV}:${RSERV_PORT}/install/${TARGET}/${ROLE}/ / >> ${EDEPLOY_DIR}/rsync_${VERS}_${TARGET}.out
 
     set +e
 

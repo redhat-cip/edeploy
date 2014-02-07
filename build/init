@@ -232,9 +232,10 @@ if /configure; then
         if [ ! -x $d/usr/sbin/grub-mkconfig ]; then
             chroot $d /bin/sh -c "cat /proc/mounts > /etc/mtab"
             chroot $d /bin/sh -c "/sbin/grub-install ${DISK}"
+            ret=$?
+
             rm -f $d/etc/mtab
 
-            ret=$?
             root=`mount | grep "$d " | awk '{print $1}'`
             eval `blkid $root -o export`
             echo "default=0"  > ${d}/boot/grub/grub.conf

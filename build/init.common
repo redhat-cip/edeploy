@@ -22,11 +22,13 @@ show_kernel_modules() {
     log "Required kernel modules for $KVER are :$KMODS"
 }
 
+stop_log() {
+    kill $tpid
+}
+
 save_log() {
     exec 1>&3
     exec 2>&4
-
-    kill $tpid
 
     if [ -d $d/var/log ]; then
     cp /log $d/var/log/install.log
@@ -35,11 +37,13 @@ save_log() {
 
 do_reboot() {
     upload_log
+    stop_log
     reboot -f
 }
 
 do_halt() {
     upload_log
+    stop_log
     sync
     sleep 5
     poweroff -f
@@ -47,6 +51,7 @@ do_halt() {
 
 do_console() {
     upload_log
+    stop_log
     exec /bin/bash -i
 }
 

@@ -339,6 +339,7 @@ if /configure; then
                         else
                             log "Kexec: Starting with append=root=${root}${BOOT_ARG}"
                             upload_log
+                            stop_log
                             kexec -l /tmp/vmlinuz --initrd=/tmp/initrd.img --append="root=${root}${BOOT_ARG}"
                             kexec -e
                         fi

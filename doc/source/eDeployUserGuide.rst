@@ -988,7 +988,7 @@ To make this description file more flexible, eDeploy provides a set of
 helper functions.
 
 -  network() : the network interface shall be in the  specified network
--  gt(), gte(), lt(), lte() : greater than (or equal), lower than (or
+-  gt(), ge(), lt(), le() : greater than (or equal), lower than (or
    equal)
 -  in() : the item to match shall be in a specified set
 

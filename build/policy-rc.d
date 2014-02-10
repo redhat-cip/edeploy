@@ -20,4 +20,6 @@ script="$1"
 actions="$2"
 level="$3"
 
-exit 101
+if [ $actions != rotate ]; then
+    exit 101
+fi

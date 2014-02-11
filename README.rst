@@ -192,7 +192,7 @@ the configure script that will use them. For example the
      run('mkfs.ext4 %s1' % disk)
      run('mkdir -p %s; mount %s1 %s' % (path, disk, path))
 
- open('/interfaces', 'w').write('''
+ config('/etc/network/interfaces').write('''
  auto lo
  iface lo inet loopback
  

@@ -1141,12 +1141,12 @@ The configure script shall prepare the following items :
 -  by calling parted & mkfs to partition and format the
    partition                        
 -  preparing the post-configuration files for the network configuration
--  by creating some /post_rsync/etc/network\* files
+-  by creating some /post_rsync/etc/network\* files using the ``config`` function
 -  define the role and the version to be deployed to this system
 -  by using set_role(role_name, role_version, bootable_disk)
 -  will be used to get the operating system during initial installation
 
-.. code:: bash
+.. code:: python
 
    bootable_disk = '/dev/' + var['disk']
    run('dmsetup remove_all || /bin/true')
@@ -1157,7 +1157,7 @@ The configure script shall prepare the following items :
       run('mkfs.ext4 %s1' % disk)
       run('mkdir -p %s; mount %s1 %s' % (path, disk, path))
 
-   open('/post_rsync/etc/network/interfaces', 'w').write('''
+   config('/etc/network/interfaces').write('''
    auto lo
    iface lo inet loopback
 
@@ -1260,7 +1260,7 @@ Creating a CMDB file
 
 A sample CMDB file looks like the following :
 
-.. code:: bash
+.. code:: python
 
    generate({'gateway': '10.0.2.2',
       'ip': '10.0.2.3-253',
@@ -1294,7 +1294,7 @@ synthetic form to the deflated version of it. For the complete range of
 systems defined in the synthetic version, an entry is created. The
 following example is a partial view of the 250 systems created.
 
-.. code:: bash
+.. code:: python
 
    [{'disk': 'vda',
      'eth': 'eth0',
@@ -1352,7 +1352,7 @@ only this value will be used to match an entry into the CMDB.
 This is useful if you want to match for example system tags to specific
 settings like that
 
-.. code:: bash
+.. code:: python
 
    [('system', 'product', 'serial', '$$tag'),
     ('network', '$eth', 'serial', '$mac'),]
@@ -1360,7 +1360,7 @@ settings like that
 To insure the system that own the serial number TAG1 will be assigned to
 'host1', you'll define the CMDB as the following :
 
-.. code:: bash
+.. code:: python
 
    generate({'tag': ('TAG1', 'TAG2', 'TAG3'),
              'ip': '192.168.122.3-5',
@@ -1376,9 +1376,9 @@ script of the same role. They are stored into a python dictionary called
 The following example shows how to retrieve values from the CMDB to
 generate a network configuration file .
 
-.. code:: bash
+.. code:: python
 
-   open('/post_rsync/etc/network/interfaces', 'w').write('''
+   config('/etc/network/interfaces').write('''
    auto lo
    iface lo inet loopback
 
@@ -1395,7 +1395,7 @@ The 'eth' and “mac' variables of the var dictionary features the
 interface name caught by match of the spec file (shown below) with the
 hardware description and saved into the CMDB.
 
-.. code:: bash
+.. code:: python
 
   [('system', 'product', 'vendor', 'kvm'),
    ('system', 'product', 'name', 'edeploy_test_vm ()'),
@@ -1430,7 +1430,7 @@ A full state file looks like this:
 
    
 
-.. code:: bash
+.. code:: python
 
    [('hp', '4'), ('vm-centos', '*'), ('vm-debian', '3'), ('kvm-test',
   '0')]

@@ -444,6 +444,7 @@ def main():
     sys.stdout.write('''#!/usr/bin/env python
 
 import commands
+import os
 import sys
 
 import hpacucli
@@ -466,6 +467,16 @@ def set_role(role, version, disk):
         f.write("ROLE=%s\\nVERS=%s\\nDISK=%s\\n" % (role,
                                                     version,
                                                     disk))
+
+def config(name, mode='w', basedir='/post_rsync', fmod=0644, uid=0, gid=0):
+    path = basedir + name
+    dir_ = '/'.join(path.split('/')[:-1])
+    if not os.path.exists(dir_):
+        os.makedirs(dir_)
+    f = open(path, mode)
+    os.fchmod(f.fileno(), fmod)
+    os.fchown(f.fileno(), uid, gid)
+    return f
 
 var = ''')
 

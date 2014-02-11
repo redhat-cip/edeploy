@@ -3,7 +3,7 @@
 
 bootable_disk = '/dev/' + var['disk']
 
-run('dmsetup remove_all || /bin/true')
+run('dmsetup remove_all || :')
 
 for disk, path in ((bootable_disk, '/chroot'), ):
     run('parted -s %s mklabel msdos' % disk)
@@ -12,7 +12,7 @@ for disk, path in ((bootable_disk, '/chroot'), ):
     run('mkfs.ext4 %s1' % disk)
     run('mkdir -p %s; mount %s1 %s' % (path, disk, path))
 
-open('/post_rsync/etc/network/interfaces', 'w').write('''
+config('/etc/network/interfaces').write('''
 auto lo
 iface lo inet loopback
 
@@ -25,4 +25,4 @@ iface %(eth)s inet static
      hwaddress %(mac)s
 ''' % var)
 
-set_role('base', 'D7-H.1.0.0', bootable_disk)
+set_role('mysql', 'D7-H.1.0.0', bootable_disk)

@@ -67,14 +67,13 @@ run('mkfs.ext4 -L slash -m 0 -O extent -E stride=32,stripe_width=32 %s%d' % (boo
 run('mount LABEL=slash /chroot')
 run('mkdir /chroot/etc /chroot/boot')
 run('mount LABEL=boot /chroot/boot')
-fstab = open('/post_rsync/etc/fstab', 'a')
-fstab.write('''
+config('/etc/fstab', mode='a').write('''
 LABEL=boot /boot ext4 defaults 0 1
 /dev/sda3 none swap sw 0 0
 LABEL=slash / ext4 defaults 0 2
 ''')
 
-open('/post_rsync/etc/network/interfaces', 'w').write('''
+config('/etc/network/interfaces').write('''
 auto lo
 iface lo inet loopback
 
@@ -85,11 +84,11 @@ iface %(eth-pub2)s inet static
     gateway %(gateway)s
 ''' % var)
 
-open('/post_rsync/etc/hostname','w').write('''
+config('/etc/hostname').write('''
 %(hostname)s
 ''' % var)
 
-open('/post_rsync/etc/init/ttyS1.conf', 'w').write('''
+config('/etc/init/ttyS1.conf').write('''
 # ttyS1 - getty
 #
 # This service maintains a getty on ttyS1 from the point the system is
@@ -102,7 +101,7 @@ respawn
 exec /sbin/getty -L 115200 ttyS1 vt102
 ''')
 
-open('/post_rsync/etc/default/grub', 'w').write('''
+config('/etc/default/grub').write('''
 # If you change this file, run 'update-grub' afterwards to update
 # /boot/grub/grub.cfg.
 # For full documentation of the options in this file, see:

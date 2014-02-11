@@ -12,7 +12,7 @@ for disk, path in ((bootable_disk, '/chroot'), ):
     run('mkfs.ext4 %s1' % disk)
     run('mkdir -p %s; mount %s1 %s' % (path, disk, path))
 
-open('/post_rsync/etc/network/interfaces', 'w').write('''
+config('/etc/network/interfaces').write('''
 auto lo
 iface lo inet loopback
 

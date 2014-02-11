@@ -29,13 +29,12 @@ for disk, path in ((bootable_disk, '/chroot'), ):
     run('mount LABEL=slash %s' % path)
     run('mkdir %s/etc %s/boot' % (path, path))
     run('mount LABEL=boot %s/boot' % path)
-    fstab = open('/post_rsync/etc/fstab', 'a')
-    fstab.write('''
+    config('/etc/fstab', mode='a').write('''
 /dev/disk/by-id/dm-name-rootfs-swap none swap sw 0 0
 LABEL=boot /boot ext4 defaults 0 2
 ''')
 
-open('/post_rsync/etc/network/interfaces', 'w').write('''
+config('/etc/network/interfaces').write('''
 auto lo
 iface lo inet loopback
 
@@ -65,7 +64,7 @@ iface %(eth-mgmt)s inet static
 
 ''' % var)
 
-open('/post_rsync/etc/hostname','w').write('''%(hostname)s
+config('/etc/hostname').write('''%(hostname)s
 ''' % var)
 
 ipmi.setup_user(var['ipmi-fake-channel'],'root','pastouche')

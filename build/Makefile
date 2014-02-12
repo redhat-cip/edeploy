@@ -72,7 +72,7 @@ img: $(INST)/$(IMG)
 	./img.install $(INST)/base $(IMG) $(VERS) $(INST) $(SERV) $(HSERV) $(DEBUG)
 
 base: $(INST)/base.done
-$(INST)/base.done: base.install policy-rc.d edeploy
+$(INST)/base.done: base.install policy-rc.d edeploy common packages distributions
 	./base.install $(INST)/base $(DIST) $(VERS)
 	touch $(INST)/base.done
 

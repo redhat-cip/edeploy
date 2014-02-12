@@ -31,20 +31,6 @@ compress() {
     $COMPRESS $@
 }
 
-prevent_services_to_run() {
-    if [ x"$2" = x"on" ]; then
-cat > ${1}/usr/sbin/policy-rc.d <<EOF
-#!/bin/sh
-exit 101
-EOF
-        chmod 755 ${1}/usr/sbin/policy-rc.d || exiting
-    else
-        if [ x"$1" = x"off" ]; then
-            rm -f $$1/usr/sbin/policy-rc.d || exiting
-        fi
-    fi
-}
-
 install_mellanox() {
     RELEASE=$1
     CHROOT=$2
@@ -70,10 +56,6 @@ install_mellanox() {
         return
         ;;
     esac
-
-    # As we are chroot, we have to prevent some services to be restarted by packages
-    # This prevent failures
-    prevent_services_to_run $CHROOT on
 
     for mydir in /proc /dev /sys /dev/pts /run; do
         mount $mydir $CHROOT/$mydir -o bind || echo "Failed at binding $mydir"
@@ -132,8 +114,6 @@ EOF
 
     chmod +x $CHROOT/doit.sh
     chroot "$CHROOT" /doit.sh
-    # Let's revert our change, we now can run services
-    prevent_services_to_run $CHROOT off
 
     #Let's tweak the grub setup to boot the proper kernel with intel_iommu for SR_IOV
     #Grub will be updates/installed when eDeploy will install it on the real server
@@ -256,6 +236,11 @@ cleanup() {
 	    ln -s /bin/true ${dir}/usr/bin/${pkgmngr}
 	fi
     done
+
+    # Remove policy for invoke-rc.d (this has side effects on puppet for exemple)
+    if [ -f ${dir}/usr/sbin/policy-rc.d ]; then
+	mv ${dir}/usr/sbin/policy-rc.d ${dir}/usr/sbin/policy-rc.d.moved
+    fi
     
     if [ "$ret" = "0" ]; then
         if [ -z "$STRIPPED_TARGET" ]; then
@@ -378,4 +363,9 @@ common_setup() {
 	    mv -f ${dir}/usr/bin/${pkgmngr}.moved ${dir}/usr/bin/${pkgmngr}
 	fi
     done
+
+    # put in place a policy for invoke-rc.d
+    if [ -f ${dir}/usr/sbin/policy-rc.d.moved ]; then
+	mv ${dir}/usr/sbin/policy-rc.d.moved ${dir}/usr/sbin/policy-rc.d
+    fi
 }

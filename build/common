@@ -249,6 +249,14 @@ cleanup() {
     # Let's remove any trace of a rhn configuration
     unregister_rhn $DIST $dir
 
+    # Let's disable apt-get and yum for normal usage
+    for pkgmngr in apt-get yum; do
+	if [ -f ${dir}/usr/bin/${pkgmngr} ]; then
+	    mv -f ${dir}/usr/bin/${pkgmngr} -f ${dir}/usr/bin/${pkgmngr}.moved
+	    ln -s /bin/true ${dir}/usr/bin/${pkgmngr}
+	fi
+    done
+    
     if [ "$ret" = "0" ]; then
         if [ -z "$STRIPPED_TARGET" ]; then
             clear_packages_cache $dir
@@ -363,4 +371,11 @@ common_setup() {
     echo 'exit 0' > "${dir}"/etc/default/grub.d/edeploy.cfg
 
     add_rhn_repository $DIST $dir
+
+    # let apt-get and yum work in build scripts
+    for pkgmngr in apt-get yum; do
+	if [ -f ${dir}/usr/bin/${pkgmngr}.moved ]; then
+	    mv -f ${dir}/usr/bin/${pkgmngr}.moved ${dir}/usr/bin/${pkgmngr}
+	fi
+    done
 }

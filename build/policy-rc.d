@@ -18,29 +18,46 @@
 
 # Purpose: prevent services to start or do whatever at installation time.
 
+QUIET=
+
+# remove options (see invoke-rc.d man page)
+while :; do
+    case "$1" in
+	--quiet)
+	    QUIET=1
+	    ;&
+	--*)
+	    shift
+	    ;;
+	*)
+	    break
+	    ;;
+    esac
+done
+
 script="$1"
 actions="$2"
 level="$3"
 
 # try to detect that we are called from a package scriptlet
-if [ -n "$PPID" ]; then
-    PPPID=$(ps -p $PPID -o ppid|head -2|tail -1|sed -e 's/^\s*//' -e 's/\s*$//')
-    #cat /proc/$PPPID/cmdline|tr '\000' '\n' 1>&2
-    set -- $(cat /proc/$PPPID/cmdline|tr '\000' '\n')
-    if [ "$2" = -e ]; then
-	SCRIPT="$3"
-    else
-	SCRIPT="$2"
-    fi
-    case "$SCRIPT" in
-	*.postinst|*.preinst|*.postrm|*.prerm)
-	    echo "policy-rc.d: scriptlet detected: preventing action $actions on $script" 1>&2
-	    exit 101
-	    ;;
-	*)
-	    echo "policy-rc.d: called outside of a scriptlet: action $actions on $script authorized" 1>&2
-	    ;;
-    esac
-elif [ "$actions" != rotate ]; then
-    exit 101
+PPPID=$(ps -p $PPID -o ppid|head -2|tail -1|sed -e 's/^\s*//' -e 's/\s*$//')
+#cat /proc/$PPPID/cmdline|tr '\000' '\n' 1>&2
+set -- $(cat /proc/$PPPID/cmdline|tr '\000' '\n')
+if [ "$2" = -e ]; then
+    SCRIPT="$3"
+else
+    SCRIPT="$2"
 fi
+case "$SCRIPT" in
+    *.postinst|*.preinst|*.postrm|*.prerm)
+	if [ -z "$QUIET" ]; then
+	    echo "policy-rc.d: scriptlet detected: preventing action $actions on $script" 1>&2
+	fi
+	exit 101
+	;;
+    *)
+	if [ -z "$QUIET" ]; then
+	    echo "policy-rc.d: called outside of a scriptlet: action $actions on $script authorized" 1>&2
+	fi
+	;;
+esac

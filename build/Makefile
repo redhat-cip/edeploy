@@ -57,8 +57,8 @@ ROLES = base pxe health-check deploy
 
 all: $(ROLES)
 
-health-check: $(INST)/health-check.done
-$(INST)/health-check.done: $(INST)/base.done init.health init.common health-check.install $(DEPS)
+health-check: $(INST)/$(HEALTH_IMG)
+$(INST)/$(HEALTH_IMG): $(INST)/base.done init.health init.common health-check.install $(DEPS)
 	ENABLE_IB=y ENABLE_MELLANOX=n ./health-check.install $(INST)/base $(INST)/health-check $(HEALTH_IMG) $(VERS) $(DEBUG)
 
 health-img: $(INST)/health-check.done

@@ -232,7 +232,7 @@ cleanup() {
     # Let's disable apt-get and yum for normal usage
     for pkgmngr in apt-get yum; do
 	if [ -f ${dir}/usr/bin/${pkgmngr} ]; then
-	    mv -f ${dir}/usr/bin/${pkgmngr} -f ${dir}/usr/bin/${pkgmngr}.moved
+	    mv -f ${dir}/usr/bin/${pkgmngr} ${dir}/usr/bin/${pkgmngr}.moved
 	    ln -s /bin/true ${dir}/usr/bin/${pkgmngr}
 	fi
     done

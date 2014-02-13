@@ -39,8 +39,6 @@ foreach my $system (@$systems) {
     }
 }
 
-die "No instance of server $system_to_delete found " if ! $serverID;
-
 exit 0;
 
 $client->call('auth.logout', $session);

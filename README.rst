@@ -37,7 +37,7 @@ You will need the following dependencies to be able to run the test-suite::
 
  apt-get install python-openstack.nose-plugin python-mock \
    python-netaddr debootstrap qemu-kvm qemu-utils \
-   python-ipaddr libfrontier-rpc-perl
+   python-ipaddr libfrontier-rpc-perl curl
 
 It may be a good idea to install these additional dependencies too::
 

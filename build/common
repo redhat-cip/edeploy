@@ -355,8 +355,6 @@ common_setup() {
     mkdir -p "${dir}"/etc/default/grub.d
     echo 'exit 0' > "${dir}"/etc/default/grub.d/edeploy.cfg
 
-    add_rhn_repository $DIST $dir
-
     # let apt-get and yum work in build scripts
     for pkgmngr in apt-get yum; do
 	if [ -f ${dir}/usr/bin/${pkgmngr}.moved ]; then
@@ -368,4 +366,7 @@ common_setup() {
     if [ -f ${dir}/usr/sbin/policy-rc.d.moved ]; then
 	mv ${dir}/usr/sbin/policy-rc.d.moved ${dir}/usr/sbin/policy-rc.d
     fi
+
+    add_rhn_repository $DIST $dir
+
 }

@@ -293,6 +293,8 @@ def detect_system(hw_lst, output=None):
                                          bank_list.get('id'), 'memory')
                             find_element(bank, 'vendor', 'vendor',
                                          bank_list.get('id'), 'memory')
+                            find_element(bank, 'product', 'product',
+                                         bank_list.get('id'), 'memory')
                             find_element(bank, 'serial', 'serial',
                                          bank_list.get('id'), 'memory')
                             find_element(bank, 'slot', 'slot',

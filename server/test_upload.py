@@ -66,6 +66,10 @@ class TestUpload(unittest.TestCase):
         self.assertEqual(list(upload._generate_range('1-3:10-12')),
                          ['1', '2', '3', '10', '11', '12'])
 
+    def test_generate_range_invalid(self):
+        self.assertEqual(list(upload._generate_range('D7-H.1.0.0')),
+                         ['D7-H.1.0.0'])
+
     def test_generate(self):
         model = {'gw': '192.168.1.1',
                  'ip': '192.168.1.10-12',

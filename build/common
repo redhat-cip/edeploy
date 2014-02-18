@@ -31,6 +31,13 @@ compress() {
     $COMPRESS $@
 }
 
+check_usage() {
+    if [ "$1" -ne "$2" ]; then
+	shift 2
+	fatal_error "Usage: $*"
+    fi
+}
+
 install_mellanox() {
     RELEASE=$1
     CHROOT=$2

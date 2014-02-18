@@ -1,6 +1,8 @@
 add_main_repository() {
   local dist=$1
 
+  check_usage $# 1 "add_main_repository <dist>"
+
   if [ -n "$REPOSITORY" -a "$dist" != redhat ]; then
     echo "$REPOSITORY"
     return
@@ -36,16 +38,17 @@ add_main_repository() {
 
 EPEL_RELEASE=6-8
 add_epel_repository() {
-  local target=$1
-  install_packages $target http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-$EPEL_RELEASE.noarch.rpm
+  install_packages $dir http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-$EPEL_RELEASE.noarch.rpm
 }
 
 remove_epel_repository() {
   local dist=$1
-  local target=$2
+
+  check_usage $# 1 "remove_epel_repository <dist>"
+  
   case "$dist" in
     $supported_centos_dists|$supported_redhat_dists)
-        remove_packages $target epel-release-$EPEL_RELEASE
+        remove_packages $dir epel-release-$EPEL_RELEASE
     ;;
   *)
     ;;
@@ -57,6 +60,8 @@ unregister_rhn() {
     local target=$2
     local cmd=${ORIG}/remove_system_on_rhn
 
+    check_usage $# 2 "unregister_rhn <dist> <target>"
+  
     # Let's to the basic tests here
     # This have only a meaning for redhat systems
     case "$dist" in
@@ -89,6 +94,9 @@ unregister_rhn() {
 add_rhn_channel() {
       local dir=$1
       local channel=$2
+
+      check_usage $# 2 "add_rhn_channel <dist> <target>"
+  
       yum_channel=$(echo $channel | rev | cut -d "-" -f 2- | rev)
       yum_channel="${yum_channel}-rpms"
       do_chroot $dir rhn-channel --add --channel=$channel -u $RHN_USERNAME -p $RHN_PASSWORD
@@ -100,6 +108,9 @@ add_rhn_channel() {
 add_rhn_repository() {
   local dist=$1
   local target=$2
+
+  check_usage $# 2 "add_rhn_repository <dist> <target>"
+  
   case "$dist" in
     $supported_redhat_dists)
       if [ -z "$RHN_USERNAME" ] || [ -z "$RHN_PASSWORD" ]; then
@@ -119,13 +130,12 @@ add_rhn_repository() {
 }
 
 update_repositories() {
-    CHROOT=$1
     case "$(package_tool)" in
         apt)
-            do_chroot $CHROOT apt-get update
+            do_chroot $dir apt-get update
         ;;
         yum)
-            do_chroot $CHROOT yum check-update || true
+            do_chroot $dir yum check-update || true
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in update_repositories()"
@@ -134,13 +144,15 @@ update_repositories() {
 }
 
 disable_repository() {
-    CHROOT=$1
-    repository=$2
+    repository=$1
+
+    check_usage $# 1 "disable_repository <repository>"
+    
     case "$(package_tool)" in
         apt)
         ;;
         yum)
-            do_chroot $CHROOT yum-config-manager --disable $repository
+            do_chroot $dir yum-config-manager --disable $repository
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in disable_repository()"

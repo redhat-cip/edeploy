@@ -39,7 +39,7 @@ check_os() {
 generate_ansible_host() {
     file=$1
     section=$2
-    dir=$3
+
     cat > $file <<EOF
 [$section]
 
@@ -48,8 +48,6 @@ EOF
 }
 
 install_edeploy() {
-    local dir=$1
-
     if ! type -p ansible-playbook; then
 	echo "ansible isn't installed. Use 'pip install ansible' to do so." 1>&2
 	exit 1
@@ -64,7 +62,7 @@ install_edeploy() {
 
     # pxemngr part
 
-    generate_ansible_host $t pxemngrservers $dir
+    generate_ansible_host $t pxemngrservers
     pushd $dir/srv
     git clone https://github.com/enovance/pxemngr.git
     cd pxemngr/ansible
@@ -92,6 +90,6 @@ install_pxe() {
 }
 
 check_os
-install_edeploy $dir
-install_pxe $dir
-clear_packages_cache $dir
+install_edeploy
+install_pxe
+clear_packages_cache

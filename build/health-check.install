@@ -31,6 +31,8 @@ ROLE=health-check
 # This is a stripped target as per rsync
 export STRIPPED_TARGET=1
 
+dir=$DST2
+
 . ${ORIG}/common
 
 if [ ! -d "$SRC" -o -z "$DST" -o -z "$IMG" -o -z "$vers" ]; then
@@ -47,7 +49,6 @@ set -e
 
 rsync -aH --delete-before ${SRC}/ ${DST2}/
 
-dir=$DST2
 common_setup
 
 # netperf is in multiverse

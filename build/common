@@ -5,6 +5,11 @@ if [ -z "$ORIG" ]; then
     exit 1
 fi
 
+if [ -z "$dir" ]; then
+    echo "dir env variable must be set to the top dir of your destination directory" 1>&2
+    exit 1
+fi
+
 . $ORIG/distributions
 . $ORIG/packages
 

@@ -1,6 +1,7 @@
 # -*- shell-script -*-
 
 export DEBIAN_FRONTEND=noninteractive
+
 . $ORIG/repositories
 
 # A clever way to find the differences between two bash arrays
@@ -19,13 +20,12 @@ get_redhat_minor_version() {
 }
 
 save_package_list() {
-local directory=$1
 case $(package_type) in
     "deb")
-        do_chroot ${directory} dpkg -l > ${INST}/${ROLE}.packages
+        do_chroot ${dir} dpkg -l > ${INST}/${ROLE}.packages
      ;;
      "rpm")
-        do_chroot ${directory} rpm -qa > ${INST}/${ROLE}.packages
+        do_chroot ${dir} rpm -qa > ${INST}/${ROLE}.packages
      ;;
      *)
         fatal_error "Unsupported package_type ($package_type) in save_package_list()"
@@ -186,13 +186,12 @@ remove_packages() {
 }
 
 update_system() {
-    CHROOT=$1
     case "$(package_tool)" in
         apt)
-            do_chroot $CHROOT apt-get upgrade -y
+            do_chroot ${dir} apt-get upgrade -y
         ;;
         yum)
-            do_chroot $CHROOT yum update -y
+            do_chroot ${dir} yum update -y
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in update_system()"
@@ -201,15 +200,14 @@ update_system() {
 }
 
 upgrade_system() {
-    CHROOT=$1
     case "$(package_tool)" in
         apt)
-            do_chroot $CHROOT apt-get dist-upgrade -y
+            do_chroot ${dir} apt-get dist-upgrade -y
         ;;
         yum)
             # didn't really found something equivalent
             # Let's do a yum update so
-            do_chroot $CHROOT yum update -y
+            do_chroot ${dir} yum update -y
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in update_system()"
@@ -218,13 +216,12 @@ upgrade_system() {
 }
 
 clear_packages_cache() {
-    CHROOT=$1
     case "$(package_tool)" in
         apt)
-            do_chroot $CHROOT apt-get clean
+            do_chroot ${dir} apt-get clean
         ;;
         yum)
-            do_chroot $CHROOT yum clean all
+            do_chroot ${dir} yum clean all
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in clear_packages_cache()"

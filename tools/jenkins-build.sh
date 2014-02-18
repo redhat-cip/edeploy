@@ -31,9 +31,9 @@ if [ -z "$ROLES" ]; then
 	ROLES="$ROLES deploy"
 	if ! type -p ansible; then
 	    if ! type -p pip; then
-		apt-get install python-pip
+		sudo apt-get install python-pip
 	    fi
-	    pip install ansible
+	    sudo pip install ansible
 	fi
     fi
 fi

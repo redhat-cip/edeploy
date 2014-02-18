@@ -108,6 +108,7 @@ if [ ! -d "$DIR" ] ;then
     do_fatal_error "Error: directory $DIR doesn't exist"
 fi
 
+modprobe loop
 check_binary dd
 check_binary parted
 check_binary chroot

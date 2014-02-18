@@ -85,15 +85,53 @@ do_cleanup() {
     exit $ret
 }
 
-if [ $# != 3 ]; then
-    do_fatal_error "Usage: $0 <top directory> <image file to create> <configuration_file>"
+usage() {
+    echo " -d directory of the eDeploy role"
+    echo " -n name of the image"
+    echo " -c optional: configuration file"
+    echo " -v optional: enable the Vagrant support"
+    do_fatal_error "Usage: $0 -d <top directory> -n <name> [-c <configuration_file>] [-v]"
+}
+
+while getopts :d::n::c:v FLAG; do
+    case "${FLAG}" in
+        d)
+            if [ ! -d "${OPTARG}" ]; then
+                echo "Error: argument \"${OPTARG}\" is not a directory" >&2
+                exit 2
+            fi
+            DIR=${OPTARG}
+
+        ;;
+        n)
+            if [ -z "${OPTARG}" ]; then
+                echo "Error: name parameter is empty" >&2
+                exit 2
+            fi
+            IMG=${OPTARG}
+
+        ;;
+        c)
+            if [ ! -f "${OPTARG}" ]; then
+                echo "Error: argument \"${OPTARG}\" is not a file" >&2
+                exit 2
+            fi
+            echo "Loading ${OPTARG}"
+            . ${OPTARG}
+        ;;
+        v)
+            echo "Enabling Vagrant support"
+            VAGRANT=1
+        ;;
+        *)
+            usage
+    esac
+done
+
+echo $DIR $IMG $VAGRANT
+if [ -z "$DIR" ] || [ -z "$IMG" ]; then
+    usage
 fi
-
-DIR="$1"
-IMG="$2"
-CONFIG="$3"
-
-. $CONFIG
 
 # QCOW2 as default image format
 IMAGE_FORMAT=${IMAGE_FORMAT:-qcow2}

@@ -9,7 +9,7 @@ fi
 . $ORIG/packages
 
 fatal_error() {
-    echo $1;
+    echo "$*" 1>&2
     clean_mount_points
     exit 1
 }

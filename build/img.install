@@ -182,7 +182,7 @@ setup_bootloader() {
         ONSUCCESS="halt"
     fi
     if [ -z "$ONFAILURE" ]; then
-        ONSUCCESS="console"
+        ONFAILURE="console"
     fi
     mkdir $1/extlinux
     if [ "$MODE" = "health" ]; then

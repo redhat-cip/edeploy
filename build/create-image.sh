@@ -167,6 +167,35 @@ trap do_cleanup 0
 
 rsync -a "$DIR/" "$MDIR/"
 
+if [ -n "$VAGRANT" ]; then
+  chroot "$MDIR" useradd -s /bin/bash -m vagrant
+
+  # Set the hostname to vagrant
+  echo vagrant > "$MDIR/etc/hostname"
+  sed -i "1i127.0.1.1 vagrant" "$MDIR/etc/hosts"
+
+  # Vagrant password for root and vagrant
+  sed -i -E 's,^(root|vagrant):.*,\1:$6$noowoT8z$b4ncy.PlVqQPzULCy1/pb5RDUbKCq02JgfCQGMQ1.mSmGItYRWFSJeLJemPcWjiaStJRa7HlXLt2gDh.aPAFa0:16118:0:99999:7:::,' "$MDIR/etc/shadow"
+  echo nameserver 8.8.4.4 > "$MDIR/etc/resolv.conf"
+  chroot "$MDIR"  apt-get install -y nfs-kernel-server
+
+  # SSH setup
+  # Add Vagrant ssh key for root and vagrant accouts.
+  sed -i 's/.*UseDNS.*/UseDNS no/' "$MDIR/etc/ssh/sshd_config"
+  echo 'vagrant ALL=NOPASSWD: ALL' > "$MDIR/etc/sudoers.d/vagrant"
+
+  for sshdir in "/root/.ssh" "/home/vagrant/.ssh"; do
+      [ -d "${MDIR}${sshdir}" ] || mkdir "${MDIR}${sshdir}"
+      chmod 700 "${MDIR}${sshdir}"
+      cat > "${MDIR}${sshdir}/authorized_keys" << EOF
+ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
+EOF
+      chmod 600 "${MDIR}${sshdir}/authorized_keys"
+  done
+  chroot "$MDIR" chown -R root:root /root/.ssh
+  chroot "$MDIR" chown -R vagrant:vagrant /home/vagrant/.ssh
+fi
+
 # Let's create a copy of the current /dev
 mkdir -p "${MDIR}/"/dev/pts
 rsync -a --delete-before --exclude=shm /dev/ ${MDIR}/dev/
@@ -236,4 +265,19 @@ setup_network
 clear_trap
 clean_temporary
 
-qemu-img convert -O $IMAGE_FORMAT "$IMG" "$IMG".$IMAGE_FORMAT
+
+if [ -n "$VAGRANT" ]; then
+   qemu-img convert -O $IMAGE_FORMAT "$IMG" box.img
+   cat > metadata.json <<EOF
+{
+  "provider": "libvirt",
+  "format": "qcow2",
+  "virtual_size": 40
+}
+EOF
+    tar cvzf openstack-full.box metadata.json box.img
+    rm box.img "$IMG"
+else
+   qemu-img convert -O $IMAGE_FORMAT "$IMG" "$IMG".$IMAGE_FORMAT
+fi
+

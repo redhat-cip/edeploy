@@ -58,15 +58,15 @@ ROLES = base pxe health-check deploy
 all: $(ROLES)
 
 health-check: $(INST)/$(HEALTH_IMG)
-$(INST)/$(HEALTH_IMG): $(INST)/base.done init.health init.common health-check.install $(DEPS)
-	ENABLE_IB=y ENABLE_MELLANOX=n ./health-check.install $(INST)/base $(INST)/health-check $(HEALTH_IMG) $(VERS) $(DEBUG)
+$(INST)/$(HEALTH_IMG): $(INST)/base.done  init.health init.common health-check.install $(DEPS)
+	DEPS="$(DEPS)" ENABLE_IB=y ENABLE_MELLANOX=n ./health-check.install $(INST)/base $(INST)/health-check $(HEALTH_IMG) $(VERS) $(DEBUG)
 
-health-img: $(INST)/health-check.done
+health-img: $(INST)/$(HEALTH_IMG)
 	./img.install $(INST)/base $(HEALTH_IMG) $(VERS) $(INST) $(SERV) $(HSERV) $(DEBUG) health
 
 pxe: $(INST)/$(IMG)
 $(INST)/$(IMG): $(INST)/base.done init init.common pxe.install $(DEPS)
-	ENABLE_IB=y ENABLE_MELLANOX=n ./pxe.install $(INST)/base $(INST)/pxe $(IMG) $(VERS) $(DEBUG)
+	DEPS="$(DEPS)" ENABLE_IB=y ENABLE_MELLANOX=n ./pxe.install $(INST)/base $(INST)/pxe $(IMG) $(VERS) $(DEBUG)
 
 img: $(INST)/$(IMG)
 	./img.install $(INST)/base $(IMG) $(VERS) $(INST) $(SERV) $(HSERV) $(DEBUG)

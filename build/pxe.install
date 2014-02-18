@@ -126,7 +126,7 @@ rsync -au --delete-excluded --delete --exclude /boot/ \
 
 rm -rf ${DST2}
 
-cp -p init init.common ${PYDIR}/detect.py ${PYDIR}/hpacucli.py ${PYDIR}/megacli.py ${PYSERVERDIR}/matcher.py ${PYDIR}/diskinfo.py ${PYDIR}/ipmi.py ${PYDIR}/infiniband.py ${DST}/
+cp -p init init.common $DEPS ${DST}/
 
 # If the ssh initscript features some upstart stuff, it needs to be disabled
 if [ -r ${DST}/etc/init.d/ssh ]; then

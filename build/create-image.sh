@@ -310,6 +310,8 @@ if [ -n "$VAGRANT" ]; then
 EOF
     tar cvzf ${IMG}.box metadata.json box.img
     rm box.img "$IMG"
+    echo "Your Vagrant box is ready, you can import it using the following command:
+ vagrant box add ${IMG} ${IMG}.box --provider=${VAGRANT_PROVIDER}"
 else
    qemu-img convert -O $IMAGE_FORMAT "$IMG" "$IMG".$IMAGE_FORMAT
 fi

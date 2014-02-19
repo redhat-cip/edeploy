@@ -100,10 +100,9 @@ unregister_rhn() {
 }
 
 add_rhn_channel() {
-      local dir=$1
-      local channel=$2
+      local channel=$1
 
-      check_usage $# 2 "add_rhn_channel <dist> <target>"
+      check_usage $# 1 "add_rhn_channel <channel>"
   
       yum_channel=$(echo $channel | rev | cut -d "-" -f 2- | rev)
       yum_channel="${yum_channel}-rpms"
@@ -115,9 +114,8 @@ add_rhn_channel() {
 
 add_rhn_repository() {
   local dist=$1
-  local target=$2
 
-  check_usage $# 2 "add_rhn_repository <dist> <target>"
+  check_usage $# 1 "add_rhn_repository <dist>"
   
   case "$dist" in
     $supported_redhat_dists)
@@ -127,8 +125,8 @@ add_rhn_repository() {
       fi
 
       if [ ! -f "$target/etc/sysconfig/rhn/systemid" ]; then
-          install_packages $target rhn-setup
-          do_chroot $target rhnreg_ks --profilename=edeploy-$HOSTNAME --username=$RHN_USERNAME --password=$RHN_PASSWORD
+          install_packages $dir rhn-setup
+          do_chroot $dir rhnreg_ks --profilename=edeploy-$HOSTNAME --username=$RHN_USERNAME --password=$RHN_PASSWORD
           add_rhn_channel rhel-x86_64-server-optional-6
       fi
     ;;

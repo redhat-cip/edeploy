@@ -379,6 +379,6 @@ common_setup() {
 	mv ${dir}/usr/sbin/policy-rc.d.moved ${dir}/usr/sbin/policy-rc.d
     fi
 
-    add_rhn_repository $DIST $dir
+    add_rhn_repository $DIST
 
 }

@@ -86,31 +86,15 @@ do_cleanup() {
 }
 
 usage() {
-    echo " -d directory of the eDeploy role"
-    echo " -n name of the image"
+    echo "<top directory> directory of the eDeploy role"
+    echo "<name> name of the image"
     echo " -c optional: configuration file"
     echo " -V optional: enable the Vagrant support"
-    do_fatal_error "Usage: $0 -d <top directory> -n <name> [-c <configuration_file>] [-v (libvirt|kvm)]"
+    do_fatal_error "Usage: $0 [-c <configuration_file>] [-V (libvirt|kvm)] <top directory> <name>"
 }
 
-while getopts :d::n::c:V: FLAG; do
+while getopts :c:V: FLAG; do
     case "${FLAG}" in
-        d)
-            if [ ! -d "${OPTARG}" ]; then
-                echo "Error: argument \"${OPTARG}\" is not a directory" >&2
-                exit 2
-            fi
-            DIR=${OPTARG}
-
-        ;;
-        n)
-            if [ -z "${OPTARG}" ]; then
-                echo "Error: name parameter is empty" >&2
-                exit 2
-            fi
-            IMG=${OPTARG}
-
-        ;;
         c)
             if [ ! -f "${OPTARG}" ]; then
                 echo "Error: argument \"${OPTARG}\" is not a file" >&2
@@ -118,22 +102,27 @@ while getopts :d::n::c:V: FLAG; do
             fi
             echo "Loading ${OPTARG}"
             . ${OPTARG}
+            shift $(( OPTIND - 1 ));
         ;;
         V)
-            if [ ! -z "${OPTARG}" ] || [ ! `echo "${OPTARG}" | egrep '^(libvirt|kvm)$'` ]; then
+            if [ -z "${OPTARG}" ] || [ ! `echo "${OPTARG}" | egrep '^(libvirt|kvm)$'` ]; then
                 echo "Error: argument \"${OPTARG}\" is not a supported Vagrant provider. It should be the Vagrant provider: either libvirt or kvm." >&2
                 exit 2
             fi
 
             echo "Enabling Vagrant support"
+            VAGRANT_PROVIDER=${OPTARG}
             VAGRANT=1
+            shift $(( OPTIND - 1 ));
         ;;
         *)
             usage
     esac
 done
 
-echo $DIR $IMG $VAGRANT
+DIR="$1"
+IMG="$2"
+
 if [ -z "$DIR" ] || [ -z "$IMG" ]; then
     usage
 fi

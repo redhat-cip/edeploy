@@ -83,9 +83,31 @@ do_cleanup() {
     exit $ret
 }
 
-if [ $# != 3 ]; then
-    do_fatal_error "Usage: $0 <top directory> <image file to create> <configuration_file>"
-fi
+usage() {
+    echo "<top directory> directory of the eDeploy role"
+    echo "<name> name of the image"
+    echo " -c optional: configuration file"
+    echo " -V optional: enable the Vagrant support"
+    do_fatal_error "Usage: $0 [-c <configuration_file>] [-V (libvirt|kvm)] <top directory> <name>"
+}
+
+while getopts :V: FLAG; do
+    case "${FLAG}" in
+        V)
+            if [ -z "${OPTARG}" ] || [ ! `echo "${OPTARG}" | egrep '^(libvirt|kvm)$'` ]; then
+                echo "Error: argument \"${OPTARG}\" is not a supported Vagrant provider. It should be the Vagrant provider: either libvirt or kvm." >&2
+                exit 2
+            fi
+
+            echo "Enabling Vagrant support"
+            VAGRANT_PROVIDER=${OPTARG}
+            VAGRANT=1
+            shift $(( OPTIND - 1 ));
+        ;;
+        *)
+            usage
+    esac
+done
 
 dir="$1"
 
@@ -93,9 +115,16 @@ dir="$1"
 
 DIR="$1"
 IMG="$2"
-CONFIG="$3"
+CFG="$3"
 
-. $CONFIG
+if [ -n "$CFG" ] && [  -f "$CFG" ]; then
+    echo "Sourcing $CFG"
+    . $CFG
+fi
+
+if [ -z "$DIR" ] || [ -z "$IMG" ]; then
+    usage
+fi
 
 # QCOW2 as default image format
 IMAGE_FORMAT=${IMAGE_FORMAT:-qcow2}
@@ -110,6 +139,7 @@ if [ ! -d "$DIR" ] ;then
     do_fatal_error "Error: directory $DIR doesn't exist"
 fi
 
+modprobe loop
 check_binary dd
 check_binary parted
 check_binary chroot
@@ -168,6 +198,35 @@ trap do_cleanup 0
 # Copy the data
 
 rsync -a "$DIR/" "$MDIR/"
+
+if [ -n "$VAGRANT" ]; then
+  chroot "$MDIR" useradd -s /bin/bash -m vagrant
+
+  # Set the hostname to vagrant
+  echo vagrant > "$MDIR/etc/hostname"
+  sed -i "1i127.0.1.1 vagrant" "$MDIR/etc/hosts"
+
+  # Vagrant password for root and vagrant
+  sed -i -E 's,^(root|vagrant):.*,\1:$6$noowoT8z$b4ncy.PlVqQPzULCy1/pb5RDUbKCq02JgfCQGMQ1.mSmGItYRWFSJeLJemPcWjiaStJRa7HlXLt2gDh.aPAFa0:16118:0:99999:7:::,' "$MDIR/etc/shadow"
+  echo nameserver 8.8.4.4 > "$MDIR/etc/resolv.conf"
+  chroot "$MDIR"  apt-get install -y nfs-kernel-server
+
+  # SSH setup
+  # Add Vagrant ssh key for root and vagrant accouts.
+  sed -i 's/.*UseDNS.*/UseDNS no/' "$MDIR/etc/ssh/sshd_config"
+  echo 'vagrant ALL=NOPASSWD: ALL' > "$MDIR/etc/sudoers.d/vagrant"
+
+  for sshdir in "/root/.ssh" "/home/vagrant/.ssh"; do
+      [ -d "${MDIR}${sshdir}" ] || mkdir "${MDIR}${sshdir}"
+      chmod 700 "${MDIR}${sshdir}"
+      cat > "${MDIR}${sshdir}/authorized_keys" << EOF
+ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
+EOF
+      chmod 600 "${MDIR}${sshdir}/authorized_keys"
+  done
+  chroot "$MDIR" chown -R root:root /root/.ssh
+  chroot "$MDIR" chown -R vagrant:vagrant /home/vagrant/.ssh
+fi
 
 # Let's create a copy of the current /dev
 mkdir -p "${MDIR}/"/dev/pts
@@ -238,4 +297,21 @@ setup_network
 clear_trap
 clean_temporary
 
-qemu-img convert -O $IMAGE_FORMAT "$IMG" "$IMG".$IMAGE_FORMAT
+
+if [ -n "$VAGRANT" ]; then
+   qemu-img convert -O $IMAGE_FORMAT "$IMG" box.img
+   cat > metadata.json <<EOF
+{
+  "provider": "${VAGRANT_PROVIDER}",
+  "format": "qcow2",
+  "virtual_size": 40
+}
+EOF
+    tar cvzf ${IMG}.box metadata.json box.img
+    rm box.img "$IMG"
+    echo "Your Vagrant box is ready, you can import it using the following command:
+ vagrant box add ${IMG} ${IMG}.box --provider=${VAGRANT_PROVIDER}"
+else
+   qemu-img convert -O $IMAGE_FORMAT "$IMG" "$IMG".$IMAGE_FORMAT
+fi
+

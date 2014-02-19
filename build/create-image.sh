@@ -18,8 +18,6 @@
 
 ORIG=$(cd $(dirname $0); pwd)
 
-. $ORIG/common
-
 do_fatal_error() {
     echo "$@" 1>&2
     exit 1
@@ -88,6 +86,10 @@ do_cleanup() {
 if [ $# != 3 ]; then
     do_fatal_error "Usage: $0 <top directory> <image file to create> <configuration_file>"
 fi
+
+dir="$1"
+
+. $ORIG/common
 
 DIR="$1"
 IMG="$2"

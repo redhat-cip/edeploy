@@ -275,7 +275,9 @@ def detect_system(hw_lst, output=None):
                 find_element(elt, 'date', 'date', 'bios', 'firmware')
                 find_element(elt, 'vendor', 'vendor', 'bios', 'firmware')
 
-        for elt in xml.findall(".//node[@id='memory']"):
+        for elt in xml.findall(".//node[@class='memory']"):
+            if not elt.attrib['id'].startswith('memory'):
+                continue
             name = elt.find('physid')
             if name is not None:
                 find_element(elt, 'size', 'size', 'total', 'memory')

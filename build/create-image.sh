@@ -93,17 +93,8 @@ usage() {
     do_fatal_error "Usage: $0 [-c <configuration_file>] [-V (libvirt|kvm)] <top directory> <name>"
 }
 
-while getopts :c:V: FLAG; do
+while getopts :V: FLAG; do
     case "${FLAG}" in
-        c)
-            if [ ! -f "${OPTARG}" ]; then
-                echo "Error: argument \"${OPTARG}\" is not a file" >&2
-                exit 2
-            fi
-            echo "Loading ${OPTARG}"
-            . ${OPTARG}
-            shift $(( OPTIND - 1 ));
-        ;;
         V)
             if [ -z "${OPTARG}" ] || [ ! `echo "${OPTARG}" | egrep '^(libvirt|kvm)$'` ]; then
                 echo "Error: argument \"${OPTARG}\" is not a supported Vagrant provider. It should be the Vagrant provider: either libvirt or kvm." >&2
@@ -122,6 +113,12 @@ done
 
 DIR="$1"
 IMG="$2"
+CFG="$3"
+
+if [ -n "$CFG" ] && [  -f "$CFG" ]; then
+    echo "Sourcing $CFG"
+    . $CFG
+fi
 
 if [ -z "$DIR" ] || [ -z "$IMG" ]; then
     usage

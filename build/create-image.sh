@@ -89,11 +89,11 @@ usage() {
     echo " -d directory of the eDeploy role"
     echo " -n name of the image"
     echo " -c optional: configuration file"
-    echo " -v optional: enable the Vagrant support"
-    do_fatal_error "Usage: $0 -d <top directory> -n <name> [-c <configuration_file>] [-v]"
+    echo " -V optional: enable the Vagrant support"
+    do_fatal_error "Usage: $0 -d <top directory> -n <name> [-c <configuration_file>] [-v (libvirt|kvm)]"
 }
 
-while getopts :d::n::c:v FLAG; do
+while getopts :d::n::c:V: FLAG; do
     case "${FLAG}" in
         d)
             if [ ! -d "${OPTARG}" ]; then
@@ -119,7 +119,12 @@ while getopts :d::n::c:v FLAG; do
             echo "Loading ${OPTARG}"
             . ${OPTARG}
         ;;
-        v)
+        V)
+            if [ ! -z "${OPTARG}" ] || [ ! `echo "${OPTARG}" | egrep '^(libvirt|kvm)$'` ]; then
+                echo "Error: argument \"${OPTARG}\" is not a supported Vagrant provider. It should be the Vagrant provider: either libvirt or kvm." >&2
+                exit 2
+            fi
+
             echo "Enabling Vagrant support"
             VAGRANT=1
         ;;

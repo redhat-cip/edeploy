@@ -33,7 +33,7 @@ import struct
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
-
+import re
 
 SIOCGIFNETMASK = 0x891b
 
@@ -275,34 +275,39 @@ def detect_system(hw_lst, output=None):
                 find_element(elt, 'date', 'date', 'bios', 'firmware')
                 find_element(elt, 'vendor', 'vendor', 'bios', 'firmware')
 
+        bank_count = 0
         for elt in xml.findall(".//node[@class='memory']"):
             if not elt.attrib['id'].startswith('memory'):
                 continue
+            try:
+                location = re.search('memory(:.*)', elt.attrib['id']).group(1)
+            except:
+                location = ''
             name = elt.find('physid')
             if name is not None:
                 find_element(elt, 'size', 'size', 'total', 'memory')
-                bank_count = 0
                 for bank_list in elt.findall(".//node[@id]"):
                     if ('bank:') in bank_list.get('id'):
                         bank_count = bank_count+1
                         for bank in elt.findall(".//node[@id='%s']" %
                                                 (bank_list.get('id'))):
+                            bank_id = bank_list.get('id').replace("bank:", "bank"+ location + ":")
                             find_element(bank, 'size', 'size',
-                                         bank_list.get('id'), 'memory')
+                                         bank_id, 'memory')
                             find_element(bank, 'clock', 'clock',
-                                         bank_list.get('id'), 'memory')
+                                         bank_id, 'memory')
                             find_element(bank, 'description', 'description',
-                                         bank_list.get('id'), 'memory')
+                                         bank_id, 'memory')
                             find_element(bank, 'vendor', 'vendor',
-                                         bank_list.get('id'), 'memory')
+                                         bank_id, 'memory')
                             find_element(bank, 'product', 'product',
-                                         bank_list.get('id'), 'memory')
+                                         bank_id, 'memory')
                             find_element(bank, 'serial', 'serial',
-                                         bank_list.get('id'), 'memory')
+                                         bank_id, 'memory')
                             find_element(bank, 'slot', 'slot',
-                                         bank_list.get('id'), 'memory')
-                if bank_count > 0:
-                    hw_lst.append(('memory', 'banks', 'count', bank_count))
+                                         bank_id, 'memory')
+        if bank_count > 0:
+            hw_lst.append(('memory', 'banks', 'count', bank_count))
 
         for elt in xml.findall(".//node[@class='network']"):
             name = elt.find('logicalname')

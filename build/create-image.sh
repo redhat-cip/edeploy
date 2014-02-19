@@ -303,12 +303,12 @@ if [ -n "$VAGRANT" ]; then
    qemu-img convert -O $IMAGE_FORMAT "$IMG" box.img
    cat > metadata.json <<EOF
 {
-  "provider": "libvirt",
+  "provider": "${VAGRANT_PROVIDER}",
   "format": "qcow2",
   "virtual_size": 40
 }
 EOF
-    tar cvzf openstack-full.box metadata.json box.img
+    tar cvzf ${IMG}.box metadata.json box.img
     rm box.img "$IMG"
 else
    qemu-img convert -O $IMAGE_FORMAT "$IMG" "$IMG".$IMAGE_FORMAT

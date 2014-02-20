@@ -214,8 +214,7 @@ def run_memtest(hw_, max_time, block_size, cpu_count, processor_num=-1):
 def run_forked_memtest(hw_, max_time, block_size, cpu_count):
     'Running forked memtest on a processor'
     if check_mem_size(block_size, cpu_count) is False:
-        cmd = 'Avoid benchmarking memory @%s'
-        'from all CPUs (%d processes), not enough memory'
+        cmd = 'Avoid benchmarking memory @%s from all CPUs (%d processes), not enough memory\n'
         sys.stderr.write(cmd % (block_size, cpu_count))
         return
     sys.stderr.write('Benchmarking memory @%s from all CPUs'

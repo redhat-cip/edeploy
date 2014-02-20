@@ -205,11 +205,12 @@ if [ -n "$VAGRANT" ]; then
   # Set the hostname to vagrant
   echo vagrant > "$MDIR/etc/hostname"
   sed -i "1i127.0.1.1 vagrant" "$MDIR/etc/hosts"
+  sed -i "3iresize2fs /dev/vda1" "$MDIR/etc/rc.local"
 
   # Vagrant password for root and vagrant
   sed -i -E 's,^(root|vagrant):.*,\1:$6$noowoT8z$b4ncy.PlVqQPzULCy1/pb5RDUbKCq02JgfCQGMQ1.mSmGItYRWFSJeLJemPcWjiaStJRa7HlXLt2gDh.aPAFa0:16118:0:99999:7:::,' "$MDIR/etc/shadow"
   echo nameserver 8.8.4.4 > "$MDIR/etc/resolv.conf"
-  chroot "$MDIR"  apt-get install -y nfs-kernel-server cloud-initramfs-growroot
+  chroot "$MDIR"  apt-get.moved install -y nfs-common cloud-initramfs-growroot
 
   # SSH setup
   # Add Vagrant ssh key for root and vagrant accouts.
@@ -257,6 +258,13 @@ EOF
     # Fix generated grub.cfg
     sed -i -e 's/\t*loopback.*//' -e 's/\t*set root=.*//' -e "s/\(--set=root \|UUID=\)[^ ]*/\1$UUID/p" $MDIR/boot/grub/grub.cfg
     sed -i -e 's/msdos5/msdos1/g' $MDIR/boot/grub/grub.cfg
+
+    if [ -n "$VAGRANT" ]; then
+        # HACK(Gonéri):
+        # We use cloud-initramfs-growroot to resize the / but it expects the root to be a device,
+        # not an UUID
+        sed -i -e 's,root=UUID=.* ro,root=/dev/vda1 ro,g' $MDIR/boot/grub/grub.cfg
+    fi
 else
     # Grub1 doesn't have /usr/sbin/grub-mkconfig, failback on extlinux for booting
     if [ ! -x extlinux/extlinux ] || [ ! -f extlinux/menu.c32 ] || [ ! -f extlinux/libutil.c32 ]; then
@@ -304,7 +312,7 @@ if [ -n "$VAGRANT" ]; then
 {
   "provider": "${VAGRANT_PROVIDER}",
   "format": "qcow2",
-  "virtual_size": 40
+  "virtual_size": 10
 }
 EOF
     tar cvzf ${IMG}.box metadata.json box.img

@@ -209,7 +209,7 @@ if [ -n "$VAGRANT" ]; then
   # Vagrant password for root and vagrant
   sed -i -E 's,^(root|vagrant):.*,\1:$6$noowoT8z$b4ncy.PlVqQPzULCy1/pb5RDUbKCq02JgfCQGMQ1.mSmGItYRWFSJeLJemPcWjiaStJRa7HlXLt2gDh.aPAFa0:16118:0:99999:7:::,' "$MDIR/etc/shadow"
   echo nameserver 8.8.4.4 > "$MDIR/etc/resolv.conf"
-  chroot "$MDIR"  apt-get install -y nfs-kernel-server
+  chroot "$MDIR"  apt-get install -y nfs-kernel-server cloud-initramfs-growroot
 
   # SSH setup
   # Add Vagrant ssh key for root and vagrant accouts.

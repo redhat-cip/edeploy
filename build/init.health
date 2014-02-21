@@ -91,6 +91,7 @@ eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^VERBOSE=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^NOREBOOT=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^ONSUCCESS=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^ONFAILURE=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^NONETWORKTEST")
 
 if [ "$VERBOSE" = 1 ]; then
     set -x			# show commands
@@ -178,8 +179,12 @@ show_kernel_modules
 show_git_rev
 
 step "Benchmarking system"
-./netdetect.py hw.py > /net.py
-./health-check.py /net.py > /health.py || give_up "Failed to run health-check"
+if [ -z "$NONETWORKTEST" ]; then
+    ./netdetect.py hw.py > /net.py
+    ./health-check.py /net.py > /health.py || give_up "Failed to run health-check"
+else
+    ./health-check.py /hw.py > /health.py || give_up "Failed to run health-check"
+fi
 
 save_results
 

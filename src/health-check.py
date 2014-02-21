@@ -340,6 +340,8 @@ def run_fio(hw_, disks_list, mode, io_size, time):
     for disk in disks_list:
         if '/dev/' not in disk:
             disk = '/dev/%s' % disk
+        # Flusing Disk's cache prior benchmark
+        os.system("hdparm -f %s >/dev/null 2>&1" % disk)
         short_disk = disk.replace('/dev/', '')
         fio = "%s --name=MYJOB-%s --filename='%s'" % (fio, short_disk, disk)
         global_disk_list += '%s,' % short_disk

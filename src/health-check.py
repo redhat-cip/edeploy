@@ -440,12 +440,12 @@ def storage_perf_burn(hw_, allow_destructive, running_time=10):
                      ' %s mode for %d seconds\n' % (
                          len(disks), mode, 2 * running_time))
     if allow_destructive:
+        run_fio(hw_, get_disks_name(hw_, True), "write", "1M", running_time)
         run_fio(hw_, get_disks_name(hw_, True),
                 "randwrite", "4k", running_time)
-        run_fio(hw_, get_disks_name(hw_, True), "write", "1M", running_time)
 
-    run_fio(hw_, disks, "randread", "4k", running_time)
     run_fio(hw_, disks, "read", "1M", running_time)
+    run_fio(hw_, disks, "randread", "4k", running_time)
 
 
 def storage_perf(hw_, allow_destructive, running_time=10):
@@ -471,20 +471,20 @@ def storage_perf(hw_, allow_destructive, running_time=10):
                 sys.stderr.write("Skipping disk %s in destructive mode,"
                                  " this is the booted device !" % disk)
             else:
-                run_fio(hw_, ['%s' % disk], "randwrite", "4k", running_time)
                 run_fio(hw_, ['%s' % disk], "write", "1M", running_time)
+                run_fio(hw_, ['%s' % disk], "randwrite", "4k", running_time)
 
-        run_fio(hw_, ['%s' % disk], "randread", "4k", running_time)
         run_fio(hw_, ['%s' % disk], "read", "1M", running_time)
+        run_fio(hw_, ['%s' % disk], "randread", "4k", running_time)
 
     if (len(disks) > 1):
         if allow_destructive:
-            run_fio(hw_, get_disks_name(hw_, True), "randwrite", "4k",
-                    running_time)
             run_fio(hw_, get_disks_name(hw_, True), "write", "1M",
                     running_time)
-        run_fio(hw_, disks, "randread", "4k", running_time)
+            run_fio(hw_, get_disks_name(hw_, True), "randwrite", "4k",
+                    running_time)
         run_fio(hw_, disks, "read", "1M", running_time)
+        run_fio(hw_, disks, "randread", "4k", running_time)
 
 
 def _main():

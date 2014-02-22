@@ -171,9 +171,15 @@ install_ib_if_needed() {
 }
 
 do_chroot() {
-    local dir="$1"
+    local chdir="$1"
     shift
-    PATH=/bin/:/sbin:$PATH LANG=C LC_ALL=C LC_CTYPE=C LANGUAGE=C chroot "$dir" "$@"
+    PATH=/bin/:/sbin:$PATH LANG=C LC_ALL=C LC_CTYPE=C LANGUAGE=C chroot "$chdir" "$@"
+}
+
+clean_chroot() {
+    for log in $(find $dir/var/log -type f); do
+	> $log
+    done
 }
 
 clean_mount_points() {
@@ -243,7 +249,7 @@ cleanup() {
 
     # Let's disable apt-get and yum for normal usage
     for pkgmngr in apt-get yum; do
-	if [ -f ${dir}/usr/bin/${pkgmngr} ]; then
+	if [ ! -f ${dir}/usr/bin/${pkgmngr}.moved -a -f ${dir}/usr/bin/${pkgmngr} ]; then
 	    mv -f ${dir}/usr/bin/${pkgmngr} ${dir}/usr/bin/${pkgmngr}.moved
 	    ln -s /bin/true ${dir}/usr/bin/${pkgmngr}
 	fi
@@ -261,6 +267,7 @@ cleanup() {
         fi
 
         echo > "${dir}"/etc/resolv.conf
+        clean_chroot
         clean_mount_points
 
         # CURRENT_TARGET looks like /var/lib/debootstrap/install/D7-H.1.0.0/deploy.done

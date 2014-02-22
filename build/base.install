@@ -80,10 +80,11 @@ init_redhat_chroot() {
 }
 
 bootstrap() {
-    target=$1
-
+    local target=$1
     local repository=$(add_main_repository $dist)
 
+    rm -rf $target
+    
     mount_fs
     # Use debootstrap for debian based distribution
     if [ "$(package_type)" = "deb" ]; then
@@ -215,13 +216,14 @@ install_megacli() {
 }
 
 install_hp_raid_cli_tool() {
-    target=$1
+    local target=$1
     # Inject HP RAID CLI tool
     if [ "$(package_type)" = "deb" ]; then
         local package_name=hpacucli_9.40.1-1._amd64.deb
-        if [ ! -r $target/tmp/$package_name ]; then
-            wget --no-verbose http://downloads.linux.hp.com/SDR/downloads/MCP/pool/non-free/$package_name -O $target/tmp/$package_name
+        if [ ! -r $target/../../$package_name ]; then
+            wget --no-verbose http://downloads.linux.hp.com/SDR/downloads/MCP/pool/non-free/$package_name -O $target/../../$package_name
         fi
+	cp $target/../../$package_name $target/tmp/
         install_packages $target "python-pexpect"
         do_chroot $target dpkg -i /tmp/$package_name
         rm -f $target/tmp/$package_name

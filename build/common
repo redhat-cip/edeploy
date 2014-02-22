@@ -284,7 +284,7 @@ cleanup() {
             rm -f ${INST}/${ROLE}-${version}.edeploy*
             cd ${dir}
             if [ -z "$NO_COMPRESSED_FILE" ]; then
-                tar c . | compress -9v > ${INST}/${ROLE}-${version}.edeploy || ret=1
+                tar c --numeric-owner . | compress -9v > ${INST}/${ROLE}-${version}.edeploy || ret=1
 		(cd ${INST}; md5sum ${ROLE}-${version}.edeploy > ${ROLE}-${version}.edeploy.md5) || ret=1
             fi
             cd -

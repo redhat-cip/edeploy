@@ -44,7 +44,7 @@ mkdir -p $DST2
 set -x
 set -e
 
-rsync -aH --delete-before ${SRC}/ ${DST2}/
+rsync -aH --delete-before --numeric-ids ${SRC}/ ${DST2}/
 
 common_setup
 

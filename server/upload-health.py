@@ -154,7 +154,8 @@ def main():
     filename_and_macs = generate_filename_and_macs(hw_items)
     dirname = time.strftime("%Y_%m_%d-%Hh%M", time.localtime())
     try:
-        os.mkdir(cfg_dir+'/'+dirname)
+        if not os.path.isdir(cfg_dir+'/'+dirname):
+            os.mkdir(cfg_dir+'/'+dirname)
     except Exception, excpt:
         fatal_error("Cannot create %s/%s directory" % (cfg_dir, dirname))
 

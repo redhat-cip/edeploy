@@ -305,6 +305,7 @@ check_binary wget
 check_binary debootstrap
 check_binary chroot
 check_binary sed
+check_binary curl
 
 uname -m | grep -q 'i[3-6]86'
 if [ $? -eq 0 ]; then

@@ -57,19 +57,6 @@ def save_hw(items, name, hwdir):
         log("exception while saving hw file: %s" % str(xcpt))
 
 
-def register_pxemngr(sysvars):
-    'Register the system in pxemngr.'
-    macs = ' '.join(sysvars['serial'])
-    cmd = 'pxemngr addsystem %s %s' % (sysvars['sysname'],
-                                       macs)
-    status, output = commands.getstatusoutput(cmd)
-    if status != 0:
-        log('%s -> %d / %s' % (cmd, status, output))
-    else:
-        log('added %s under pxemngr for MAC addresses %s'
-            % (sysvars['sysname'], macs))
-
-
 def generate_filename_and_macs(items):
     '''Generate a file name for a hardware using DMI information
     (product name and version) then if the DMI serial number is
@@ -176,16 +163,6 @@ def main():
 
     save_hw(hw_items, filename_and_macs['sysname'], cfg_dir+'/'+dirname)
 
-    use_pxemngr = (config_get('SERVER', 'USEPXEMNGR', False) == 'True')
-    pxemngr_url = config_get('SERVER', 'PXEMNGRURL', None)
-
-    if use_pxemngr:
-        register_pxemngr(filename_and_macs)
-
-    if use_pxemngr:
-        print '''
-run('curl -s %slocalboot/')
-''' % pxemngr_url
 
 if __name__ == "__main__":
     main()

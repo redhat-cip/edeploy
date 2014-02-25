@@ -130,10 +130,7 @@ def main():
         except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
             return default
 
-    cfg_dir = os.path.normpath(config_get('SERVER', 'HEALTHDIR',
-            os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                         '..',
-                         'health'))) + '/'
+    cfg_dir = os.path.normpath(config_get('SERVER', 'HEALTHDIR', os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'health'))) + '/'
 
     # parse hw file given in argument or passed to cgi script
     if len(sys.argv) == 3 and sys.argv[1] == '-f':

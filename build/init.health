@@ -30,12 +30,20 @@ tail -f /log > /dev/console &
 tpid=$!
 
 save_results() {
+# If we do have a session name, let's use it
+SESSION_CURL=""
+SESSION_FS=""
+if [ -n "$SESSION" ]; then
+    SESSION_CURL="-F session=$SESSION"
+    SESSION_FS="$SESSION"
+fi
+
 if [ -d /ahcexport ]; then
     step "Exporting benchmark results to local storage"
     # Saving health-check output to the usb key
     DATE=$(date +%Y_%m_%d-%Hh%M)
-    mkdir -p /ahcexport/$DATE/
-    mv /*.hw /ahcexport/$DATE
+    mkdir -p /ahcexport/$SESSION_FS/$DATE/
+    mv /*.hw /ahcexport/$SESSION_FS/$DATE
 fi
 
 ################################################################################
@@ -44,7 +52,7 @@ fi
 ################################################################################
 
 step "Saving benchmark results via server ${SERV}"
-curl -s -S -F file=@/health.py http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload-health.py &
+curl -s -S $SESSION_CURL -F file=@/health.py http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload-health.py &
 #Saving curl's PID
 PID="$!"
 
@@ -58,7 +66,7 @@ log "done"
 SAVE_TO_USB=0
 # Let's save the log status to the usb key
 if [ -d /ahcexport ]; then
-    cp /log /ahcexport/$DATE
+    cp /log /ahcexport/$SESSION_FS/$DATE
     SAVE_TO_USB=1
 fi
 
@@ -160,6 +168,7 @@ eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^[HR]?SERV=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^[HR]?SERV_PORT=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^HTTP_PORT=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^HTTP_PATH=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^SESSION=")
 
 if [ -z "$RSERV" ]; then
     RSERV="$SERV"

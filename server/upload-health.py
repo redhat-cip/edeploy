@@ -153,13 +153,19 @@ def main():
 
     filename_and_macs = generate_filename_and_macs(hw_items)
     dirname = time.strftime("%Y_%m_%d-%Hh%M", time.localtime())
-    try:
-        if not os.path.isdir(cfg_dir+'/'+dirname):
-            os.mkdir(cfg_dir+'/'+dirname)
-    except Exception, excpt:
-        fatal_error("Cannot create %s/%s directory" % (cfg_dir, dirname))
 
-    save_hw(hw_items, filename_and_macs['sysname'], cfg_dir+'/'+dirname)
+    if form.getvalue('session'):
+        dest_dir = cfg_dir + form.getvalue('session') + '/' + dirname
+    else:
+        dest_dir = cfg_dir + '/' + dirname
+
+    try:
+        if not os.path.isdir(dest_dir):
+            os.makedirs(dest_dir)
+    except OSError, e:
+        fatal_error("Cannot create %s directory (%s)" % (dest_dir, e.errno))
+
+    save_hw(hw_items, filename_and_macs['sysname'], dest_dir)
 
 
 if __name__ == "__main__":

@@ -21,6 +21,7 @@ ROLE="$1"
 FROM="$2"
 TO="$3"
 DEST="$4"
+DIST="NODIST"
 
 ORIG=$(cd $(dirname $0); pwd)
 FDIR=${DEST}/install/${FROM}/${ROLE}

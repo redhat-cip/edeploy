@@ -117,6 +117,12 @@ add_rhn_repository() {
 
   check_usage $# 1 "add_rhn_repository <dist>"
 
+  # We shall not care is no real DIST is set
+  # This is used by upgrade-from
+  if [ "$dist" = "NODIST" ]; then
+      return;
+  fi
+
   case "$dist" in
     $supported_redhat_dists)
       if [ -z "$RHN_USERNAME" ] || [ -z "$RHN_PASSWORD" ]; then

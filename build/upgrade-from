@@ -29,11 +29,11 @@ METADATA_DIR=${ORIG}/../metadata/${FROM}/${ROLE}/${TO}
 EXCLUDE_FILE=${METADATA_DIR}/exclude
 ADD_ONLY_FILE=${METADATA_DIR}/add_only
 
-. $ORIG/common
-
 # for compatibility with cleanup and common_setup from common
 dir=${TDIR}
 version=${TO}
+
+. $ORIG/common
 
 setup_add_only() {
     if [ ! -f $ADD_ONLY_FILE ]; then

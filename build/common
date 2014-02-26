@@ -338,6 +338,10 @@ mount_fs() {
 common_setup() {
     trap cleanup 0
 
+    if [ -z "${dir}" ]; then
+        fatal_error "common_setup: dir variable is not set ! Exiting"
+    fi
+
     local git_version=$(git rev-parse HEAD 2>/dev/null || true)
 
     if [ ! -z "$git_version" ]; then

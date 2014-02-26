@@ -259,7 +259,7 @@ cleanup() {
     if [ -f ${dir}/usr/sbin/policy-rc.d ]; then
 	mv ${dir}/usr/sbin/policy-rc.d ${dir}/usr/sbin/policy-rc.d.moved
     fi
-    
+
     if [ "$ret" = "0" ]; then
         if [ -z "$STRIPPED_TARGET" ]; then
             clear_packages_cache $dir

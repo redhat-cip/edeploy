@@ -41,7 +41,7 @@ add_epel_repository() {
   local dist=$1
 
   check_usage $# 1 "add_epel_repository <dist>"
-  
+
   case "$dist" in
     $supported_centos_dists|$supported_redhat_dists)
 	install_packages $dir http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-$EPEL_RELEASE.noarch.rpm
@@ -53,7 +53,7 @@ remove_epel_repository() {
   local dist=$1
 
   check_usage $# 1 "remove_epel_repository <dist>"
-  
+
   case "$dist" in
     $supported_centos_dists|$supported_redhat_dists)
         remove_packages $dir epel-release-$EPEL_RELEASE
@@ -69,7 +69,7 @@ unregister_rhn() {
     local cmd=${ORIG}/remove_system_on_rhn
 
     check_usage $# 2 "unregister_rhn <dist> <target>"
-  
+
     # Let's to the basic tests here
     # This have only a meaning for redhat systems
     case "$dist" in
@@ -103,7 +103,7 @@ add_rhn_channel() {
       local channel=$1
 
       check_usage $# 1 "add_rhn_channel <channel>"
-  
+
       yum_channel=$(echo $channel | rev | cut -d "-" -f 2- | rev)
       yum_channel="${yum_channel}-rpms"
       do_chroot $dir rhn-channel --add --channel=$channel -u $RHN_USERNAME -p $RHN_PASSWORD
@@ -116,7 +116,7 @@ add_rhn_repository() {
   local dist=$1
 
   check_usage $# 1 "add_rhn_repository <dist>"
-  
+
   case "$dist" in
     $supported_redhat_dists)
       if [ -z "$RHN_USERNAME" ] || [ -z "$RHN_PASSWORD" ]; then
@@ -153,7 +153,7 @@ disable_repository() {
     local repository=$1
 
     check_usage $# 1 "disable_repository <repository>"
-    
+
     case "$(package_tool)" in
         apt)
         ;;

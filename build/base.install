@@ -75,7 +75,7 @@ init_redhat_chroot() {
 	     fi
 	     ;;
     esac
-    
+
     rebuild_db $target
 }
 
@@ -84,7 +84,7 @@ bootstrap() {
     local repository=$(add_main_repository $dist)
 
     rm -rf $target
-    
+
     mount_fs
     # Use debootstrap for debian based distribution
     if [ "$(package_type)" = "deb" ]; then
@@ -211,7 +211,7 @@ install_megacli() {
 	  else
 	      echo "NO MEGACLI ARCHIVE AVAILABLE: download it from www.lsi.com" 1>&2
 	  fi
-	  ;;      
+	  ;;
   esac
 }
 

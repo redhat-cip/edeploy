@@ -103,6 +103,14 @@ class TestUpload(unittest.TestCase):
             2 * 253,
             result)
 
+    def test_generate_invalid(self):
+        result = upload.generate({'hostname': '10.0.1-2.2-254',
+                                  'version': 'D7-H.1.0.0'})
+        self.assertEqual(
+            len(result),
+            2 * 253,
+            result)
+
     def test_generate_list(self):
         result = upload.generate({'hostname': ('hosta', 'hostb', 'hostc')})
         self.assertEqual(

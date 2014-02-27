@@ -44,8 +44,6 @@ import time
 
 import matcher
 
-_RANGE_REGEXP = re.compile('^(.*?)([0-9]+-[0-9]+(:([0-9]+-[0-9]+))*)(.*)$')
-
 
 def _generate_range(num_range):
     'Generate number for range specified like 10-12:20-30.'
@@ -65,16 +63,21 @@ def _generate_range(num_range):
             yield num_range
 
 
+_RANGE_REGEXP = re.compile(r'^(.*?)([0-9]+-[0-9]+(:([0-9]+-[0-9]+))*)(.*)$')
+_IPV4_RANGE_REGEXP = re.compile(r'^[0-9:\-.]+$')
+
+
 def _generate_values(pattern):
-    '''Create a generator for range of IPv4 or names with ranges
+    '''Create a generator for ranges of IPv4 or names with ranges
 defined like 10-12:15-18 or from a list of entries.'''
     if isinstance(pattern, list) or isinstance(pattern, tuple):
         for elt in pattern:
             yield elt
     else:
         parts = pattern.split('.')
-        if len(parts) == 4 and (pattern.find(':') != -1 or
-                                pattern.find('-') != -1):
+        if _IPV4_RANGE_REGEXP.search(pattern) and \
+                len(parts) == 4 and (pattern.find(':') != -1 or
+                                     pattern.find('-') != -1):
             gens = [_generate_range(part) for part in parts]
             for part0 in gens[0]:
                 for part1 in gens[1]:
@@ -94,6 +97,7 @@ defined like 10-12:15-18 or from a list of entries.'''
             else:
                 for _ in xrange(16387064):
                     yield pattern
+
 
 STRING_TYPE = type('')
 

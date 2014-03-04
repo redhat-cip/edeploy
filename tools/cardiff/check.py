@@ -48,6 +48,7 @@ def memory_banks(systems):
     sets = search_item(systems, "memory", "bank(.*)")
     compare_sets.print_groups(compare_sets.compare(sets), "Memory Banks(RAM)")
 
+
 def network_interfaces(systems):
     sets = search_item(systems, "network", "(.*)", ['serial', 'ipv4'])
     compare_sets.print_groups(compare_sets.compare(sets), "Network Interfaces")

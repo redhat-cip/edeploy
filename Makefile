@@ -41,7 +41,7 @@ install-build:
 	cp -a build/* $(SHARE_BUILD_DIR)/
 
 test:
-	nosetests src server
+	nosetests src server tools/cardiff
 
 quality: pylint flake8
 

@@ -26,7 +26,7 @@ def print_groups(result, title):
         group = result[element]
         print "%d identical systems :" % (len(group))
         print group
-        for stuff in eval(element):
+        for stuff in sorted(eval(element)):
             print stuff
         print
     print "#####"*2 + "#"*len(title)

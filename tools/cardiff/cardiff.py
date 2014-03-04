@@ -20,22 +20,10 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import os
-import fnmatch
 import sys
 import getopt
 import check
-
-
-def find_file(path, pattern):
-    health_data_file = []
-    # For all the local files
-    for file in os.listdir(path):
-        # If the file math the regexp
-        if fnmatch.fnmatch(file, pattern):
-            # Let's consider this file
-            health_data_file.append(path + "/" + file)
-
-    return health_data_file
+import utils
 
 
 def print_help():
@@ -45,41 +33,21 @@ def print_help():
     print '-p <pattern> or --pattern <pattern> : A pattern in regexp to select input files'
 
 
-def get_item(output, item, item1, item2, item3):
-    if item[0] == item1 and item[1] == item2 and item[2] == item3:
-        output[item3] = item[3]
-        return
-    return
-
-
-# Extract a sub element from the results
-def find_sub_element(bench_values, element):
-    systems = []
-    for bench in bench_values:
-        system = {'serial': ''}
-        stuff = []
-        for line in bench:
-            get_item(system, line, 'system', 'product', 'serial')
-            if element in line[0]:
-                stuff.append(line)
-
-        system[element] = stuff
-        systems.append(system)
-    return systems
-
-
 def compare_disks(bench_values):
-    systems = find_sub_element(bench_values, 'disk')
+    systems = utils.find_sub_element(bench_values, 'disk')
     check.physical_disks(systems)
     check.logical_disks(systems)
 
+
 def compare_systems(bench_values):
-    systems = find_sub_element(bench_values, 'system')
+    systems = utils.find_sub_element(bench_values, 'system')
     check.systems(systems)
 
+
 def compare_firmware(bench_values):
-    systems = find_sub_element(bench_values, 'firmware')
+    systems = utils.find_sub_element(bench_values, 'firmware')
     check.firmware(systems)
+
 
 def main(argv):
     pattern = ''
@@ -111,7 +79,7 @@ def main(argv):
         print "Error: the path %s doesn't exists !" % path
         sys.exit(2)
 
-    health_data_file = find_file(path, pattern)
+    health_data_file = utils.find_file(path, pattern)
     if len(health_data_file) == 0:
         print "No log file found with pattern %s!" % pattern
         sys.exit(1)

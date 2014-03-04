@@ -49,6 +49,12 @@ def compare_firmware(bench_values):
     check.firmware(systems)
 
 
+def compare_memory(bench_values):
+    systems = utils.find_sub_element(bench_values, 'memory')
+    check.memory_timing(systems)
+    check.memory_banks(systems)
+
+
 def main(argv):
     pattern = ''
     try:
@@ -93,6 +99,7 @@ def main(argv):
     compare_disks(bench_values)
     compare_systems(bench_values)
     compare_firmware(bench_values)
+    compare_memory(bench_values)
 
 #Main
 if __name__ == "__main__":

@@ -37,3 +37,13 @@ def systems(systems):
 def firmware(systems):
     sets = search_item(systems, "firmware", "(.*)")
     compare_sets.print_groups(compare_sets.compare(sets), "Firmware")
+
+
+def memory_timing(systems):
+    sets = search_item(systems, "memory", "DDR(.*)")
+    compare_sets.print_groups(compare_sets.compare(sets), "Memory Timing(RAM)")
+
+
+def memory_banks(systems):
+    sets = search_item(systems, "memory", "bank(.*)")
+    compare_sets.print_groups(compare_sets.compare(sets), "Memory Banks(RAM)")

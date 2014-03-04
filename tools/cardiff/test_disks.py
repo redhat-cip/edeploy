@@ -29,6 +29,91 @@ def load_samples(bench_values):
 
 class TestDetect(unittest.TestCase):
 
+    def test_cpu(self):
+        l = []
+        load_samples(l)
+        result = compare_sets.compare(check.search_item(utils.find_sub_element(l, 'cpu'), "cpu", "(.*)", ['bogomips', 'loops_per_sec', 'bandwidth', 'cache_size']))
+        self.assertEqual(
+            result,
+            {"set([('cpu', 'physical_0', 'cores', '8'), \
+('cpu', 'physical_1', 'clock', '100000000'), \
+('cpu', 'physical_0', 'physid', '400'), \
+('cpu', 'physical_0', 'clock', '100000000'), \
+('cpu', 'physical_1', 'frequency', '2000000000'), \
+('cpu', 'physical_0', 'threads', '16'), \
+('cpu', 'physical_1', 'physid', '401'), \
+('cpu', 'physical_0', 'product', 'Intel(R) Xeon(R) CPU E5-2650 0 @ 2.00GHz'), \
+('cpu', 'physical_1', 'vendor', 'Intel Corp.'), \
+('cpu', 'physical', 'number', '2'), \
+('cpu', 'physical_0', 'enabled_cores', '8'), \
+('cpu', 'physical_1', 'product', 'Intel(R) Xeon(R) CPU E5-2650 0 @ 2.00GHz'), \
+('cpu', 'physical_0', 'vendor', 'Intel Corp.'), \
+('cpu', 'physical_1', 'threads', '16'), \
+('cpu', 'physical_0', 'frequency', '2000000000'), \
+('cpu', 'physical_1', 'enabled_cores', '8'), \
+('cpu', 'physical_1', 'cores', '8'), \
+('cpu', 'logical', 'number', '32')])": ['CZ3404YWP4', 'CZ3404YWNW', 'CZ3404YWP6', 'CZ3404YWNR', 'CZ3404YWP2', 'CZ3404YWPS', 'CZ3404YWP8', 'CZ3404YWPX', 'CZ3404YWNT', 'CZ3404YWR0', 'CZ3404YWPE', 'CZ3404YWPA', 'CZ3404YWPP', 'CZ3404YWPC', 'CZ3404YWNN', 'CZ3404YWPM', 'CZ3404YWPV', 'CZ3404YWPH', 'CZ3404YWPK']})
+
+    def test_network_interfaces(self):
+        l = []
+        load_samples(l)
+        result = compare_sets.compare(check.search_item(utils.find_sub_element(l, 'network'),  "network", "(.*)", ['serial', 'ipv4']))
+        self.assertEqual(
+            result,
+            {"set([('network', 'eth0', 'duplex', 'full'), \
+('network', 'eth0', 'latency', '0'), \
+('network', 'eth1', 'autonegotiation', 'on'), \
+('network', 'eth1', 'duplex', 'full'), \
+('network', 'eth1', 'link', 'yes'), \
+('network', 'eth1', 'driver', 'be2net'), \
+('network', 'eth1', 'businfo', 'pci@0000:04:00.1'), \
+('network', 'eth0', 'autonegotiation', 'on'), \
+('network', 'eth0', 'businfo', 'pci@0000:04:00.0'), \
+('network', 'eth1', 'latency', '0'), \
+('network', 'eth0', 'driver', 'be2net'), \
+('network', 'eth0', 'link', 'yes')])": ['CZ3404YWP4', 'CZ3404YWNW', 'CZ3404YWP6', 'CZ3404YWNR', 'CZ3404YWP2', 'CZ3404YWPS', 'CZ3404YWP8', 'CZ3404YWPX', 'CZ3404YWNT', 'CZ3404YWR0', 'CZ3404YWPE', 'CZ3404YWPA', 'CZ3404YWPP', 'CZ3404YWPC', 'CZ3404YWNN', 'CZ3404YWPM', 'CZ3404YWPV', 'CZ3404YWPH', 'CZ3404YWPK']})
+
+    def test_memory_timing(self):
+        l = []
+        load_samples(l)
+        result = compare_sets.compare(check.search_item(utils.find_sub_element(l, 'memory'), "memory", "DDR(.*)"))
+        self.assertEqual(
+            result,
+            {"set([('memory', 'DDR_1', 'tWTPr', '31'), \
+('memory', 'DDR_2', 'tFAW', '63'), \
+('memory', 'DDR_2', 'tCL', '11'), \
+('memory', 'DDR_2', 'tRFC', '511'), \
+('memory', 'DDR_2', 'tRRD', '7'), \
+('memory', 'DDR_2', 'B2B', '31'), \
+('memory', 'DDR_0', 'tCL', '11'), \
+('memory', 'DDR_2', 'tRCD', '15'), \
+('memory', 'DDR_1', 'tRAS', '31'), \
+('memory', 'DDR_1', 'tRCD', '15'), \
+('memory', 'DDR', 'type', '3'), \
+('memory', 'DDR_1', 'tRFC', '511'), \
+('memory', 'DDR_2', 'tRTPr', '15'), \
+('memory', 'DDR_0', 'tRAS', '31'), \
+('memory', 'DDR_2', 'tWTPr', '31'), \
+('memory', 'DDR_1', 'tWR', '11'), \
+('memory', 'DDR_0', 'tRTPr', '15'), \
+('memory', 'DDR_1', 'tRRD', '7'), \
+('memory', 'DDR_0', 'tFAW', '63'), \
+('memory', 'DDR_0', 'tRCD', '15'), \
+('memory', 'DDR_1', 'tRP', '15'), \
+('memory', 'DDR_1', 'B2B', '31'), \
+('memory', 'DDR_2', 'tRP', '15'), \
+('memory', 'DDR_0', 'tRFC', '511'), \
+('memory', 'DDR_1', 'tFAW', '63'), \
+('memory', 'DDR_1', 'tRTPr', '15'), \
+('memory', 'DDR_0', 'tRRD', '7'), \
+('memory', 'DDR_0', 'tWR', '11'), \
+('memory', 'DDR_0', 'tWTPr', '31'), \
+('memory', 'DDR_0', 'tRP', '15'), \
+('memory', 'DDR_2', 'tWR', '11'), \
+('memory', 'DDR_1', 'tCL', '11'), \
+('memory', 'DDR_0', 'B2B', '31'), \
+('memory', 'DDR_2', 'tRAS', '31')])": ['CZ3404YWP4', 'CZ3404YWNW', 'CZ3404YWP6', 'CZ3404YWNR', 'CZ3404YWP2', 'CZ3404YWPS', 'CZ3404YWP8', 'CZ3404YWPX', 'CZ3404YWNT', 'CZ3404YWR0', 'CZ3404YWPE', 'CZ3404YWPA', 'CZ3404YWPP', 'CZ3404YWPC', 'CZ3404YWNN', 'CZ3404YWPM', 'CZ3404YWPV', 'CZ3404YWPH', 'CZ3404YWPK']})
+
     def test_firmware(self):
         l = []
         load_samples(l)

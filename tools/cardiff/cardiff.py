@@ -55,6 +55,16 @@ def compare_memory(bench_values):
     check.memory_banks(systems)
 
 
+def compare_network(bench_values):
+    systems = utils.find_sub_element(bench_values, 'network')
+    check.network_interfaces(systems)
+
+
+def compare_cpu(bench_values):
+    systems = utils.find_sub_element(bench_values, 'cpu')
+    check.cpu(systems)
+
+
 def main(argv):
     pattern = ''
     try:
@@ -100,6 +110,8 @@ def main(argv):
     compare_systems(bench_values)
     compare_firmware(bench_values)
     compare_memory(bench_values)
+    compare_network(bench_values)
+    compare_cpu(bench_values)
 
 #Main
 if __name__ == "__main__":

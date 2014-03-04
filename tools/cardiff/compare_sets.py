@@ -1,10 +1,11 @@
 import collections
-import pprint
+
 
 class Machine:
     def __init__(self, name, value):
         self.name = name
         self.value = value
+
 
 def compare(sets):
     machines = []
@@ -19,6 +20,7 @@ def compare(sets):
         to_be_sorted[key].append(value)
 
     return dict(to_be_sorted)
+
 
 def print_groups(result, title):
     print "##### %s #####" % title

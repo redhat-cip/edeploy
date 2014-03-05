@@ -73,6 +73,15 @@ def compare_cpu(bench_values, systems_groups):
     compare_sets.compute_similar_hosts_list(systems_groups, compare_sets.get_hosts_list_from_result(groups))
 
 
+def group_systems(bench_values, systems_groups):
+    compare_disks(bench_values, systems_groups)
+    compare_systems(bench_values, systems_groups)
+    compare_firmware(bench_values, systems_groups)
+    compare_memory(bench_values, systems_groups)
+    compare_network(bench_values, systems_groups)
+    compare_cpu(bench_values, systems_groups)
+
+
 def main(argv):
     pattern = ''
     try:
@@ -116,12 +125,8 @@ def main(argv):
 
     systems_groups = []
     systems_groups.append(utils.get_hosts_list(bench_values))
-    compare_disks(bench_values, systems_groups)
-    compare_systems(bench_values, systems_groups)
-    compare_firmware(bench_values, systems_groups)
-    compare_memory(bench_values, systems_groups)
-    compare_network(bench_values, systems_groups)
-    compare_cpu(bench_values, systems_groups)
+
+    group_systems(bench_values, systems_groups)
     compare_sets.print_systems_groups(systems_groups)
 
 #Main

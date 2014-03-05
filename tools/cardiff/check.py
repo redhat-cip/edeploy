@@ -21,39 +21,55 @@ def search_item(systems, item, regexp, exclude_list=[]):
 
 def physical_disks(systems):
     sets = search_item(systems, "disk", "(\d+)I:(\d+):(\d+)")
-    compare_sets.print_groups(compare_sets.compare(sets), "Physical Disks (HP Controllers)")
+    groups = compare_sets.compare(sets)
+    compare_sets.print_groups(groups, "Physical Disks (HP Controllers)")
+    return groups
 
 
 def logical_disks(systems):
     sets = search_item(systems, "disk", "sd(\S+)", ['simultaneous', 'standalone'])
-    compare_sets.print_groups(compare_sets.compare(sets), "Logical Disks")
+    groups = compare_sets.compare(sets)
+    compare_sets.print_groups(groups, "Logical Disks")
+    return groups
 
 
 def systems(systems):
     sets = search_item(systems, "system", "(.*)", ['serial'])
-    compare_sets.print_groups(compare_sets.compare(sets), "System")
+    groups = compare_sets.compare(sets)
+    compare_sets.print_groups(groups, "System")
+    return groups
 
 
 def firmware(systems):
     sets = search_item(systems, "firmware", "(.*)")
-    compare_sets.print_groups(compare_sets.compare(sets), "Firmware")
+    groups = compare_sets.compare(sets)
+    compare_sets.print_groups(groups, "Firmware")
+    return groups
 
 
 def memory_timing(systems):
     sets = search_item(systems, "memory", "DDR(.*)")
-    compare_sets.print_groups(compare_sets.compare(sets), "Memory Timing(RAM)")
+    groups = compare_sets.compare(sets)
+    compare_sets.print_groups(groups, "Memory Timing(RAM)")
+    return groups
 
 
 def memory_banks(systems):
     sets = search_item(systems, "memory", "bank(.*)")
-    compare_sets.print_groups(compare_sets.compare(sets), "Memory Banks(RAM)")
+    groups = compare_sets.compare(sets)
+    compare_sets.print_groups(groups, "Memory Banks(RAM)")
+    return groups
 
 
 def network_interfaces(systems):
     sets = search_item(systems, "network", "(.*)", ['serial', 'ipv4'])
-    compare_sets.print_groups(compare_sets.compare(sets), "Network Interfaces")
+    groups = compare_sets.compare(sets)
+    compare_sets.print_groups(groups, "Network Interfaces")
+    return groups
 
 
 def cpu(systems):
     sets = search_item(systems, "cpu", "(.*)", ['bogomips', 'loops_per_sec', 'bandwidth', 'cache_size'])
-    compare_sets.print_groups(compare_sets.compare(sets), "Processors")
+    groups = compare_sets.compare(sets)
+    compare_sets.print_groups(groups, "Processors")
+    return groups

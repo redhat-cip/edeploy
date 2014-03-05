@@ -24,6 +24,7 @@ import sys
 import getopt
 import check
 import utils
+import compare_sets
 
 
 def print_help():
@@ -33,36 +34,43 @@ def print_help():
     print '-p <pattern> or --pattern <pattern> : A pattern in regexp to select input files'
 
 
-def compare_disks(bench_values):
+def compare_disks(bench_values, systems_groups):
     systems = utils.find_sub_element(bench_values, 'disk')
-    check.physical_disks(systems)
-    check.logical_disks(systems)
+    groups = check.physical_disks(systems)
+    compare_sets.compute_similar_hosts_list(systems_groups, compare_sets.get_hosts_list_from_result(groups))
+    groups = check.logical_disks(systems)
+    compare_sets.compute_similar_hosts_list(systems_groups, compare_sets.get_hosts_list_from_result(groups))
 
 
-def compare_systems(bench_values):
+def compare_systems(bench_values, systems_groups):
     systems = utils.find_sub_element(bench_values, 'system')
-    check.systems(systems)
+    groups = check.systems(systems)
+    compare_sets.compute_similar_hosts_list(systems_groups, compare_sets.get_hosts_list_from_result(groups))
 
 
-def compare_firmware(bench_values):
+def compare_firmware(bench_values, systems_groups):
     systems = utils.find_sub_element(bench_values, 'firmware')
-    check.firmware(systems)
+    groups = check.firmware(systems)
+    compare_sets.compute_similar_hosts_list(systems_groups, compare_sets.get_hosts_list_from_result(groups))
 
 
-def compare_memory(bench_values):
+def compare_memory(bench_values, systems_groups):
     systems = utils.find_sub_element(bench_values, 'memory')
     check.memory_timing(systems)
-    check.memory_banks(systems)
+    groups = check.memory_banks(systems)
+    compare_sets.compute_similar_hosts_list(systems_groups, compare_sets.get_hosts_list_from_result(groups))
 
 
-def compare_network(bench_values):
+def compare_network(bench_values, systems_groups):
     systems = utils.find_sub_element(bench_values, 'network')
-    check.network_interfaces(systems)
+    groups = check.network_interfaces(systems)
+    compare_sets.compute_similar_hosts_list(systems_groups, compare_sets.get_hosts_list_from_result(groups))
 
 
-def compare_cpu(bench_values):
+def compare_cpu(bench_values, systems_groups):
     systems = utils.find_sub_element(bench_values, 'cpu')
-    check.cpu(systems)
+    groups = check.cpu(systems)
+    compare_sets.compute_similar_hosts_list(systems_groups, compare_sets.get_hosts_list_from_result(groups))
 
 
 def main(argv):
@@ -106,12 +114,15 @@ def main(argv):
     for health in health_data_file:
         bench_values.append(eval(open(health).read()))
 
-    compare_disks(bench_values)
-    compare_systems(bench_values)
-    compare_firmware(bench_values)
-    compare_memory(bench_values)
-    compare_network(bench_values)
-    compare_cpu(bench_values)
+    systems_groups = []
+    systems_groups.append(utils.get_hosts_list(bench_values))
+    compare_disks(bench_values, systems_groups)
+    compare_systems(bench_values, systems_groups)
+    compare_firmware(bench_values, systems_groups)
+    compare_memory(bench_values, systems_groups)
+    compare_network(bench_values, systems_groups)
+    compare_cpu(bench_values, systems_groups)
+    compare_sets.print_systems_groups(systems_groups)
 
 #Main
 if __name__ == "__main__":

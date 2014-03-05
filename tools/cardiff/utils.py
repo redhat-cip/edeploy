@@ -21,6 +21,22 @@ def get_item(output, item, item1, item2, item3):
     return
 
 
+def dump_item(output, item, item1, item2, item3):
+    if item[0] == item1 and item[1] == item2 and item[2] == item3:
+        output.add(item[3])
+        return
+    return
+
+
+def get_hosts_list(bench_values):
+    systems = set()
+    for bench in bench_values:
+        for line in bench:
+            dump_item(systems, line, 'system', 'product', 'serial')
+
+    return systems
+
+
 # Extract a sub element from the results
 def find_sub_element(bench_values, element):
     systems = []

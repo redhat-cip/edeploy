@@ -119,13 +119,17 @@ def main(argv):
     else:
         print "%d files Selected with pattern '%s'" % (len(health_data_file), pattern)
 
+    # Extract data from the hw files
     bench_values = []
     for health in health_data_file:
         bench_values.append(eval(open(health).read()))
 
+    # Extracting the host list from the data to get
+    # the initial list of hosts. We have here a single group with all the servers
     systems_groups = []
     systems_groups.append(utils.get_hosts_list(bench_values))
 
+    # Let's create groups of similar servers
     group_systems(bench_values, systems_groups)
     compare_sets.print_systems_groups(systems_groups)
 

@@ -2,7 +2,7 @@ import re
 import compare_sets
 
 
-def search_item(systems, item, regexp, exclude_list=[]):
+def search_item(systems, item, regexp, exclude_list=[], include_list=[]):
     sets = {}
     for system in systems:
         sets[system['serial']] = set()
@@ -10,7 +10,19 @@ def search_item(systems, item, regexp, exclude_list=[]):
         for stuff in system[item]:
             m = re.match(regexp, stuff[1])
             if m:
-                shall_be_excluded = False
+                # If we have an include_list, only those shall be used
+                # So everything is exclude by default
+                if len(include_list) > 0:
+                    shall_be_excluded = True
+                else:
+                    shall_be_excluded = False
+
+                for include in include_list:
+                    if include in stuff[2]:
+                        # If something is part of the include list
+                        # It is no more excluded
+                        shall_be_excluded = False
+
                 for exclude in exclude_list:
                     if exclude in stuff[2]:
                         shall_be_excluded = True

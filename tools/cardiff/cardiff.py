@@ -82,6 +82,12 @@ def group_systems(bench_values, systems_groups):
     compare_cpu(bench_values, systems_groups)
 
 
+def compare_performance(bench_values, systems_groups):
+    for group in systems_groups:
+        systems = utils.find_sub_element(bench_values, 'disk', group)
+        check.logical_disks_perf(systems, systems_groups.index(group))
+
+
 def main(argv):
     pattern = ''
     try:
@@ -132,6 +138,9 @@ def main(argv):
     # Let's create groups of similar servers
     group_systems(bench_values, systems_groups)
     compare_sets.print_systems_groups(systems_groups)
+
+    # It's time to compare performance in each group
+    compare_performance(bench_values, systems_groups)
 
 #Main
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
 import re
 import compare_sets
+from pandas import *
 
 
 def search_item(systems, item, regexp, exclude_list=[], include_list=[]):
@@ -43,6 +44,69 @@ def logical_disks(systems):
     groups = compare_sets.compare(sets)
     compare_sets.print_groups(groups, "Logical Disks")
     return groups
+
+
+def compute_variance_percentage(item, df):
+    # If we have a single item
+    # checking the variance is useless
+    if df[item].count() == 1:
+        return 0
+    return (df[item].std() / df[item].mean() * 100)
+
+
+def logical_disks_perf(systems, group_number):
+    print "Group %d : Checking logical disks perf" % group_number
+    sets = search_item(systems, "disk", "sd(\S+)", [], ['simultaneous', 'standalone'])
+    modes = ['standalone_randwrite_4k_IOps', 'standalone_randread_4k_IOps', 'standalone_read_1M_IOps', 'standalone_write_1M_IOps',  'simultaneous_randwrite_4k_IOps', 'simultaneous_randread_4k_IOps', 'simultaneous_read_1M_IOps', 'simultaneous_write_1M_IOps']
+    for mode in modes:
+        results = {}
+        for system in sets:
+            disks = []
+            series = []
+            for perf in sets[system]:
+                if (perf[2] == mode):
+                    if not perf[1] in disks:
+                        disks.append(perf[1])
+                    series.append(int(perf[3]))
+            results[system] = Series(series, index=disks)
+
+        df = DataFrame(results)
+        for disk in df.transpose().columns:
+            # How much the variance could be far from the average (in %)
+            tolerance = 10
+            # In random mode, the variance could be higher as
+            # we cannot insure the distribution pattern was similar
+            if "rand" in mode:
+                tolerance = 15
+
+            variance_group = df.transpose()[disk].std()
+            mean_group = df.transpose()[disk].mean()
+            min_group = mean_group - 2*variance_group
+            max_group = mean_group + 2*variance_group
+
+            print "%-32s: INFO    : %s : Group performance : min=%7.2f, mean=%7.2f, max=%7.2f, stddev=%7.2f" % (mode, disk, min_group, mean_group, max_group, variance_group)
+
+            variance_tolerance = compute_variance_percentage(disk, df.transpose())
+            if (variance_tolerance > tolerance):
+                print "%-32s: ERROR   : %s : Group's variance is too important : %7.2f%% of %7.2f whereas limit is set to %3.2f%%" % (mode, disk, variance_tolerance, mean_group, tolerance)
+                print "%-32s: ERROR   : %s : Group performance : UNSTABLE" % (mode, disk)
+            else:
+                curious_performance = False
+                for host in df.columns:
+                    mean_host = df[host][disk].mean()
+                    #print df[host][disk](df.transpose()[disk])
+                    if (mean_host > max_group):
+                        curious_performance = True
+                        print "%-32s: WARNING : %s : %s : Curious overperformance  %.2f : min_group = %.2f, mean_group = %.2f max_group = %.2f" % (mode, disk, host, mean_host, min_group, mean_group, max_group)
+                    elif (mean_host < min_group):
+                        curious_performance = True
+                        print "%-32s: WARNING : %s : %s : Curious underperformance %.2f : min_group = %.2f, mean_group = %.2f max_group = %.2f" % (mode, disk, host, mean_host, min_group, mean_group, max_group)
+
+                if curious_performance is False:
+                    print "%-32s: INFO    : %s : Group performance : CONSISTENT" % (mode, disk)
+                else:
+                    print "%-32s: WARNING : %s : Group performance : SUSPICIOUS" % (mode, disk)
+    print
 
 
 def systems(systems):

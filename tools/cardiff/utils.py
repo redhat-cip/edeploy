@@ -38,7 +38,7 @@ def get_hosts_list(bench_values):
 
 
 # Extract a sub element from the results
-def find_sub_element(bench_values, element):
+def find_sub_element(bench_values, element, hosts=set()):
     systems = []
     for bench in bench_values:
         system = {'serial': ''}
@@ -48,6 +48,8 @@ def find_sub_element(bench_values, element):
             if element in line[0]:
                 stuff.append(line)
 
-        system[element] = stuff
-        systems.append(system)
+        if (len(hosts) == 0) or system['serial'] in hosts:
+            system[element] = stuff
+            systems.append(system)
+
     return systems

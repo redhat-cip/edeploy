@@ -38,8 +38,9 @@ def print_systems_groups(systems_groups):
         total_hosts += len(system)
     print "The %d systems can be grouped in %d groups of identical hardware" % (total_hosts, len(systems_groups))
     for system in systems_groups:
-        print "-> %d Systems :" % len(system)
-        print ', '.join(system)
+        print "Group %d (%d Systems)" % (systems_groups.index(system), len(system))
+        print "-> " + ', '.join(system)
+        print
 
 
 def print_groups(result, title):

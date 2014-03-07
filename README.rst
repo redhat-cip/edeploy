@@ -85,7 +85,7 @@ installation, three possible values :
 ``console`` mode will offer a console on the server once installed.
 
 The ``UPLOAD_LOG`` variable if set to ``1`` on the kernel command line, it
-upload the log file on edeploy's server if the deploiement fails.
+upload the log file on edeploy's server if the deployment fails.
 
 The ``VERBOSE`` variable if set to ``1`` on the kernel command line, it turns on
 the -x of bash to ease the understanding of faulty commands

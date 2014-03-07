@@ -230,6 +230,11 @@ prevent_ctrl_c() {
 cleanup() {
     ret=$?
 
+    if [ $src = $dir ]; then
+	echo "Nested call, exiting"
+	exit $ret
+    fi
+    
     # This part of the code shall never by breaked by a user
     prevent_ctrl_c on
 

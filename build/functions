@@ -31,9 +31,12 @@ check_variables
 
 set -e
 
-echo -n "Copying tree ${src}/ to ${dir}/ "
-rsync -a --delete --numeric-ids ${src}/ ${dir}/
-echo ": done"
+# not nested call check
+if [ ${src} != ${dir} ]; then
+    echo -n "Copying tree ${src}/ to ${dir}/ "
+    rsync -a --delete --numeric-ids ${src}/ ${dir}/
+    echo ": done"
+fi
 
 echo ${ROLE} > ${dir}/etc/hostname
 cat ${SRC}/${ROLE}.exclude >> "$dir/var/lib/edeploy/${version}/exclude"

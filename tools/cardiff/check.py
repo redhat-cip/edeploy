@@ -197,13 +197,14 @@ def cpu_perf(systems, group_number):
         if mode == "loops_per_sec":
             efficiency = {}
             mode_text = 'CPU Effi.'
+
             for system in sets:
                 host_efficiency_full_load = []
                 host_perf = df[system].sum()
                 host_efficiency_full_load.append(global_perf[system] / host_perf * 100)
                 efficiency[system] = Series(host_efficiency_full_load, index=[mode_text])
-            cpu_eff = DataFrame(efficiency)
 
+            cpu_eff = DataFrame(efficiency)
             print_perf(2, cpu_eff.transpose()[mode_text], cpu_eff, mode, mode_text)
 
     print

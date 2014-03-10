@@ -120,7 +120,12 @@ add_rhn_repository() {
   # We shall not care is no real DIST is set
   # This is used by upgrade-from
   if [ "$dist" = "NODIST" ]; then
-      return;
+      return
+  fi
+
+  # Nested call, do not register multiple times
+  if [ "$src" = "$dir" ]; then
+      return
   fi
 
   case "$dist" in

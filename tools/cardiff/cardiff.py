@@ -87,6 +87,10 @@ def compare_performance(bench_values, systems_groups):
         systems = utils.find_sub_element(bench_values, 'disk', group)
         check.logical_disks_perf(systems, systems_groups.index(group))
 
+    for group in systems_groups:
+        systems = utils.find_sub_element(bench_values, 'cpu', group)
+        check.cpu_perf(systems, systems_groups.index(group))
+
 
 def main(argv):
     pattern = ''

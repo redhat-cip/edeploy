@@ -81,10 +81,14 @@ def logical_disks_perf(systems, group_number):
 
             variance_group = df.transpose()[disk].std()
             mean_group = df.transpose()[disk].mean()
-            min_group = mean_group - 2*variance_group
-            max_group = mean_group + 2*variance_group
+            if (2*variance_group < tolerance):
+                min_group = mean_group - mean_group * (1 - tolerance/100)
+                max_group = mean_group + mean_group * (1 - tolerance/100)
+            else:
+                min_group = mean_group - 2*variance_group
+                max_group = mean_group + 2*variance_group
 
-            print "%-32s: INFO    : %s : Group performance : min=%7.2f, mean=%7.2f, max=%7.2f, stddev=%7.2f" % (mode, disk, min_group, mean_group, max_group, variance_group)
+            print "%-32s: INFO    : %s : Group performance : min=%7.2f, mean=%7.2f, max=%7.2f, stddev=%7.2f" % (mode, disk, df.transpose()[disk].min(), mean_group,  df.transpose()[disk].max(), variance_group)
 
             variance_tolerance = compute_variance_percentage(disk, df.transpose())
             if (variance_tolerance > tolerance):
@@ -97,15 +101,15 @@ def logical_disks_perf(systems, group_number):
                     #print df[host][disk](df.transpose()[disk])
                     if (mean_host > max_group):
                         curious_performance = True
-                        print "%-32s: WARNING : %s : %s : Curious overperformance  %.2f : min_group = %.2f, mean_group = %.2f max_group = %.2f" % (mode, disk, host, mean_host, min_group, mean_group, max_group)
+                        print "%-32s: WARNING : %s : %s : Curious overperformance  %.2f : min_allow_group = %.2f, mean_group = %.2f max_allow_group = %.2f" % (mode, disk, host, mean_host, min_group, mean_group, max_group)
                     elif (mean_host < min_group):
                         curious_performance = True
-                        print "%-32s: WARNING : %s : %s : Curious underperformance %.2f : min_group = %.2f, mean_group = %.2f max_group = %.2f" % (mode, disk, host, mean_host, min_group, mean_group, max_group)
+                        print "%-32s: WARNING : %s : %s : Curious underperformance %.2f : min_allow_group = %.2f, mean_group = %.2f max_allow_group = %.2f" % (mode, disk, host, mean_host, min_group, mean_group, max_group)
 
                 if curious_performance is False:
-                    print "%-32s: INFO    : %s : Group performance : CONSISTENT" % (mode, disk)
+                    print "%-32s: INFO    : %s : Group performance = %7.2f  : CONSISTENT" % (mode, disk, mean_group)
                 else:
-                    print "%-32s: WARNING : %s : Group performance : SUSPICIOUS" % (mode, disk)
+                    print "%-32s: WARNING : %s : Group performance = %7.2f  : SUSPICIOUS" % (mode, disk, mean_group)
     print
 
 

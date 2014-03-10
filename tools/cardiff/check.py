@@ -130,15 +130,8 @@ def print_perf(tolerance, item, df, mode, title):
 
     variance_group = item.std()
     mean_group = item.mean()
-
-    # If the variance is below the tolerance, let's only consider the tolerance
-    # That will avoid printing useless WARNING
-    if (2*variance_group < tolerance):
-        min_group = mean_group - mean_group * (1 - tolerance/100)
-        max_group = mean_group + mean_group * (1 - tolerance/100)
-    else:
-        min_group = mean_group - 2*variance_group
-        max_group = mean_group + 2*variance_group
+    min_group = mean_group - 2*variance_group
+    max_group = mean_group + 2*variance_group
 
     print "%-32s: INFO    : %-10s : Group performance : min=%8.2f, mean=%8.2f, max=%8.2f, stddev=%8.2f" % (mode, title, item.min(), mean_group, item.max(), variance_group)
 

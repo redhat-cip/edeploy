@@ -1,3 +1,28 @@
+pin_repository() {
+  local dist=$1
+  local dir=$2
+  local repo=$3
+  local priority=$4
+  local archive=$5
+  local codename=$6
+  local component=$7
+
+  check_usage $# 7 "pin_repository <dist> <chroot> <reponame> <priority> <archive> <codename> <component>"
+
+  if [ ! -z "${repo}" ] && [ ! -z "${priority}" ];then
+    case "$dist" in
+      $supported_debian_dists|$supported_ubuntu_dists)
+        cat > $dir/etc/apt/preferences <<EOF
+Package: *
+Pin: release a=$archive,n=$codename,c=$component
+Pin: origin $repo
+Pin-Priority: $priority
+EOF
+    esac
+  fi
+
+}
+
 add_main_repository() {
   local dist=$1
 

@@ -203,6 +203,64 @@ def cpu_perf(systems, group_number):
                 efficiency[system] = Series(host_efficiency_full_load, index=[mode_text])
 
             cpu_eff = DataFrame(efficiency)
-            print_perf(2, cpu_eff.transpose()[mode_text], cpu_eff, mode, mode_text)
+            print_perf(1, 2, cpu_eff.transpose()[mode_text], cpu_eff, mode, mode_text)
 
     print
+
+
+def memory_perf(systems, group_number):
+    print "Group %d : Checking CPU  perf" % group_number
+    modes = ['1K', '4K', '1M', '16M', '128M', '1G', '2G']
+    sets = search_item(systems, "cpu", "(.*)", [], modes)
+    for mode in modes:
+        real_mode = "Memory benchmark %s" % mode
+        results = {}
+        threaded_perf = dict()
+        forked_perf = dict()
+        for system in sets:
+            memory = []
+            series = []
+            threaded_perf[system] = 0
+            forked_perf[system] = 0
+            for perf in sets[system]:
+                if (mode in perf[2]):
+                    # We shall split individual cpu benchmarking from the global one
+                    if ("logical_" in perf[1]) and (("bandwidth_%s" % mode) in perf[2]):
+                        if (not perf[1] in memory):
+                            memory.append(perf[1])
+                        series.append(float(perf[3]))
+                    elif ("threaded_bandwidth_%s" % mode) in perf[2]:
+                        threaded_perf[system] = float(perf[3])
+                    elif ("forked_bandwidth_%s" % mode) in perf[2]:
+                        forked_perf[system] = float(perf[3])
+            results[system] = Series(series, index=memory)
+
+        df = DataFrame(results)
+        for memory in df.transpose().columns:
+            print_perf(1, 7, df.transpose()[memory], df, real_mode, memory)
+
+        for bench_type in ["threaded", "forked"]:
+            efficiency = {}
+            have_forked_or_threaded = False
+            if ("threaded" in bench_type):
+                mode_text = "Thread effi."
+            else:
+                mode_text = "Forked Effi."
+            for system in sets:
+                host_efficiency_full_load = []
+                host_perf = df[system].sum()
+                if (host_perf > 0) and (threaded_perf[system] > 0) and (forked_perf[system] > 0):
+                    have_forked_or_threaded = True
+                    if ("threaded" in bench_type):
+                        host_efficiency_full_load.append(threaded_perf[system] / host_perf * 100)
+                    else:
+                        host_efficiency_full_load.append(forked_perf[system] / host_perf * 100)
+
+                    efficiency[system] = Series(host_efficiency_full_load, index=[mode_text])
+
+            memory_eff = DataFrame(efficiency)
+            if have_forked_or_threaded is True:
+                print_perf(2, 10, memory_eff.transpose()[mode_text], memory_eff, real_mode, mode_text)
+            else:
+                print "%-32s: INFO    : %-12s : Benchmark not run on this group" % (real_mode, mode_text)
+        print

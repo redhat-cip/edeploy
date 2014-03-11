@@ -136,7 +136,7 @@ def print_perf(tolerance_min, tolerance_max, item, df, mode, title):
     min_group = mean_group - 2*variance_group
     max_group = mean_group + 2*variance_group
 
-    print "%-32s: INFO    : %-10s : Group performance : min=%8.2f, mean=%8.2f, max=%8.2f, stddev=%8.2f" % (mode, title, item.min(), mean_group, item.max(), variance_group)
+    print "%-32s: INFO    : %-12s : Group performance : min=%8.2f, mean=%8.2f, max=%8.2f, stddev=%8.2f" % (mode, title, item.min(), mean_group, item.max(), variance_group)
 
     variance_tolerance = compute_variance_percentage(title, df.transpose())
     if (variance_tolerance > tolerance_max):
@@ -159,12 +159,12 @@ def print_perf(tolerance_min, tolerance_max, item, df, mode, title):
                     print "%-32s: WARNING : %-12s : %s : Curious underperformance %7.2f : min_allow_group = %.2f, mean_group = %.2f max_allow_group = %.2f" % (mode, title, host, mean_host, min_group, mean_group, max_group)
 
         unit = " "
-        if "CPU Effi." in title:
+        if "Effi." in title:
             unit = "%"
         if curious_performance is False:
-            print "%-32s: INFO    : %-10s : Group performance = %7.2f %s : CONSISTENT" % (mode, title, mean_group, unit)
+            print "%-32s: INFO    : %-12s : Group performance = %7.2f %s : CONSISTENT" % (mode, title, mean_group, unit)
         else:
-            print "%-32s: WARNING : %-10s : Group performance = %7.2f %s : SUSPICIOUS" % (mode, title, mean_group, unit)
+            print "%-32s: WARNING : %-12s : Group performance = %7.2f %s : SUSPICIOUS" % (mode, title, mean_group, unit)
 
 
 def cpu_perf(systems, group_number):

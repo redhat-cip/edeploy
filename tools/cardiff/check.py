@@ -73,13 +73,15 @@ def logical_disks_perf(systems, group_number):
         df = DataFrame(results)
         for disk in df.transpose().columns:
             # How much the variance could be far from the average (in %)
-            tolerance = 10
+            tolerance_max = 10
+            tolerance_min = 2
             # In random mode, the variance could be higher as
             # we cannot insure the distribution pattern was similar
             if "rand" in mode:
-                tolerance = 15
+                tolerance_min = 5
+                tolerance_max = 15
 
-            print_perf(tolerance, df.transpose()[disk], df, mode, disk)
+            print_perf(tolerance_min, tolerance_max, df.transpose()[disk], df, mode, disk)
     print
 
 
@@ -125,8 +127,9 @@ def cpu(systems):
     return groups
 
 
-def print_perf(tolerance, item, df, mode, title):
-    # Tolerance represents how much the variance could be far from the average (in %)
+def print_perf(tolerance_min, tolerance_max, item, df, mode, title):
+    # Tolerance_min represents the min where variance shall be considered (in %)
+    # Tolerance_max represents the maximum that variance represent regarding the average (in %)
 
     variance_group = item.std()
     mean_group = item.mean()
@@ -136,9 +139,9 @@ def print_perf(tolerance, item, df, mode, title):
     print "%-32s: INFO    : %-10s : Group performance : min=%8.2f, mean=%8.2f, max=%8.2f, stddev=%8.2f" % (mode, title, item.min(), mean_group, item.max(), variance_group)
 
     variance_tolerance = compute_variance_percentage(title, df.transpose())
-    if (variance_tolerance > tolerance):
-        print "%-32s: ERROR   : %-10s : Group's variance is too important : %7.2f%% of %7.2f whereas limit is set to %3.2f%%" % (mode, title, variance_tolerance, mean_group, tolerance)
-        print "%-32s: ERROR   : %-10s : Group performance : UNSTABLE" % (mode, title)
+    if (variance_tolerance > tolerance_max):
+        print "%-32s: ERROR   : %-12s : Group's variance is too important : %7.2f%% of %7.2f whereas limit is set to %3.2f%%" % (mode, title, variance_tolerance, mean_group, tolerance_max)
+        print "%-32s: ERROR   : %-12s : Group performance : UNSTABLE" % (mode, title)
     else:
         curious_performance = False
         for host in df.columns:
@@ -146,12 +149,14 @@ def print_perf(tolerance, item, df, mode, title):
                 mean_host = df[host][title].mean()
             else:
                 mean_host = df[host].mean()
-            if (mean_host > max_group):
-                curious_performance = True
-                print "%-32s: WARNING : %-10s : %s : Curious overperformance  %7.2f : min_allow_group = %.2f, mean_group = %.2f max_allow_group = %.2f" % (mode, title, host, mean_host, min_group, mean_group, max_group)
-            elif (mean_host < min_group):
-                curious_performance = True
-                print "%-32s: WARNING : %-10s : %s : Curious underperformance %7.2f : min_allow_group = %.2f, mean_group = %.2f max_allow_group = %.2f" % (mode, title, host, mean_host, min_group, mean_group, max_group)
+            # If the variance is very low, don't try to find the black sheep
+            if (variance_tolerance > tolerance_min):
+                if (mean_host > max_group):
+                    curious_performance = True
+                    print "%-32s: WARNING : %-12s : %s : Curious overperformance  %7.2f : min_allow_group = %.2f, mean_group = %.2f max_allow_group = %.2f" % (mode, title, host, mean_host, min_group, mean_group, max_group)
+                elif (mean_host < min_group):
+                    curious_performance = True
+                    print "%-32s: WARNING : %-12s : %s : Curious underperformance %7.2f : min_allow_group = %.2f, mean_group = %.2f max_allow_group = %.2f" % (mode, title, host, mean_host, min_group, mean_group, max_group)
 
         unit = " "
         if "CPU Effi." in title:
@@ -185,7 +190,7 @@ def cpu_perf(systems, group_number):
 
         df = DataFrame(results)
         for cpu in df.transpose().columns:
-            print_perf(7, df.transpose()[cpu], df, mode, cpu)
+            print_perf(1, 7, df.transpose()[cpu], df, mode, cpu)
 
         if mode == "loops_per_sec":
             efficiency = {}

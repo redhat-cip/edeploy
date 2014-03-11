@@ -20,7 +20,7 @@ import unittest
 import utils
 import check
 import compare_sets
-
+from sets import Set
 
 def load_samples(bench_values):
     for health in utils.find_file('tools/cardiff/sample', '*.hw_'):
@@ -34,35 +34,40 @@ class TestDetect(unittest.TestCase):
         load_samples(l)
         result = compare_sets.compare(check.search_item(utils.find_sub_element(l, 'cpu'), "cpu", "(.*)", ['bogomips', 'loops_per_sec', 'bandwidth', 'cache_size']))
         self.maxDiff = None
-        self.assertEqual(
-            result,
-            {"set([('cpu', 'physical_0', 'cores', '8'), \
-('cpu', 'physical_1', 'clock', '100000000'), \
-('cpu', 'physical_0', 'physid', '400'), \
-('cpu', 'physical_0', 'clock', '100000000'), \
-('cpu', 'physical_1', 'frequency', '2000000000'), \
-('cpu', 'physical_0', 'threads', '16'), \
-('cpu', 'physical_1', 'physid', '401'), \
-('cpu', 'physical_0', 'product', 'Intel(R) Xeon(R) CPU E5-2650 0 @ 2.00GHz'), \
-('cpu', 'physical_1', 'vendor', 'Intel Corp.'), \
-('cpu', 'physical', 'number', '2'), \
-('cpu', 'physical_0', 'enabled_cores', '8'), \
-('cpu', 'physical_1', 'product', 'Intel(R) Xeon(R) CPU E5-2650 0 @ 2.00GHz'), \
-('cpu', 'physical_0', 'vendor', 'Intel Corp.'), \
-('cpu', 'physical_1', 'threads', '16'), \
-('cpu', 'physical_0', 'frequency', '2000000000'), \
-('cpu', 'physical_1', 'enabled_cores', '8'), \
-('cpu', 'physical_1', 'cores', '8'), \
-('cpu', 'logical', 'number', '32')])": ['CZ3404YWP4', 'CZ3404YWNW', 'CZ3404YWP6', 'CZ3404YWNR', 'CZ3404YWP2', 'CZ3404YWPS', 'CZ3404YWP8', 'CZ3404YWPX', 'CZ3404YWNT', 'CZ3404YWR0', 'CZ3404YWPE', 'CZ3404YWPA', 'CZ3404YWPP', 'CZ3404YWPC', 'CZ3404YWNN', 'CZ3404YWPM', 'CZ3404YWPV', 'CZ3404YWPH', 'CZ3404YWPK']})
+	for element in result:
+	        group = result[element]
+		p = ['CZ3404YWP4', 'CZ3404YWNW', 'CZ3404YWP6', 'CZ3404YWPP', 'CZ3404YWP2', 'CZ3404YWPS', 'CZ3404YWP8', 'CZ3404YWPC', 'CZ3404YWPX', 'CZ3404YWPV', 'CZ3404YWNT', 'CZ3404YWNR', 'CZ3404YWPE', 'CZ3404YWPA', 'CZ3404YWPM', 'CZ3404YWNN', 'CZ3404YWR0', 'CZ3404YWPH', 'CZ3404YWPK']
+	        self.assertEqual(sorted(p), sorted(group))
+		res = Set([('cpu', 'physical_0', 'cores', '8'), ('cpu',\
+'physical_1', 'clock', '100000000'),\
+('cpu', 'physical_0', 'physid', '400'),\
+('cpu', 'physical_0', 'threads', '16'),\
+('cpu', 'physical_1', 'frequency', '2000000000'),\
+('cpu', 'physical_0', 'clock', '100000000'),\
+('cpu', 'physical_0', 'enabled_cores', '8'),\
+('cpu', 'physical_0', 'product', 'Intel(R) Xeon(R) CPU E5-2650 0 @ 2.00GHz'),\
+('cpu', 'physical_1', 'vendor', 'Intel Corp.'),\
+('cpu', 'physical', 'number', '2'),\
+('cpu', 'physical_1', 'physid', '401'),\
+('cpu', 'physical_1', 'product', 'Intel(R) Xeon(R) CPU E5-2650 0 @ 2.00GHz'),\
+('cpu', 'physical_0', 'vendor', 'Intel Corp.'),\
+('cpu', 'physical_1', 'threads', '16'),\
+('cpu', 'physical_0', 'frequency', '2000000000'),\
+('cpu', 'physical_1', 'enabled_cores', '8'),\
+('cpu', 'physical_1', 'cores', '8'),\
+('cpu', 'logical', 'number', '32')])
+		self.assertEqual(sorted(res), sorted(eval(element)))
 
     def test_network_interfaces(self):
         l = []
         load_samples(l)
         result = compare_sets.compare(check.search_item(utils.find_sub_element(l, 'network'),  "network", "(.*)", ['serial', 'ipv4']))
         self.maxDiff = None
-        self.assertEqual(
-            result,
-            {"set([('network', 'eth0', 'duplex', 'full'), \
+	for element in result:
+	        group = result[element]
+		p = ['CZ3404YWP4', 'CZ3404YWNW', 'CZ3404YWP6', 'CZ3404YWNR', 'CZ3404YWP2', 'CZ3404YWPS', 'CZ3404YWP8', 'CZ3404YWPX', 'CZ3404YWNT', 'CZ3404YWR0', 'CZ3404YWPE', 'CZ3404YWPA', 'CZ3404YWPP', 'CZ3404YWPC', 'CZ3404YWNN', 'CZ3404YWPM', 'CZ3404YWPV', 'CZ3404YWPH', 'CZ3404YWPK']
+		self.assertEqual(sorted(p), sorted(group))
+            	res = Set([('network', 'eth0', 'duplex', 'full'), \
 ('network', 'eth0', 'latency', '0'), \
 ('network', 'eth1', 'autonegotiation', 'on'), \
 ('network', 'eth1', 'duplex', 'full'), \
@@ -73,16 +78,20 @@ class TestDetect(unittest.TestCase):
 ('network', 'eth0', 'businfo', 'pci@0000:04:00.0'), \
 ('network', 'eth1', 'latency', '0'), \
 ('network', 'eth0', 'driver', 'be2net'), \
-('network', 'eth0', 'link', 'yes')])": ['CZ3404YWP4', 'CZ3404YWNW', 'CZ3404YWP6', 'CZ3404YWNR', 'CZ3404YWP2', 'CZ3404YWPS', 'CZ3404YWP8', 'CZ3404YWPX', 'CZ3404YWNT', 'CZ3404YWR0', 'CZ3404YWPE', 'CZ3404YWPA', 'CZ3404YWPP', 'CZ3404YWPC', 'CZ3404YWNN', 'CZ3404YWPM', 'CZ3404YWPV', 'CZ3404YWPH', 'CZ3404YWPK']})
+('network', 'eth0', 'link', 'yes')])
+                self.assertEqual(sorted(res), sorted(eval(element)))
+
 
     def test_memory_timing(self):
         l = []
         load_samples(l)
         result = compare_sets.compare(check.search_item(utils.find_sub_element(l, 'memory'), "memory", "DDR(.*)"))
         self.maxDiff = None
-        self.assertEqual(
-            result,
-            {"set([('memory', 'DDR_1', 'tWTPr', '31'), \
+	for element in result:
+	        group = result[element]
+		p = ['CZ3404YWP4', 'CZ3404YWNW', 'CZ3404YWP6', 'CZ3404YWNR', 'CZ3404YWP2', 'CZ3404YWPS', 'CZ3404YWP8', 'CZ3404YWPX', 'CZ3404YWNT', 'CZ3404YWR0', 'CZ3404YWPE', 'CZ3404YWPA', 'CZ3404YWPP', 'CZ3404YWPC', 'CZ3404YWNN', 'CZ3404YWPM', 'CZ3404YWPV', 'CZ3404YWPH', 'CZ3404YWPK']
+		self.assertEqual(sorted(p), sorted(group))
+            	res = Set([('memory', 'DDR_1', 'tWTPr', '31'), \
 ('memory', 'DDR_2', 'tFAW', '63'), \
 ('memory', 'DDR_2', 'tCL', '11'), \
 ('memory', 'DDR_2', 'tRFC', '511'), \
@@ -115,38 +124,47 @@ class TestDetect(unittest.TestCase):
 ('memory', 'DDR_2', 'tWR', '11'), \
 ('memory', 'DDR_1', 'tCL', '11'), \
 ('memory', 'DDR_0', 'B2B', '31'), \
-('memory', 'DDR_2', 'tRAS', '31')])": ['CZ3404YWP4', 'CZ3404YWNW', 'CZ3404YWP6', 'CZ3404YWNR', 'CZ3404YWP2', 'CZ3404YWPS', 'CZ3404YWP8', 'CZ3404YWPX', 'CZ3404YWNT', 'CZ3404YWR0', 'CZ3404YWPE', 'CZ3404YWPA', 'CZ3404YWPP', 'CZ3404YWPC', 'CZ3404YWNN', 'CZ3404YWPM', 'CZ3404YWPV', 'CZ3404YWPH', 'CZ3404YWPK']})
+('memory', 'DDR_2', 'tRAS', '31')])
+                self.assertEqual(sorted(res), sorted(eval(element)))
 
     def test_firmware(self):
         l = []
         load_samples(l)
         result = compare_sets.compare(check.search_item(utils.find_sub_element(l, 'firmware'), "firmware", "(.*)"))
         self.maxDiff = None
-        self.assertEqual(
-            result,
-            {"set([('firmware', 'bios', 'date', '09/18/2013'), \
+	for element in result:
+	        group = result[element]
+		p = ['CZ3404YWP4', 'CZ3404YWNW', 'CZ3404YWP6', 'CZ3404YWNR', 'CZ3404YWP2', 'CZ3404YWPS', 'CZ3404YWP8', 'CZ3404YWPX', 'CZ3404YWNT', 'CZ3404YWR0', 'CZ3404YWPE', 'CZ3404YWPA', 'CZ3404YWPP', 'CZ3404YWPC', 'CZ3404YWNN', 'CZ3404YWPM', 'CZ3404YWPV', 'CZ3404YWPH', 'CZ3404YWPK']
+		self.assertEqual(sorted(p), sorted(group))
+		res = Set([('firmware', 'bios', 'date', '09/18/2013'), \
 ('firmware', 'bios', 'version', 'I31'), \
-('firmware', 'bios', 'vendor', 'HP')])": ['CZ3404YWP4', 'CZ3404YWNW', 'CZ3404YWP6', 'CZ3404YWNR', 'CZ3404YWP2', 'CZ3404YWPS', 'CZ3404YWP8', 'CZ3404YWPX', 'CZ3404YWNT', 'CZ3404YWR0', 'CZ3404YWPE', 'CZ3404YWPA', 'CZ3404YWPP', 'CZ3404YWPC', 'CZ3404YWNN', 'CZ3404YWPM', 'CZ3404YWPV', 'CZ3404YWPH', 'CZ3404YWPK']})
+('firmware', 'bios', 'vendor', 'HP')])
+                self.assertEqual(sorted(res), sorted(eval(element)))
 
     def test_systems(self):
         l = []
         load_samples(l)
         result = compare_sets.compare(check.search_item(utils.find_sub_element(l, 'system'), "system", "(.*)", ['serial']))
         self.maxDiff = None
-        self.assertEqual(
-            result,
-            {"set([('system', 'ipmi', 'channel', '2'), \
+	for element in result:
+	        group = result[element]
+		p = ['CZ3404YWP4', 'CZ3404YWNW', 'CZ3404YWP6', 'CZ3404YWNR', 'CZ3404YWP2', 'CZ3404YWPS', 'CZ3404YWP8', 'CZ3404YWPX', 'CZ3404YWNT', 'CZ3404YWR0', 'CZ3404YWPE', 'CZ3404YWPA', 'CZ3404YWPP', 'CZ3404YWPC', 'CZ3404YWNN', 'CZ3404YWPM', 'CZ3404YWPV', 'CZ3404YWPH', 'CZ3404YWPK']
+		self.assertEqual(sorted(p), sorted(group))
+		res = Set([('system', 'ipmi', 'channel', '2'), \
 ('system', 'product', 'name', 'ProLiant BL460c Gen8 (641016-B21)'), \
-('system', 'product', 'vendor', 'HP')])": ['CZ3404YWP4', 'CZ3404YWNW', 'CZ3404YWP6', 'CZ3404YWNR', 'CZ3404YWP2', 'CZ3404YWPS', 'CZ3404YWP8', 'CZ3404YWPX', 'CZ3404YWNT', 'CZ3404YWR0', 'CZ3404YWPE', 'CZ3404YWPA', 'CZ3404YWPP', 'CZ3404YWPC', 'CZ3404YWNN', 'CZ3404YWPM', 'CZ3404YWPV', 'CZ3404YWPH', 'CZ3404YWPK']})
+('system', 'product', 'vendor', 'HP')])
+                self.assertEqual(sorted(res), sorted(eval(element)))
 
     def test_logical_disks(self):
         l = []
         load_samples(l)
         result = compare_sets.compare(check.search_item(utils.find_sub_element(l, 'disk'), "disk", "sd(\S+)", ['simultaneous', 'standalone']))
         self.maxDiff = None
-        self.assertEqual(
-            result,
-            {"set([('disk', 'sdb', 'Write Cache Enable', '0'), \
+	for element in result:
+	        group = result[element]
+		p = ['CZ3404YWP4', 'CZ3404YWNW', 'CZ3404YWP6', 'CZ3404YWNR', 'CZ3404YWP2', 'CZ3404YWPS', 'CZ3404YWP8', 'CZ3404YWPX', 'CZ3404YWNT', 'CZ3404YWR0', 'CZ3404YWPE', 'CZ3404YWPA', 'CZ3404YWPP', 'CZ3404YWPC', 'CZ3404YWNN', 'CZ3404YWPM', 'CZ3404YWPV', 'CZ3404YWPH', 'CZ3404YWPK']
+		self.assertEqual(sorted(p), sorted(group))
+		res = Set([('disk', 'sdb', 'Write Cache Enable', '0'), \
 ('disk', 'sdb', 'model', 'LOGICAL VOLUME'), \
 ('disk', 'sdb', 'rev', '4.68'), \
 ('disk', 'sdb', 'size', '299'), \
@@ -157,16 +175,20 @@ class TestDetect(unittest.TestCase):
 ('disk', 'sdb', 'Read Cache Disable', '0'), \
 ('disk', 'sda', 'vendor', 'HP'), \
 ('disk', 'sda', 'model', 'LOGICAL VOLUME'), \
-('disk', 'sda', 'size', '299')])": ['CZ3404YWP4', 'CZ3404YWNW', 'CZ3404YWP6', 'CZ3404YWNR', 'CZ3404YWP2', 'CZ3404YWPS', 'CZ3404YWP8', 'CZ3404YWPX', 'CZ3404YWNT', 'CZ3404YWR0', 'CZ3404YWPE', 'CZ3404YWPA', 'CZ3404YWPP', 'CZ3404YWPC', 'CZ3404YWNN', 'CZ3404YWPM', 'CZ3404YWPV', 'CZ3404YWPH', 'CZ3404YWPK']})
+('disk', 'sda', 'size', '299')])
+		self.assertEqual(sorted(res), sorted(eval(element)))
 
     def test_hp_physical_disks(self):
         l = []
         load_samples(l)
         result = compare_sets.compare(check.search_item(utils.find_sub_element(l, 'disk'), "disk", "(\d+)I:(\d+):(\d+)"))
         self.maxDiff = None
-        self.assertEqual(
-            result,
-            {"set([('disk', '1I:1:3', 'size', '1000'), \
+	item = 0
+	for element in result:
+                group = result[element]
+		if item == 0:
+			p = ['CZ3404YWNW']
+			res = Set([('disk', '1I:1:3', 'size', '1000'), \
 ('disk', '1I:1:7', 'slot', '3'), \
 ('disk', '1I:1:2', 'type', 'SATA'), \
 ('disk', '1I:1:8', 'type', 'SATA'), \
@@ -195,10 +217,15 @@ class TestDetect(unittest.TestCase):
 ('disk', '1I:1:7', 'size', '1000'), \
 ('disk', '1I:1:7', 'type', 'SATA'), \
 ('disk', '1I:1:8', 'slot', '3'), \
-('disk', '1I:1:1', 'type', 'SAS')])": ['CZ3404YWNW'], \
-            "set([('disk', '1I:1:2', 'type', 'SAS'), \
+('disk', '1I:1:1', 'type', 'SAS')])
+		else:
+			p = ['CZ3404YWP4', 'CZ3404YWP6', 'CZ3404YWNR', 'CZ3404YWP2', 'CZ3404YWPS', 'CZ3404YWP8', 'CZ3404YWPX', 'CZ3404YWNT', 'CZ3404YWR0', 'CZ3404YWPE', 'CZ3404YWPA', 'CZ3404YWPP', 'CZ3404YWPC', 'CZ3404YWNN', 'CZ3404YWPM', 'CZ3404YWPV', 'CZ3404YWPH', 'CZ3404YWPK']
+			res = Set([('disk', '1I:1:2', 'type', 'SAS'), \
 ('disk', '1I:1:1', 'slot', '0'), \
 ('disk', '1I:1:2', 'size', '300'), \
 ('disk', '1I:1:2', 'slot', '0'), \
 ('disk', '1I:1:1', 'size', '300'), \
-('disk', '1I:1:1', 'type', 'SAS')])": ['CZ3404YWP4', 'CZ3404YWP6', 'CZ3404YWNR', 'CZ3404YWP2', 'CZ3404YWPS', 'CZ3404YWP8', 'CZ3404YWPX', 'CZ3404YWNT', 'CZ3404YWR0', 'CZ3404YWPE', 'CZ3404YWPA', 'CZ3404YWPP', 'CZ3404YWPC', 'CZ3404YWNN', 'CZ3404YWPM', 'CZ3404YWPV', 'CZ3404YWPH', 'CZ3404YWPK']})
+('disk', '1I:1:1', 'type', 'SAS')])
+		item = item + 1
+		self.assertEqual(sorted(p), sorted(group))
+		self.assertEqual(sorted(res), sorted(eval(element)))

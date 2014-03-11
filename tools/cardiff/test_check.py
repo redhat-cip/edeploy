@@ -33,6 +33,7 @@ class TestDetect(unittest.TestCase):
         l = []
         load_samples(l)
         result = compare_sets.compare(check.search_item(utils.find_sub_element(l, 'cpu'), "cpu", "(.*)", ['bogomips', 'loops_per_sec', 'bandwidth', 'cache_size']))
+        self.maxDiff = None
         self.assertEqual(
             result,
             {"set([('cpu', 'physical_0', 'cores', '8'), \
@@ -58,6 +59,7 @@ class TestDetect(unittest.TestCase):
         l = []
         load_samples(l)
         result = compare_sets.compare(check.search_item(utils.find_sub_element(l, 'network'),  "network", "(.*)", ['serial', 'ipv4']))
+        self.maxDiff = None
         self.assertEqual(
             result,
             {"set([('network', 'eth0', 'duplex', 'full'), \
@@ -77,6 +79,7 @@ class TestDetect(unittest.TestCase):
         l = []
         load_samples(l)
         result = compare_sets.compare(check.search_item(utils.find_sub_element(l, 'memory'), "memory", "DDR(.*)"))
+        self.maxDiff = None
         self.assertEqual(
             result,
             {"set([('memory', 'DDR_1', 'tWTPr', '31'), \
@@ -118,6 +121,7 @@ class TestDetect(unittest.TestCase):
         l = []
         load_samples(l)
         result = compare_sets.compare(check.search_item(utils.find_sub_element(l, 'firmware'), "firmware", "(.*)"))
+        self.maxDiff = None
         self.assertEqual(
             result,
             {"set([('firmware', 'bios', 'date', '09/18/2013'), \
@@ -128,16 +132,18 @@ class TestDetect(unittest.TestCase):
         l = []
         load_samples(l)
         result = compare_sets.compare(check.search_item(utils.find_sub_element(l, 'system'), "system", "(.*)", ['serial']))
+        self.maxDiff = None
         self.assertEqual(
             result,
             {"set([('system', 'ipmi', 'channel', '2'), \
 ('system', 'product', 'name', 'ProLiant BL460c Gen8 (641016-B21)'), \
-('system', 'product', 'vendor', 'HP')])": ['CZ3404YWP4', 'CZ3404YWNW', 'CZ3404YWP6', 'CZ3404YWNR', 'CZ3404YWP2', 'CZ3404YWPS', 'CZ3404YWP8', 'CZ3404YWPX', 'CZ3404YWNT', 'CZ3404YWR0', 'CZ3404YWPE', 'CZ3404YWPA', 'CZ3404YWPP', 'CZ3404YWPC', 'CZ3404YWNN', 'CZ3404YWPM', 'CZ3404YWPV', 'CZ3404YWPH', 'CZ3404YWPK']} )
+('system', 'product', 'vendor', 'HP')])": ['CZ3404YWP4', 'CZ3404YWNW', 'CZ3404YWP6', 'CZ3404YWNR', 'CZ3404YWP2', 'CZ3404YWPS', 'CZ3404YWP8', 'CZ3404YWPX', 'CZ3404YWNT', 'CZ3404YWR0', 'CZ3404YWPE', 'CZ3404YWPA', 'CZ3404YWPP', 'CZ3404YWPC', 'CZ3404YWNN', 'CZ3404YWPM', 'CZ3404YWPV', 'CZ3404YWPH', 'CZ3404YWPK']})
 
     def test_logical_disks(self):
         l = []
         load_samples(l)
         result = compare_sets.compare(check.search_item(utils.find_sub_element(l, 'disk'), "disk", "sd(\S+)", ['simultaneous', 'standalone']))
+        self.maxDiff = None
         self.assertEqual(
             result,
             {"set([('disk', 'sdb', 'Write Cache Enable', '0'), \
@@ -157,6 +163,7 @@ class TestDetect(unittest.TestCase):
         l = []
         load_samples(l)
         result = compare_sets.compare(check.search_item(utils.find_sub_element(l, 'disk'), "disk", "(\d+)I:(\d+):(\d+)"))
+        self.maxDiff = None
         self.assertEqual(
             result,
             {"set([('disk', '1I:1:3', 'size', '1000'), \

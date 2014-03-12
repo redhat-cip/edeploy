@@ -67,7 +67,7 @@ install_edeploy() {
     git clone https://github.com/enovance/pxemngr.git
     cd pxemngr/ansible
     # do not start apache in the chroot
-    sed -e 's/service apache2 restart/#/' < pxemngr-install.yml > pxemngr-install2.yml
+    sed -e 's@service apache2 restart@/bin/true@' < pxemngr-install.yml > pxemngr-install2.yml
     ansible-playbook -c chroot -i $t pxemngr-install2.yml
     rm -f pxemngr-install2.yml
     popd

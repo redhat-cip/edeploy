@@ -177,7 +177,7 @@ do_chroot() {
 }
 
 clean_chroot() {
-    for log in $(find $dir/var/log -type f); do
+    for log in $(find $dir/var/log -type f || :); do
 	> $log
     done
 }

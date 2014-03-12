@@ -197,9 +197,18 @@ def print_perf(tolerance_min, tolerance_max, item, df, mode, title, consistent=N
 def print_summary(mode, array, array_name, unit, df):
     if (utils.print_level & utils.Levels.SUMMARY) and (len(array) > 0):
         result = []
+        before = ""
+        after = ""
         for host in array:
             result.append(df[host].mean())
-        utils.do_print(mode, utils.Levels.SUMMARY, "%3d %-10s hosts with %8.2f %-2s as average value and %8.2f standard deviation", len(array), array_name, numpy.mean(result), unit, numpy.std(result))
+        if "unstable" in array_name:
+            before = "\033[1;31m"
+            after = "\033[1;m"
+        if "curious" in array_name:
+            before = "\033[1;33m"
+            after = "\033[1;m"
+
+        utils.do_print(mode, utils.Levels.SUMMARY, "%3d %s%-10s%s hosts with %8.2f %-2s as average value and %8.2f standard deviation", len(array), before, array_name, after, numpy.mean(result), unit, numpy.std(result))
 
 
 def cpu_perf(systems, group_number):

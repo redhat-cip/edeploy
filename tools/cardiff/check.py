@@ -1,5 +1,6 @@
 import re
 import compare_sets
+import utils
 from pandas import *
 
 
@@ -136,12 +137,12 @@ def print_perf(tolerance_min, tolerance_max, item, df, mode, title):
     min_group = mean_group - 2*variance_group
     max_group = mean_group + 2*variance_group
 
-    print "%-32s: INFO    : %-12s : Group performance : min=%8.2f, mean=%8.2f, max=%8.2f, stddev=%8.2f" % (mode, title, item.min(), mean_group, item.max(), variance_group)
+    utils.do_print(mode, utils.Levels.INFO, "%-12s : Group performance : min=%8.2f, mean=%8.2f, max=%8.2f, stddev=%8.2f", title, item.min(), mean_group, item.max(), variance_group)
 
     variance_tolerance = compute_variance_percentage(title, df.transpose())
     if (variance_tolerance > tolerance_max):
-        print "%-32s: ERROR   : %-12s : Group's variance is too important : %7.2f%% of %7.2f whereas limit is set to %3.2f%%" % (mode, title, variance_tolerance, mean_group, tolerance_max)
-        print "%-32s: ERROR   : %-12s : Group performance : UNSTABLE" % (mode, title)
+        utils.do_print(mode, utils.Levels.ERROR, "%-12s : Group's variance is too important : %7.2f%% of %7.2f whereas limit is set to %3.2f%%", title, variance_tolerance, mean_group, tolerance_max)
+        utils.do_print(mode, utils.Levels.ERROR, "%-12s : Group performance : UNSTABLE", title)
     else:
         curious_performance = False
         for host in df.columns:
@@ -153,18 +154,18 @@ def print_perf(tolerance_min, tolerance_max, item, df, mode, title):
             if (variance_tolerance > tolerance_min):
                 if (mean_host > max_group):
                     curious_performance = True
-                    print "%-32s: WARNING : %-12s : %s : Curious overperformance  %7.2f : min_allow_group = %.2f, mean_group = %.2f max_allow_group = %.2f" % (mode, title, host, mean_host, min_group, mean_group, max_group)
+                    utils.do_print(mode, utils.Levels.WARNING, "%-12s : %s : Curious overperformance  %7.2f : min_allow_group = %.2f, mean_group = %.2f max_allow_group = %.2f", title, host, mean_host, min_group, mean_group, max_group)
                 elif (mean_host < min_group):
                     curious_performance = True
-                    print "%-32s: WARNING : %-12s : %s : Curious underperformance %7.2f : min_allow_group = %.2f, mean_group = %.2f max_allow_group = %.2f" % (mode, title, host, mean_host, min_group, mean_group, max_group)
+                    utils.do_print(mode, utils.Levels.WARNING, "%-12s : %s : Curious underperformance %7.2f : min_allow_group = %.2f, mean_group = %.2f max_allow_group = %.2f", title, host, mean_host, min_group, mean_group, max_group)
 
         unit = " "
         if "Effi." in title:
             unit = "%"
         if curious_performance is False:
-            print "%-32s: INFO    : %-12s : Group performance = %7.2f %s : CONSISTENT" % (mode, title, mean_group, unit)
+            utils.do_print(mode, utils.Levels.INFO, "%-12s : Group performance = %7.2f %s : CONSISTENT", title, mean_group, unit)
         else:
-            print "%-32s: WARNING : %-12s : Group performance = %7.2f %s : SUSPICIOUS" % (mode, title, mean_group, unit)
+            utils.do_print(mode, utils.Levels.WARNING, "%-12s : Group performance = %7.2f %s : SUSPICIOUS", title, mean_group, unit)
 
 
 def cpu_perf(systems, group_number):
@@ -262,5 +263,5 @@ def memory_perf(systems, group_number):
             if have_forked_or_threaded is True:
                 print_perf(2, 10, memory_eff.transpose()[mode_text], memory_eff, real_mode, mode_text)
             else:
-                print "%-32s: INFO    : %-12s : Benchmark not run on this group" % (real_mode, mode_text)
+                utils.do_print(real_mode, utils.Levels.WARNING, "%-12s : Benchmark not run on this group", mode_text)
         print

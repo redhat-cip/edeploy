@@ -169,7 +169,7 @@ def print_perf(tolerance_min, tolerance_max, item, df, mode, title):
 
 
 def cpu_perf(systems, group_number):
-    print "Group %d : Checking CPU  perf" % group_number
+    print "Group %d : Checking CPU perf" % group_number
     modes = ['bogomips', 'loops_per_sec']
     sets = search_item(systems, "cpu", "(.*)", [], modes)
     global_perf = dict()
@@ -204,13 +204,17 @@ def cpu_perf(systems, group_number):
                 efficiency[system] = Series(host_efficiency_full_load, index=[mode_text])
 
             cpu_eff = DataFrame(efficiency)
-            print_perf(1, 2, cpu_eff.transpose()[mode_text], cpu_eff, mode, mode_text)
+            print_perf(1, 2, cpu_eff.transpose()[mode_text], cpu_eff, mode, mode_text, consistent, curious, unstable)
+
+            print_summary("CPU Efficiency", consistent, "consistent", '%', cpu_eff)
+            print_summary("CPU Efficiency", curious, "curious", '%', cpu_eff)
+            print_summary("CPU Efficiency", unstable, "unstable", '%', cpu_eff)
 
     print
 
 
 def memory_perf(systems, group_number):
-    print "Group %d : Checking CPU  perf" % group_number
+    print "Group %d : Checking Memory perf" % group_number
     modes = ['1K', '4K', '1M', '16M', '128M', '1G', '2G']
     sets = search_item(systems, "cpu", "(.*)", [], modes)
     for mode in modes:

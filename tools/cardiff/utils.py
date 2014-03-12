@@ -2,6 +2,27 @@ import fnmatch
 import os
 
 
+class Levels:
+    INFO = 1 << 0
+    WARNING = 1 << 1
+    ERROR = 1 << 2
+    message = {INFO: 'INFO', WARNING: 'WARNING', ERROR: 'ERROR'}
+
+
+# Default level is to print everything
+print_level = Levels.INFO | Levels.WARNING | Levels.ERROR
+
+
+def do_print(mode, level, string, *args):
+    global print_level
+    if (level & int(print_level) != level):
+        return
+    final_string = "%-32s: %-8s: " + string
+    final_args = (mode, Levels.message[int(level)])
+    final_args += args
+    print final_string % final_args
+
+
 def find_file(path, pattern):
     health_data_file = []
     # For all the local files

@@ -1,6 +1,7 @@
 import re
 import compare_sets
 import utils
+import numpy
 from pandas import *
 
 
@@ -71,6 +72,9 @@ def logical_disks_perf(systems, group_number):
                     series.append(int(perf[3]))
             results[system] = Series(series, index=disks)
 
+        consistent = []
+        curious = []
+        unstable = []
         df = DataFrame(results)
         for disk in df.transpose().columns:
             # How much the variance could be far from the average (in %)
@@ -82,7 +86,12 @@ def logical_disks_perf(systems, group_number):
                 tolerance_min = 5
                 tolerance_max = 15
 
-            print_perf(tolerance_min, tolerance_max, df.transpose()[disk], df, mode, disk)
+            print_perf(tolerance_min, tolerance_max, df.transpose()[disk], df, mode, disk, consistent, curious, unstable)
+
+        print_summary(mode, consistent, "consistent", "IOps", df)
+        print_summary(mode, curious, "curious", "IOps", df)
+        print_summary(mode, unstable, "unstable", "IOps", df)
+
     print
 
 
@@ -128,7 +137,7 @@ def cpu(systems):
     return groups
 
 
-def print_perf(tolerance_min, tolerance_max, item, df, mode, title):
+def print_perf(tolerance_min, tolerance_max, item, df, mode, title, consistent=None, curious=None, unstable=None):
     # Tolerance_min represents the min where variance shall be considered (in %)
     # Tolerance_max represents the maximum that variance represent regarding the average (in %)
 
@@ -143,6 +152,9 @@ def print_perf(tolerance_min, tolerance_max, item, df, mode, title):
     if (variance_tolerance > tolerance_max):
         utils.do_print(mode, utils.Levels.ERROR, "%-12s : Group's variance is too important : %7.2f%% of %7.2f whereas limit is set to %3.2f%%", title, variance_tolerance, mean_group, tolerance_max)
         utils.do_print(mode, utils.Levels.ERROR, "%-12s : Group performance : UNSTABLE", title)
+        for host in df.columns:
+            if not host in curious:
+                unstable.append(host)
     else:
         curious_performance = False
         for host in df.columns:
@@ -155,9 +167,23 @@ def print_perf(tolerance_min, tolerance_max, item, df, mode, title):
                 if (mean_host > max_group):
                     curious_performance = True
                     utils.do_print(mode, utils.Levels.WARNING, "%-12s : %s : Curious overperformance  %7.2f : min_allow_group = %.2f, mean_group = %.2f max_allow_group = %.2f", title, host, mean_host, min_group, mean_group, max_group)
+                    if not host in curious:
+                        curious.append(host)
+                        if host in consistent:
+                            consistent.remove(host)
                 elif (mean_host < min_group):
                     curious_performance = True
                     utils.do_print(mode, utils.Levels.WARNING, "%-12s : %s : Curious underperformance %7.2f : min_allow_group = %.2f, mean_group = %.2f max_allow_group = %.2f", title, host, mean_host, min_group, mean_group, max_group)
+                    if not host in curious:
+                        curious.append(host)
+                        if host in consistent:
+                            consistent.remove(host)
+                else:
+                    if (not host in consistent) and (not host in curious):
+                        consistent.append(host)
+            else:
+                if (not host in consistent) and (not host in curious):
+                    consistent.append(host)
 
         unit = " "
         if "Effi." in title:
@@ -166,6 +192,14 @@ def print_perf(tolerance_min, tolerance_max, item, df, mode, title):
             utils.do_print(mode, utils.Levels.INFO, "%-12s : Group performance = %7.2f %s : CONSISTENT", title, mean_group, unit)
         else:
             utils.do_print(mode, utils.Levels.WARNING, "%-12s : Group performance = %7.2f %s : SUSPICIOUS", title, mean_group, unit)
+
+
+def print_summary(mode, array, array_name, unit, df):
+    if (utils.print_level & utils.Levels.SUMMARY) and (len(array) > 0):
+        result = []
+        for host in array:
+            result.append(df[host].mean())
+        utils.do_print(mode, utils.Levels.SUMMARY, "%3d %-10s hosts with %8.2f %-2s as average value and %8.2f standard deviation", len(array), array_name, numpy.mean(result), unit, numpy.std(result))
 
 
 def cpu_perf(systems, group_number):
@@ -190,12 +224,22 @@ def cpu_perf(systems, group_number):
             results[system] = Series(series, index=cpu)
 
         df = DataFrame(results)
+        consistent = []
+        curious = []
+        unstable = []
         for cpu in df.transpose().columns:
-            print_perf(1, 7, df.transpose()[cpu], df, mode, cpu)
+            print_perf(1, 7, df.transpose()[cpu], df, mode, cpu, consistent, curious, unstable)
+
+        print_summary(mode, consistent, "consistent", "", df)
+        print_summary(mode, curious, "curious", "", df)
+        print_summary(mode, unstable, "unstable", "", df)
 
         if mode == "loops_per_sec":
             efficiency = {}
             mode_text = 'CPU Effi.'
+            consistent = []
+            curious = []
+            unstable = []
 
             for system in sets:
                 host_efficiency_full_load = []
@@ -240,9 +284,17 @@ def memory_perf(systems, group_number):
                         forked_perf[system] = float(perf[3])
             results[system] = Series(series, index=memory)
 
+        consistent = []
+        curious = []
+        unstable = []
+
         df = DataFrame(results)
         for memory in df.transpose().columns:
-            print_perf(1, 7, df.transpose()[memory], df, real_mode, memory)
+            print_perf(1, 7, df.transpose()[memory], df, real_mode, memory, consistent, curious, unstable)
+
+        print_summary(mode, consistent, "consistent", "MB/s", df)
+        print_summary(mode, curious, "curious", "MB/s", df)
+        print_summary(mode, unstable, "unstable", "MB/s", df)
 
         for bench_type in ["threaded", "forked"]:
             efficiency = {}
@@ -265,7 +317,13 @@ def memory_perf(systems, group_number):
 
             memory_eff = DataFrame(efficiency)
             if have_forked_or_threaded is True:
-                print_perf(2, 10, memory_eff.transpose()[mode_text], memory_eff, real_mode, mode_text)
+                consistent = []
+                curious = []
+                unstable = []
+                print_perf(2, 10, memory_eff.transpose()[mode_text], memory_eff, real_mode, mode_text, consistent, curious, unstable)
+                print_summary(mode + " " + mode_text, consistent, "consistent", "MB/s", memory_eff)
+                print_summary(mode + " " + mode_text, curious, "curious", "MB/s", memory_eff)
+                print_summary(mode + " " + mode_text, unstable, "unstable", "MB/s", memory_eff)
             else:
                 utils.do_print(real_mode, utils.Levels.WARNING, "%-12s : Benchmark not run on this group", mode_text)
         print

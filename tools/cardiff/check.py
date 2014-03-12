@@ -88,9 +88,9 @@ def logical_disks_perf(systems, group_number):
 
             print_perf(tolerance_min, tolerance_max, df.transpose()[disk], df, mode, disk, consistent, curious, unstable)
 
-        print_summary(mode, consistent, "consistent", "IOps", df)
-        print_summary(mode, curious, "curious", "IOps", df)
-        print_summary(mode, unstable, "unstable", "IOps", df)
+            print_summary("%-30s %s" % (mode, disk), consistent, "consistent", "IOps", df)
+            print_summary("%-30s %s" % (mode, disk), curious, "curious", "IOps", df)
+            print_summary("%-30s %s" % (mode, disk), unstable, "unstable", "IOps", df)
 
     print
 

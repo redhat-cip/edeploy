@@ -18,7 +18,7 @@ def do_print(mode, level, string, *args):
     global print_level
     if (level & int(print_level) != level):
         return
-    final_string = "%-32s: %-8s: " + string
+    final_string = "%-34s: %-8s: " + string
     final_args = (mode, Levels.message[int(level)])
     final_args += args
     print final_string % final_args

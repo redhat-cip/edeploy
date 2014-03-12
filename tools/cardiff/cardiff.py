@@ -34,7 +34,7 @@ def print_help():
     print '-p <pattern> or --pattern <pattern> : A pattern in regexp to select input files'
     print '-l <level> or --log-level <level>   : Show only the log levels selected'
     print '                                    :   level is a comma separated list of the following levels'
-    print '                                    :   INFO, ERROR, WARNING'
+    print '                                    :   INFO, ERROR, WARNING, SUMMARY'
 
 
 def compare_disks(bench_values, systems_groups):
@@ -123,6 +123,8 @@ def main(argv):
                 utils.print_level |= int(utils.Levels.WARNING)
             if utils.Levels.message[utils.Levels.ERROR] in arg:
                 utils.print_level |= int(utils.Levels.ERROR)
+            if utils.Levels.message[utils.Levels.SUMMARY] in arg:
+                utils.print_level |= int(utils.Levels.SUMMARY)
             if utils.print_level == 0:
                 print "Error: The log level specified is not part of the supported list !"
                 print "Please check the usage of this tool and retry."

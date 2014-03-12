@@ -19,6 +19,7 @@
 progname="$0"
 TEST_UPGRADE=0
 EDEPLOY_DIR=/var/lib/edeploy
+RPATH=install
 
 if [ -r ${EDEPLOY_DIR}/conf ]; then
     . ${EDEPLOY_DIR}/conf
@@ -67,8 +68,8 @@ function upgrade() {
 
     # If we run a test upgrade, let's just show what the rsync would have change on the server
     if [ "$TEST_UPGRADE" = "1" ]; then
-        rsync --dry-run -av --numeric-ids --delete-after --exclude-from=exclude rsync://${RSERV}:${RSERV_PORT}/install/${TARGET}/${ROLE}/ /
-        rsync --dry-run -av --numeric-ids --ignore-existing --include-from=add_only rsync://${RSERV}:${RSERV_PORT}/install/${TARGET}/${ROLE}/ /
+        rsync --dry-run -av --numeric-ids --delete-after --exclude-from=exclude rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${TARGET}/${ROLE}/ /
+        rsync --dry-run -av --numeric-ids --ignore-existing --include-from=add_only rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${TARGET}/${ROLE}/ /
         return 0
     fi
 
@@ -76,8 +77,8 @@ function upgrade() {
         ./pre
     fi
 
-    rsync -av --numeric-ids --delete-after --exclude-from=exclude rsync://${RSERV}:${RSERV_PORT}/install/${TARGET}/${ROLE}/ / > ${EDEPLOY_DIR}/rsync_${VERS}_${TARGET}.out
-    rsync -av --numeric-ids --ignore-existing --include-from=add_only rsync://${RSERV}:${RSERV_PORT}/install/${TARGET}/${ROLE}/ / >> ${EDEPLOY_DIR}/rsync_${VERS}_${TARGET}.out
+    rsync -av --numeric-ids --delete-after --exclude-from=exclude rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${TARGET}/${ROLE}/ / > ${EDEPLOY_DIR}/rsync_${VERS}_${TARGET}.out
+    rsync -av --numeric-ids --ignore-existing --include-from=add_only rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${TARGET}/${ROLE}/ / >> ${EDEPLOY_DIR}/rsync_${VERS}_${TARGET}.out
 
     set +e
 
@@ -87,7 +88,7 @@ function upgrade() {
     fi
 
     echo -e "\nVersion ${TARGET}\n" > /etc/motd
-    echo -e "VERS=${TARGET}\nROLE=${ROLE}\nRSERV=${RSERV}\nRSERV_PORT=${RSERV_PORT}\n" > ${EDEPLOY_DIR}/conf
+    echo -e "VERS=${TARGET}\nROLE=${ROLE}\nRSERV=${RSERV}\nRSERV_PORT=${RSERV_PORT}\nRPATH=${RPATH}\n" > ${EDEPLOY_DIR}/conf
 
     echo "Upgraded to $TARGET"
 
@@ -116,7 +117,7 @@ function verify() {
         EXCLUDE=--exclude-from=${EDEPLOY_DIR}/$VERS/exclude
     fi
 
-    rsync --dry-run -av --delete-after $EXCLUDE rsync://${RSERV}:${RSERV_PORT}/install/${VERS}/${ROLE}/ /
+    rsync --dry-run -av --delete-after $EXCLUDE rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${VERS}/${ROLE}/ /
 }
 
 function version() {

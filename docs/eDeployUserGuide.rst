@@ -757,8 +757,10 @@ HTTP_PATH            Path to access the upload.py (HTTP_PATH/upload.py)
 HTTP_PORT            HTTP Port to contact the eDeploy server
 HSERV                IP address of the HTTP server for Compressed File transfer
 HSERV_PORT           Port to contact the HTTP server for Compressed File transfer
+HPATH                Path on the HTTP server for Compressed File transfer
 RSERV                IP address of the RSYNC server for Full Directory file transfer
 RSERV_PORT           Port to contact the RSYNC server for Full Directory file transfer
+RPATH                Path on the  RSYNC server for Full Directory file transfer
 ONSUCCESS            Action to take upon successful installation (kexec\|reboot\|halt\|console)
 ONFAILURE            Action to take upon failed installation (console\|halt)
 KEXEC_KERNEL         The version of the expect kernel to be booted with kexec

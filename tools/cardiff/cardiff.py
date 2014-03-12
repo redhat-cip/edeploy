@@ -32,6 +32,9 @@ def print_help():
     print
     print '-h --help                           : Print this help'
     print '-p <pattern> or --pattern <pattern> : A pattern in regexp to select input files'
+    print '-l <level> or --log-level <level>   : Show only the log levels selected'
+    print '                                    :   level is a comma separated list of the following levels'
+    print '                                    :   INFO, ERROR, WARNING'
 
 
 def compare_disks(bench_values, systems_groups):
@@ -99,7 +102,7 @@ def compare_performance(bench_values, systems_groups):
 def main(argv):
     pattern = ''
     try:
-        opts, args = getopt.getopt(argv[1:], "hp:", ['pattern'])
+        opts, args = getopt.getopt(argv[1:], "hp:l:", ['pattern', 'log-level'])
     except getopt.GetoptError:
         print "Error: One of the options passed to the cmdline was not supported"
         print "Please fix your command line or read the help (-h option)"
@@ -109,6 +112,21 @@ def main(argv):
         if opt in ("-p", "--pattern"):
             pattern = arg
             pattern = pattern.replace('\\', '')
+        if opt in ("-l", "--log-level"):
+            if "list" in arg:
+                print_help()
+                sys.exit(2)
+            utils.print_level = 0
+            if utils.Levels.message[utils.Levels.INFO] in arg:
+                utils.print_level |= int(utils.Levels.INFO)
+            if utils.Levels.message[utils.Levels.WARNING] in arg:
+                utils.print_level |= int(utils.Levels.WARNING)
+            if utils.Levels.message[utils.Levels.ERROR] in arg:
+                utils.print_level |= int(utils.Levels.ERROR)
+            if utils.print_level == 0:
+                print "Error: The log level specified is not part of the supported list !"
+                print "Please check the usage of this tool and retry."
+                sys.exit(2)
 
     if not pattern:
         print "Error: Pattern option is mandatory"

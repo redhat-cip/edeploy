@@ -7,7 +7,8 @@ class Levels:
     WARNING = 1 << 1
     ERROR = 1 << 2
     SUMMARY = 1 << 3
-    message = {INFO: 'INFO', WARNING: 'WARNING', ERROR: 'ERROR', SUMMARY: 'SUMMARY'}
+    DETAIL = 1 << 4
+    message = {INFO: 'INFO', WARNING: 'WARNING', ERROR: 'ERROR', SUMMARY: 'SUMMARY', DETAIL: 'DETAIL'}
 
 
 # Default level is to print everything

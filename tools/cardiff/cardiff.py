@@ -32,9 +32,16 @@ def print_help():
     print
     print '-h --help                           : Print this help'
     print '-p <pattern> or --pattern <pattern> : A pattern in regexp to select input files'
-    print '-l <level> or --log-level <level>   : Show only the log levels selected'
+    print '-l <level>   or --log-level <level> : Show only the log levels selected'
     print '                                    :   level is a comma separated list of the following levels'
-    print '                                    :   INFO, ERROR, WARNING, SUMMARY'
+    print '                                    :   INFO, ERROR, WARNING, SUMMARY, DETAIL'
+    print '-g <group> or --group <group>       : Select the target group for DETAIL level (supports regexp)'
+    print '-c <cat>   or --category <cat>      : Select the target category for DETAIL level (supports regexp)'
+    print '-i <item>  or --item <item>         : Select the item for select group with DETAIL level (supports regexp)'
+    print
+    print 'Examples:'
+    print "cardiff.py -p 'sample/*.hw_'  -l DETAIL -g '1' -c 'loops_per_sec' -i 'logical_1.*'"
+    print "cardiff.py -p 'sample/*.hw_'  -l DETAIL -g '1' -c 'standalone_rand.*_4k_IOps' -i 'sd.*'"
 
 
 def compare_disks(bench_values, systems_groups):
@@ -85,24 +92,25 @@ def group_systems(bench_values, systems_groups):
     compare_cpu(bench_values, systems_groups)
 
 
-def compare_performance(bench_values, systems_groups):
+def compare_performance(bench_values, systems_groups, detail):
     for group in systems_groups:
         systems = utils.find_sub_element(bench_values, 'disk', group)
-        check.logical_disks_perf(systems, systems_groups.index(group))
+        check.logical_disks_perf(systems, systems_groups.index(group), detail)
 
     for group in systems_groups:
         systems = utils.find_sub_element(bench_values, 'cpu', group)
-        check.cpu_perf(systems, systems_groups.index(group))
+        check.cpu_perf(systems, systems_groups.index(group), detail)
 
     for group in systems_groups:
         systems = utils.find_sub_element(bench_values, 'cpu', group)
-        check.memory_perf(systems, systems_groups.index(group))
+        check.memory_perf(systems, systems_groups.index(group), detail)
 
 
 def main(argv):
     pattern = ''
+    detail = {'category': '', 'group': '', 'item': ''}
     try:
-        opts, args = getopt.getopt(argv[1:], "hp:l:", ['pattern', 'log-level'])
+        opts, args = getopt.getopt(argv[1:], "hp:l:g:c:i:", ['pattern', 'log-level', 'group', 'category', 'item'])
     except getopt.GetoptError:
         print "Error: One of the options passed to the cmdline was not supported"
         print "Please fix your command line or read the help (-h option)"
@@ -112,7 +120,7 @@ def main(argv):
         if opt in ("-p", "--pattern"):
             pattern = arg
             pattern = pattern.replace('\\', '')
-        if opt in ("-l", "--log-level"):
+        elif opt in ("-l", "--log-level"):
             if "list" in arg:
                 print_help()
                 sys.exit(2)
@@ -125,10 +133,23 @@ def main(argv):
                 utils.print_level |= int(utils.Levels.ERROR)
             if utils.Levels.message[utils.Levels.SUMMARY] in arg:
                 utils.print_level |= int(utils.Levels.SUMMARY)
+            if utils.Levels.message[utils.Levels.DETAIL] in arg:
+                utils.print_level |= int(utils.Levels.DETAIL)
             if utils.print_level == 0:
                 print "Error: The log level specified is not part of the supported list !"
                 print "Please check the usage of this tool and retry."
                 sys.exit(2)
+        elif opt in ("-g", "--group"):
+            detail['group'] = arg
+        elif opt in ("-c", "--category"):
+            detail['category'] = arg
+        elif opt in ("-i", "--item"):
+            detail['item'] = arg
+
+    if ((utils.print_level & utils.Levels.DETAIL) == utils.Levels.DETAIL):
+        if (len(detail['group']) == 0) or (len(detail['category']) == 0) or (len(detail['item']) == 0):
+            print "Error: The DETAIL output requires group, category & item options to be set"
+            sys.exit(2)
 
     if not pattern:
         print "Error: Pattern option is mandatory"
@@ -168,7 +189,7 @@ def main(argv):
     compare_sets.print_systems_groups(systems_groups)
 
     # It's time to compare performance in each group
-    compare_performance(bench_values, systems_groups)
+    compare_performance(bench_values, systems_groups, detail)
 
 #Main
 if __name__ == "__main__":

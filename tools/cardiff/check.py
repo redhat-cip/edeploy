@@ -56,7 +56,47 @@ def compute_variance_percentage(item, df):
     return (df[item].std() / df[item].mean() * 100)
 
 
-def logical_disks_perf(systems, group_number):
+def print_detail(detail_options, details, df, matched_category):
+    if ((utils.print_level & utils.Levels.DETAIL) != utils.Levels.DETAIL):
+        return
+    if len(df.loc[details]) > 0:
+        print
+        print "%-34s: %-8s: %s" % (matched_category[0], utils.Levels.message[utils.print_level], detail_options['item'])
+        print df.loc[details]
+
+
+def prepare_detail(detail_options, group_number, category, item, details, matched_category_to_save):
+    if ((utils.print_level & utils.Levels.DETAIL) != utils.Levels.DETAIL):
+        return
+
+    matched_group = ''
+    matched_category = ''
+    matched_item = ''
+
+    if (detail_options['group'] == str(group_number)):
+            matched_group = str(group_number)
+    elif (re.search(detail_options['group'], str(group_number)) is not None):
+            matched_group = re.search(detail_options['group'], str(group_number)).group()
+
+    if (detail_options['category'] in category):
+        matched_category = category
+    elif (re.search(detail_options['category'], category) is not None):
+        matched_category = re.search(detail_options['category'], category).group()
+
+    if (detail_options['item'] in item):
+        matched_item = item
+    elif (re.search(detail_options['item'], item) is not None):
+        matched_item = re.search(detail_options['item'], item).group()
+
+    if (len(matched_group) > 0) and (len(matched_category) > 0) and (len(matched_item) > 0):
+        details.append(matched_item)
+        if matched_category not in matched_category_to_save:
+            matched_category_to_save.append(matched_category)
+        return matched_category
+    return ""
+
+
+def logical_disks_perf(systems, group_number, detail_options):
     print "Group %d : Checking logical disks perf" % group_number
     sets = search_item(systems, "disk", "sd(\S+)", [], ['simultaneous', 'standalone'])
     modes = ['standalone_randwrite_4k_IOps', 'standalone_randread_4k_IOps', 'standalone_read_1M_IOps', 'standalone_write_1M_IOps',  'simultaneous_randwrite_4k_IOps', 'simultaneous_randread_4k_IOps', 'simultaneous_read_1M_IOps', 'simultaneous_write_1M_IOps']
@@ -73,6 +113,8 @@ def logical_disks_perf(systems, group_number):
             results[system] = Series(series, index=disks)
 
         df = DataFrame(results)
+        details = []
+        matched_category = []
         for disk in df.transpose().columns:
             consistent = []
             curious = []
@@ -88,10 +130,12 @@ def logical_disks_perf(systems, group_number):
 
             print_perf(tolerance_min, tolerance_max, df.transpose()[disk], df, mode, disk, consistent, curious, unstable)
 
+            prepare_detail(detail_options, group_number, mode, disk, details, matched_category)
             print_summary("%-30s %s" % (mode, disk), consistent, "consistent", "IOps", df)
             print_summary("%-30s %s" % (mode, disk), curious, "curious", "IOps", df)
             print_summary("%-30s %s" % (mode, disk), unstable, "unstable", "IOps", df)
 
+        print_detail(detail_options, details, df, matched_category)
     print
 
 
@@ -211,7 +255,7 @@ def print_summary(mode, array, array_name, unit, df):
         utils.do_print(mode, utils.Levels.SUMMARY, "%3d %s%-10s%s hosts with %8.2f %-2s as average value and %8.2f standard deviation", len(array), before, array_name, after, numpy.mean(result), unit, numpy.std(result))
 
 
-def cpu_perf(systems, group_number):
+def cpu_perf(systems, group_number, detail_options):
     print "Group %d : Checking CPU perf" % group_number
     modes = ['bogomips', 'loops_per_sec']
     sets = search_item(systems, "cpu", "(.*)", [], modes)
@@ -236,8 +280,14 @@ def cpu_perf(systems, group_number):
         consistent = []
         curious = []
         unstable = []
+        details = []
+        matched_category = []
+
         for cpu in df.transpose().columns:
             print_perf(2, 7, df.transpose()[cpu], df, mode, cpu, consistent, curious, unstable)
+            prepare_detail(detail_options, group_number, mode, cpu, details, matched_category)
+
+        print_detail(detail_options, details, df, matched_category)
 
         print_summary(mode, consistent, "consistent", "", df)
         print_summary(mode, curious, "curious", "", df)
@@ -249,6 +299,8 @@ def cpu_perf(systems, group_number):
             consistent = []
             curious = []
             unstable = []
+            details = []
+            matched_category = []
 
             for system in sets:
                 host_efficiency_full_load = []
@@ -258,7 +310,9 @@ def cpu_perf(systems, group_number):
 
             cpu_eff = DataFrame(efficiency)
             print_perf(1, 2, cpu_eff.transpose()[mode_text], cpu_eff, mode, mode_text, consistent, curious, unstable)
+            prepare_detail(detail_options, group_number, mode, mode_text, details, matched_category)
 
+            print_detail(detail_options, details, cpu_eff, matched_category)
             print_summary("CPU Efficiency", consistent, "consistent", '%', cpu_eff)
             print_summary("CPU Efficiency", curious, "curious", '%', cpu_eff)
             print_summary("CPU Efficiency", unstable, "unstable", '%', cpu_eff)
@@ -266,7 +320,7 @@ def cpu_perf(systems, group_number):
     print
 
 
-def memory_perf(systems, group_number):
+def memory_perf(systems, group_number, detail_options):
     print "Group %d : Checking Memory perf" % group_number
     modes = ['1K', '4K', '1M', '16M', '128M', '1G', '2G']
     sets = search_item(systems, "cpu", "(.*)", [], modes)
@@ -296,11 +350,16 @@ def memory_perf(systems, group_number):
         consistent = []
         curious = []
         unstable = []
+        details = []
+        matched_category = ''
 
         df = DataFrame(results)
         for memory in df.transpose().columns:
             print_perf(1, 7, df.transpose()[memory], df, real_mode, memory, consistent, curious, unstable)
+            matched_category = []
+            prepare_detail(detail_options, group_number, mode, memory, details, matched_category)
 
+        print_detail(detail_options, details, df, matched_category)
         print_summary(mode, consistent, "consistent", "MB/s", df)
         print_summary(mode, curious, "curious", "MB/s", df)
         print_summary(mode, unstable, "unstable", "MB/s", df)
@@ -324,12 +383,16 @@ def memory_perf(systems, group_number):
 
                     efficiency[system] = Series(host_efficiency_full_load, index=[mode_text])
 
+            details = []
             memory_eff = DataFrame(efficiency)
             if have_forked_or_threaded is True:
                 consistent = []
                 curious = []
                 unstable = []
                 print_perf(2, 10, memory_eff.transpose()[mode_text], memory_eff, real_mode, mode_text, consistent, curious, unstable)
+                matched_category = []
+                prepare_detail(detail_options, group_number, mode, memory, details, matched_category)
+                print_detail(detail_options, details, memory_eff, matched_category)
                 print_summary(mode + " " + mode_text, consistent, "consistent", "MB/s", memory_eff)
                 print_summary(mode + " " + mode_text, curious, "curious", "MB/s", memory_eff)
                 print_summary(mode + " " + mode_text, unstable, "unstable", "MB/s", memory_eff)

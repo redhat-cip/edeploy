@@ -237,7 +237,7 @@ def cpu_perf(systems, group_number):
         curious = []
         unstable = []
         for cpu in df.transpose().columns:
-            print_perf(1, 7, df.transpose()[cpu], df, mode, cpu, consistent, curious, unstable)
+            print_perf(2, 7, df.transpose()[cpu], df, mode, cpu, consistent, curious, unstable)
 
         print_summary(mode, consistent, "consistent", "", df)
         print_summary(mode, curious, "curious", "", df)

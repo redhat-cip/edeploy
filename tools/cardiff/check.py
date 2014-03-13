@@ -72,11 +72,11 @@ def logical_disks_perf(systems, group_number):
                     series.append(int(perf[3]))
             results[system] = Series(series, index=disks)
 
-        consistent = []
-        curious = []
-        unstable = []
         df = DataFrame(results)
         for disk in df.transpose().columns:
+            consistent = []
+            curious = []
+            unstable = []
             # How much the variance could be far from the average (in %)
             tolerance_max = 10
             tolerance_min = 2

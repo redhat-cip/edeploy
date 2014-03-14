@@ -265,7 +265,7 @@ def print_summary(mode, array, array_name, unit, df, item_value=None):
                 if mode == "loops_per_sec" or mode == "bogomips":
                     min_cpu_perf = perf_cpu_tables.get_cpu_min_perf(mode, item_value)
                     if min_cpu_perf == 0:
-                        perf_status = ": " + ORANGE + "NO PERF ENTRY IN DB" + WHITE
+                        perf_status = ": " + ORANGE + "NO PERF ENTRY IN DB" + WHITE + " for " + item_value
                     elif (mean >= min_cpu_perf):
                         perf_status = ": " + GREEN + "PERF OK" + WHITE
                     else:

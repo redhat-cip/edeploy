@@ -3,6 +3,7 @@ import compare_sets
 import utils
 import numpy
 from pandas import *
+import perf_cpu_tables
 
 
 def search_item(systems, item, regexp, exclude_list=[], include_list=[]):
@@ -238,25 +239,49 @@ def print_perf(tolerance_min, tolerance_max, item, df, mode, title, consistent=N
             utils.do_print(mode, utils.Levels.WARNING, "%-12s : Group performance = %7.2f %s : SUSPICIOUS", title, mean_group, unit)
 
 
-def print_summary(mode, array, array_name, unit, df):
+def print_summary(mode, array, array_name, unit, df, item_value=None):
     if (utils.print_level & utils.Levels.SUMMARY) and (len(array) > 0):
         result = []
         before = ""
         after = ""
+        RED = "\033[1;31m"
+        ORANGE = "\033[1;33m"
+        WHITE = "\033[1;m"
+        GREEN = "\033[1;32m"
+
         for host in array:
             result.append(df[host].mean())
         if "unstable" in array_name:
-            before = "\033[1;31m"
-            after = "\033[1;m"
+            before = RED
+            after = WHITE
         if "curious" in array_name:
-            before = "\033[1;33m"
-            after = "\033[1;m"
+            before = ORANGE
+            after = WHITE
 
-        utils.do_print(mode, utils.Levels.SUMMARY, "%3d %s%-10s%s hosts with %8.2f %-2s as average value and %8.2f standard deviation", len(array), before, array_name, after, numpy.mean(result), unit, numpy.std(result))
+        mean = numpy.mean(result)
+        perf_status = ""
+        if array_name == "consistent":
+            if item_value is not None:
+                if mode == "loops_per_sec" or mode == "bogomips":
+                    min_cpu_perf = perf_cpu_tables.get_cpu_min_perf(mode, item_value)
+                    if min_cpu_perf == 0:
+                        perf_status = ": " + ORANGE + "NO PERF ENTRY IN DB" + WHITE
+                    elif (mean >= min_cpu_perf):
+                        perf_status = ": " + GREEN + "PERF OK" + WHITE
+                    else:
+                        perf_status = ": " + RED + "PERF FAIL" + WHITE + " as min perf should have been : " + str(min_cpu_perf)
+        utils.do_print(mode, utils.Levels.SUMMARY, "%3d %s%-10s%s hosts with %8.2f %-2s as average value and %8.2f standard deviation %s", len(array), before, array_name, after, mean, unit, numpy.std(result), perf_status)
 
 
 def cpu_perf(systems, group_number, detail_options):
     print "Group %d : Checking CPU perf" % group_number
+    host_cpu_list = search_item(systems, "cpu", "(.*)", [], ['product'])
+    cpu_type = ''
+    for host in host_cpu_list:
+        for item in host_cpu_list[host]:
+            cpu_type = item[3]
+            break
+
     modes = ['bogomips', 'loops_per_sec']
     sets = search_item(systems, "cpu", "(.*)", [], modes)
     global_perf = dict()
@@ -289,7 +314,7 @@ def cpu_perf(systems, group_number, detail_options):
 
         print_detail(detail_options, details, df, matched_category)
 
-        print_summary(mode, consistent, "consistent", "", df)
+        print_summary(mode, consistent, "consistent", "", df, cpu_type)
         print_summary(mode, curious, "curious", "", df)
         print_summary(mode, unstable, "unstable", "", df)
 

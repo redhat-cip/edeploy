@@ -24,25 +24,25 @@ class TestPerfLevel(unittest.TestCase):
 
     def test_cpu(self):
         cpu_type = "Intel(R) Xeon(R) CPU E5-2650 0 @ 2.00GHz"
-        cpu_perf = perf_cpu_tables.get_cpu_min_perf(cpu_type)
+        cpu_perf = perf_cpu_tables.get_cpu_min_perf("loops_per_sec", cpu_type)
         self.assertEqual(cpu_perf, 456)
 
     def test_cpu1(self):
         cpu_type = "Intel(R) Xeon(R) CPU E5-2650 0 @ 2.20GHz"
-        cpu_perf = perf_cpu_tables.get_cpu_min_perf(cpu_type)
+        cpu_perf = perf_cpu_tables.get_cpu_min_perf("loops_per_sec", cpu_type)
         self.assertEqual(cpu_perf, 420)
 
     def test_cpu2(self):
         cpu_type = "Intel(R) Xeon(R) CPU E5-2750 0 @ 2.20GHz"
-        cpu_perf = perf_cpu_tables.get_cpu_min_perf(cpu_type)
+        cpu_perf = perf_cpu_tables.get_cpu_min_perf("loops_per_sec", cpu_type)
         self.assertEqual(cpu_perf, 400)
 
     def test_cpu3(self):
         cpu_type = "Intel(R) Xeon(R) CPU E7-2750 0 @ 2.20GHz"
-        cpu_perf = perf_cpu_tables.get_cpu_min_perf(cpu_type)
+        cpu_perf = perf_cpu_tables.get_cpu_min_perf("loops_per_sec", cpu_type)
         self.assertEqual(cpu_perf, 300)
 
     def test_cpu4(self):
         cpu_type = "Intel(R) Leon(R) CPU E7-2750 0 @ 2.20GHz"
-        cpu_perf = perf_cpu_tables.get_cpu_min_perf(cpu_type)
+        cpu_perf = perf_cpu_tables.get_cpu_min_perf("loops_per_sec", cpu_type)
         self.assertEqual(cpu_perf, 0)

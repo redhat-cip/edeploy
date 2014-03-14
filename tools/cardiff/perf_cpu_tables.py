@@ -13,7 +13,7 @@ def get_generic_cpu_perf(cpu_struct, cpu_type):
             return 0
 
 
-def get_cpu_min_perf(cpu_type):
+def get_loops_per_sec_cpu_min_perf(cpu_type):
     cpu_struct = {
         "Intel(R) Xeon(R) CPU": 300,
         "Intel(R) Xeon(R) CPU E5-2650 0 @ 2.00GHz": 456,
@@ -21,3 +21,22 @@ def get_cpu_min_perf(cpu_type):
         "Intel(R) Xeon(R) CPU E5": 400}
 
     return get_generic_cpu_perf(cpu_struct, cpu_type)
+
+
+def get_bogomips_cpu_min_perf(cpu_type):
+    cpu_struct = {
+        "Intel(R) Xeon(R) CPU": 3000,
+        "Intel(R) Xeon(R) CPU E5-2650 0 @ 2.00GHz": 4000,
+        "Intel(R) Xeon(R) CPU E5-2650": 4000,
+        "Intel(R) Xeon(R) CPU E5": 3500}
+
+    return get_generic_cpu_perf(cpu_struct, cpu_type)
+
+
+def get_cpu_min_perf(test_type, cpu_type):
+    if "loops_per_sec" in test_type:
+        return get_loops_per_sec_cpu_min_perf(cpu_type)
+    elif "bogomips" in test_type:
+        return get_bogomips_cpu_min_perf(cpu_type)
+    else:
+        return 0

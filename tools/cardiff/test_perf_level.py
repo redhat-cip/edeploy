@@ -25,7 +25,7 @@ class TestPerfLevel(unittest.TestCase):
     def test_cpu(self):
         cpu_type = "Intel(R) Xeon(R) CPU E5-2650 0 @ 2.00GHz"
         cpu_perf = perf_cpu_tables.get_cpu_min_perf("loops_per_sec", cpu_type)
-        self.assertEqual(cpu_perf, 456)
+        self.assertEqual(cpu_perf, 450)
 
     def test_cpu1(self):
         cpu_type = "Intel(R) Xeon(R) CPU E5-2650 0 @ 2.20GHz"

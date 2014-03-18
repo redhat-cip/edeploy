@@ -230,7 +230,7 @@ prevent_ctrl_c() {
 cleanup() {
     ret=$?
 
-    if [ $src = $dir ]; then
+    if [ "$src" = "$dir" ]; then
 	echo "Nested call, exiting"
 	exit $ret
     fi

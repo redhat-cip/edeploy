@@ -23,7 +23,7 @@ if [ $# != 4 ]; then
     exit 1
 fi
 
-SRC="$1"
+src="$1"
 DST="$2"
 RSERV="$3"
 PORT="$4"
@@ -102,7 +102,7 @@ reboot -f
 EOF
 
 scp "$SCR" "$DST":/tmp/
-rsync -e ssh -avP --numeric-ids --delete-after --exclude-from="$EXCL" "$SRC/"  "$DST":/
+rsync -e ssh -avP --numeric-ids --delete-after --exclude-from="$EXCL" "$src/"  "$DST":/
 ssh "$DST" bash /tmp/$(basename $SCR)
 
 # remote-install.sh ends here

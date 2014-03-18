@@ -16,9 +16,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-SRC="$1"
+src="$1"
 IMG="$2"
-VER="$3"
+ver="$3"
 INST="$4"
 SERV="$5"
 HSERV="$6"
@@ -33,7 +33,7 @@ BOOT_MOUNT_POINT=/tmp/$2-$3.tmp
 #TESTING_SYSLINUX=Testing/6.02
 SYSLINUX_VER=5.10
 
-if [ ! -d "$SRC" ]; then
+if [ ! -d "$src" ]; then
    echo "Usage: $0 <source dir> <img> <version> <initrd_path> <ip_serv>" 1>&2
    exit 1
 fi
@@ -68,8 +68,8 @@ prepare_flash_image() {
     step "Prepare flash image"
 
     if [ "$MODE" = "health" ]; then
-        FLASH_IMAGE="$MODE-$VER.img"
-        VDI_IMAGE="$MODE-$VER.vdi"
+        FLASH_IMAGE="$MODE-$ver.img"
+        VDI_IMAGE="$MODE-$ver.vdi"
     fi
 
     if [ ! -e $FLASH_IMAGE ]; then
@@ -167,7 +167,7 @@ mount_flash_fs() {
 copy_os_to_flash() {
     step "Copy OS to flash"
 
-    cp -f ${SRC}/boot/vmlinuz* $BOOT_MOUNT_POINT/vmlinuz
+    cp -f ${src}/boot/vmlinuz* $BOOT_MOUNT_POINT/vmlinuz
     if [ "$MODE" = "health" ]; then
         cp -f ${INST}/health.pxe $BOOT_MOUNT_POINT
     else
@@ -192,7 +192,7 @@ TIMEOUT 100
 PROMPT 1
 UI menu.c32
 DEFAULT SAFE
-MENU TITLE Automatic Health Check ($VER)
+MENU TITLE Automatic Health Check ($ver)
 MENU ROWS 13
 
 LABEL SAFE

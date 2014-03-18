@@ -16,9 +16,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-SRC="$1"
+src="$1"
 DST="$2"
-DST2="$2.tmp"
+dir="$2.tmp"
 IMG="$3"
 vers="$4"
 
@@ -31,23 +31,21 @@ ROLE=health-check
 # This is a stripped target as per rsync
 export STRIPPED_TARGET=1
 
-dir=$DST2
-
 . ${ORIG}/common
 
-if [ ! -d "$SRC" -o -z "$DST" -o -z "$IMG" -o -z "$vers" ]; then
+if [ ! -d "$src" -o -z "$DST" -o -z "$IMG" -o -z "$vers" ]; then
    echo "Usage: $0 <source dir> <dest dir> <initrd to generate> <version>" 1>&2
    exit 1
 fi
 
-mkdir -p $DST2
+mkdir -p $dir
 
 check_variables
 
 set -x
 set -e
 
-rsync -aH --delete-before --numeric-ids ${SRC}/ ${DST2}/
+rsync -aH --delete-before --numeric-ids ${src}/ ${dir}/
 
 common_setup
 
@@ -71,7 +69,7 @@ update_repositories $dir
 install_packages $dir "$PACKAGES"
 clear_packages_cache $dir
 
-install_ib_if_needed $ORIG $DST2
+install_ib_if_needed $ORIG $dir
 
 #Starting here, we don't need the mount points anymore
 clean_mount_points
@@ -137,9 +135,9 @@ rsync -au --delete-excluded --delete --exclude /boot/ \
     --exclude var/lib/rpm \
     --exclude var/lib/yum \
     --exclude 'vmlinuz*' \
-    ${DST2}/ ${DST}
+    ${dir}/ ${DST}
 
-rm -rf ${DST2}
+rm -rf ${dir}
 
 cp -p init.common $DEPS ${PYDIR}/netdetect.py ${PYDIR}/health-check.py ${DST}/
 cp -p init.health ${DST}/init
@@ -163,4 +161,4 @@ cd ${DST}; find . | cpio --quiet -R 0:0 -o -H newc | compress -9v > ../${IMG}
 
 echo "### Build complete ###"
 echo "### initrd is now available at ${DST}/../${IMG}"
-echo "### Don't forget to use the initrd with its associated kernel : $(ls ${SRC}/boot/vmlinuz-*)"
+echo "### Don't forget to use the initrd with its associated kernel : $(ls ${src}/boot/vmlinuz-*)"

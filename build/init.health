@@ -148,6 +148,7 @@ if [ "$DEBUG" = 1 -o "$ONFAILURE" = "console" ]; then
     /etc/init.d/ssh start
 fi
 
+enable_network_links fatal
 probe_network_devices
 
 ip a

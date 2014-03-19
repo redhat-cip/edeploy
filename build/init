@@ -107,6 +107,7 @@ if [ "$DEBUG" = 1 ]; then
     start_ssh_server
 fi
 
+enable_network_links fatal
 probe_network_devices
 
 ip a

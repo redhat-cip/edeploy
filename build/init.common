@@ -300,21 +300,9 @@ probe_pci_devices() {
     sleep 5
 }
 
-probe_network_devices() {
-# Let's wait 30 seconds to get a DHCP answer
-# Default is very very long....
-DHCP_TIMEOUT=30
-DHCP_GRACE_TIME=10
-DHCP_NO_RACETIMING=1
-if [ -f /etc/dhcp/dhclient.conf ]; then
-    sed -i "s/^\#timeout.*/timeout $DHCP_TIMEOUT/g" /etc/dhcp/dhclient.conf
-else
-    echo "timeout $DHCP_TIMEOUT" > /etc/dhcp/dhclient.conf
-fi
 
-MAX_RUN=3
-RUN=0
-while true; do
+enable_network_links() {
+    nolink=$1
     log "Enabling Ethernet Links"
     DEVICE_LIST=
     pushd /sys/class/net >/dev/null
@@ -337,8 +325,29 @@ while true; do
     if [ -z "$DEVICE_LIST" ]; then
         show_kernel_modules
         show_network_cards
-        give_up "No Network interface found !"
+        if [ "$nolink" = "fatal" ]; then
+            give_up "No Network interface found !"
+        fi
     fi
+}
+
+probe_network_devices() {
+# Let's wait 30 seconds to get a DHCP answer
+# Default is very very long....
+DHCP_TIMEOUT=30
+DHCP_GRACE_TIME=10
+DHCP_NO_RACETIMING=1
+if [ -f /etc/dhcp/dhclient.conf ]; then
+    sed -i "s/^\#timeout.*/timeout $DHCP_TIMEOUT/g" /etc/dhcp/dhclient.conf
+else
+    echo "timeout $DHCP_TIMEOUT" > /etc/dhcp/dhclient.conf
+fi
+
+MAX_RUN=3
+RUN=0
+while true; do
+
+    enable_network_links fatal
 
     VALID_IFACES_COUNT=0
     PIDS=

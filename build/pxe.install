@@ -46,7 +46,7 @@ rsync -aH --delete-before --numeric-ids ${src}/ ${dir}/
 
 common_setup
 
-PACKAGES="python-netaddr ethtool sdparm gzip lshw xfsprogs hdparm"
+PACKAGES="python-netaddr python-ipaddr ethtool sdparm gzip lshw xfsprogs hdparm"
 case "$OS" in
     "CentOS"|"RedHatEnterpriseServer")
         add_epel_repository $dir

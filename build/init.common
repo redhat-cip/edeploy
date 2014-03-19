@@ -22,6 +22,17 @@ show_kernel_modules() {
     log "Required kernel modules for $KVER are :$KMODS"
 }
 
+mount_embedded() {
+    if [ ! -d $EMBEDDED_MOUNT ]; then
+        mkdir -p $EMBEDDED_MOUNT
+    fi
+    mount /dev/disk/by-label/edeploy_boot $EMBEDDED_MOUNT
+}
+
+umount_embedded() {
+    umount $EMBEDDED_MOUNT
+}
+
 save_log() {
     exec 1>&3
     exec 2>&4
@@ -73,7 +84,6 @@ upload_log() {
     product=$(dmidecode -s system-product-name | grep -v '#' | sed 's/ *$//g' | tr ' ' '-' | tr -d '\n')
     serial=$(dmidecode -s system-serial-number | grep -v '#' | sed 's/ *$//g' | tr ' ' '-' | tr -d '\n')
     log_file="${vendor}-${product}-${serial}.log.gz"
-    log "Uploading log ($log_file) to server ${SERV}"
 
     # Logging the command line to the log file
     # This is useful to find the context of this execution
@@ -98,8 +108,26 @@ upload_log() {
     echo "############################" >> /log
 
     gzip -9 -c /log > /${log_file}
-    # Uploading log file
-    curl -s -S -o/log.stats -F file=@/${log_file} http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py || true
+    if [ -n "$EMBEDDED" ]; then
+        was_umounted=0
+        # We are maybe on the last path before rebooting
+        # If we need to log we have to be sure the embedded partition is mounted
+        if [ ! -d $EMBEDDED_MOUNT/var/lib/edeploy/config/logs/ ]; then
+            mount_embedded
+            was_umounted=1
+        fi
+
+        log "Saving log ($log_file) to USB key in /var/lib/edeploy/config/logs/"
+        cp $log_file $EMBEDDED_MOUNT/var/lib/edeploy/config/logs/
+
+        if [ "$was_unmounted" = "1" ]; then
+            unmount_embedded
+        fi
+    else
+        # Uploading log file
+        log "Uploading log ($log_file) to server ${SERV}"
+        curl -s -S -o/log.stats -F file=@/${log_file} http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py || true
+    fi
 }
 
 ################################################################################

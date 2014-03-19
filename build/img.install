@@ -16,6 +16,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+LOCAL_PATH=$(dirname $0)
 src="$1"
 IMG="$2"
 ver="$3"
@@ -24,14 +25,16 @@ SERV="$5"
 HSERV="$6"
 DEBUG="$7"
 MODE="$8"
-FLASH_IMAGE="$2-$3.img"
-VDI_IMAGE="$2-$3.vdi"
+FLASH_IMAGE="$IMG-$ver.img"
+VDI_IMAGE="$IMG-$ver.vdi"
 FLASH_SIZE=128 #in Megabytes
 LOOPBACK_BOOT=NONE
 LOOPBACK_DATA=NONE
 BOOT_MOUNT_POINT=/tmp/$2-$3.tmp
 #TESTING_SYSLINUX=Testing/6.02
 SYSLINUX_VER=5.10
+
+. $LOCAL_PATH/img.embedded
 
 if [ ! -d "$src" ]; then
    echo "Usage: $0 <source dir> <img> <version> <initrd_path> <ip_serv>" 1>&2
@@ -133,7 +136,7 @@ prepare_flash_fs() {
     fi
 
     echo "Formatting /boot"
-    mkfs.ext2 -F -L boot $LOOPBACK_BOOT
+    mkfs.ext2 -F -L edeploy_boot $LOOPBACK_BOOT
     tune2fs -i 0 -c 0 $LOOPBACK_BOOT
 
     sync
@@ -176,7 +179,14 @@ copy_os_to_flash() {
 
     if [ -n "$EMBEDDED_OS" ]; then
         mkdir -p $BOOT_MOUNT_POINT/embedded
-        cp -f $EMBEDDED_OS $BOOT_MOUNT_POINT/embedded
+        cp -f $EMBEDDED_OS $BOOT_MOUNT_POINT/embedded/
+        setup_edeploy_conf $BOOT_MOUNT_POINT /etc/ /var/lib/edeploy
+        setup_state_file $BOOT_MOUNT_POINT/var/lib/edeploy/config $(basename $EMBEDDED_ROLE)
+        for extension in cmdb specs configure; do
+            cp -f $EMBEDDED_ROLE.$extension $BOOT_MOUNT_POINT/var/lib/edeploy/config
+        done
+        # Let's setup the included OS as the default one for this role
+        sed -i "s/^set_role.*/set_role('$ROLE_NAME', '$VERSION_ROLE', bootable_disk)/g" $BOOT_MOUNT_POINT/var/lib/edeploy/config/$(basename $EMBEDDED_ROLE).configure
     fi
 }
 
@@ -337,6 +347,10 @@ LABEL DESTRUCTIVE72H
 
 EOF
     else
+if [ -n "$EMBEDDED_OS" ]; then
+    EMBEDDED_STRING="EMBEDDED=1"
+    UPLOAD_LOG=1
+fi
 cat << EOF >> $1/extlinux/extlinux.conf
 TOTALTIMEOUT 10
 PROMPT 0
@@ -345,23 +359,47 @@ DEFAULT FLASH
 LABEL FLASH
         KERNEL /vmlinuz
         INITRD /initrd.pxe
-        APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG UPLOAD_LOG=${UPLOAD_LOG}
-
+        APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG UPLOAD_LOG=${UPLOAD_LOG} $EMBEDDED_STRING ONFAILURE=$ONFAILURE ONSUCCESS=$ONSUCCESS
 EOF
     fi
 }
 
 check_embedded_os() {
-    if [ -n "$EMBEDDED_OS" ]; then
-        step "Checking Embedded OS"
-        if [ ! -f "$EMBEDDED_OS" ]; then
-            fatal_error "EMBEDDED variable should reference an existing file"
-        fi
-        file "$EMBEDDED_OS" | grep -q "gzip compressed data" || fatal_error "EMBEDDED variable shall point a gzipped edeploy file"
-        EMBEDDED_SIZE=$(du -sm $EMBEDDED_OS | awk '{print $1}')
-        FLASH_SIZE=$(( $FLASH_SIZE + $EMBEDDED_SIZE ))
-        echo " -> $EMBEDDED_OS is $EMBEDDED_SIZE MB big"
+    if [ -z "$EMBEDDED_OS" ]; then
+        return
     fi
+
+    step "Checking Embedded OS"
+
+	if [ ! -f "$EMBEDDED_OS" ]; then
+        fatal_error "EMBEDDED variable should reference an existing file"
+    fi
+
+	if [ -z "$EMBEDDED_ROLE" ]; then
+		fatal_error "EMBEDDED_OS requires an EMBEDDED_ROLE"
+	else
+		echo "$EMBEDDED_ROLE" | grep '^/' || fatal_error "EMBBEDED_ROLE shall be an absolute path"
+	fi
+
+	for extension in cmdb specs configure; do
+		if [ ! -f $EMBEDDED_ROLE.$extension ]; then
+			fatal_error "Missing $EMBEDDED_ROLE.$extension file"
+		fi
+	done
+
+	echo " -> Role $(basename $EMBEDDED_ROLE) is ok"
+
+    file "$EMBEDDED_OS" | grep -q "gzip compressed data" || fatal_error "EMBEDDED variable shall point a gzipped edeploy file"
+
+    EMBEDDED_SIZE=$(du -sm $EMBEDDED_OS | awk '{print $1}')
+    FLASH_SIZE=$(( $FLASH_SIZE + $EMBEDDED_SIZE ))
+    echo " -> $EMBEDDED_OS is $EMBEDDED_SIZE MB big"
+
+    ROLE_NAME=$(basename $EMBEDDED_OS | cut -d "-" -f 1)
+    VERSION_ROLE=$(basename $EMBEDDED_OS | cut -d "-" -f 2- | sed 's/.edeploy//g')
+
+    FLASH_IMAGE="$IMG-$ver-with-$ROLE_NAME-$VERSION_ROLE.img"
+    VDI_IMAGE="$IMG-$ver-with-$ROLE_NAME-$VERSION_ROLE.vdi"
 }
 
 umount_flash_fs() {

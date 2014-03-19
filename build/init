@@ -49,6 +49,7 @@ eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^NOREBOOT=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^ONSUCCESS=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^ONFAILURE=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^KEXEC_KERNEL=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^EMBEDDED=")
 
 #compatibilty module
 if [ "$NOREBOOT" = "1" ]; then
@@ -146,23 +147,32 @@ show_kernel_modules
 
 show_git_rev
 
-step "Configuring system via server ${SERV}"
-curl -s -S -o/configure -F file=@/hw.py http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py &
-# Saving curl's PID
-PID="$!"
+if [ -n "$EMBEDDED" ]; then
+    EMBEDDED_MOUNT=/flash
+    export EMBEDDED_MOUNT
+    mount_embedded
+    mkdir -p /etc/
+    cp -a $EMBEDDED_MOUNT/etc/* /etc
+    /upload.py -f /hw.py > /configure
+else
+    step "Configuring system via server ${SERV}"
+    curl -s -S -o/configure -F file=@/hw.py http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py &
+    # Saving curl's PID
+    PID="$!"
 
-log_n "Awaiting eDeploy server :"
-while [ ! -z "$(pidof curl)" ]; do
-    log_n "."
-    sleep 1
-done
-log "done"
+    log_n "Awaiting eDeploy server :"
+    while [ ! -z "$(pidof curl)" ]; do
+        log_n "."
+        sleep 1
+    done
+    log "done"
 
-# Let's grab curl's return code based on it's pid
-wait $PID
-RET_CODE=$?
-if [ "$RET_CODE" != "0" ]; then
-    give_up "Curl exited as failed ($RET_CODE). Cannot get a configuration from http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py'"
+    # Let's grab curl's return code based on it's pid
+    wait $PID
+    RET_CODE=$?
+    if [ "$RET_CODE" != "0" ]; then
+        give_up "Curl exited as failed ($RET_CODE). Cannot get a configuration from http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py'"
+    fi
 fi
 
 if [ ! -f /configure ]; then
@@ -183,7 +193,10 @@ if /configure; then
 
     if [ -n "$ROLE" -a -n "$VERS" ]; then
         log "Deploying role '$ROLE' version '$VERS' on disk '$DISK' @ $(date)"
-        if [ -n "$HSERV" ]; then
+        if [ -n "$EMBEDDED" ]; then
+            log "Installing OS using embedded method"
+            cat $EMBEDDED_MOUNT/embedded/${ROLE}-${VERS}.edeploy | gzip -d | tar x -C $d || give_up "Unable to decompress local role : $EMBEDDED_MOUNT/embedded/${ROLE}-${VERS}.edeploy"
+        elif [ -n "$HSERV" ]; then
             log_n "Transferring files from http://${HSERV}:${HSERV_PORT}/${HPATH}/${VERS}/${ROLE}-${VERS}.edeploy..."
             curl -s -S http://${HSERV}:${HSERV_PORT}/${HPATH}/${VERS}/${ROLE}-${VERS}.edeploy | gzip -d | tar x -C $d || give_up "Unable to download http://${HSERV}:${HSERV_PORT}/${HPATH}/${VERS}/${ROLE}-${VERS}.edeploy"
         else

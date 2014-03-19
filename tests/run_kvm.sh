@@ -56,22 +56,43 @@ prepare_disk() {
 }
 
 run_kvm() {
-	BOOT_DEVICE="n"
-	[ "$1" = "local" ] && BOOT_DEVICE="c"
-
     local kvm_bin=$(detect_kvm)
 
-	$kvm_bin --enable-kvm -m 512\
-		-netdev user,id=net0,net=10.0.2.0/24,tftp=tftpboot,bootfile=/pxelinux.0,hostfwd=tcp::$SSH_PORT-:22,hostfwd=tcp::$DEBUG_SSH_PORT-:$DEBUG_SSH_PORT \
-		-netdev user,id=net1,net=10.0.3.0/24 \
-		-netdev user,id=net2,net=1.2.3.0/24 \
-		-device virtio-net,netdev=net0,mac=52:54:12:34:00:01 \
-		-device virtio-net,netdev=net1,mac=52:54:12:34:00:02 \
-		-device virtio-net,netdev=net2,mac=52:54:12:34:00:03 \
-		-drive file=$DISK,if=virtio,id=drive-virtio-disk0,format=qcow2,cache=writeback,aio=native,media=disk,index=0 \
-		-boot $BOOT_DEVICE \
-		-serial stdio \
-		-smbios type=1,manufacturer=kvm,product=edeploy_test_vm
+    if [ "$MODE" = "usb" ]; then
+        LOAD_INDEX="0"
+        DISK_INDEX="1"
+        if [ "$1" = "local" ]; then
+            LOAD_INDEX="1"
+            DISK_INDEX="0"
+        fi
+
+        $kvm_bin --enable-kvm -m 512\
+            -netdev user,id=net0,net=10.0.2.0/24,tftp=tftpboot,bootfile=/pxelinux.0 \
+            -netdev user,id=net1,net=10.0.3.0/24 \
+            -netdev user,id=net2,net=1.2.3.0/24 \
+            -device virtio-net,netdev=net0,mac=52:54:12:34:00:01 \
+            -device virtio-net,netdev=net1,mac=52:54:12:34:00:02 \
+            -device virtio-net,netdev=net2,mac=52:54:12:34:00:03 \
+            -drive file=$LOAD,if=virtio,id=drive-virtio-disk0,format=raw,cache=writeback,aio=native,media=disk,index=$LOAD_INDEX \
+            -drive file=$DISK,if=virtio,id=drive-virtio-disk1,format=qcow2,cache=writeback,aio=native,media=disk,index=$DISK_INDEX \
+            -serial stdio \
+            -smbios type=1,manufacturer=kvm,product=edeploy_test_vm
+    else
+        BOOT_DEVICE="n"
+        [ "$1" = "local" ] && BOOT_DEVICE="c"
+
+        $kvm_bin --enable-kvm -m 512\
+            -netdev user,id=net0,net=10.0.2.0/24,tftp=tftpboot,bootfile=/pxelinux.0,hostfwd=tcp::$SSH_PORT-:22,hostfwd=tcp::$DEBUG_SSH_PORT-:$DEBUG_SSH_PORT \
+            -netdev user,id=net1,net=10.0.3.0/24 \
+            -netdev user,id=net2,net=1.2.3.0/24 \
+            -device virtio-net,netdev=net0,mac=52:54:12:34:00:01 \
+            -device virtio-net,netdev=net1,mac=52:54:12:34:00:02 \
+            -device virtio-net,netdev=net2,mac=52:54:12:34:00:03 \
+            -drive file=$DISK,if=virtio,id=drive-virtio-disk0,format=qcow2,cache=writeback,aio=native,media=disk,index=0 \
+            -boot $BOOT_DEVICE \
+            -serial stdio \
+            -smbios type=1,manufacturer=kvm,product=edeploy_test_vm
+    fi
 }
 
 
@@ -337,6 +358,11 @@ case "$MODE" in
         create_edeploy_conf
         run_kvm
         stop_httpd
+    ;;
+    "usb")
+        prepare_disk
+        run_kvm
+        run_kvm local
     ;;
     *)
         check_binary rsync

@@ -331,6 +331,24 @@ enable_network_links() {
     fi
 }
 
+get_network_configuration() {
+    searched_iface=$1
+    OLD_IFS=$IFS
+    IFS=","
+    for entry in $IP; do
+        iface_name=$(echo $entry | cut -d ":" -f 1)
+        iface_config=$(echo $entry | cut -d ":" -f 2)
+        if [ "$iface_name" = "$searched_iface" ] || [ "$iface_name" = "all" ]; then
+            echo -n $iface_config
+            return
+        fi
+    done
+    IFS=$OLD_IFS
+    # If no configuration got found, we consider this is dhcp
+    echo -n "dhcp"
+}
+
+
 probe_network_devices() {
 # Let's wait 30 seconds to get a DHCP answer
 # Default is very very long....
@@ -349,7 +367,8 @@ while true; do
 
     enable_network_links fatal
 
-    VALID_IFACES_COUNT=0
+    CARRIER_DEVICE_LIST=
+    DHCP_IFACES_COUNT=0
     PIDS=
     pushd /sys/class/net >/dev/null
     for iface in *; do
@@ -362,19 +381,31 @@ while true; do
         if [ "$(cat /sys/class/net/$iface/carrier)" = "1" ]; then
             log "Adding Interface $iface : carrier detected"
             CARRIER_DEVICE_LIST="$CARRIER_DEVICE_LIST $iface"
-            VALID_IFACES_COUNT=$(($VALID_IFACES_COUNT + 1))
-                # Let's run all the dhclients in parallel
-            ( log "Waiting for $iface to come up."
-                dhclient $iface
-                count=$DHCP_GRACE_TIME
-                while [ $count -gt 0 ] && ! ifconfig $iface|grep -q 'inet addr'; do
-                    sleep 1
-                    count=$(($count - 1))
-                done
-                ifconfig $iface|grep -q 'inet addr' && log "$iface configuration done" || log "$iface configuration failed"
-            ) &
-            PIDS="$PIDS $!"
-            sleep $DHCP_NO_RACETIMING # Don't race dhcp clients too much
+            # Let's run all the dhclients in parallel
+            config=$(get_network_configuration $iface)
+            case "$config" in
+                "dhcp")
+                    DHCP_IFACES_COUNT=$(($DHCP_IFACES_COUNT + 1))
+                    ( log "Waiting for $iface to get a DHCP answer."
+                        dhclient $iface
+                        count=$DHCP_GRACE_TIME
+                        while [ $count -gt 0 ] && ! ifconfig $iface|grep -q 'inet addr'; do
+                            sleep 1
+                            count=$(($count - 1))
+                        done
+                        ifconfig $iface|grep -q 'inet addr' && log "$iface configuration done" || log "$iface configuration failed"
+                    ) &
+                    PIDS="$PIDS $!"
+                    sleep $DHCP_NO_RACETIMING # Don't race dhcp clients too much
+                ;;
+                "none")
+                    log "Ignoring network interface $iface"
+                ;;
+                *)
+                    log "Setting up $iface with $config"
+                    ip addr add $config dev $iface
+                ;;
+            esac
         else
             log "Rejecting Interface $iface : carrier not detected"
         fi
@@ -383,46 +414,51 @@ while true; do
 
     log "Valid interfaces with Carrier were $CARRIER_DEVICE_LIST"
 
-    # We now have to let enough time to let all the racing dhcpclient finishing
-    DHCP_WAITING_TIME=$((DHCP_TIMEOUT + $DHCP_GRACE_TIME + $VALID_IFACES_COUNT*$DHCP_NO_RACETIMING + 3))
-    log "Waiting for $VALID_IFACES_COUNT DHCP anwsers to come up in $DHCP_WAITING_TIME sec"
+    if [ $DHCP_IFACES_COUNT -eq 0 ]; then
+        # We don't have any DHCP interface to wait, let's exit
+        break;
+    else
+        # We now have to let enough time to let all the racing dhcpclient finishing
+        DHCP_WAITING_TIME=$((DHCP_TIMEOUT + $DHCP_GRACE_TIME + $DHCP_IFACES_COUNT*$DHCP_NO_RACETIMING + 3))
+        log "Waiting for $DHCP_IFACES_COUNT DHCP anwsers to come up in $DHCP_WAITING_TIME sec"
 
-    while [ -n "$PIDS" ]; do
-    NEW_PIDS=
-    for p in $(echo $PIDS); do
-        if [ -d /proc/$p ]; then
-            NEW_PIDS="$NEW_PIDS $p"
+        while [ -n "$PIDS" ]; do
+        NEW_PIDS=
+        for p in $(echo $PIDS); do
+            if [ -d /proc/$p ]; then
+                NEW_PIDS="$NEW_PIDS $p"
+            fi
+        done
+        DHCP_WAITING_TIME=$(($DHCP_WAITING_TIME - 1))
+        if [ -n "$NEW_PIDS" -a $DHCP_WAITING_TIME -gt 0 ]; then
+            PIDS="$NEW_PIDS"
+            sleep 1
+        else
+            PIDS=
         fi
-    done
-    DHCP_WAITING_TIME=$(($DHCP_WAITING_TIME - 1))
-    if [ -n "$NEW_PIDS" -a $DHCP_WAITING_TIME -gt 0 ]; then
-        PIDS="$NEW_PIDS"
-        sleep 1
-    else
-        PIDS=
-    fi
-    done
+        done
 
-    IP_SET=$(ip -4 a  | grep -iw "inet" | grep -v "127.0.0.1" | wc -l)
-    if [ "$IP_SET" -gt 0 ]; then
-        log "Found $IP_SET interfaces properly configured"
-        # We found at least once DHCP server so we can continue
-        # the install procedure
-        break
-    fi
+        IP_SET=$(ip -4 a  | grep -iw "inet" | grep -v "127.0.0.1" | wc -l)
+        if [ "$IP_SET" -gt 0 ]; then
+            log "Found $IP_SET interfaces properly configured"
+            # We found at least once DHCP server so we can continue
+            # the install procedure
+            break
+        fi
 
-    RUN=$(( $RUN + 1 ))
-    sleep 10
-    if [ "$RUN" != "$MAX_RUN" ]; then
-        log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-        log "!! NO DHCP FOUND ! Waiting 10 seconds before trying again. !!"
-        log "!! ($RUN / $MAX_RUN)                                       !!"
-        log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-    else
-        log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-        log "!! NO DHCP FOUND after $RUN tries. Rebooting in 10 seconds !!"
-        log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-        give_up "!! DEBUG mode is set, let's give up as no DHCP server found"
+        RUN=$(( $RUN + 1 ))
+        sleep 10
+        if [ "$RUN" != "$MAX_RUN" ]; then
+            log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+            log "!! NO DHCP FOUND ! Waiting 10 seconds before trying again. !!"
+            log "!! ($RUN / $MAX_RUN)                                       !!"
+            log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        else
+            log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+            log "!! NO DHCP FOUND after $RUN tries. Rebooting in 10 seconds !!"
+            log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+            give_up "!! DEBUG mode is set, let's give up as no DHCP server found"
+        fi
     fi
 done
 }

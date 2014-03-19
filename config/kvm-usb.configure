@@ -1,0 +1,70 @@
+
+# -*- python -*-
+
+bootable_disk = '/dev/' + var['disk']
+
+run('dmsetup remove_all || /bin/true')
+
+for disk, path in ((bootable_disk, '/chroot'), ):
+    run('parted -a optimal --script %s mktable gpt' % disk)
+    run('parted -a optimal --script %s mkpart primary 0%% 10' % disk)
+    run('parted --script %s set 1 boot on' % disk)
+    run('parted --script %s set 1 bios_grub on' % disk)
+    run('parted -a optimal --script %s mkpart primary ext2 10 256 ' % disk)
+    run('parted -a optimal --script %s mkpart primary 257 100%%' % disk)
+    run('parted --script %s set 3 lvm on' % disk)
+    run('parted --script %s align-check optimal 1' % disk)
+    run('parted --script %s align-check optimal 2' % disk)
+    run('parted --script %s align-check optimal 3' % disk)
+    print "Creating LVM"
+    run('dmsetup remove_all || /bin/true')
+    run('pvcreate -ff -y --dataalignment 512k %s%d' % (disk, 3))
+    run('vgcreate -f -y --dataalignment 512k rootfs %s%d' % (disk, 3))
+    run('lvcreate rootfs -n slash -L 3.4G')
+    run('lvcreate rootfs -n swap -L 128M')
+    print "Creating FS"
+    run('mkfs.ext4 -L boot -m 0 %s%d' % (disk,2))
+    run('mkfs.ext4 -L slash -m 0 -O extent -E stride=32,stripe_width=32 /dev/mapper/rootfs-slash')
+    run('mkswap -f /dev/mapper/rootfs-swap')
+    run('mount LABEL=slash %s' % path)
+    run('mkdir %s/etc %s/boot' % (path, path))
+    run('mount LABEL=boot %s/boot' % path)
+    config('/etc/fstab', mode='a').write('''
+/dev/disk/by-id/dm-name-rootfs-swap none swap sw 0 0
+LABEL=boot /boot ext4 defaults 0 2
+''')
+
+config('/etc/network/interfaces').write('''
+auto lo
+iface lo inet loopback
+
+auto %(eth)s
+allow-hotplug %(eth)s
+iface %(eth)s inet static
+     address %(ip)s
+     netmask %(netmask)s
+     gateway %(gateway)s
+     hwaddress %(mac)s
+
+auto %(eth-io)s
+allow-hotplug %(eth-io)s
+iface %(eth-io)s inet static
+     address %(ip-io)s
+     netmask %(netmask-io)s
+     gateway %(gateway-io)s
+     hwaddress %(mac-io)s
+
+auto %(eth-mgmt)s
+allow-hotplug %(eth-mgmt)s
+iface %(eth-mgmt)s inet static
+     address %(ip-mgmt)s
+     netmask %(netmask-mgmt)s
+     gateway %(gateway-mgmt)s
+     hwaddress %(mac-mgmt)s
+
+''' % var)
+
+config('/etc/hostname').write('''%(hostname)s
+''' % var)
+
+set_role('base', 'D7-H.1.0.0', bootable_disk)

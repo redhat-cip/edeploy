@@ -348,27 +348,27 @@ while true; do
             continue
         fi
 
-    # Let's check if the network interface reports some carrier
-    # If so, let's try to get a DHCP answer from here
-    if [ "$(cat /sys/class/net/$iface/carrier)" = "1" ]; then
-        log "Adding Interface $iface : carrier detected"
-        CARRIER_DEVICE_LIST="$CARRIER_DEVICE_LIST $iface"
-        VALID_IFACES_COUNT=$(($VALID_IFACES_COUNT + 1))
-            # Let's run all the dhclients in parallel
-        ( log "Waiting for $iface to come up."
-            dhclient $iface
-            count=$DHCP_GRACE_TIME
-            while [ $count -gt 0 ] && ! ifconfig $iface|grep -q 'inet addr'; do
-                sleep 1
-                count=$(($count - 1))
-            done
-            ifconfig $iface|grep -q 'inet addr' && log "$iface configuration done" || log "$iface configuration failed"
-        ) &
-        PIDS="$PIDS $!"
-        sleep $DHCP_NO_RACETIMING # Don't race dhcp clients too much
-    else
-        log "Rejecting Interface $iface : carrier not detected"
-    fi
+        # Let's check if the network interface reports some carrier
+        # If so, let's try to get a DHCP answer from here
+        if [ "$(cat /sys/class/net/$iface/carrier)" = "1" ]; then
+            log "Adding Interface $iface : carrier detected"
+            CARRIER_DEVICE_LIST="$CARRIER_DEVICE_LIST $iface"
+            VALID_IFACES_COUNT=$(($VALID_IFACES_COUNT + 1))
+                # Let's run all the dhclients in parallel
+            ( log "Waiting for $iface to come up."
+                dhclient $iface
+                count=$DHCP_GRACE_TIME
+                while [ $count -gt 0 ] && ! ifconfig $iface|grep -q 'inet addr'; do
+                    sleep 1
+                    count=$(($count - 1))
+                done
+                ifconfig $iface|grep -q 'inet addr' && log "$iface configuration done" || log "$iface configuration failed"
+            ) &
+            PIDS="$PIDS $!"
+            sleep $DHCP_NO_RACETIMING # Don't race dhcp clients too much
+        else
+            log "Rejecting Interface $iface : carrier not detected"
+        fi
     done
     popd >/dev/null
 

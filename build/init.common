@@ -347,7 +347,8 @@ while true; do
         if [ "$iface" = "lo" ]; then
             continue
       fi
-        # Let's check if the network interface reports some carrier
+
+    # Let's check if the network interface reports some carrier
     # If so, let's try to get a DHCP answer from here
     if [ "$(cat /sys/class/net/$iface/carrier)" = "1" ]; then
         log "Adding Interface $iface : carrier detected"

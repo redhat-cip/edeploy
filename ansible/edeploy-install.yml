@@ -26,6 +26,8 @@
     when: pxemngr
   - name: set hw profiles dir in CGI config
     ini_file: dest=/etc/edeploy.conf section=SERVER option=HWDIR value=/var/lib/edeploy/hw mode=0644
+  - name: set log dir in CGI config
+    ini_file: dest=/etc/edeploy.conf section=SERVER option=LOGDIR value=/var/lib/edeploy/logs mode=0644
   - name: set health dir in CGI config
     ini_file: dest=/etc/edeploy.conf section=SERVER option=HEALTHDIR value=/var/lib/edeploy/health mode=0644
   - name: set lock file in CGI config
@@ -43,6 +45,8 @@
     file: path=/var/lib/debootstrap/install state=directory
   - name: create directory for hw profiles
     file: path=/var/lib/edeploy/hw state=directory owner=www-data group=www-data
+  - name: create directory for log
+    file: path=/var/lib/edeploy/logs state=directory owner=www-data group=www-data
   - name: create directory for health files
     file: path=/var/lib/edeploy/health state=directory owner=www-data group=www-data
   - name: link install trees location for web server

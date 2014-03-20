@@ -94,6 +94,7 @@ rsync -au --delete-excluded --delete --exclude /boot/ \
     --exclude '*.pyc' \
     --exclude usr/lib/*/gconv/ \
     --exclude usr/lib/locale \
+    --exclude usr/lib/perl \
     --exclude usr/lib64/perl5 \
     --exclude usr/lib64/libgtk* \
     --exclude usr/lib64/graphviz \
@@ -127,10 +128,7 @@ rsync -au --delete-excluded --delete --exclude /boot/ \
     --exclude usr/share/yum* \
     --exclude usr/share/zoneinfo \
     --exclude usr/src \
-    --exclude 'var/cache/apt/archives/*.deb' \
-    --exclude var/cache/debconf \
-    --exclude var/cache/debconf \
-    --exclude var/cache/yum \
+    --exclude var/cache \
     --exclude var/lib/apt \
     --exclude var/lib/dpkg  \
     --exclude var/lib/rpm \

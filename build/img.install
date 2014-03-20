@@ -414,7 +414,10 @@ umount_flash_fs() {
 }
 
 create_vdi() {
-    type -p VBoxManage &>/dev/null || return
+    if ! type -p VBoxManage &>/dev/null; then
+        echo "If you need a VirtualBox (VDI) format, please install VirtualBox and restart your make command"
+        return
+    fi
     step "Creating VDI file for VirtualBox"
     rm -f $VDI_IMAGE &>/dev/null
     VBoxManage convertfromraw $FLASH_IMAGE --format VDI $VDI_IMAGE &>/dev/null

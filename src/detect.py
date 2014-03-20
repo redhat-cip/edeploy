@@ -86,29 +86,29 @@ def detect_megacli(hw_lst):
     ctrl_num = megacli.adp_count()
     if ctrl_num > 0:
         for ctrl in range(ctrl_num):
-            enc = megacli.enc_info(ctrl)
-            for disk_num in range(megacli.pd_get_num(ctrl)):
-                disk = 'disk%d' % disk_num
-                info = megacli.pdinfo(ctrl,
-                                      enc['DeviceId'],
-                                      disk_num)
-                hw_lst.append(('disk',
-                               disk,
-                               'ctrl',
-                               str(ctrl_num)))
-                hw_lst.append(('disk',
-                               disk,
-                               'type',
-                               info['PdType']))
-                hw_lst.append(('disk',
-                               disk,
-                               'id',
-                               '%s:%d' % (info['EnclosureDeviceId'],
-                                          disk_num)))
-                hw_lst.append(('disk',
-                               disk,
-                               'size',
-                               info['CoercedSize'].split()[0]))
+            for enc in megacli.enc_info(ctrl):
+                for disk_num in range(enc['NumberOfPhysicalDrives']):
+                    disk = 'disk%d' % disk_num
+                    info = megacli.pdinfo(ctrl,
+                                          enc['DeviceId'],
+                                          disk_num)
+                    hw_lst.append(('disk',
+                                   disk,
+                                   'ctrl',
+                                   str(ctrl_num)))
+                    hw_lst.append(('disk',
+                                   disk,
+                                   'type',
+                                   info['PdType']))
+                    hw_lst.append(('disk',
+                                   disk,
+                                   'id',
+                                   '%s:%d' % (info['EnclosureDeviceId'],
+                                              disk_num)))
+                    hw_lst.append(('disk',
+                                   disk,
+                                   'size',
+                                   info['CoercedSize'].split()[0]))
         return True
     else:
         return False

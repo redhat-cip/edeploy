@@ -38,6 +38,25 @@ def parse_output(output):
     return res
 
 
+def split_parts(sep, output):
+    'Split the output string according to the regexp sep.'
+    regexp = re.compile(sep)
+    lines = output.split('\n')
+    idx = []
+    num = 0
+    for line in lines:
+        if regexp.search(line):
+            idx.append(num)
+        num = num + 1
+    arr = []
+    start = idx[0]
+    for num in idx[1:]:
+        arr.append('\n'.join(lines[start:num-1]))
+        start = num
+    arr.append('\n'.join(lines[start:]))
+    return arr
+
+
 def run_megacli(*args):
     'Run the megacli command in a subprocess and return the output.'
     cmd = 'megacli -' + ' '.join(args)
@@ -80,7 +99,16 @@ def pd_get_num(ctrl):
 
 def enc_info(ctrl):
     'Get enclosing info on a controller.'
-    return run_and_parse('EncInfo -a%d' % ctrl)
+    parts = split_parts(' +Enclosure [0-9]+:',
+                        run_megacli('EncInfo -a%d' % ctrl))
+    all_ = map(parse_output, parts)
+    for entry in all_:
+        for key in entry.keys():
+            if re.search('Enclosure\d+', key):
+                entry['Enclosure'] = int(key[len('Enclosure'):])
+                del entry[key]
+                break
+    return all_
 
 
 def pdinfo(ctrl, encl, disk):
@@ -109,17 +137,18 @@ if __name__ == "__main__":
         print 'Controler', ctrl_num
         pprint.pprint(adp_all_info(ctrl_num))
 
-        enc = enc_info(ctrl_num)
+        encs = enc_info(ctrl_num)
 
         print
 
         print 'Enclosing:'
-        pprint.pprint(enc)
+        pprint.pprint(encs)
 
-        for disk_num in range(pd_get_num(ctrl_num)):
-            print
-            print 'Physical disk', disk_num
-            pprint.pprint(pdinfo(ctrl_num, enc['DeviceId'], disk_num))
+        for enc in encs:
+            for disk_num in range(enc['NumberOfPhysicalDrives']):
+                print
+                print 'Physical disk', disk_num
+                pprint.pprint(pdinfo(ctrl_num, enc['DeviceId'], disk_num))
 
         for ld_num in range(ld_get_num(ctrl_num)):
             print

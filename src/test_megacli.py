@@ -89,6 +89,11 @@ Physical Devices  : 7
  Number of Physical Drives on Adapter 0: 6'''
         self.assertEqual(megacli.pd_get_num(0), 6)
 
+    def test_split_parts(self):
+        self.assertEqual(len(megacli.split_parts(' +Enclosure [0-9]+:',
+                                                 ENC_OUTPUT)),
+                         2)
+
     def test_enc_info(self):
         self.output = '''
     Number of enclosures on adapter 0 -- 1
@@ -97,9 +102,16 @@ Physical Devices  : 7
     Device ID                     : 32
     Number of Slots               : 8'''
         self.assertEqual(megacli.enc_info(0),
-                         {'Enclosure0': '',
+                         [{'Enclosure': 0,
                           'DeviceId': 32,
-                          'NumberOfSlots': 8})
+                          'NumberOfSlots': 8}])
+
+    def test_enc_info2(self):
+        self.output = ENC_OUTPUT
+        info = megacli.enc_info(0)
+        self.assertEqual(len(info), 2)
+        self.assertEqual(info[0]['Enclosure'], 0)
+        self.assertEqual(info[1]['Enclosure'], 1)
 
     def test_pdinfo(self):
         self.output = '''
@@ -185,6 +197,106 @@ Cache Cade Type : Read Only'''
                           'SpanDepth': 1,
                           'State': 'Optimal',
                           'StripSize': '64 KB'})
+
+ENC_OUTPUT = '''
+                                     
+    Number of enclosures on adapter 0 -- 2
+
+    Enclosure 0:
+    Device ID                     : 6
+    Number of Slots               : 12
+    Number of Power Supplies      : 2
+    Number of Fans                : 3
+    Number of Temperature Sensors : 1
+    Number of Alarms              : 1
+    Number of SIM Modules         : 0
+    Number of Physical Drives     : 2
+    Status                        : Normal
+    Position                      : 1
+    Connector Name                : Port 0 - 3
+    Enclosure type                : SES
+    FRU Part Number               : N/A
+    Enclosure Serial Number       : N/A 
+    ESM Serial Number             : N/A 
+    Enclosure Zoning Mode         : N/A 
+    Partner Device Id             : 65535
+
+    Inquiry data                  :
+        Vendor Identification     : LSI CORP
+        Product Identification    : SAS2X28         
+        Product Revision Level    : 0717
+        Vendor Specific           : x36-55.7.23.0       
+
+Number of Voltage Sensors         :2
+
+Voltage Sensor                    :0
+Voltage Sensor Status             :OK
+Voltage Value                     :5070 milli volts
+
+Voltage Sensor                    :1
+Voltage Sensor Status             :OK
+Voltage Value                     :11910 milli volts
+
+Number of Power Supplies     : 2 
+
+Power Supply                 : 0 
+Power Supply Status          : Not Installed
+
+Power Supply                 : 1 
+Power Supply Status          : Not Installed
+
+Number of Fans               : 3 
+
+Fan                          : 0 
+Fan Status                   : OK
+
+Fan                          : 1 
+Fan Speed              :Medium Speed
+Fan Status                   : OK
+
+Fan                          : 2 
+Fan Speed              :Medium Speed
+Fan Status                   : OK
+
+Number of Temperature Sensors : 1 
+
+Temp Sensor                  : 0 
+Temperature                  : 25 
+Temperature Sensor Status    : OK
+
+Number of Chassis             : 1 
+
+Chassis                      : 0 
+Chassis Status               : OK
+
+    Enclosure 1:
+    Device ID                     : 252
+    Number of Slots               : 8
+    Number of Power Supplies      : 0
+    Number of Fans                : 0
+    Number of Temperature Sensors : 0
+    Number of Alarms              : 0
+    Number of SIM Modules         : 1
+    Number of Physical Drives     : 0
+    Status                        : Normal
+    Position                      : 1
+    Connector Name                : Unavailable
+    Enclosure type                : SGPIO
+    FRU Part Number               : N/A
+    Enclosure Serial Number       : N/A 
+    ESM Serial Number             : N/A 
+    Enclosure Zoning Mode         : N/A 
+    Partner Device Id             : Unavailable
+
+    Inquiry data                  :
+        Vendor Identification     : LSI     
+        Product Identification    : SGPIO           
+        Product Revision Level    : N/A 
+        Vendor Specific           :                     
+
+
+Exit Code: 0x00
+'''
 
 if __name__ == "__main__":
     unittest.main()

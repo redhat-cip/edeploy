@@ -703,8 +703,8 @@ have to be built.
 Please refer to 'Defining the boot configuration' subchapter to get
 details on how to configure the eDeploy deployment tool.
 
-USB based installation
-~~~~~~~~~~~~~~~~~~~~~~
+Network installation via USB booting
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If no PXE boot is available on the infrastructure, it is possible to use
 an USB based solution to start the eDeploy deployment tool on the server
@@ -725,8 +725,12 @@ To get an USB bootable setup, you need :
    to 'Defining the boot configuration' for complete description) shall
    be defined at build time while PXE booting can do it dynamically
 
--  a DHCP server to get an automatic network address used during the
-   deployment only
+-  If a DHCP server exists you can get an automatic network address used 
+   during the deployment only
+
+-  If no DHCP server exists, use the IP= command to put a static address
+   to one of your interface to contact the edeploy server like :
+   IP=eth0:192.168.1.254/24,other=none
 
 The USB bootstrap is built by using the 'img' role available in eDeploy.
 All required parameters shall be provided during the built process. A
@@ -739,6 +743,62 @@ the 'dd' command.
    ...
    Raw disk image is available here: initrd.pxe-D7-F.1.0.0.img
    dd if=initrd.pxe-D7-F.1.0.0.img of=/dev/<your_usb_key> bs=1M
+
+
+Local installation via USB booting
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+If no PXE boot is available on the infrastructure, it is possible to use
+an USB based solution to start the eDeploy deployment tool on the server
+to be installed.
+
+**Note**: This solution is not scalable and could be difficult to setup. 
+If multiple hosts shall be deploied, a single USB key shall be used
+generating a sequential deploiement (1 server at a time).
+
+To get an USB bootable setup, you need :
+
+-  a target server where USB booting is enabled
+-  USB bootable device shall be the default boot option (in boot order
+   bios menu)
+-  the bootable image shall be built with static parameters
+-  a role to deploy already built
+-  an hardware description (specs/configure/logs) that match the hardware
+
+The USB bootstrap is built by using the 'img' role available in eDeploy.
+All required parameters shall be provided during the built process. A
+bootable image is generated and shall be installed on a USB key by using
+the 'dd' command.
+
+This solution works like the following:
+- building an img image with EMBEDDED_OS & EMBEDDED_ROLE variable
+- boot this image on the host to deploy
+- the hw matching is done localy
+- the target OS is deployed from the USB key to the host machine
+
+EMBEDDED_OS variable shall point to an existing .edeploy file.
+This OS will be included inside the USB bootable image.
+The name of the resulting image will contain the role name.
+
+EMBEDDED_ROLE variable shall point to the hardware description without
+any .cmdb/.spec/.configure extension.
+The three configuration file (.cmd/.spec/.configure) are copied on the USB device.
+
+At boot time, the upload.py is executed from the USB device instead of
+the edeploy server and uses the cmdb, configure & spec file from the USB
+stick. So this deploiement method doesn't require any network configuration/service.
+
+Those files will remain on a writable partition of the USB stick making
+it consistent over time. That way, if you provide a CMDB with several
+host to deploy, the same key can be used several time to deploy the
+remaining hosts.
+
+.. code:: bash
+
+   make img DIST='wheezy' EMBEDDED_OS=/var/lib/debootstrap/install/D7-H.1.1.0/deploy-D7-H.1.1.0.edeploy EMBEDDED_ROLE=/home/erwan/Devel/edeploy/config/kvm-usb
+   ...
+   Raw disk image is available here: initrd.pxe-D7-H.1.1.0-with-deploy-D7-H.1.1.0.img
+   dd if=initrd.pxe-D7-H.1.1.0-with-deploy-D7-H.1.1.0.img of=/dev/<your_usb_key> bs=1M
+
 
 Defining eDeploy deployment tool's configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -767,6 +827,7 @@ KEXEC_KERNEL         The version of the expect kernel to be booted with kexec
 UPLOAD_LOG           Boolean. Upload log file on eDeploy server
 VERBOSE              Boolean. Enable the verbose mode
 DEBUG                Boolean. Enable debug mode (start a ssh_server for further access)
+IP                   A list of network device configuration (see below for details)
 ===================  ============================================================
 
 **Note** : The kexec option of ONSUCCESS means that after a successful
@@ -781,6 +842,26 @@ wants to enforce a particular version, the KEXEC_KERNEL can be used.
 KEXEC_KERNEL arguments expect a kernel version taken from the filename.
 This kernel version shall be unique in the /boot/ directory.
 KEXEC_KERNEL=3.2.0-4 will boot vmlinuz & initrd that hold 3.2.0-4 in its name.
+
+**Note**: The IP= option is composed of a coma separated list of interfaces and
+their configuration like <netdev>:<config>,<othernetdev>:<config>.
+The netdev represent the network device from the linux point of view like eth0.
+Two special values exists :
+- other : to match all interfaces not listed in this list
+- all : to match all interfaces
+
+The config options are:
+- none (no IP configurtion at all)
+- dhcp
+- <CIDR address>
+
+The address is under the CIDR notation like 192.168.0.1/24.
+Some typical IP invocations could be:
+- IP=eth0:dhcp,other=none
+- IP=eth1:192.168.1.1/24,other:none
+- IP=all:none
+
+By default, all intefaces make DHCP requests with 'IP=all:dhcp'
 
 Preparing the eDeploy Server
 ----------------------------

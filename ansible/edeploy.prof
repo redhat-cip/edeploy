@@ -3,6 +3,9 @@ DEFAULT eDeploy
 prompt 0
 timeout 0
 
+LABEL localboot
+localboot -1
+
 LABEL eDeploy
 KERNEL vmlinuz
-APPEND initrd=initrd.img SERV={{ ansible_default_ipv4["address"] }} HSERV={{ ansible_default_ipv4["address"] }} DEBUG=0 NOREBOOT=0
+APPEND initrd=initrd.img SERV={{ ansible_default_ipv4["address"] }} HSERV={{ ansible_default_ipv4["address"] }} UPLOAD_LOG=1 ONSUCCESS=halt ONFAILURE=console IP=all:dhcp

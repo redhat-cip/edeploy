@@ -126,6 +126,7 @@ rsync -au --delete-excluded --delete --exclude /boot/ \
     --exclude usr/share/X11 \
     --exclude usr/share/yum* \
     --exclude usr/share/zoneinfo \
+    --exclude usr/src \
     --exclude 'var/cache/apt/archives/*.deb' \
     --exclude var/cache/debconf \
     --exclude var/cache/debconf \

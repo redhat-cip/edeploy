@@ -400,9 +400,10 @@ check_embedded_os() {
     FLASH_SIZE=$(( $FLASH_SIZE + $EMBEDDED_SIZE ))
     echo " -> $EMBEDDED_OS is $EMBEDDED_SIZE MB big"
 
-    ROLE_NAME=$(basename $EMBEDDED_OS | cut -d "-" -f 1)
-    VERSION_ROLE=$(basename $EMBEDDED_OS | cut -d "-" -f 2- | sed 's/.edeploy//g')
+    VERSION_ROLE=$(basename $EMBEDDED_OS | sed 's/.edeploy//g'  | awk -F- '{print $(NF-1)"-"$(NF)}')
+    ROLE_NAME=$(basename $EMBEDDED_OS | sed 's/.edeploy//g'  | sed "s/-$VERSION_ROLE//g")
 
+    echo " -> About to install Role $ROLE_NAME with version $VERSION_ROLE"
     FLASH_IMAGE="$IMG-$ver-with-$ROLE_NAME-$VERSION_ROLE.img"
     VDI_IMAGE="$IMG-$ver-with-$ROLE_NAME-$VERSION_ROLE.vdi"
 }

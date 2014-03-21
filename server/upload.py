@@ -474,6 +474,7 @@ def set_role(role, version, disk):
         f.write("ROLE=%s\\nVERS=%s\\nDISK=%s\\n" % (role,
                                                     version,
                                                     disk))
+        f.write("PROFILE=%s\\n" % var['edeploy-profile'])
 
 def config(name, mode='w', basedir='/post_rsync', fmod=0644, uid=0, gid=0):
     path = basedir + name

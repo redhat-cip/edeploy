@@ -65,7 +65,7 @@ health-img: $(INST)/$(HEALTH_IMG)
 	./img.install $(INST)/base $(HEALTH_IMG) $(VERS) $(INST) $(SERV) $(HSERV) $(DEBUG) health
 
 pxe: $(INST)/$(IMG)
-$(INST)/$(IMG): $(INST)/base.done init init.common pxe.install $(DEPS)
+$(INST)/$(IMG): $(INST)/base.done init init.common pxe.install $(DEPS) $(PYSERVERDIR)/upload.py
 	DEPS="$(DEPS) $(PYSERVERDIR)/upload.py $(PYSERVERDIR)/try_match" ENABLE_IB=y ENABLE_MELLANOX=n ./pxe.install $(INST)/base $(INST)/pxe $(IMG) $(VERS) $(DEBUG)
 
 img: $(INST)/$(IMG)

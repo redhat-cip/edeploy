@@ -92,23 +92,66 @@ def detect_megacli(hw_lst):
                     info = megacli.pdinfo(ctrl,
                                           enc['DeviceId'],
                                           disk_num)
-                    hw_lst.append(('disk',
+                    hw_lst.append(('pdisk',
                                    disk,
                                    'ctrl',
                                    str(ctrl_num)))
-                    hw_lst.append(('disk',
+                    hw_lst.append(('pdisk',
                                    disk,
                                    'type',
                                    info['PdType']))
-                    hw_lst.append(('disk',
+                    hw_lst.append(('pdisk',
                                    disk,
                                    'id',
                                    '%s:%d' % (info['EnclosureDeviceId'],
                                               disk_num)))
-                    hw_lst.append(('disk',
+                    hw_lst.append(('pdisk',
                                    disk,
                                    'size',
                                    info['CoercedSize'].split()[0]))
+                for ld_num in range(megacli.ld_get_num(ctrl)):
+                    disk = 'disk%d' % ld_num
+                    info = megacli.ld_get_info(ctrl, ld_num)
+                    hw_lst.append(('ldisk',
+                                   disk,
+                                   'current_access_policy',
+                                   info['CurrentAccessPolicy']))
+                    hw_lst.append(('ldisk',
+                                   disk,
+                                   'current_cache_policy',
+                                   info['CurrentCachePolicy']))
+                    hw_lst.append(('ldisk',
+                                   disk,
+                                   'disk_cache_policy',
+                                   info['DiskCachePolicy']))
+                    hw_lst.append(('ldisk',
+                                   disk,
+                                   'name',
+                                   info['Name']))
+                    hw_lst.append(('ldisk',
+                                   disk,
+                                   'number_of_drives',
+                                   str(info['NumberOfDrives'])))
+                    hw_lst.append(('ldisk',
+                                   disk,
+                                   'raid_level',
+                                   info['RaidLevel']))
+                    hw_lst.append(('ldisk',
+                                   disk,
+                                   'sector_size',
+                                   str(info['SectorSize'])))
+                    hw_lst.append(('ldisk',
+                                   disk,
+                                   'state',
+                                   info['State']))
+                    hw_lst.append(('ldisk',
+                                   disk,
+                                   'Size',
+                                   size_in_gb(info['Size'])))
+                    hw_lst.append(('ldisk',
+                                   disk,
+                                   'strip_size',
+                                   info['StripSize']))
         return True
     else:
         return False

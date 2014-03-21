@@ -127,7 +127,7 @@ def ld_get_num(ctrl):
 
 def ld_get_info(ctrl, ldrv):
     'Get info about a logical drive on a controller.'
-    return run_and_parse('megacli -LDInfo -L%d -a%d' % (ldrv, ctrl))
+    return run_and_parse('LDInfo -L%d -a%d' % (ldrv, ctrl))
 
 
 if __name__ == "__main__":

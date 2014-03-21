@@ -181,6 +181,12 @@ if [ ! -f /configure ]; then
     give_up "edeploy server ${SERV} didn't provide any answer, looks like something is wrong on server side !"
 fi
 
+# If the configure features a PROFILE then we can report to the edeploy server a failure
+PROFILE=$(grep "'edeploy-profile':" /configure | cut -d "'" -f 4)
+if [ -n $PROFILE ]; then
+    CAN_REPORT_FAILURE=1
+fi
+
 chmod +x /configure
 
 d=/chroot

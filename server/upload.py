@@ -345,9 +345,12 @@ def main():
     hw_dir = os.path.normpath(config_get(
         'SERVER', 'HWDIR', cfg_dir)) + '/'
 
+    failure_role=''
     # parse hw file given in argument or passed to cgi script
-    if len(sys.argv) == 3 and sys.argv[1] == '-f':
+    if len(sys.argv) >= 3 and sys.argv[1] == '-f':
         hw_file = open(sys.argv[2])
+        if sys.argv[3] == '-F':
+            failure_role=sys.argv[4]
     else:
         cgitb.enable()
 
@@ -382,6 +385,9 @@ def main():
         fileitem = form['file']
         hw_file = fileitem.file
 
+        if form.getvalue('failure'):
+            failure_role = form.getvalue('failure')
+
     try:
         hw_items = eval(hw_file.read(-1))
     except Exception, excpt:
@@ -412,6 +418,23 @@ def main():
 
     state_filename = cfg_dir + 'state'
     names = eval(open(state_filename).read(-1))
+
+    if failure_role:
+        # If we get a failure report, let's reincrement the counter
+        log("Received failure for role %s" % failure_role)
+        idx = 0
+        times = '*'
+        name = None
+        for name, times in names:
+            if name == failure_role:
+                # Only consider if time in a numeric entry
+                if times != '*':
+                    names[idx] = (name, int(times) + 1)
+                    with open(state_filename, 'w') as state_file:
+                        pprint.pprint(names, stream=state_file)
+                    break;
+            idx += 1
+        sys.exit(0)
 
     idx = 0
     times = '*'

@@ -212,10 +212,23 @@ start_ssh_server() {
     /etc/init.d/ssh start || /etc/init.d/sshd start
 }
 
+report_failure() {
+    if [ -n "$CAN_REPORT_FAILURE" ]; then
+        if [ -n "$EMBEDDED" ]; then
+            log "Reporting failure to reincrement profile's quantities"
+            /upload.py -f /hw.py -F $PROFILE
+        else
+            log "Reporting failure to reincrement profile's quantities on server $SERV"
+            curl -s -S -F failure=$PROFILE -F file=@/hw.py http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py
+        fi
+    fi
+}
+
 give_up() {
     log "$@"
     save_log
     upload_log
+    report_failure
 
     case "$ONFAILURE" in
       "halt")

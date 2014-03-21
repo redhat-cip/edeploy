@@ -233,8 +233,11 @@ if /configure; then
         mount -obind /sys $d/sys
 
         if [ -d $d/var/log ]; then
-            cp -p /log $d/var/log/install.log
-            cp -p /vars /hw.py $d/var/log/
+            mkdir -p $d/var/log/edeploy
+            cp -p /log $d/var/log/edeploy/install.log
+            cp -p /vars /hw.py $d/var/log/edeploy
+            cp -p /configure $d/var/log/edeploy
+            dmesg > $d/var/log/edeploy/dmesg
         fi
 
         # If the disk name doesn't have any /dev/ naming let's add it

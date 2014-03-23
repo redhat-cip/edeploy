@@ -338,4 +338,6 @@ echo -e "root\nroot"|chroot "$dir" passwd
 if [ $dist = precise ]; then
     sed -i 's/#GRUB_TERMINAL=console/GRUB_TERMINAL=console/' ${dir}/etc/default/grub
     sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT=/' ${dir}/etc/default/grub
+    # avoid being stuck at boot
+    echo "GRUB_RECORDFAIL_TIMEOUT=0" >> ${dir}/etc/default/grub
 fi

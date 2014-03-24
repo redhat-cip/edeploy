@@ -349,7 +349,7 @@ def main():
     # parse hw file given in argument or passed to cgi script
     if len(sys.argv) >= 3 and sys.argv[1] == '-f':
         hw_file = open(sys.argv[2])
-        if sys.argv[3] == '-F':
+        if len(sys.argv) >= 5 and sys.argv[3] == '-F':
             failure_role=sys.argv[4]
     else:
         cgitb.enable()

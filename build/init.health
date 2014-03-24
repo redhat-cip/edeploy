@@ -176,7 +176,7 @@ if [ -z "$RSERV" ]; then
 fi
 
 mkdir -p /ahcexport
-mount /dev/disk/by-label/AHCEXPORT /ahcexport || rm -rf /ahcexport
+mount /dev/disk/by-label/AHCEXPORT /ahcexport || mount /dev/disk/by-label/ahcexport /ahcexport || rm -rf /ahcexport
 
 ################################################################################
 step "Detecting hardware"

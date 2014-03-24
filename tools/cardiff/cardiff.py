@@ -35,13 +35,17 @@ def print_help():
     print '-l <level>   or --log-level <level> : Show only the log levels selected'
     print '                                    :   level is a comma separated list of the following levels'
     print '                                    :   INFO, ERROR, WARNING, SUMMARY, DETAIL'
+    print '                                    :   SUMMARY is the default view'
     print '-g <group> or --group <group>       : Select the target group for DETAIL level (supports regexp)'
     print '-c <cat>   or --category <cat>      : Select the target category for DETAIL level (supports regexp)'
     print '-i <item>  or --item <item>         : Select the item for select group with DETAIL level (supports regexp)'
+    print '-I <list>  or --ignore <list>       : Disable the grouping segregration on the coma separated list of components :'
+    print '                                        cpu, disk, firmware, memory, network, system '
     print
     print 'Examples:'
     print "cardiff.py -p 'sample/*.hw_'  -l DETAIL -g '1' -c 'loops_per_sec' -i 'logical_1.*'"
     print "cardiff.py -p 'sample/*.hw_'  -l DETAIL -g '1' -c 'standalone_rand.*_4k_IOps' -i 'sd.*'"
+    print "cardiff.py -p '*hw' -I disk,cpu"
 
 
 def compare_disks(bench_values, systems_groups):
@@ -83,13 +87,24 @@ def compare_cpu(bench_values, systems_groups):
     compare_sets.compute_similar_hosts_list(systems_groups, compare_sets.get_hosts_list_from_result(groups))
 
 
-def group_systems(bench_values, systems_groups):
-    compare_disks(bench_values, systems_groups)
-    compare_systems(bench_values, systems_groups)
-    compare_firmware(bench_values, systems_groups)
-    compare_memory(bench_values, systems_groups)
-    compare_network(bench_values, systems_groups)
-    compare_cpu(bench_values, systems_groups)
+def group_systems(bench_values, systems_groups, ignore_list):
+    if not "disk" in ignore_list:
+        compare_disks(bench_values, systems_groups)
+
+    if not "system" in ignore_list:
+        compare_systems(bench_values, systems_groups)
+
+    if not "firmware" in ignore_list:
+        compare_firmware(bench_values, systems_groups)
+
+    if not "memory" in ignore_list:
+        compare_memory(bench_values, systems_groups)
+
+    if not "network" in ignore_list:
+        compare_network(bench_values, systems_groups)
+
+    if not "cpu" in ignore_list:
+        compare_cpu(bench_values, systems_groups)
 
 
 def compare_performance(bench_values, systems_groups, detail):
@@ -108,9 +123,10 @@ def compare_performance(bench_values, systems_groups, detail):
 
 def main(argv):
     pattern = ''
+    ignore_list = ''
     detail = {'category': '', 'group': '', 'item': ''}
     try:
-        opts, args = getopt.getopt(argv[1:], "hp:l:g:c:i:", ['pattern', 'log-level', 'group', 'category', 'item'])
+        opts, args = getopt.getopt(argv[1:], "hp:l:g:c:i:I:", ['pattern', 'log-level', 'group', 'category', 'item', "ignore"])
     except getopt.GetoptError:
         print "Error: One of the options passed to the cmdline was not supported"
         print "Please fix your command line or read the help (-h option)"
@@ -150,6 +166,8 @@ def main(argv):
             detail['category'] = arg
         elif opt in ("-i", "--item"):
             detail['item'] = arg
+        elif opt in ("-I", "--ignore"):
+            ignore_list = arg
 
     if ((utils.print_level & utils.Levels.DETAIL) == utils.Levels.DETAIL):
         if (len(detail['group']) == 0) or (len(detail['category']) == 0) or (len(detail['item']) == 0):
@@ -190,7 +208,7 @@ def main(argv):
     systems_groups.append(utils.get_hosts_list(bench_values))
 
     # Let's create groups of similar servers
-    group_systems(bench_values, systems_groups)
+    group_systems(bench_values, systems_groups, ignore_list)
     compare_sets.print_systems_groups(systems_groups)
 
     # It's time to compare performance in each group

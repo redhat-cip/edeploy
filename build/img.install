@@ -207,6 +207,9 @@ setup_bootloader() {
     mkdir $1/extlinux
     if [ "$MODE" = "health" ]; then
 COMMON_ARGS="$KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG UPLOAD_LOG=${UPLOAD_LOG} ONFAILURE=$ONFAILURE ONSUCCESS=$ONSUCCESS IP=$IP"
+if [ -n "$SESSION" ]; then
+    COMMON_ARGS="$COMMON_ARGS SESSION=$SESSION"
+fi
 cat << EOF >> $1/extlinux/extlinux.conf
 TIMEOUT 100
 PROMPT 1

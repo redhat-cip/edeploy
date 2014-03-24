@@ -134,7 +134,7 @@ install_base_packages() {
     add_megacli_repository $dist $target
     case $dist in
         $supported_ubuntu_dists)
-            packages="$cross_distro_packages grub2 iputils-ping linux-firmware linux-headers-generic-lts-raring linux-image-generic-lts-raring $deb_packages"
+            packages="$cross_distro_packages grub2 iputils-ping linux-firmware linux-firmware-nonfree linux-headers-generic-lts-raring linux-image-generic-lts-raring $deb_packages"
             echo "deb $repository $dist main" > ${target}/etc/apt/sources.list
             echo "deb $repository $dist-updates main" >> ${target}/etc/apt/sources.list
             echo "deb $repository $dist universe" >> ${target}/etc/apt/sources.list
@@ -143,7 +143,7 @@ install_base_packages() {
             echo "deb http://security.ubuntu.com/ubuntu $dist-security universe" >> ${target}/etc/apt/sources.list
             ;;
        $supported_debian_dists)
-            packages="$cross_distro_packages acpi-support-base firmware-bnx2 htop inetutils-ping ipmitool libui-dialog-perl linux-image-amd64 $deb_packages"
+            packages="$cross_distro_packages acpi-support-base firmware-linux firmware-netxen firmware-qlogic firmware-realtek firmware-bnx2 firmware-bnx2x htop inetutils-ping ipmitool libui-dialog-perl linux-image-amd64 $deb_packages"
             echo "deb $repository $dist non-free" > ${target}/etc/apt/sources.list.d/nonfree.list
             echo "deb http://security.debian.org/ $dist/updates main" >  ${target}/etc/apt/sources.list.d/updates.list
             echo "deb $repository $dist-updates main" >> ${target}/etc/apt/sources.list.d/updates.list

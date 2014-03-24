@@ -116,6 +116,8 @@ def main(argv):
         print "Please fix your command line or read the help (-h option)"
         sys.exit(2)
 
+    utils.print_level = int(utils.Levels.SUMMARY)
+
     for opt, arg in opts:
         if opt in ("-p", "--pattern"):
             pattern = arg

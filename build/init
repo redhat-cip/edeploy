@@ -226,6 +226,10 @@ if /configure; then
             cat /modules >> $d/etc/modules
         fi
 
+        cmdline=$(cat /proc/cmdline)
+        # If the cmdline have some "| xxxx |" it means that we have some arguments to keep at install time
+        echo $cmdline | grep -q " | " && BOOT_ARG=$(echo $cmdline | cut -d "|" -f 2,2)
+
         if [ -n "${METADATA_URL}" ]; then
             log "Setting up cloudinit with METADATAURL=$METADATA_URL"
             sed -i -e "s@GRUB_CMDLINE_LINUX_DEFAULT=\"\{0,1\}\([^\"]*\)\"\{0,1\}@GRUB_CMDLINE_LINUX_DEFAULT=\"\1 ds=nocloud-net\\\\;s=${METADATA_URL}\"@" $d/etc/default/grub

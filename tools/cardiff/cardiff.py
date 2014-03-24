@@ -119,7 +119,10 @@ def main(argv):
     utils.print_level = int(utils.Levels.SUMMARY)
 
     for opt, arg in opts:
-        if opt in ("-p", "--pattern"):
+        if opt in ("-h", "--help"):
+            print_help()
+            sys.exit(0)
+        elif opt in ("-p", "--pattern"):
             pattern = arg
             pattern = pattern.replace('\\', '')
         elif opt in ("-l", "--log-level"):

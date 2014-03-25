@@ -195,6 +195,8 @@ p=/post_rsync
 mkdir -p $d
 mkdir -p $p/etc/{init,network,default}
 
+log "Starting configuration of profile $PROFILE"
+
 if /configure; then
 
     . /vars

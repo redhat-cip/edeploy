@@ -205,10 +205,10 @@ if /configure; then
             log "Installing OS using embedded method"
             cat $EMBEDDED_MOUNT/embedded/${ROLE}-${VERS}.edeploy | gzip -d | tar x -C $d || give_up "Unable to decompress local role : $EMBEDDED_MOUNT/embedded/${ROLE}-${VERS}.edeploy"
         elif [ -n "$HSERV" ]; then
-            log_n "Transferring files from http://${HSERV}:${HSERV_PORT}/${HPATH}/${VERS}/${ROLE}-${VERS}.edeploy..."
+            log "Transferring files from http://${HSERV}:${HSERV_PORT}/${HPATH}/${VERS}/${ROLE}-${VERS}.edeploy..."
             curl -s -S http://${HSERV}:${HSERV_PORT}/${HPATH}/${VERS}/${ROLE}-${VERS}.edeploy | gzip -d | tar x -C $d || give_up "Unable to download http://${HSERV}:${HSERV_PORT}/${HPATH}/${VERS}/${ROLE}-${VERS}.edeploy"
         else
-            log_n "Copying files from rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${VERS}/${ROLE}..."
+            log "Copying files from rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${VERS}/${ROLE}..."
             rsync -a rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${VERS}/${ROLE}/ $d/ || give_up "Unable to rsync rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${VERS}/${ROLE}/"
         fi
         echo "SERV=${SERV}" >> $d/var/lib/edeploy/conf
@@ -217,7 +217,7 @@ if /configure; then
         echo "RSERV_PORT=${RSERV_PORT}" >> $d/var/lib/edeploy/conf
         sed -i "s/ROLE=.*/ROLE=${ROLE}/" $d/var/lib/edeploy/conf
         sed -i "s/Role .*/Role ${ROLE}/" $d/etc/motd
-        log "done"
+        log "OS installation completed"
 
         log "Installing post_rsync files"
         rsync -avHP $p/* $d/

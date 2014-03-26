@@ -1233,13 +1233,7 @@
 /var/lib/puppet/concat/
 /var/lib/puppet/facts.d/
 /var/lib/puppet/lib/
-/var/lib/puppet/ssl/certificate_requests/
-/var/lib/puppet/ssl/certs/
-/var/lib/puppet/ssl/crl.pem
-/var/lib/puppet/ssl/private/
-/var/lib/puppet/ssl/private_keys/
-/var/lib/puppet/ssl/public_keys/
-/var/lib/puppet/state/
+/var/lib/puppet/ssl/
 /var/lib/rabbitmq/
 /var/lib/urandom/
 /var/lock/

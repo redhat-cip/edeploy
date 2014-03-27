@@ -94,6 +94,9 @@ mkdir -p /var/lock
 step "Mounting virtual fs"
 mount_virtual_fs
 
+step "Spawing new shell on tty2"
+openvt /bin/bash
+
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^DEBUG=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^VERBOSE=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^NOREBOOT=")

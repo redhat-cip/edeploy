@@ -189,6 +189,12 @@ def detect_disks(hw_lst):
                 hw_lst.append(('disk', name, item_def.get(my_item),
                                line.rstrip('\n').strip()))
 
+        id_label = subprocess.Popen("cd /dev/disk/by-id; for device in *; do readlink $device | grep -qw %s && echo $device; done;" % name,
+            shell=True,
+            stdout=subprocess.PIPE)
+        for line in id_label.stdout:
+            hw_lst.append(('disk', name, 'id', line.rstrip('\n').strip()))
+
 
 def modprobe(module):
     'Load a kernel module using modprobe.'

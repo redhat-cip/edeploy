@@ -51,6 +51,7 @@ def size_in_gb(size):
 
 def detect_hpa(hw_lst):
     'Detect HP RAID controller configuration.'
+    disk_count = 0
     try:
         cli = hpacucli.Cli(debug=False)
         if not cli.launch():
@@ -69,6 +70,7 @@ def detect_hpa(hw_lst):
             slot = 'slot=%d' % controller[0]
             for _, disks in cli.ctrl_pd_all_show(slot):
                 for disk in disks:
+                    disk_count += 1
                     hw_lst.append(('disk', disk[0], 'type', disk[1]))
                     hw_lst.append(('disk', disk[0], 'slot',
                                    str(controller[0])))
@@ -78,16 +80,19 @@ def detect_hpa(hw_lst):
             sys.stderr.write('Info: detect_hpa : controller %d : %s\n'
                              % (controller[0], expt.value))
 
+    hw_lst.append(('disk', 'hpa', 'count', disk_count))
     return True
 
 
 def detect_megacli(hw_lst):
     'Detect LSI MegaRAID controller configuration.'
     ctrl_num = megacli.adp_count()
+    disk_count = 0
     if ctrl_num > 0:
         for ctrl in range(ctrl_num):
             for enc in megacli.enc_info(ctrl):
                 for disk_num in range(enc['NumberOfPhysicalDrives']):
+                    disk_count += 1
                     disk = 'disk%d' % disk_num
                     info = megacli.pdinfo(ctrl,
                                           enc['DeviceId'],
@@ -152,6 +157,7 @@ def detect_megacli(hw_lst):
                                    disk,
                                    'strip_size',
                                    info['StripSize']))
+        hw_lst.append(('disk', 'megaraid', 'count', disk_count))
         return True
     else:
         return False
@@ -161,7 +167,9 @@ def detect_disks(hw_lst):
     'Detect disks.'
     names = diskinfo.disknames()
     sizes = diskinfo.disksizes(names)
-    for name in [name for name, size in sizes.items() if size > 0]:
+    disks = [name for name, size in sizes.items() if size > 0]
+    hw_lst.append(('disk', 'logical', 'count', len(disks)))
+    for name in disks:
         hw_lst.append(('disk', name, 'size', str(sizes[name])))
         item_list = ['vendor', 'model', 'rev']
         for my_item in item_list:

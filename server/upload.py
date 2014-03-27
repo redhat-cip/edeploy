@@ -40,6 +40,7 @@ import os
 import pprint
 import re
 import sys
+import shutil
 import time
 
 import matcher
@@ -180,6 +181,8 @@ def load_cmdb(cfg_dir, name):
     'Load the cmdb.'
     filename = cmdb_filename(cfg_dir, name)
     try:
+        if "generate(" in open(filename).read(20):
+           shutil.copy2(filename, filename + ".orig")
         return eval(open(filename).read(-1))
     except IOError, xcpt:
         if xcpt.errno != errno.ENOENT:

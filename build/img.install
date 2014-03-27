@@ -226,6 +226,7 @@ LABEL SAFE
          CPU, MEMORY and STORAGE will be benchmarked.
          Test duration will vary regarding the hardware setup.
         ENDTEXT
+        SAY Loading OS, please wait
         KERNEL /vmlinuz
         INITRD /health.pxe
         APPEND $COMMON_ARGS
@@ -237,6 +238,7 @@ LABEL SAFE1H
          CPU, MEMORY and STORAGE will be benchmarked.
          Test duration will vary regarding the hardware setup.
         ENDTEXT
+        SAY Loading OS, please wait
         KERNEL /vmlinuz
         INITRD /health.pxe
         APPEND $COMMON_ARGS SMOKE=60
@@ -248,6 +250,7 @@ LABEL SAFE12H
          CPU, MEMORY and STORAGE will be benchmarked.
          Test duration will vary regarding the hardware setup.
         ENDTEXT
+        SAY Loading OS, please wait
         KERNEL /vmlinuz
         INITRD /health.pxe
         APPEND $COMMON_ARGS SMOKE=720
@@ -259,6 +262,7 @@ LABEL SAFE24H
          CPU, MEMORY and STORAGE will be benchmarked.
          Test duration will vary regarding the hardware setup.
         ENDTEXT
+        SAY Loading OS, please wait
         KERNEL /vmlinuz
         INITRD /health.pxe
         APPEND $COMMON_ARGS SMOKE=1440
@@ -270,6 +274,7 @@ LABEL SAFE48H
          CPU, MEMORY and STORAGE will be benchmarked.
          Test duration will vary regarding the hardware setup.
         ENDTEXT
+        SAY Loading OS, please wait
         KERNEL /vmlinuz
         INITRD /health.pxe
         APPEND $COMMON_ARGS SMOKE=2880
@@ -281,6 +286,7 @@ LABEL SAFE72H
          CPU, MEMORY and STORAGE will be benchmarked.
          Test duration will vary regarding the hardware setup.
         ENDTEXT
+        SAY Loading OS, please wait
         KERNEL /vmlinuz
         INITRD /health.pxe
         APPEND $COMMON_ARGS SMOKE=4320
@@ -294,6 +300,7 @@ LABEL DESTRUCTIVE
                       !!! EXISTING DATA ON STORAGE DEVICE !!!
                       !!!  WILL BE DESTROYED PERMANENTLY  !!!
         ENDTEXT
+        SAY Loading OS, please wait
         KERNEL /vmlinuz
         INITRD /health.pxe
         APPEND $COMMON_ARGS DESTRUCTIVE_MODE=1
@@ -305,6 +312,7 @@ LABEL DESTRUCTIVE1H
                       !!! EXISTING DATA ON STORAGE DEVICE !!!
                       !!!  WILL BE DESTROYED PERMANENTLY  !!!
         ENDTEXT
+        SAY Loading OS, please wait
         KERNEL /vmlinuz
         INITRD /health.pxe
         APPEND $COMMON_ARGS DESTRUCTIVE_MODE=1 SMOKE=60
@@ -316,6 +324,7 @@ LABEL DESTRUCTIVE12H
                       !!! EXISTING DATA ON STORAGE DEVICE !!!
                       !!!  WILL BE DESTROYED PERMANENTLY  !!!
         ENDTEXT
+        SAY Loading OS, please wait
         KERNEL /vmlinuz
         INITRD /health.pxe
         APPEND $COMMON_ARGS DESTRUCTIVE_MODE=1 SMOKE=720
@@ -327,6 +336,7 @@ LABEL DESTRUCTIVE24H
                       !!! EXISTING DATA ON STORAGE DEVICE !!!
                       !!!  WILL BE DESTROYED PERMANENTLY  !!!
         ENDTEXT
+        SAY Loading OS, please wait
         KERNEL /vmlinuz
         INITRD /health.pxe
         APPEND $COMMON_ARGS DESTRUCTIVE_MODE=1 SMOKE=1440
@@ -338,6 +348,7 @@ LABEL DESTRUCTIVE48H
                       !!! EXISTING DATA ON STORAGE DEVICE !!!
                       !!!  WILL BE DESTROYED PERMANENTLY  !!!
         ENDTEXT
+        SAY Loading OS, please wait
         KERNEL /vmlinuz
         INITRD /health.pxe
         APPEND $COMMON_ARGS DESTRUCTIVE_MODE=1 SMOKE=2880
@@ -349,6 +360,7 @@ LABEL DESTRUCTIVE72H
                       !!! EXISTING DATA ON STORAGE DEVICE !!!
                       !!!  WILL BE DESTROYED PERMANENTLY  !!!
         ENDTEXT
+        SAY Loading OS, please wait
         KERNEL /vmlinuz
         INITRD /health.pxe
         APPEND $COMMON_ARGS DESTRUCTIVE_MODE=1 SMOKE=4320
@@ -365,6 +377,7 @@ PROMPT 0
 DEFAULT FLASH
 
 LABEL FLASH
+        SAY Loading OS, please wait
         KERNEL /vmlinuz
         INITRD /initrd.pxe
         APPEND $KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG UPLOAD_LOG=${UPLOAD_LOG} $EMBEDDED_STRING ONFAILURE=$ONFAILURE ONSUCCESS=$ONSUCCESS IP=$IP

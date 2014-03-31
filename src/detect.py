@@ -30,6 +30,7 @@ import os
 import pprint
 import socket
 import struct
+import string
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
@@ -300,17 +301,19 @@ def detect_system(hw_lst, output=None):
     socket_count = 0
 
     def find_element(xml, xml_spec, sys_subtype,
-                     sys_type='product', sys_cls='system', attrib=None):
+                     sys_type='product', sys_cls='system',
+                     attrib=None, transform=None):
         'Lookup an xml element and populate hw_lst when found.'
         elt = xml.findall(xml_spec)
         if len(elt) >= 1:
             if attrib:
-                hw_lst.append((sys_cls, sys_type, sys_subtype,
-                               elt[0].attrib[attrib]))
-                return elt[0].attrib[attrib]
+                txt = elt[0].attrib[attrib]
             else:
-                hw_lst.append((sys_cls, sys_type, sys_subtype, elt[0].text))
-                return elt[0].text
+                txt = elt[0].text
+            if transform:
+                txt = transform(txt)
+            hw_lst.append((sys_cls, sys_type, sys_subtype, txt))
+            return txt
         return None
 
     # handle output injection for testing purpose
@@ -377,9 +380,10 @@ def detect_system(hw_lst, output=None):
                     hw_lst.append(('network',
                                    name.text,
                                    'serial',
-                                   output_ip.split('\n')[0]))
+                                   output_ip.split('\n')[0].lower()))
                 else:
-                    find_element(elt, 'serial', 'serial', name.text, 'network')
+                    find_element(elt, 'serial', 'serial', name.text, 'network',
+                                 transform=string.lower)
 
                 find_element(elt, 'vendor', 'vendor', name.text, 'network')
                 find_element(elt, 'product', 'product', name.text, 'network')

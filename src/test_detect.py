@@ -1603,7 +1603,7 @@ XML2 = '''<?xml version="1.0" standalone="yes" ?>
        <businfo>pci@0000:00:19.0</businfo>
        <logicalname>eth0</logicalname>
        <version>04</version>
-       <serial>00:21:cc:d9:bf:26</serial>
+       <serial>00:21:CC:D9:BF:26</serial>
        <capacity>1000000000</capacity>
        <width units="bits">32</width>
        <clock units="Hz">33000000</clock>

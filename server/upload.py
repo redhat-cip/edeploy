@@ -56,7 +56,14 @@ def _generate_range(num_range):
                     fmt = '%%0%dd' % len(boundaries[0])
                 else:
                     fmt = '%d'
-                for res in range(int(boundaries[0]), int(boundaries[1]) + 1):
+                start = int(boundaries[0])
+                stop = int(boundaries[1]) + 1
+                if stop > start:
+                    step = 1
+                else:
+                    step = -1
+                    stop = stop - 2
+                for res in range(start, stop, step):
                     yield fmt % res
             except ValueError:
                 yield num_range

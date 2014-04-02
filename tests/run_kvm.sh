@@ -331,9 +331,11 @@ do_exit() {
 
 ############## MAIN
 trap do_exit EXIT
+
+check_binary curl
+
 case "$MODE" in
     "stress-http")
-        check_binary curl
         check_binary seq
         check_binary bc
         check_binary python

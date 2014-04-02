@@ -46,6 +46,8 @@ mkdir -p /var/lock
 step "Mounting virtual fs"
 mount_virtual_fs
 
+get_system_info
+
 step "Booting environment"
 cat /proc/cmdline
 
@@ -156,6 +158,8 @@ if [ -n "$EMBEDDED" ]; then
     EMBEDDED_MOUNT=/flash
     export EMBEDDED_MOUNT
     mount_embedded
+    mkdir -p $EMBEDDED_MOUNT/var/lib/edeploy/config/hw/
+    dmesg > $EMBEDDED_MOUNT/var/lib/edeploy/config/logs/${vendor}-${product}-${serial}.dmesg
     mkdir -p /etc/
     cp -a $EMBEDDED_MOUNT/etc/* /etc
     /upload.py -f /hw.py > /configure

@@ -96,6 +96,8 @@ mkdir -p /var/lock
 step "Mounting virtual fs"
 mount_virtual_fs
 
+get_system_info
+
 step "Booting environment"
 cat /proc/cmdline
 

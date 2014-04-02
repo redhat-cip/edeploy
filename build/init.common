@@ -2,6 +2,12 @@
 
 GIT_REV=""
 
+get_system_info() {
+vendor=$(dmidecode -s system-manufacturer | grep -v '#' | sed 's/ *$//g' | tr ' ' '-' | tr -d '\n')
+product=$(dmidecode -s system-product-name | grep -v '#' | sed 's/ *$//g' | tr ' ' '-' | tr -d '\n')
+serial=$(dmidecode -s system-serial-number | grep -v '#' | sed 's/ *$//g' | tr ' ' '-' | tr -d '\n')
+}
+
 show_git_rev() {
     if [ ! -z "$GIT_REV" ]; then
        echo "Running eDeploy with git hash = $GIT_REV"
@@ -80,9 +86,6 @@ upload_log() {
         return
     fi
 
-    vendor=$(dmidecode -s system-manufacturer | grep -v '#' | sed 's/ *$//g' | tr ' ' '-' | tr -d '\n')
-    product=$(dmidecode -s system-product-name | grep -v '#' | sed 's/ *$//g' | tr ' ' '-' | tr -d '\n')
-    serial=$(dmidecode -s system-serial-number | grep -v '#' | sed 's/ *$//g' | tr ' ' '-' | tr -d '\n')
     log_file="${vendor}-${product}-${serial}.log.gz"
 
     # Logging the command line to the log file

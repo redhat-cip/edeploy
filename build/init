@@ -185,7 +185,7 @@ if [ ! -f /configure ]; then
 fi
 
 # If the configure features a PROFILE then we can report to the edeploy server a failure
-PROFILE=$(grep "'edeploy-profile':" /configure | cut -d "'" -f 4)
+PROFILE=$(grep "EDEPLOY_PROFILE" /configure | cut -d "=" -f 2 | tr -d ' ')
 if [ -n $PROFILE ]; then
     CAN_REPORT_FAILURE=1
 fi

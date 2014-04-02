@@ -479,10 +479,14 @@ def main():
             sys.exit(1)
         save_cmdb(cfg_dir, name, cmdb)
     var['edeploy-profile'] = name
-    cfg = open(cfg_dir + name + '.configure').read(-1)
 
     sys.stdout.write('''#!/usr/bin/env python
+#EDEPLOY_PROFILE = %s
+''' % name)
 
+    cfg = open(cfg_dir + name + '.configure').read(-1)
+
+    sys.stdout.write('''
 import commands
 import os
 import sys

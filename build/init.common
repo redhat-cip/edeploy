@@ -109,12 +109,12 @@ upload_log() {
 
     gzip -9 -c /log > /${log_file}
     if [ -n "$EMBEDDED" ]; then
-        was_umounted=0
+        was_unmounted=0
         # We are maybe on the last path before rebooting
         # If we need to log we have to be sure the embedded partition is mounted
         if [ ! -d $EMBEDDED_MOUNT/var/lib/edeploy/config/logs/ ]; then
             mount_embedded
-            was_umounted=1
+            was_unmounted=1
         fi
 
         log "Saving log ($log_file) to USB key in /var/lib/edeploy/config/logs/"

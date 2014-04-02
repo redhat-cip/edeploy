@@ -22,6 +22,8 @@ ONFAILURE="halt"
 VERBOSE=0
 IP="all:dhcp"
 
+mknod /dev/null c 1 3
+
 . init.common
 exec 3>&1
 exec 4>&2

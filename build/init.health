@@ -17,8 +17,8 @@
 # under the License.
 
 VERBOSE=0
-SAVE_TO_USB=0
-SAVE_TO_NETWORK=0
+SAVED_TO_USB=0
+SAVED_TO_NETWORK=0
 
 mknod /dev/null c 1 3
 
@@ -65,11 +65,11 @@ while [ ! -z "$(pidof curl)" ]
 done
 log "done"
 
-SAVE_TO_USB=0
+SAVED_TO_USB=0
 # Let's save the log status to the usb key
 if [ -d /ahcexport ]; then
     cp /log /ahcexport/$SESSION_FS/$DATE
-    SAVE_TO_USB=1
+    SAVED_TO_USB=1
 fi
 
 #Let's grab curl's return code based on it's pid
@@ -77,12 +77,12 @@ wait $PID
 RET_CODE=$?
 if [ "$RET_CODE" != "0" ]; then
     log "Curl exited as failed ($RET_CODE). Cannot get a configuration from http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload-health.py'"
-    SAVE_TO_NETWORK=0
-    if [ "$SAVE_TO_USB" = "0" ]; then
+    SAVED_TO_NETWORK=0
+    if [ "$SAVED_TO_USB" = "0" ]; then
         give_up "Both network & USB file saving failed... No result exported."
     fi
 else
-    SAVE_TO_NETWORK=1
+    SAVED_TO_NETWORK=1
 fi
 }
 
@@ -247,7 +247,7 @@ fi
 log "#############################################################################"
 log "Benchmarking Complete"
 log "Results got saved on :"
-if [ "$SAVE_TO_USB" = "1" ]; then
+if [ "$SAVED_TO_USB" = "1" ]; then
     log " -> USB DEVICE"
 fi
 if [ "$RET_CODE" = "0" ]; then

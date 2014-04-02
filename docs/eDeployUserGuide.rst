@@ -1362,12 +1362,59 @@ host will receive variables to define
    IPMI
 -  a hostname
 
-The generate() function allow using dashes '-' to defines ranges. In
-this example, the CMDB file will create 250 hosts's configuration (from
-IP .3 to .253 associated with an hostname defined from host001 to
-host250).
-
 This way of writing the CMDB is called 'synthetic'.
+
+Defining ranges or lists :
+''''''''''''''''''''''''''
+
+The generate() supports syntax to defines ranges of elements.
+
+Ranges are described by using dashes '-'. The column symbol ':' separates
+two ranges.
+
+'ip': '10.0.2.3-253' will create 250 hosts's configuration (from
+IP .3 to .253 associated
+
+'hostname' : 'host001-250' will create hostname variable defined from host001 to
+host250.
+
+'ip': '10.0.2.1-3:5:7-9' will avoid ip ending by .4 and .6 in the range 1-9.
+
+Note that ranges can be in the reverse order like:
+'ip': '10.0.2.1-5:20-15' will select ip from 1 to 5 and 20 to 15 and keep them
+in this order.
+
+Note that it is possible to defines tuples to get a pre-defined list of variable.
+
+.. code:: python
+    generate({'hostname': 'os-ci-test1-12',
+          'mac': ('00:22:19:57:74:a6', # test1
+                  '00:22:19:57:86:d2', # test2
+                  '00:22:19:57:79:b0', # test3
+                  '00:30:48:f4:26:06', # test4
+                  'f4:ce:46:a7:ba:70', # test5
+                  '00:22:19:57:74:79', # test6
+                  '00:22:19:57:88:62', # test7
+                  'd8:9d:67:1b:2a:b8', # test8
+                  'd8:9d:67:1a:9b:1c', # test9
+                  'd8:9d:67:1a:8f:58', # test10
+                  'd8:9d:67:1a:41:7c', # test11
+                  'd8:9d:67:32:12:a4', # test12
+                  ),
+          'role': ('openstack-full', # test1
+                   'openstack-full', # test2
+                   'openstack-full', # test3
+                   'install-server', # test4
+                   'openstack-full', # test5
+                   'openstack-full', # test6
+                   'openstack-full', # test7
+                   'openstack-full', # test8
+                   'openstack-full', # test9
+                   'openstack-full', # test10
+                   'openstack-full', # test11
+                   'openstack-full', # test12
+                   ),
+           .....
 
 The deflated version of the CMDB file
 '''''''''''''''''''''''''''''''''''''

@@ -24,6 +24,10 @@ cleanup() {
 
 #trap cleanup 0
 
+if [ -f /var/tmp/froze-builds ]; then
+    exit 0
+fi
+
 if [ -z "$ROLES" ]; then
     ROLES="base pxe health-check"
     # Build the deploy role under Debian and Ubuntu only

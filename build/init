@@ -46,6 +46,9 @@ mkdir -p /var/lock
 step "Mounting virtual fs"
 mount_virtual_fs
 
+step "Booting environment"
+cat /proc/cmdline
+
 step "Spawing new shell on tty2"
 openvt /bin/bash
 

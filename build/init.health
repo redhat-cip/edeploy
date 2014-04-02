@@ -111,6 +111,7 @@ eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^ONSUCCESS=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^ONFAILURE=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^IP=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^NONETWORKTEST")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^USBBOOT=")
 
 if [ "$VERBOSE" = 1 ]; then
     set -x			# show commands
@@ -185,8 +186,10 @@ if [ -z "$RSERV" ]; then
     RSERV="$SERV"
 fi
 
-mkdir -p /ahcexport
-mount /dev/disk/by-label/AHCEXPORT /ahcexport || mount /dev/disk/by-label/ahcexport /ahcexport || rm -rf /ahcexport
+if [ -n "$USBBOOT" ]; then
+    mkdir -p /ahcexport
+    mount /dev/disk/by-label/AHCEXPORT /ahcexport || mount /dev/disk/by-label/ahcexport /ahcexport || give_up "Failed to detect an ahcexport directory when booting on a USB device"
+fi
 
 ################################################################################
 step "Detecting hardware"
@@ -255,7 +258,9 @@ if [ "$RET_CODE" = "0" ]; then
 fi
 log "#############################################################################"
 
-umount /ahcexport
+if [ -d /ahcexport ]; then
+    umount /ahcexport
+fi
 save_log
 
 case "$ONSUCCESS" in

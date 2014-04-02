@@ -1364,29 +1364,26 @@ host will receive variables to define
 
 This way of writing the CMDB is called 'synthetic'.
 
-Defining ranges or lists :
-''''''''''''''''''''''''''
+Defining ranges or lists
+''''''''''''''''''''''''
 
 The generate() supports syntax to defines ranges of elements.
 
 Ranges are described by using dashes '-'. The column symbol ':' separates
 two ranges.
 
-'ip': '10.0.2.3-253' will create 250 hosts's configuration (from
-IP .3 to .253 associated
+'ip': '10.0.2.3-253' will create 250 hosts's configuration (from IP .3 to .253)
 
-'hostname' : 'host001-250' will create hostname variable defined from host001 to
-host250.
+'hostname' : 'host001-250' will create hostname variable defined from host001 to host250.
 
 'ip': '10.0.2.1-3:5:7-9' will avoid ip ending by .4 and .6 in the range 1-9.
 
-Note that ranges can be in the reverse order like:
-'ip': '10.0.2.1-5:20-15' will select ip from 1 to 5 and 20 to 15 and keep them
-in this order.
+'ip': '10.0.2.1-5:20-15' will select ip from 1 to 5 and 20 to 15 and keep them in this order.
 
 Note that it is possible to defines tuples to get a pre-defined list of variable.
 
 .. code:: python
+
     generate({'hostname': 'os-ci-test1-12',
           'mac': ('00:22:19:57:74:a6', # test1
                   '00:22:19:57:86:d2', # test2
@@ -1414,7 +1411,7 @@ Note that it is possible to defines tuples to get a pre-defined list of variable
                    'openstack-full', # test11
                    'openstack-full', # test12
                    ),
-           .....
+    })
 
 The deflated version of the CMDB file
 '''''''''''''''''''''''''''''''''''''

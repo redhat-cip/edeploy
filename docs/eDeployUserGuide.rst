@@ -1369,18 +1369,20 @@ Defining ranges or lists
 
 The generate() supports syntax to defines ranges of elements.
 
-Ranges are described by using dashes '-'. The column symbol ':' separates
-two ranges.
+Ranges are defined by using dashes '-'.
+
+The column symbol ':' separates two ranges : this syntax requires having ranges on both side of this symbol.
+If you need a single element out-of a serie, you'll have to write a single value range like '10-10'.
 
 'ip': '10.0.2.3-253' will create 250 hosts's configuration (from IP .3 to .253)
 
 'hostname' : 'host001-250' will create hostname variable defined from host001 to host250.
 
-'ip': '10.0.2.1-3:5:7-9' will avoid ip ending by .4 and .6 in the range 1-9.
+'ip': '10.0.2.1-3:5-5:7-9' will avoid ip ending by .4 and .6 in the range 1-9.
 
 'ip': '10.0.2.1-5:20-15' will select ip from 1 to 5 and 20 to 15 and keep them in this order.
 
-Note that it is possible to defines tuples to get a pre-defined list of variable.
+Note that it is possible to define tuples to get a pre-defined list of variable.
 
 .. code:: python
 
@@ -1398,7 +1400,7 @@ Note that it is possible to defines tuples to get a pre-defined list of variable
                   'd8:9d:67:1a:41:7c', # test11
                   'd8:9d:67:32:12:a4', # test12
                   ),
-          'role': ('openstack-full', # test1
+          'hostname': ('openstack-full', # test1
                    'openstack-full', # test2
                    'openstack-full', # test3
                    'install-server', # test4

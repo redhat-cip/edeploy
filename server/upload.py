@@ -329,7 +329,7 @@ exit 1
 def fatal_error(error):
     '''Report a shell script with the error message and log
     the message on stderr.'''
-    warning_error(error)
+    warning_error("upload.py: " + error)
     sys.exit(1)
 
 

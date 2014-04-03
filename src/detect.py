@@ -81,7 +81,7 @@ def detect_hpa(hw_lst):
             sys.stderr.write('Info: detect_hpa : controller %d : %s\n'
                              % (controller[0], expt.value))
 
-    hw_lst.append(('disk', 'hpa', 'count', disk_count))
+    hw_lst.append(('disk', 'hpa', 'count', str(disk_count)))
     return True
 
 
@@ -158,7 +158,7 @@ def detect_megacli(hw_lst):
                                    disk,
                                    'strip_size',
                                    info['StripSize']))
-        hw_lst.append(('disk', 'megaraid', 'count', disk_count))
+        hw_lst.append(('disk', 'megaraid', 'count', str(disk_count)))
         return True
     else:
         return False
@@ -169,7 +169,7 @@ def detect_disks(hw_lst):
     names = diskinfo.disknames()
     sizes = diskinfo.disksizes(names)
     disks = [name for name, size in sizes.items() if size > 0]
-    hw_lst.append(('disk', 'logical', 'count', len(disks)))
+    hw_lst.append(('disk', 'logical', 'count', str(len(disks))))
     for name in disks:
         hw_lst.append(('disk', name, 'size', str(sizes[name])))
         item_list = ['vendor', 'model', 'rev']
@@ -367,7 +367,7 @@ def detect_system(hw_lst, output=None):
                             find_element(bank, 'slot', 'slot',
                                          bank_id, 'memory')
         if bank_count > 0:
-            hw_lst.append(('memory', 'banks', 'count', bank_count))
+            hw_lst.append(('memory', 'banks', 'count', str(bank_count)))
 
         for elt in xml.findall(".//node[@class='network']"):
             name = elt.find('logicalname')

@@ -134,10 +134,20 @@ def detect_megacli(hw_lst):
                                    disk,
                                    'name',
                                    info['Name']))
-                    hw_lst.append(('ldisk',
-                                   disk,
-                                   'number_of_drives',
-                                   str(info['NumberOfDrives'])))
+                    try:
+                        hw_lst.append(('ldisk',
+                                       disk,
+                                       'number_of_drives',
+                                       str(info['NumberOfDrives'])))
+                    except:
+                        True
+                    try:
+                        hw_lst.append(('ldisk',
+                                       disk,
+                                       'number_of_drives_per_span',
+                                       str(info['NumberOfDrivesPerSpan'])))
+                    except:
+                        True
                     hw_lst.append(('ldisk',
                                    disk,
                                    'raid_level',

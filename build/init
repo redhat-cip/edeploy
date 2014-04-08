@@ -283,6 +283,9 @@ if /configure; then
             echo "default=0"  > ${d}/boot/grub/grub.conf
             echo "timeout=5" >> ${d}/boot/grub/grub.conf
             echo "hiddenmenu">> ${d}/boot/grub/grub.conf
+
+            echo "PROMPT 1" > ${d}/boot/extlinux.conf
+            echo "TOTALTIMEOUT 100" >> ${d}/boot/extlinux.conf
             DEFAULT_BOOT_PARTITION=0
 
             # Does /boot have a separate partition ?
@@ -295,6 +298,7 @@ if /configure; then
             fi
 
             DISTRO_NAME=$(chroot $d lsb_release -d |  awk '{ print substr($0, index($0,$2)) }')
+            kernel_count=0
             for kernel in ${d}/boot/vmlinuz-*; do
                 kversion=`echo $kernel | awk -F'vmlinuz-' '{print $NF}'`;
                 # If /boot is splitted, we shall not prefix with /boot
@@ -306,11 +310,27 @@ if /configure; then
                     INITRD="/boot/initramfs-${kversion}.img"
                 fi
                 TITLE="$DISTRO_NAME (${kversion})"
+                ARGS="root=UUID=$UUID nomodeset rw $BOOT_ARG"
                 echo "title $TITLE" >> ${d}/boot/grub/grub.conf
                 echo "	root (hd0,$DEFAULT_BOOT_PARTITION)" >> ${d}/boot/grub/grub.conf
-                echo "	kernel $KERNEL root=UUID=$UUID nomodeset rw $BOOT_ARG" >> ${d}/boot/grub/grub.conf
+                echo "	kernel $KERNEL $ARGS" >> ${d}/boot/grub/grub.conf
                 echo "	initrd $INITRD" >> ${d}/boot/grub/grub.conf
+
+                if [ "$kernel_count" = "0" ]; then
+                    echo "DEFAULT $TITLE" >> ${d}/boot/extlinux.conf
+                fi
+                echo "LABEL $TITLE" >> ${d}/boot/extlinux.conf
+                echo "  kernel $KERNEL" >> ${d}/boot/extlinux.conf
+                echo "  initrd $INITRD" >> ${d}/boot/extlinux.conf
+                echo "  append $ARGS" >> ${d}/boot/extlinux.conf
+                kernel_count=$(($kernel_count + 1))
             done
+
+            log "$kernel_count kernels configured"
+
+            # Setting up a quirk list where extlinux is mandatory, this will override the grub install
+            echo "$product" | grep -q "DL120-G7" && (extlinux --install ${d}/boot && dd if=/mbr.bin of=${DISK} conv=notrunc)
+
             # grub 2
         elif chroot $d /bin/sh -c "/usr/sbin/grub-install ${DISK}"; then
             chroot $d /bin/sh -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"

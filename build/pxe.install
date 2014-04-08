@@ -32,6 +32,7 @@ ROLE=pxe
 export STRIPPED_TARGET=1
 
 . ${ORIG}/common
+. ${ORIG}/img.embedded
 
 if [ ! -d "$src" -o -z "$DST" -o -z "$IMG" -o -z "$vers" ]; then
    echo "Usage: $0 <source dir> <dest dir> <initrd to generate> <version>" 1>&2
@@ -47,8 +48,11 @@ rsync -aH --delete-before --numeric-ids ${src}/ ${dir}/
 common_setup
 
 PACKAGES="python-netaddr python-ipaddr ethtool sdparm gzip lshw xfsprogs hdparm"
-case "$OS" in
-    "CentOS"|"RedHatEnterpriseServer")
+case "$DIST" in
+    $supported_debian_dists | $supported_ubuntu_dists)
+        PACKAGES="$PACKAGES libc6-i386"
+    ;;
+    $supported_centos_dists | $supported_redhat_dists)
         add_epel_repository $dir
     ;;
 esac
@@ -129,6 +133,10 @@ rsync -au --delete-excluded --delete --exclude /boot/ \
 rm -rf ${dir}
 
 cp -p init init.common $DEPS ${DST}/
+
+get_extlinux extlinux
+cp extlinux/mbr.bin ${DST}/
+cp extlinux/extlinux ${DST}/sbin
 
 # If the ssh initscript features some upstart stuff, it needs to be disabled
 if [ -r ${DST}/etc/init.d/ssh ]; then

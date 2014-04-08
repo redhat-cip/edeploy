@@ -1,3 +1,21 @@
+get_extlinux() {
+    DEST=$1
+    TESTING_SYSLINUX=Testing/6.03
+    SYSLINUX_VER=6.03-pre9
+    if [ ! -x $DEST/extlinux ] || [ ! -f $DEST/menu.c32 ] || [ ! -f $DEST/libutil.c32 ]; then
+        rm -rf $DEST
+        mkdir -p $DEST
+        # Installing extlinux & mbr from source
+        wget --no-verbose http://ftp.kernel.org/pub/linux/utils/boot/syslinux/${TESTING_SYSLINUX}/syslinux-${SYSLINUX_VER}.tar.xz
+        tar -xf syslinux-${SYSLINUX_VER}.tar.xz
+        cp syslinux-${SYSLINUX_VER}/bios/extlinux/extlinux $DEST
+        cp syslinux-${SYSLINUX_VER}/bios/mbr/mbr.bin $DEST
+        cp syslinux-${SYSLINUX_VER}/bios/com32/menu/menu.c32 $DEST
+        cp syslinux-${SYSLINUX_VER}/bios/com32/libutil/libutil.c32 $DEST
+        rm -rf syslinux-${SYSLINUX_VER}*
+    fi
+}
+
 setup_state_file() {
     dir=$1
     role=$2

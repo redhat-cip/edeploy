@@ -31,8 +31,6 @@ FLASH_SIZE=256 #in Megabytes
 LOOPBACK_BOOT=NONE
 LOOPBACK_DATA=NONE
 BOOT_MOUNT_POINT=/tmp/$2-$3.tmp
-TESTING_SYSLINUX=Testing/6.03
-SYSLINUX_VER=6.03-pre9
 
 . $LOCAL_PATH/img.embedded
 
@@ -445,19 +443,7 @@ install_bootloader() {
     step "Install bootloader"
 
     mkdir -p $BOOT_MOUNT_POINT/extlinux
-    if [ ! -x extlinux/extlinux ] || [ ! -f extlinux/menu.c32 ] || [ ! -f extlinux/libutil.c32 ]; then
-        rm -rf extlinux
-        mkdir -p extlinux
-        # Installing extlinux & mbr from source
-        wget --no-verbose http://ftp.kernel.org/pub/linux/utils/boot/syslinux/${TESTING_SYSLINUX}/syslinux-${SYSLINUX_VER}.tar.xz
-        tar -xf syslinux-${SYSLINUX_VER}.tar.xz
-        cp syslinux-${SYSLINUX_VER}/bios/extlinux/extlinux extlinux/
-        cp syslinux-${SYSLINUX_VER}/bios/mbr/mbr.bin extlinux/
-        cp syslinux-${SYSLINUX_VER}/bios/com32/menu/menu.c32 extlinux/
-        cp syslinux-${SYSLINUX_VER}/bios/com32/libutil/libutil.c32 extlinux/
-        rm -rf syslinux-${SYSLINUX_VER}*
-    fi
-
+    get_extlinux extlinux
     cp extlinux/*.c32 $BOOT_MOUNT_POINT/extlinux/
     extlinux/extlinux --install $BOOT_MOUNT_POINT/extlinux
     if [ $? -ne 0 ]; then

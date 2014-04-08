@@ -91,6 +91,8 @@ upload_log() {
     # Logging the command line to the log file
     # This is useful to find the context of this execution
     echo >> /log
+    echo "##### EOL EOL EOL EOL EOL #####" >> /log
+
     echo "##### Kernel command line #####" >> /log
     cat /proc/cmdline >> /log
     echo "###############################" >> /log

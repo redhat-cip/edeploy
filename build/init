@@ -242,6 +242,7 @@ if /configure; then
         if [ -n "${METADATA_URL}" ]; then
             log "Setting up cloudinit with METADATAURL=$METADATA_URL"
             BOOT_ARG="$BOOT_ARG ds=nocloud-net\\\;s=${METADATA_URL}"
+            BOOT_ARG1="$BOOT_ARG ds=nocloud-net;s=${METADATA_URL}"
         else
             log "No METADATA_URL variable found, no cloud-init configuration done"
         fi
@@ -310,7 +311,7 @@ if /configure; then
                     INITRD="/boot/initramfs-${kversion}.img"
                 fi
                 TITLE="$DISTRO_NAME (${kversion})"
-                ARGS="root=UUID=$UUID nomodeset rw $BOOT_ARG"
+                ARGS="root=UUID=$UUID nomodeset rw $BOOT_ARG1"
                 echo "title $TITLE" >> ${d}/boot/grub/grub.conf
                 echo "	root (hd0,$DEFAULT_BOOT_PARTITION)" >> ${d}/boot/grub/grub.conf
                 echo "	kernel $KERNEL $ARGS" >> ${d}/boot/grub/grub.conf

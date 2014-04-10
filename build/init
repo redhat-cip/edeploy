@@ -330,8 +330,13 @@ if /configure; then
             log "$kernel_count kernels configured"
 
             # Setting up a quirk list where extlinux is mandatory, this will override the grub install
-            echo "$product" | grep -q "DL120-G7" && (extlinux --install ${d}/boot && dd if=/mbr.bin of=${DISK} conv=notrunc)
-
+            log "Checking if product ($product) requires extlinux"
+            case "$product" in
+                ProLiant-DL120-G7|ProLiant-DL360p-Gen8)
+                    log "Installing extlinux to workaround grub1 issues"
+                    extlinux --install ${d}/boot && dd if=/mbr.bin of=${DISK} conv=notrunc
+                 ;;
+            esac
             # grub 2
         elif chroot $d /bin/sh -c "/usr/sbin/grub-install ${DISK}"; then
             chroot $d /bin/sh -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"

@@ -247,8 +247,6 @@ if /configure; then
             log "No METADATA_URL variable found, no cloud-init configuration done"
         fi
 
-        sed -i -e "s@GRUB_CMDLINE_LINUX_DEFAULT=\"\{0,1\}\([^\"]*\)\"\{0,1\}@GRUB_CMDLINE_LINUX_DEFAULT=\"\1 ${BOOT_ARG}\"@" $d/etc/default/grub
-
         mount -obind /dev $d/dev
         mount -obind /proc $d/proc
         mount -obind /sys $d/sys
@@ -339,6 +337,7 @@ if /configure; then
             esac
             # grub 2
         elif chroot $d /bin/sh -c "/usr/sbin/grub-install ${DISK}"; then
+            sed -i -e "s@GRUB_CMDLINE_LINUX_DEFAULT=\"\{0,1\}\([^\"]*\)\"\{0,1\}@GRUB_CMDLINE_LINUX_DEFAULT=\"\1 ${BOOT_ARG}\"@" $d/etc/default/grub
             chroot $d /bin/sh -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"
             ret=$?
         else

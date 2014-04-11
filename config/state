@@ -1,1 +1,1 @@
-[('hp', '*'), ('vm', '*'), ('vm-debian', '*'), ('kvm-test', '*')]
+[('hp', 0), ('vm', 0), ('vm-debian', 0), ('kvm-test', 0)]

@@ -2,6 +2,8 @@
 
 from socket import socket, AF_INET, SOCK_STREAM
 from health_messages import Health_Message as HM
+from health_bench import Health_Bench as HB
+from health_bench import Health_CPU as HCPU
 import health_protocol as HP
 import logging
 import time
@@ -38,8 +40,8 @@ def nack(socket, msg):
     return
 
 def cpu(socket, msg):
-    HP.logger.info("Module CPU")
-    action(socket, msg)
+    HP.logger.info("Module CPU (%d sec)" % msg.running_time)
+    action(socket, msg, HCPU(msg, socket, HP.logger))
     return
 
 def storage(socket, msg):
@@ -48,22 +50,25 @@ def storage(socket, msg):
 def memory(socket, msg):
     return
 
-def action(socket, msg):
-    handlers = { HM.NONE     : none, 
-                HM.STOP      : stop,
-                HM.START     : start,
-                HM.COMPLETED : completed,
+def network(socket, msg):
+    return
+
+def action(socket, msg, hb):
+    handlers = { HM.NONE     : hb.none,
+                HM.STOP      : hb.stop,
+                HM.START     : hb.start,
+                HM.COMPLETED : hb.completed,
     }
     
     HP.logger.info("Received action %s (%d)" % (msg.get_action_type(), msg.action)) 
-    handlers[msg.action](socket, msg)
-
+    handlers[msg.action]()
 
 def module(socket, msg):
     handlers = { HM.NONE    : none, 
                 HM.CPU      : cpu,
                 HM.STORAGE  : storage,
                 HM.MEMORY   : memory,
+                HM.NETWORK  : network,
     }
     
     HP.logger.info("Received module %s (%d)" % (msg.get_module_type(), msg.module)) 

@@ -1,16 +1,3 @@
-class Load:
-    running_time = 0
-
-class Cpu_load(Load):
-    instances = 0
-
-class Storage_load(Load):
-    device_list = ()
-
-class Memory_load(Load):
-    instances = 0
-    block_size = ''
-
 class Health_Message():
     protocol_version = 0
     
@@ -33,17 +20,16 @@ class Health_Message():
     NETWORK = 1 << 4
 
     message_string = {NONE: 'NONE', CONNECT: 'CONNECT', DISCONNECT: 'DISCONNECT', ACK: 'ACK', NACK: 'NACK', MODULE: 'MODULE'}
-    action_string = {NONE: 'NONE', STOP: 'STOP', START: 'START', COMPLETED: 'COMPLETED'} 
     module_string = {NONE: 'NONE', CPU: 'CPU', STORAGE:'STORAGE', MEMORY:'MEMORY', NETWORK:'NETWORK'}
+    action_string = {NONE: 'NONE', STOP: 'STOP', START: 'START', COMPLETED: 'COMPLETED'}
     message = NONE
     action = NONE 
     module = NONE
 
     need_ack = False
 
-    memory_load = Memory_load()
-    cpu_load = Cpu_load()
-    storage_load = Storage_load()
+    running_time = 0
+    cpu_instances = 0
 
 
     def get_message_list(self):

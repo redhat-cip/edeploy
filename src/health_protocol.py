@@ -26,7 +26,7 @@ def start_log(filename, level=logging.INFO):
 def send_hm_message(sock, data, need_ack=False):
     global logger
     data.need_ack = need_ack
-    logger.debug("Sent %s to %s (need_ack=%r)" % (data.get_message_type(), sock.getpeername(), data.need_ack))
+    logger.debug("Sent %s/%s/%s to %s (need_ack=%r)" % (data.get_message_type(), data.get_module_type(), data.get_action_type(), sock.getpeername(), data.need_ack))
     to_be_sent = zlib.compress(pickle.dumps(data))
     sock.sendall(struct.pack('!I', len(to_be_sent)))
     sock.sendall(to_be_sent)
@@ -58,7 +58,7 @@ def recv_hm_message(sock):
             send_hm_message(sock, HM(HM.NACK), False)
         msg.message = HM.INVALID
     else:
-        logger.debug("Received %s from %s (need_ack=%r)" % (msg.get_message_type(), sock.getpeername(), msg.need_ack))
+        logger.debug("Received %s/%s/%s from %s (need_ack=%r)" % (msg.get_message_type(), msg.get_module_type(), msg.get_action_type(), sock.getpeername(), msg.need_ack))
         if (msg.need_ack is True) and (msg.message != HM.DISCONNECT):
             send_hm_message(sock, HM(HM.ACK), False)
     return msg

@@ -84,13 +84,7 @@ def update_time(screen):
     global cpu
     global hosts
     while 1:
-        connected = 0
-        lock_host.acquire()
-        for key in hosts.keys():
-            msg_type = HM(hosts[key]).message
-            if msg_type == HM.CONNECT:
-                connected = connected + 1
-        lock_host.release()
+        connected = len(hosts.keys())
 
         bar_str = "CPU:%s" % cpu
         host_str = "C:%d" % connected

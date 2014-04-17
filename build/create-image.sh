@@ -258,13 +258,6 @@ EOF
     # Fix generated grub.cfg
     sed -i -e 's/\t*loopback.*//' -e 's/\t*set root=.*//' -e "s/\(--set=root \|UUID=\)[^ ]*/\1$UUID/p" $MDIR/boot/grub/grub.cfg
     sed -i -e 's/msdos5/msdos1/g' $MDIR/boot/grub/grub.cfg
-
-    if [ -n "$VAGRANT" ]; then
-        # HACK(Gonéri):
-        # We use cloud-initramfs-growroot to resize the / but it expects the root to be a device,
-        # not an UUID
-        sed -i -e 's,root=UUID=.* ro,root=/dev/vda1 ro,g' $MDIR/boot/grub/grub.cfg
-    fi
 else
     # Grub1 doesn't have /usr/sbin/grub-mkconfig, failback on extlinux for booting
     if [ ! -x extlinux/extlinux ] || [ ! -f extlinux/menu.c32 ] || [ ! -f extlinux/libutil.c32 ]; then

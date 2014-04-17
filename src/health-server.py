@@ -62,6 +62,10 @@ class SocketHandler(BaseRequestHandler):
                     hosts[self.client_address] = msg.message
                     lock_host.release()
 
+                    if msg.message == HM.MODULE and msg.action == HM.COMPLETED:
+                        if msg.module == HM.CPU:
+                            cpu_completed(self.client_address)
+
 
 def createAndStartServer():
     global serv
@@ -95,6 +99,14 @@ def update_time(screen):
         screen.addstr(0, 0, time.strftime("%a, %d %b %Y %H:%M:%S"))
         screen.refresh()
         time.sleep(1)
+
+def cpu_completed(host):
+    global hosts
+    global cpu
+    del hosts_cpu[host]
+    cpu = cpu - 1
+
+
 
 def change_cpu(amount):
     global cpu

@@ -51,11 +51,11 @@ class SocketHandler(BaseRequestHandler):
                     del hosts[self.client_address]
                     lock_host.release()
 
+                    socket_list[self.client_address].close()
+
                     lock_socket_list.acquire()
                     del socket_list[self.client_address]
                     lock_socket_list.release()
-
-                    socket_list[self.client_address].close()
                     return
                 else:
                     lock_host.acquire()

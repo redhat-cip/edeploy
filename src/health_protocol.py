@@ -45,12 +45,18 @@ def send_hm_message(sock, data, need_ack=False):
 
 def recv_hm_message(sock):
     global logger
-    lengthbuf = recvall(sock, 4)
+    try:
+        lengthbuf = recvall(sock, 4)
+    except socket.error as v:
+        logger.error(v)
+        return HM(HM.INVALID)
+
     try:
         length = struct.unpack('!I', lengthbuf)
-    except:
+    except Exception as e:
         logger.error("Received incomplete message")
-        return None
+        return HM(HM.INVALID)
+
     msg = pickle.loads(zlib.decompress(recvall(sock, int(length[0]))))
     if msg.is_valid() is False:
         logger.error("Message %d is not part of the valid message_list" % msg.message)

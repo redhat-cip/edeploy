@@ -4,11 +4,13 @@ from socket import socket, AF_INET, SOCK_STREAM
 from health_messages import Health_Message as HM
 from health_bench import Health_Bench as HB
 from health_bench import Health_CPU as HCPU
+import atexit
 import health_protocol as HP
 import logging
 import time
 import sys
 
+s = socket(AF_INET, SOCK_STREAM)
 
 def invalid_message(msg):
     HP.logger.error("%s is not a valid message for a client" % msg.get_message_type())
@@ -75,8 +77,8 @@ def module(socket, msg):
     handlers[msg.module](socket, msg)
 
 
-def connect_to_server():
-    s = socket(AF_INET, SOCK_STREAM)
+def connect_to_server(hrdw):
+    global s
     s.connect(('localhost', 20000))
     HP.send_hm_message(s, HM(HM.CONNECT), True)
     while True:
@@ -102,6 +104,13 @@ def connect_to_server():
         handlers[msg.message](s,msg)
 
 
+def cleanup():
+    global s
+    HP.send_hm_message(s, HM(HM.DISCONNECT), False)
+    s.shutdown(1)
+    s.close()
+
 if __name__ == '__main__':
     HP.start_log('/var/tmp/health-client.log', logging.DEBUG)
+    atexit.register(cleanup)
     connect_to_server()

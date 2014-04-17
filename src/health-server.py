@@ -103,8 +103,8 @@ def change_cpu(amount):
 #        if amount < 0:
         if amount > 0:
             msg = HM(HM.MODULE, HM.CPU, HM.START)
-            msg.instance = 1
-            msg.running_time = 2
+            msg.cpu_instances = 1
+            msg.running_time = 10
             for host in hosts.keys():
                 if not host in hosts_cpu.keys():
                     hosts_cpu[host] = True

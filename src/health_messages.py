@@ -7,6 +7,7 @@ class Health_Message():
     STOP = 1 << 1
     START = 1 << 2
     COMPLETED = 1 << 3
+    NOTCOMPLETED = 1 << 4
 
     CONNECT = 1 << 1
     DISCONNECT = 1 << 2 
@@ -21,12 +22,13 @@ class Health_Message():
 
     message_string = {NONE: 'NONE', CONNECT: 'CONNECT', DISCONNECT: 'DISCONNECT', ACK: 'ACK', NACK: 'NACK', MODULE: 'MODULE'}
     module_string = {NONE: 'NONE', CPU: 'CPU', STORAGE:'STORAGE', MEMORY:'MEMORY', NETWORK:'NETWORK'}
-    action_string = {NONE: 'NONE', STOP: 'STOP', START: 'START', COMPLETED: 'COMPLETED'}
+    action_string = {NONE: 'NONE', STOP: 'STOP', START: 'START', COMPLETED: 'COMPLETED', NOTCOMPLETED: 'NOTCOMPLETED'}
     message = NONE
     action = NONE 
     module = NONE
 
     need_ack = False
+    hw = []
 
     running_time = 0
     cpu_instances = 0
@@ -37,7 +39,7 @@ class Health_Message():
 
 
     def get_action_list(self):
-        return [self.NONE, self.STOP, self.START, self.COMPLETED]
+        return [self.NONE, self.STOP, self.START, self.COMPLETED, self.NOTCOMPLETED]
 
 
     def get_module_list(self):

@@ -1,5 +1,6 @@
 from health_messages import Health_Message as HM
 import health_protocol as HP
+import health_libs as HL
 import logging
 import time
 
@@ -14,11 +15,20 @@ class Health_Bench():
     def stop(self):
         return
 
-    def completed(self):
-        return
-
     def none(self):
         return
+
+    def notcompleted(self, module):
+        self.message.message = HM.MODULE
+        self.message.module = module
+        self.message.action = HM.NOTCOMPLETED
+        HP.send_hm_message(self.socket, self.message)
+
+    def completed(self, module):
+        self.message.message = HM.MODULE
+        self.message.module = module
+        self.message.action = HM.COMPLETED
+        HP.send_hm_message(self.socket, self.message)
 
     def __init__ (self, msg, socket, logger):
         logger.info("INIT BENCH")
@@ -30,17 +40,15 @@ class Health_CPU(Health_Bench):
 
     def start(self):
         self.logger.info("Starting CPU Bench for %d seconds" % self.message.running_time)
-        time.sleep(self.message.running_time)
+        HL.run_sysbench(self.message.hw, self.message.running_time, self.message.cpu_instances)
         self.completed()
-        return
-
 
     def stop(self):
         logger.info("Stopping CPU Bench")
-        return
 
+    def notcompleted(self):
+        Health_Bench.notcompleted(self, HM.CPU)
 
     def completed(self):
-        HP.send_hm_message(self.socket, HM(HM.MODULE, HM.CPU, HM.COMPLETED))
-        return
+        Health_Bench.completed(self, HM.CPU)
 

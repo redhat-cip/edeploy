@@ -1,3 +1,6 @@
+import sys
+import subprocess
+
 def get_value(hw_, level1, level2, level3):
     for entry in hw_:
         if (level1 == entry[0] and level2 == entry[1] and level3 == entry[2]):

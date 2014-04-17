@@ -60,6 +60,7 @@ def action(socket, msg, hb):
                 HM.STOP      : hb.stop,
                 HM.START     : hb.start,
                 HM.COMPLETED : hb.completed,
+                HM.NOTCOMPLETED : hb.notcompleted,
     }
     
     HP.logger.info("Received action %s (%d)" % (msg.get_action_type(), msg.action)) 
@@ -91,6 +92,8 @@ def connect_to_server(hrdw):
             HP.logger.error("Ignoring invalid message")
             continue;
 
+        msg.hw = hrdw
+
         handlers = { HM.NONE      : none, 
                     HM.CONNECT    : connect,
                     HM.DISCONNECT : disconnect,
@@ -113,4 +116,5 @@ def cleanup():
 if __name__ == '__main__':
     HP.start_log('/var/tmp/health-client.log', logging.DEBUG)
     atexit.register(cleanup)
-    connect_to_server()
+    hrdw = eval(open(sys.argv[1]).read(-1))
+    connect_to_server(hrdw)

@@ -59,7 +59,7 @@ class SocketHandler(BaseRequestHandler):
                     return
                 else:
                     lock_host.acquire()
-                    hosts[self.client_address] = msg.message
+                    hosts[self.client_address] = msg
                     lock_host.release()
 
                     if msg.message == HM.MODULE and msg.action == HM.COMPLETED:

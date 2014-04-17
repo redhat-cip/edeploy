@@ -23,7 +23,7 @@ import pprint
 import re
 import subprocess
 import sys
-
+import health_libs as HL
 import os
 import psutil
 
@@ -56,13 +56,6 @@ def get_disks_name(hw__, without_bootable=False):
             else:
                 disks.append(entry[1])
     return disks
-
-
-def get_value(hw_, level1, level2, level3):
-    for entry in hw_:
-        if (level1 == entry[0] and level2 == entry[1] and level3 == entry[2]):
-            return entry[3]
-    return None
 
 
 def get_mac(hw_, level1, level2):
@@ -100,36 +93,10 @@ def get_cache_size(hw_, cpu_nb):
         hw_.append(('cpu', 'logical_%d' % cpu_nb, 'cache_size', cache_size))
 
 
-def run_sysbench(hw_, max_time, cpu_count, processor_num=-1):
-    'Running sysbench cpu stress of a give amount of logical cpu'
-    taskset = ''
-    if (processor_num < 0):
-        sys.stderr.write('Benchmarking all CPUs for '
-                         '%d seconds (%d threads)\n' % (max_time, cpu_count))
-    else:
-        sys.stderr.write('Benchmarking CPU %d for %d seconds (%d threads)\n' %
-                         (processor_num, max_time, cpu_count))
-        taskset = 'taskset %s' % hex(1 << processor_num)
-
-    cmds = '%s sysbench --max-time=%d --max-requests=1000000 ' \
-           '--num-threads=%d --test=cpu --cpu-max-prime=15000 run'
-    sysbench_cmd = subprocess.Popen(cmds % (taskset, max_time, cpu_count),
-                                    shell=True, stdout=subprocess.PIPE)
-    for line in sysbench_cmd.stdout:
-        if "total number of events" in line:
-            title, perf = line.rstrip('\n').replace(' ', '').split(':')
-            if processor_num == -1:
-                hw_.append(('cpu', 'logical', 'loops_per_sec',
-                            str(int(perf) / max_time)))
-            else:
-                hw_.append(('cpu', 'logical_%d' % processor_num,
-                            'loops_per_sec', str(int(perf) / max_time)))
-
-
 def cpu_perf(hw_, testing_time=10, burn_test=False):
     ' Detect the cpu speed'
-    result = get_value(hw_, 'cpu', 'logical', 'number')
-    physical = get_value(hw_, 'cpu', 'physical', 'number')
+    result = HL.get_value(hw_, 'cpu', 'logical', 'number')
+    physical = HL.get_value(hw_, 'cpu', 'physical', 'number')
 
     # Individual Test aren't useful for burn_test
     if burn_test is False:
@@ -140,13 +107,13 @@ def cpu_perf(hw_, testing_time=10, burn_test=False):
             for cpu_nb in get_one_cpu_per_socket(hw_):
                 get_bogomips(hw_, cpu_nb)
                 get_cache_size(hw_, cpu_nb)
-                run_sysbench(hw_, testing_time, 1, cpu_nb)
+                HL.run_sysbench(hw_, testing_time, 1, cpu_nb)
     else:
         sys.stderr.write('CPU Burn: %d logical'
                          ' CPU to test (ETA: %d seconds)\n' % (
                              int(result), testing_time))
 
-    run_sysbench(hw_, testing_time, int(result))
+    HL.run_sysbench(hw_, testing_time, int(result))
 
 
 def check_mem_size(block_size, cpu_count):
@@ -293,7 +260,7 @@ def get_ddr_timing(hw_):
 
 def mem_perf_burn(hw_, testing_time=10):
     'Report the memory performance'
-    result = get_value(hw_, 'cpu', 'logical', 'number')
+    result = HL.get_value(hw_, 'cpu', 'logical', 'number')
     if result is not None:
         sys.stderr.write('Memory Burn: %d logical CPU'
                          ' to test (ETA: %d seconds)\n' % (
@@ -321,8 +288,8 @@ def mem_perf(hw_, testing_time=5):
     'Report the memory performance'
     all_cpu_testing_time = 5
     block_size_list = ['1K', '4K', '1M', '16M', '128M', '1G', '2G']
-    result = get_value(hw_, 'cpu', 'logical', 'number')
-    physical = get_value(hw_, 'cpu', 'physical', 'number')
+    result = HL.get_value(hw_, 'cpu', 'logical', 'number')
+    physical = HL.get_value(hw_, 'cpu', 'physical', 'number')
     if physical is not None:
         eta = int(physical) * len(block_size_list) * testing_time
         eta += 2 * (all_cpu_testing_time * len(block_size_list))
@@ -417,15 +384,15 @@ def run_fio(hw_, disks_list, mode, io_size, time):
 def get_output_filename(hw_):
     sysname = ''
 
-    sysprodname = get_value(hw_, 'system', 'product', 'name')
+    sysprodname = HL.get_value(hw_, 'system', 'product', 'name')
     if sysprodname:
         sysname = re.sub(r'\W+', '', sysprodname) + '-'
 
-    sysprodvendor = get_value(hw_, 'system', 'product', 'vendor')
+    sysprodvendor = HL.get_value(hw_, 'system', 'product', 'vendor')
     if sysprodvendor:
         sysname += re.sub(r'\W+', '', sysprodvendor) + '-'
 
-    sysprodserial = get_value(hw_, 'system', 'product', 'serial')
+    sysprodserial = HL.get_value(hw_, 'system', 'product', 'serial')
     if sysprodserial:
         sysname += re.sub(r'\W+', '', sysprodserial)
 

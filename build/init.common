@@ -127,7 +127,7 @@ upload_log() {
         cp $log_file $EMBEDDED_MOUNT/var/lib/edeploy/config/logs/
 
         if [ "$was_unmounted" = "1" ]; then
-            unmount_embedded
+            umount_embedded
         fi
     else
         # Uploading log file

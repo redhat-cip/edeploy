@@ -190,7 +190,7 @@ copy_os_to_flash() {
 
 setup_bootloader() {
 
-    KERNEL_OPTIONS="quiet panic=-1 oops=panic USBBOOT=1 rw | $CMDLINE | console=ttyS0,115200"
+    KERNEL_OPTIONS="quiet panic=-1 oops=panic USBBOOT=1 rw | $CMDLINE |"
     if [ -z "$ONSUCCESS" ]; then
         ONSUCCESS="halt"
     fi

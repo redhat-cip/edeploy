@@ -391,7 +391,7 @@ check_embedded_os() {
     step "Checking Embedded OS"
 
 	if [ ! -f "$EMBEDDED_OS" ]; then
-        fatal_error "EMBEDDED variable should reference an existing file"
+        fatal_error "EMBEDDED_OS variable should reference an existing file"
     fi
 
 	if [ -z "$EMBEDDED_ROLE" ]; then

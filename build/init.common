@@ -33,6 +33,7 @@ mount_embedded() {
         mkdir -p $EMBEDDED_MOUNT
     fi
     mount /dev/disk/by-label/edeploy_boot $EMBEDDED_MOUNT
+    mount | grep "$EMBEDDED_MOUNT" | grep -qw ro && give_up "USB Key is mounted as Read-only ! Embedded mode can work in such context"
 }
 
 umount_embedded() {

@@ -350,6 +350,7 @@ if /configure; then
             umount $d/dev
             umount $d/proc
             save_log
+            log "Syncing data to disk"
             sync
 
             if [ -n "$PXEMNGR_URL" ]; then

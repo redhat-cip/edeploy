@@ -16,7 +16,7 @@
     git: repo=https://github.com/enovance/edeploy.git
          dest=/srv/edeploy force=no
   - name: create eDeploy config dir
-    file: path=/etc/edeploy state=directory
+    file: path=/etc/edeploy state=directory owner=www-data group=www-data
   - name: copy config files
     cp: src=/srv/edeploy/config/* dest=/etc/edeploy
   - name: create edeploy CGI config

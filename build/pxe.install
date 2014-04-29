@@ -53,7 +53,7 @@ case "$DIST" in
         PACKAGES="$PACKAGES libc6-i386"
     ;;
     $supported_centos_dists | $supported_redhat_dists)
-        add_epel_repository $dir
+        add_epel_repository $DIST
     ;;
 esac
 

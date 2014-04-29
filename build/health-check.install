@@ -58,10 +58,15 @@ deb $repository precise-updates multiverse
 EOF
 fi
 
-PACKAGES="sysbench fio python-psutil netperf python-netaddr ethtool python-numpy sdparm gzip lshw hdparm"
-case "$OS" in
-    "CentOS"|"RedHatEnterpriseServer")
-        add_epel_repository $dir
+PACKAGES="sysbench python-psutil netperf python-netaddr ethtool sdparm gzip hdparm"
+case "$DIST" in
+    $supported_centos_dists | $supported_redhat_dists)
+        add_epel_repository $DIST
+        PACKAGES="$PACKAGES numpy http://pkgs.repoforge.org/netperf/netperf-2.6.0-1.el6.rf.x86_64.rpm"
+        PACKAGES="$PACKAGES http://pkgs.repoforge.org/fio/fio-2.1.7-1.el6.rf.x86_64.rpm http://pkgs.repoforge.org/lshw/lshw-2.17-1.el6.rf.x86_64.rpm"
+    ;;
+    $supported_debian_dists | $supported_ubuntu_dists)
+        PACKAGES="$PACKAGES python-numpy fio lshw"
     ;;
 esac
 

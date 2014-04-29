@@ -2,6 +2,8 @@
 
 GIT_REV=""
 
+export PATH=/sbin:/usr/sbin:/bin:/usr/bin:$PATH
+
 get_system_info() {
 vendor=$(dmidecode -s system-manufacturer | grep -v '#' | sed 's/ *$//g' | tr ' ' '-' | tr -d '\n')
 product=$(dmidecode -s system-product-name | grep -v '#' | sed 's/ *$//g' | tr ' ' '-' | tr -d '\n')

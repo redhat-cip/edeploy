@@ -177,15 +177,15 @@ add_megacli_repository() {
   local target=$2
   case "$dist" in
       $supported_debian_dists)
-	  wget -O - http://hwraid.le-vert.net/debian/hwraid.le-vert.net.gpg.key | do_chroot $target apt-key add -
-	  echo "deb http://hwraid.le-vert.net/debian ${dist} main" > $target/etc/apt/sources.list.d/hwraid.list
+          wget -O - http://hwraid.le-vert.net/debian/hwraid.le-vert.net.gpg.key | do_chroot $target apt-key add -
+          echo "deb http://hwraid.le-vert.net/debian ${dist} main" > $target/etc/apt/sources.list.d/hwraid.list
 	  ;;
       $supported_ubuntu_dists)
           wget -O - http://hwraid.le-vert.net/ubuntu/hwraid.le-vert.net.gpg.key | do_chroot $target apt-key add -
           echo "deb http://hwraid.le-vert.net/ubuntu ${dist} main" > $target/etc/apt/sources.list.d/hwraid.list
 	  ;;
       $supported_centos_dists|$supported_redhat_dists)
-	  check_binary unzip
+          check_binary unzip
 	  ;;
       *)
 	  fatal_error "Unsupported distro for hwraid"
@@ -197,7 +197,7 @@ add_megacli_repository() {
 install_megacli() {
   case "$dist" in
       $supported_debian_dists|$supported_ubuntu_dists)
-	  install_packages $target megacli
+          install_packages $target megacli
 	  ;;
       $supported_centos_dists|$supported_redhat_dists)
 	  local MEGACLIVER=8.07.07

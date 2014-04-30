@@ -200,14 +200,18 @@ install_megacli() {
           install_packages $target megacli
 	  ;;
       $supported_centos_dists|$supported_redhat_dists)
-	  local MEGACLIVER=8.07.07
-	  if [ -r "$ORIG/${MEGACLIVER}_MegaCLI.zip" ]; then
-	      unzip "$ORIG/${MEGACLIVER}_MegaCLI.zip" linux/MegaCli-${MEGACLIVER}-1.noarch.rpm -d $target/tmp
-	      chroot $target rpm -ivh /tmp/linux/MegaCli-${MEGACLIVER}-1.noarch.rpm
-	      chroot $target ln -sf /opt/MegaRAID/MegaCli/MegaCli64 /usr/sbin/megacli
-	  else
-	      echo "NO MEGACLI ARCHIVE AVAILABLE: download it from www.lsi.com" 1>&2
-	  fi
+          local MEGACLIVER=8.07.10
+          local MEGACLIZIP="$ORIG/${MEGACLIVER}_MegaCLI_Linux.zip"
+          if [ ! -f "$MEGACLIZIP" ]; then
+              wget "http://www.lsi.com/downloads/Public/RAID%20Controllers/RAID%20Controllers%20Common%20Files/${MEGACLIVER}_MegaCLI_Linux.zip" -O  $MEGACLIZIP
+          fi
+          if [ -r "$MEGACLIZIP" ]; then
+              unzip "${MEGACLIZIP}" "${MEGACLIVER}_MegaCLI_Linux/Linux MegaCLI ${MEGACLIVER}/MegaCli-${MEGACLIVER}-1.noarch.rpm" -d $target/tmp
+              chroot $target rpm -ivh "/tmp/${MEGACLIVER}_MegaCLI_Linux/Linux MegaCLI ${MEGACLIVER}/MegaCli-${MEGACLIVER}-1.noarch.rpm"
+              chroot $target ln -sf /opt/MegaRAID/MegaCli/MegaCli64 /usr/sbin/megacli
+          else
+              echo "NO MEGACLI ARCHIVE AVAILABLE: download it from www.lsi.com" 1>&2
+          fi
 	  ;;
   esac
 }

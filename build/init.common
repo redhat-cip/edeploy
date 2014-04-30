@@ -4,6 +4,21 @@ GIT_REV=""
 
 export PATH=/sbin:/usr/sbin:/bin:/usr/bin:$PATH
 
+get_distro() {
+    lsb_release -si
+}
+
+run_detect() {
+    case $(get_distro) in
+       "RedHatEnterpriseServer"|"Centos")
+            scl enable python27 /detect.py > /hw.py || fatal_error "Failed to detect hardware"
+       ;;
+       *)
+            /detect.py > /hw.py || fatal_error "Failed to detect hardware"
+       ;;
+    esac
+}
+
 get_system_info() {
 vendor=$(dmidecode -s system-manufacturer | grep -v '#' | sed 's/ *$//g' | tr ' ' '-' | tr -d '\n')
 product=$(dmidecode -s system-product-name | grep -v '#' | sed 's/ *$//g' | tr ' ' '-' | tr -d '\n')

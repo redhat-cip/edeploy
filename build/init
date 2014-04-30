@@ -144,7 +144,7 @@ fi
 step "Detecting hardware"
 
 cd /
-./detect.py > /hw.py
+run_detect
 
 show_kernel_modules
 ################################################################################

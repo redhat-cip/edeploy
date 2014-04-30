@@ -195,7 +195,7 @@ fi
 step "Detecting hardware"
 
 cd /
-./detect.py > /hw.py || give_up "Failed to detect hardware"
+run_detect
 
 show_kernel_modules
 

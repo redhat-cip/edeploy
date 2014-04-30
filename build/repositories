@@ -137,6 +137,23 @@ add_rhn_channel() {
       update_system $dir
 }
 
+add_scn_feature() {
+        local dist=$1
+        local scn=$2
+        case "$dist" in
+            $supported_redhat_dists | supported_centos_dists)
+                wget "http://dev.centos.org/centos/6/SCL/scl.repo" -O $dir/etc/yum.repos.d/scl.repo
+                update_repositories $dir
+                install_packages $dir "$2"
+             ;;
+        esac
+}
+
+remove_scn_repository() {
+    rm -f $dir/etc/yum.repos.d/scl.repo
+    update_repositories $dir
+}
+
 add_rhn_repository() {
   local dist=$1
 

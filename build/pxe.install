@@ -54,6 +54,10 @@ case "$DIST" in
     ;;
     $supported_centos_dists | $supported_redhat_dists)
         add_epel_repository $DIST
+        add_scn_feature $DIST python27
+        do_chroot $dir scl enable python27 'easy_install netaddr pexpect'
+        remove_scn_repository
+
     ;;
 esac
 

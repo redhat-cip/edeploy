@@ -456,6 +456,13 @@ def detect_system(hw_lst, output=None):
                 find_element(elt, "configuration/setting[@id='threads']",
                              'threads', 'physical_%s' % socket_count, 'cpu',
                              'value')
+                cpuinfo_cmd = subprocess.Popen("grep flags /proc/cpuinfo | uniq  | cut -d ':' -f 2",
+                                          shell=True,
+                                          stdout=subprocess.PIPE)
+                for line in cpuinfo_cmd.stdout:
+                    hw_lst.append(('cpu', 'physical_%s' % (socket_count),
+                                   'flags', line.rstrip('\n').strip()))
+
                 socket_count = socket_count+1
     else:
         sys.stderr.write("Unable to run lshw: %s\n" % output)

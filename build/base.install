@@ -203,7 +203,7 @@ install_megacli() {
           local MEGACLIVER=8.07.10
           local MEGACLIZIP="$ORIG/${MEGACLIVER}_MegaCLI_Linux.zip"
           if [ ! -f "$MEGACLIZIP" ]; then
-              wget "http://www.lsi.com/downloads/Public/RAID%20Controllers/RAID%20Controllers%20Common%20Files/${MEGACLIVER}_MegaCLI_Linux.zip" -O  $MEGACLIZIP
+              wget "https://github.com/enovance/edeploy-roles/blob/master/files/${MEGACLIVER}_MegaCLI_Linux.zip?raw=true" -O  $MEGACLIZIP
           fi
           if [ -r "$MEGACLIZIP" ]; then
               unzip "${MEGACLIZIP}" "${MEGACLIVER}_MegaCLI_Linux/Linux MegaCLI ${MEGACLIVER}/MegaCli-${MEGACLIVER}-1.noarch.rpm" -d $target/tmp

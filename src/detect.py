@@ -472,6 +472,36 @@ def detect_system(hw_lst, output=None):
     if status == 0:
         hw_lst.append(('cpu', 'logical', 'number', str(output)))
 
+    osvendor_cmd = subprocess.Popen("lsb_release -is",
+        shell=True,
+        stdout=subprocess.PIPE)
+    for line in osvendor_cmd.stdout:
+        hw_lst.append(('system', 'os', 'vendor', line.rstrip('\n').strip()))
+
+    osinfo_cmd = subprocess.Popen("lsb_release -ds | tr -d '\"'",
+        shell=True,
+        stdout=subprocess.PIPE)
+    for line in osinfo_cmd.stdout:
+        hw_lst.append(('system', 'os', 'version', line.rstrip('\n').strip()))
+
+    uname_cmd = subprocess.Popen("uname -r",
+        shell=True,
+        stdout=subprocess.PIPE)
+    for line in uname_cmd.stdout:
+        hw_lst.append(('system', 'kernel', 'version', line.rstrip('\n').strip()))
+
+    arch_cmd = subprocess.Popen("uname -i",
+        shell=True,
+        stdout=subprocess.PIPE)
+    for line in arch_cmd.stdout:
+        hw_lst.append(('system', 'kernel', 'arch', line.rstrip('\n').strip()))
+
+    cmdline_cmd = subprocess.Popen("cat /proc/cmdline",
+        shell=True,
+        stdout=subprocess.PIPE)
+    for line in cmdline_cmd.stdout:
+        hw_lst.append(('system', 'kernel', 'cmdline', line.rstrip('\n').strip()))
+
 
 def _main():
     'Command line entry point.'

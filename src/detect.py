@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2013 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2013-2014 eNovance SAS <licensing@enovance.com>
 #
 # Author: Frederic Lepied <frederic.lepied@enovance.com>
 #
@@ -31,12 +31,18 @@ import pprint
 import socket
 import struct
 import string
-import subprocess
+from subprocess import Popen, PIPE
 import sys
 import xml.etree.ElementTree as ET
 import re
 
 SIOCGIFNETMASK = 0x891b
+
+
+def output_lines(cmdline):
+    "Run a shell command and returns the output as lines."
+    res = Popen(cmdline, shell=True, stdout=PIPE)
+    return res.stdout
 
 
 def size_in_gb(size):
@@ -200,17 +206,19 @@ def detect_disks(hw_lst):
         item_list = ['WCE', 'RCD']
         item_def = {'WCE': 'Write Cache Enable', 'RCD': 'Read Cache Disable'}
         for my_item in item_list:
-            sdparm_cmd = subprocess.Popen("sdparm -q --get=%s /dev/%s | "
-                                          "awk '{print $2}'" % (my_item, name),
-                                          shell=True,
-                                          stdout=subprocess.PIPE)
+            sdparm_cmd = Popen("sdparm -q --get=%s /dev/%s | "
+                               "awk '{print $2}'" % (my_item, name),
+                               shell=True,
+                               stdout=PIPE)
             for line in sdparm_cmd.stdout:
                 hw_lst.append(('disk', name, item_def.get(my_item),
                                line.rstrip('\n').strip()))
 
-        id_label = subprocess.Popen("cd /dev/disk/by-id; for device in *; do readlink $device | grep -qw %s && echo $device; done;" % name,
-            shell=True,
-            stdout=subprocess.PIPE)
+        id_label = Popen("cd /dev/disk/by-id; for device in *;"
+                         " do readlink $device | grep -qw %s && echo $device;"
+                         " done;" % name,
+                         shell=True,
+                         stdout=PIPE)
         for line in id_label.stdout:
             hw_lst.append(('disk', name, 'id', line.rstrip('\n').strip()))
 
@@ -361,7 +369,10 @@ def detect_system(hw_lst, output=None):
                         bank_count = bank_count+1
                         for bank in elt.findall(".//node[@id='%s']" %
                                                 (bank_list.get('id'))):
-                            bank_id = bank_list.get('id').replace("bank:", "bank"+ location + ":")
+                            bank_id = bank_list.get('id').replace("bank:",
+                                                                  "bank" +
+                                                                  location +
+                                                                  ":")
                             find_element(bank, 'size', 'size',
                                          bank_id, 'memory')
                             find_element(bank, 'clock', 'clock',
@@ -456,10 +467,9 @@ def detect_system(hw_lst, output=None):
                 find_element(elt, "configuration/setting[@id='threads']",
                              'threads', 'physical_%s' % socket_count, 'cpu',
                              'value')
-                cpuinfo_cmd = subprocess.Popen("grep flags /proc/cpuinfo | uniq  | cut -d ':' -f 2",
-                                          shell=True,
-                                          stdout=subprocess.PIPE)
-                for line in cpuinfo_cmd.stdout:
+                cpuinfo_cmd = output_lines("grep flags /proc/cpuinfo |"
+                                           "uniq | cut -d ':' -f 2")
+                for line in cpuinfo_cmd:
                     hw_lst.append(('cpu', 'physical_%s' % (socket_count),
                                    'flags', line.rstrip('\n').strip()))
 
@@ -472,35 +482,27 @@ def detect_system(hw_lst, output=None):
     if status == 0:
         hw_lst.append(('cpu', 'logical', 'number', str(output)))
 
-    osvendor_cmd = subprocess.Popen("lsb_release -is",
-        shell=True,
-        stdout=subprocess.PIPE)
-    for line in osvendor_cmd.stdout:
+    osvendor_cmd = output_lines("lsb_release -is")
+    for line in osvendor_cmd:
         hw_lst.append(('system', 'os', 'vendor', line.rstrip('\n').strip()))
 
-    osinfo_cmd = subprocess.Popen("lsb_release -ds | tr -d '\"'",
-        shell=True,
-        stdout=subprocess.PIPE)
-    for line in osinfo_cmd.stdout:
+    osinfo_cmd = output_lines("lsb_release -ds | tr -d '\"'")
+    for line in osinfo_cmd:
         hw_lst.append(('system', 'os', 'version', line.rstrip('\n').strip()))
 
-    uname_cmd = subprocess.Popen("uname -r",
-        shell=True,
-        stdout=subprocess.PIPE)
-    for line in uname_cmd.stdout:
-        hw_lst.append(('system', 'kernel', 'version', line.rstrip('\n').strip()))
+    uname_cmd = output_lines("uname -r")
+    for line in uname_cmd:
+        hw_lst.append(('system', 'kernel', 'version',
+                       line.rstrip('\n').strip()))
 
-    arch_cmd = subprocess.Popen("uname -i",
-        shell=True,
-        stdout=subprocess.PIPE)
-    for line in arch_cmd.stdout:
+    arch_cmd = output_lines("uname -i")
+    for line in arch_cmd:
         hw_lst.append(('system', 'kernel', 'arch', line.rstrip('\n').strip()))
 
-    cmdline_cmd = subprocess.Popen("cat /proc/cmdline",
-        shell=True,
-        stdout=subprocess.PIPE)
-    for line in cmdline_cmd.stdout:
-        hw_lst.append(('system', 'kernel', 'cmdline', line.rstrip('\n').strip()))
+    cmdline_cmd = output_lines("cat /proc/cmdline")
+    for line in cmdline_cmd:
+        hw_lst.append(('system', 'kernel', 'cmdline',
+                       line.rstrip('\n').strip()))
 
 
 def _main():

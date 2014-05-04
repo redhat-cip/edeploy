@@ -16,10 +16,26 @@
 # under the License.
 
 import fcntl
+import mock
 import socket
 import unittest
 
 import detect
+
+
+class Keeper:
+    def __init__(self, fname, rets):
+        self.rets = rets
+        self.fname = fname
+
+    def fake(self, arg):
+        if len(self.rets) == 0:
+            raise Exception('Invalid call to %s(%s)' % (self.fname, arg))
+#         else:
+#             print('Call to %s(%s)' % (self.fname, arg))
+        ret = self.rets[0]
+        self.rets = self.rets[1:]
+        return ret
 
 
 class TestDetect(unittest.TestCase):
@@ -36,9 +52,10 @@ class TestDetect(unittest.TestCase):
     def test_get_cidr(self):
         self.assertEqual(detect.get_cidr('255.255.0.0'), '16')
 
-    def _save_functions(self, nbproc):
+    def _save_functions(self, nbproc, nbphys):
         # replace the call to nproc by a fake result
         self.save = detect.cmd
+        self.output_lines = detect.output_lines
         self.saved_ntoa = socket.inet_ntoa
         self.saved_ioctl = fcntl.ioctl
 
@@ -50,19 +67,27 @@ class TestDetect(unittest.TestCase):
 
         def fake_ioctl(arg, arg2, arg3):
             return []
-
         detect.cmd = fake
+        keeper = Keeper('detect.output_lines',
+                        [('vmx', ) for idx in range(nbphys)] +
+                        [('Ubuntu', ),
+                         ('Ubuntu 14.04 LTS', ),
+                         ('3.13.0-24-generic', ),
+                         ('x86_64', ),
+                         ('BOOT_IMAGE=/boot/vmlinuz', )])
+        detect.output_lines = mock.MagicMock(side_effect=keeper.fake)
         socket.inet_ntoa = fake_ntoa
         fcntl.ioctl = fake_ioctl
 
     def _restore_functions(self):
         detect.cmd = self.save
+        detect.output_lines = self.output_lines
         socket.inet_ntoa = self.saved_ntoa
         fcntl.ioctl = self.saved_ioctl
 
     def test_detect_system_3(self):
         l = []
-        self._save_functions("4")
+        self._save_functions("4", 2)
         detect.detect_system(l, XML3)
         self._restore_functions()
         self.assertEqual(
@@ -101,19 +126,27 @@ class TestDetect(unittest.TestCase):
              ('cpu', 'physical_0', 'vendor', 'Advanced Micro Devices [AMD]'),
              ('cpu', 'physical_0', 'frequency', '1000000000'),
              ('cpu', 'physical_0', 'clock', '200000000'),
+             ('cpu', 'physical_0', 'flags', 'vmx'),
              ('cpu', 'physical_1', 'physid', '4'),
              ('cpu', 'physical_1', 'product',
               'Dual-Core AMD Opteron(tm) Processor 8218'),
              ('cpu', 'physical_1', 'vendor', 'Advanced Micro Devices [AMD]'),
              ('cpu', 'physical_1', 'frequency', '1000000000'),
              ('cpu', 'physical_1', 'clock', '200000000'),
+             ('cpu', 'physical_1', 'flags', 'vmx'),
              ('cpu', 'physical', 'number', '2'),
-             ('cpu', 'logical', 'number', '4')]
+             ('cpu', 'logical', 'number', '4'),
+             ('system', 'os', 'vendor', 'Ubuntu'),
+             ('system', 'os', 'version', 'Ubuntu 14.04 LTS'),
+             ('system', 'kernel', 'version', '3.13.0-24-generic'),
+             ('system', 'kernel', 'arch', 'x86_64'),
+             ('system', 'kernel', 'cmdline', 'BOOT_IMAGE=/boot/vmlinuz'),
+             ]
             )
 
     def test_detect_system_2(self):
         l = []
-        self._save_functions("4")
+        self._save_functions("4", 1)
         detect.detect_system(l, XML2)
         self._restore_functions()
         self.assertEqual(
@@ -176,14 +209,21 @@ class TestDetect(unittest.TestCase):
              ('cpu', 'physical_0', 'cores', '2'),
              ('cpu', 'physical_0', 'enabled_cores', '2'),
              ('cpu', 'physical_0', 'threads', '4'),
+             ('cpu', 'physical_0', 'flags', 'vmx'),
              ('cpu', 'physical', 'number', '1'),
-             ('cpu', 'logical', 'number', '4')]
+             ('cpu', 'logical', 'number', '4'),
+             ('system', 'os', 'vendor', 'Ubuntu'),
+             ('system', 'os', 'version', 'Ubuntu 14.04 LTS'),
+             ('system', 'kernel', 'version', '3.13.0-24-generic'),
+             ('system', 'kernel', 'arch', 'x86_64'),
+             ('system', 'kernel', 'cmdline', 'BOOT_IMAGE=/boot/vmlinuz'),
+             ]
             )
 
     def test_detect_system(self):
         self.maxDiff = None
         l = []
-        self._save_functions("7")
+        self._save_functions("7", 4)
         detect.detect_system(l, XML)
         self._restore_functions()
         self.assertEqual(
@@ -246,20 +286,30 @@ class TestDetect(unittest.TestCase):
              ('cpu', 'physical_0', 'vendor', 'Intel Corp.'),
              ('cpu', 'physical_0', 'frequency', '800000000'),
              ('cpu', 'physical_0', 'clock', '25000000'),
+             ('cpu', 'physical_0', 'flags', 'vmx'),
              ('cpu', 'physical_1', 'physid', '5'),
              ('cpu', 'physical_1', 'vendor', 'Intel(R) Corporation'),
              ('cpu', 'physical_1', 'frequency', '800000000'),
              ('cpu', 'physical_1', 'clock', '25000000'),
+             ('cpu', 'physical_1', 'flags', 'vmx'),
              ('cpu', 'physical_2', 'physid', 'a'),
              ('cpu', 'physical_2', 'vendor', 'Intel(R) Corporation'),
              ('cpu', 'physical_2', 'frequency', '800000000'),
              ('cpu', 'physical_2', 'clock', '25000000'),
+             ('cpu', 'physical_2', 'flags', 'vmx'),
              ('cpu', 'physical_3', 'physid', 'f'),
              ('cpu', 'physical_3', 'vendor', 'Intel(R) Corporation'),
              ('cpu', 'physical_3', 'frequency', '800000000'),
              ('cpu', 'physical_3', 'clock', '25000000'),
+             ('cpu', 'physical_3', 'flags', 'vmx'),
              ('cpu', 'physical', 'number', '4'),
-             ('cpu', 'logical', 'number', '7')]
+             ('cpu', 'logical', 'number', '7'),
+             ('system', 'os', 'vendor', 'Ubuntu'),
+             ('system', 'os', 'version', 'Ubuntu 14.04 LTS'),
+             ('system', 'kernel', 'version', '3.13.0-24-generic'),
+             ('system', 'kernel', 'arch', 'x86_64'),
+             ('system', 'kernel', 'cmdline', 'BOOT_IMAGE=/boot/vmlinuz'),
+             ]
             )
 
 XML = '''<?xml version="1.0" standalone="yes" ?>

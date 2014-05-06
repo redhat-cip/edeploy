@@ -71,6 +71,7 @@
 /etc/default/corosync
 /etc/default/grub
 /etc/default/locale
+/etc/facter/facts.d/environment.txt
 /etc/fstab
 /etc/glance/glance-api.conf
 /etc/glance/glance-cache.conf

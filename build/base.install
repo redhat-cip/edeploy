@@ -134,7 +134,7 @@ install_base_packages() {
     add_megacli_repository $dist $target
     case $dist in
         $supported_ubuntu_dists)
-            packages="$cross_distro_packages grub2 iputils-ping linux-firmware linux-firmware-nonfree linux-headers-generic-lts-raring linux-image-generic-lts-raring $deb_packages"
+            packages="$cross_distro_packages grub2 iputils-ping linux-firmware linux-firmware-nonfree linux-headers-generic-lts-trusty linux-image-generic-lts-trusty $deb_packages"
             echo "deb $repository $dist main universe multiverse" > ${target}/etc/apt/sources.list
             echo "deb $repository $dist-updates main universe multiverse" >> ${target}/etc/apt/sources.list
             echo "deb http://security.ubuntu.com/ubuntu $dist-security main universe multiverse" >> ${target}/etc/apt/sources.list
@@ -179,6 +179,11 @@ add_megacli_repository() {
       $supported_debian_dists)
           wget -O - http://hwraid.le-vert.net/debian/hwraid.le-vert.net.gpg.key | do_chroot $target apt-key add -
           echo "deb http://hwraid.le-vert.net/debian ${dist} main" > $target/etc/apt/sources.list.d/hwraid.list
+	  ;;
+      # they don't support Trusty yet
+      trusty)
+          wget -O - http://hwraid.le-vert.net/ubuntu/hwraid.le-vert.net.gpg.key | do_chroot $target apt-key add -
+          echo "deb http://hwraid.le-vert.net/ubuntu precise main" > $target/etc/apt/sources.list.d/hwraid.list
 	  ;;
       $supported_ubuntu_dists)
           wget -O - http://hwraid.le-vert.net/ubuntu/hwraid.le-vert.net.gpg.key | do_chroot $target apt-key add -

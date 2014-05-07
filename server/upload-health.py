@@ -72,23 +72,20 @@ def generate_filename_and_macs(items):
 
     matcher.match_spec(('system', 'product', 'name', '$sysprodname'),
                        hw_items, sysvars)
-
     if 'sysprodname' in sysvars:
         sysvars['sysname'] = re.sub(r'\W+', '', sysvars['sysprodname']) + '-'
 
     matcher.match_spec(('system', 'product', 'vendor', '$sysprodvendor'),
                        hw_items, sysvars)
-
     if 'sysprodvendor' in sysvars:
         sysvars['sysname'] += re.sub(r'\W+', '', sysvars['sysprodvendor']) + \
             '-'
 
     matcher.match_spec(('system', 'product', 'serial', '$sysserial'),
                        hw_items, sysvars)
-
     # Let's use any existing DMI serial number or take the first mac address
     if 'sysserial' in sysvars:
-        sysvars['sysname'] += re.sub(r'\W+', '', sysvars['sysserial'])
+        sysvars['sysname'] += re.sub(r'\W+', '', sysvars['sysserial']) + '-'
 
     # we always need to have the mac addresses for pxemngr
     if matcher.match_multiple(hw_items,

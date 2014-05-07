@@ -95,8 +95,6 @@ setup_exclude() {
 /etc/mtab
 /etc/shadow
 /etc/ld.so.cache
-/etc/passwd
-/etc/group*
 /etc/hosts
 /etc/resolv.conf
 /etc/ssh/*key

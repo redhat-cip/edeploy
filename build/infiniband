@@ -25,6 +25,14 @@ ORIG=$(cd $(dirname $0); pwd)
 
 # Configure OpenIB things
 #
+
+# sdpnetstat is not in Ubuntu Trusty yet.
+if [ "$RELEASE" = "trusty" ]; then
+    wget --no-verbose 'http://cs.stanford.edu/pub/mirrors/ubuntu/ubuntu/pool/universe/s/sdpnetstat/sdpnetstat_1.60-1ubuntu2_amd64.deb' -O ${dir}/tmp/sdpnetstat_1.60-1ubuntu2_amd64.deb
+    do_chroot $dir dpkg -i /tmp/sdpnetstat_1.60-1ubuntu2_amd64.deb
+    do_chroot $dir rm /tmp/sdpnetstat_1.60-1ubuntu2_amd64.deb
+fi
+
 case "$(package_type)" in
     "deb")
         PACKAGES="infiniband-diags ibutils ibverbs-utils qlvnictools srptools sdpnetstat rds-tools rdmacm-utils perftest libmthca1 libmlx4-1 libipathverbs1"

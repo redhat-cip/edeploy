@@ -98,6 +98,15 @@ bootstrap() {
         cp -p ${ORIG}/policy-rc.d ${target}/usr/sbin/
         echo 'APT::Install-Recommends "0" ;' >> "$target/etc/apt/apt.conf"
         echo 'APT::Install-Suggests "0" ;' >> "$target/etc/apt/apt.conf"
+	# Control the ids created by useradd and groupadd by wrapping
+	# the commands with mngids.py
+	cp -p ${ORIG}/mngids.py ${target}/usr/sbin/
+	for cmd in useradd groupadd; do
+	    if [ ! -f ${target}/usr/sbin/${cmd}.real ]; then
+		mv ${target}/usr/sbin/${cmd} ${target}/usr/sbin/${cmd}.real
+	    fi
+	    ln -sf /usr/sbin/mngids.py ${target}/usr/sbin/${cmd}
+	done
     else if [ "$(package_type)" = "rpm" ]; then
             if [ "$(package_tool)" = "yum" ]; then
                 check_binary yum

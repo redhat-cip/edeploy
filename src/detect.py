@@ -454,6 +454,8 @@ def detect_system(hw_lst, output=None):
                              'physical_%s' % socket_count, 'cpu')
                 find_element(elt, 'vendor', 'vendor',
                              'physical_%s' % socket_count, 'cpu')
+                find_element(elt, 'version', 'version',
+                             'physical_%s' % socket_count, 'cpu')
                 find_element(elt, 'size', 'frequency',
                              'physical_%s' % socket_count, 'cpu')
                 find_element(elt, 'clock', 'clock',

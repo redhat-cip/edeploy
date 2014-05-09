@@ -102,8 +102,6 @@ rsync -au --delete-excluded --delete --exclude /boot/ \
     --exclude '*.pyc' \
     --exclude usr/lib/*/gconv/ \
     --exclude usr/lib/locale \
-    --exclude usr/lib/perl \
-    --exclude usr/lib64/perl5 \
     --exclude usr/lib64/libgtk* \
     --exclude usr/lib64/graphviz \
     --exclude usr/share/anaconda \
@@ -125,7 +123,6 @@ rsync -au --delete-excluded --delete --exclude /boot/ \
     --exclude usr/share/locale \
     --exclude usr/share/man \
     --exclude usr/share/misc \
-    --exclude usr/share/perl5 \
     --exclude usr/share/pixmaps \
     --exclude usr/share/plymouth \
     --exclude usr/share/swig \

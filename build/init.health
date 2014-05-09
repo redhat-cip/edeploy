@@ -214,18 +214,18 @@ save_results
 if [ ! -z "$SMOKE" ]; then
     step "Entering Smoke Test for $SMOKE minutes"
     (while true; do
-        ./health-check.py hw.py storage-burn >/dev/null;
+        ./health-check.py hw.py storage-burn &>/dev/null;
     done
     ) &
     PID_STORAGE="$!"
     PID_CPU="$!"
     (while true; do
-        ./health-check.py hw.py memory-burn >/dev/null;
+        ./health-check.py hw.py memory-burn &>/dev/null;
     done
     ) &
     PID_MEMORY="$!"
     (while true; do
-        ./health-check.py hw.py cpu-burn >/dev/null;
+        ./health-check.py hw.py cpu-burn &>/dev/null;
     done
     ) &
     PID_CPU="$!"

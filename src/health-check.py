@@ -126,7 +126,7 @@ def run_sysbench(hw_, max_time, cpu_count, processor_num=-1):
                             'loops_per_sec', str(int(perf) / max_time)))
 
 
-def cpu_perf(hw_, testing_time=5, burn_test=False):
+def cpu_perf(hw_, testing_time=10, burn_test=False):
     ' Detect the cpu speed'
     result = get_value(hw_, 'cpu', 'logical', 'number')
     physical = get_value(hw_, 'cpu', 'physical', 'number')
@@ -317,7 +317,7 @@ def get_one_cpu_per_socket(hw):
 
     return cpu_list
 
-def mem_perf(hw_, testing_time=1):
+def mem_perf(hw_, testing_time=5):
     'Report the memory performance'
     all_cpu_testing_time = 5
     block_size_list = ['1K', '4K', '1M', '16M', '128M', '1G', '2G']

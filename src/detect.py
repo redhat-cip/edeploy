@@ -393,19 +393,6 @@ def detect_system(hw_lst, output=None):
         for elt in xml.findall(".//node[@class='network']"):
             name = elt.find('logicalname')
             if name is not None:
-                # lshw is not able to get the complete mac addr for ib
-                # devices Let's workaround it with an ip command.
-                if name.text.startswith('ib'):
-                    cmds = "ip addr show %s | grep link | awk '{print $2}'"
-                    status_ip, output_ip = cmd(cmds % name.text)
-                    hw_lst.append(('network',
-                                   name.text,
-                                   'serial',
-                                   output_ip.split('\n')[0].lower()))
-                else:
-                    find_element(elt, 'serial', 'serial', name.text, 'network',
-                                 transform=string.lower)
-
                 find_element(elt, 'vendor', 'vendor', name.text, 'network')
                 find_element(elt, 'product', 'product', name.text, 'network')
                 find_element(elt, 'size', 'size', name.text, 'network')
@@ -444,6 +431,19 @@ def detect_system(hw_lst, output=None):
                 find_element(elt,
                              "configuration/setting[@id='autonegotiation']",
                              'autonegotiation', name.text, 'network', 'value')
+
+                # lshw is not able to get the complete mac addr for ib
+                # devices Let's workaround it with an ip command.
+                if name.text.startswith('ib'):
+                    cmds = "ip addr show %s | grep link | awk '{print $2}'"
+                    status_ip, output_ip = cmd(cmds % name.text)
+                    hw_lst.append(('network',
+                                   name.text,
+                                   'serial',
+                                   output_ip.split('\n')[0].lower()))
+                else:
+                    find_element(elt, 'serial', 'serial', name.text, 'network',
+                                 transform=string.lower)
 
         for elt in xml.findall(".//node[@class='processor']"):
             name = elt.find('physid')

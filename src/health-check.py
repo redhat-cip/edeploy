@@ -129,14 +129,15 @@ def run_sysbench(hw_, max_time, cpu_count, processor_num=-1):
 def cpu_perf(hw_, testing_time=5, burn_test=False):
     ' Detect the cpu speed'
     result = get_value(hw_, 'cpu', 'logical', 'number')
+    physical = get_value(hw_, 'cpu', 'physical', 'number')
 
     # Individual Test aren't useful for burn_test
     if burn_test is False:
-        if result is not None:
+        if physical is not None:
             sys.stderr.write('CPU Performance: %d logical '
                              'CPU to test (ETA: %d seconds)\n'
-                             % (int(result), (int(result) + 1) * testing_time))
-            for cpu_nb in range(int(result)):
+                             % (int(physical), (int(physical) + 1) * testing_time))
+            for cpu_nb in get_one_cpu_per_socket(hw_):
                 get_bogomips(hw_, cpu_nb)
                 get_cache_size(hw_, cpu_nb)
                 run_sysbench(hw_, testing_time, 1, cpu_nb)
@@ -300,18 +301,35 @@ def mem_perf_burn(hw_, testing_time=10):
         run_memtest(hw_, testing_time, '128M', int(result))
 
 
+def get_one_cpu_per_socket(hw):
+    logical = get_value(hw, 'cpu', 'logical', 'number')
+    current_phys_package_id = -1
+    cpu_list = []
+    for cpu_nb in range(int(logical)):
+        cmdline = "cat /sys/devices/system/cpu/cpu%d/topology/physical_package_id" % int(cpu_nb)
+        phys_cmd = subprocess.Popen(cmdline,
+                                shell=True, stdout=subprocess.PIPE)
+        for phys_str in phys_cmd.stdout:
+            phys_id = int(phys_str.strip())
+            if phys_id > current_phys_package_id:
+                current_phys_package_id = phys_id
+                cpu_list.append(current_phys_package_id)
+
+    return cpu_list
+
 def mem_perf(hw_, testing_time=1):
     'Report the memory performance'
     all_cpu_testing_time = 5
     block_size_list = ['1K', '4K', '1M', '16M', '128M', '1G', '2G']
     result = get_value(hw_, 'cpu', 'logical', 'number')
-    if result is not None:
-        eta = int(result) * len(block_size_list) * testing_time
+    physical = get_value(hw_, 'cpu', 'physical', 'number')
+    if physical is not None:
+        eta = int(physical) * len(block_size_list) * testing_time
         eta += 2 * (all_cpu_testing_time * len(block_size_list))
         sys.stderr.write('Memory Performance: %d logical CPU'
                          ' to test (ETA: %d seconds)\n'
-                         % (int(result), int(eta)))
-        for cpu_nb in range(int(result)):
+                         % (int(physical), int(eta)))
+        for cpu_nb in get_one_cpu_per_socket(hw_):
             for block_size in block_size_list:
                 run_memtest(hw_, testing_time, block_size, 1, cpu_nb)
 

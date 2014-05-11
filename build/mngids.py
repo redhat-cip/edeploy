@@ -93,7 +93,9 @@ def main():
     parse_cmdline(sys.argv, uids, gids)
     #
     print(sys.argv)
-    subprocess.call(sys.argv)
+    ret = subprocess.call(sys.argv)
+    if ret != 0:
+        sys.exit(ret)
     #
     parse(open('/etc/passwd').read(), uids)
     parse(open('/etc/group').read(), gids, True)

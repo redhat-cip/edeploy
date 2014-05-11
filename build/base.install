@@ -100,6 +100,7 @@ bootstrap() {
         echo 'APT::Install-Suggests "0" ;' >> "$target/etc/apt/apt.conf"
 	# Control the ids created by useradd and groupadd by wrapping
 	# the commands with mngids.py
+	install_packages ${target} python-minimal
 	cp -p ${ORIG}/mngids.py ${target}/usr/sbin/
 	for cmd in useradd groupadd; do
 	    if [ ! -f ${target}/usr/sbin/${cmd}.real ]; then

@@ -339,23 +339,31 @@ probe_pci_devices() {
 
 enable_network_links() {
     nolink=$1
-    log "Enabling Ethernet Links"
+    retry_count=$2
     DEVICE_LIST=
-    pushd /sys/class/net >/dev/null
-    for device in *; do
-        if [ "$device" = "lo" ]; then
-            continue
+    for current_pass in `seq 1 $retry_count`; do
+        log "Enabling Ethernet Links ($current_pass/$retry_count)"
+        pushd /sys/class/net >/dev/null
+        for device in *; do
+            if [ "$device" = "lo" ]; then
+                continue
+            fi
+            ip link set dev $device up
+            DEVICE_LIST="$DEVICE_LIST $device"
+        done
+        popd > /dev/null
+
+        if [ -n "$DEVICE_LIST" ]; then
+            log "Ethernet devices detection completed"
+            break;
+        else
+            log "No Ethernet devices found"
+            if [ "$current_pass" != "$retry_count" ]; then
+                log "Waiting a little bit before retrying"
+                sleep 2
+            fi
         fi
-        ip link set dev $device up
-        DEVICE_LIST="$DEVICE_LIST $device"
     done
-    popd > /dev/null
-
-    # Only consider interface that have a Link ok
-    log "Waiting a few seconds to catch network link"
-    sleep 10
-
-    log "List of available network devices is :$DEVICE_LIST"
 
     # If we have only match "lo" it means no physical interface got detected !
     if [ -z "$DEVICE_LIST" ]; then
@@ -365,6 +373,12 @@ enable_network_links() {
             give_up "No Network interface found !"
         fi
     fi
+
+    # Only consider interface that have a Link ok
+    log "Waiting a few seconds to catch network link"
+    sleep 10
+
+    log "List of available network devices is :$DEVICE_LIST"
 }
 
 get_network_configuration() {
@@ -405,7 +419,7 @@ MAX_RUN=3
 RUN=0
 while true; do
 
-    enable_network_links fatal
+    enable_network_links fatal 3
 
     CARRIER_DEVICE_LIST=
     DHCP_IFACES_COUNT=0

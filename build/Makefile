@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2013 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2013-2014 eNovance SAS <licensing@enovance.com>
 #
 # Author: Frederic Lepied <frederic.lepied@enovance.com>
 #
@@ -70,8 +70,10 @@ img: $(INST)/$(IMG)
 	./img.install $(INST)/base $(IMG) $(VERS) $(INST) $(SERV) $(HSERV) $(DEBUG)
 
 base: $(INST)/base.done
-$(INST)/base.done: base.install policy-rc.d edeploy common packages distributions
+$(INST)/base.done: base.install policy-rc.d edeploy common packages distributions $(DVER)-ids.tables
+	if [ -r $(DVER)-ids.tables ]; then cp $(DVER)-ids.tables $(INST)/ids.tables; fi
 	./base.install $(INST)/base $(DIST) $(VERS)
+	if [ -r $(DVER)-ids.tables ]; then cp $(INST)/ids.tables $(DVER)-ids.tables; fi
 	touch $(INST)/base.done
 
 deploy: $(INST)/deploy.done

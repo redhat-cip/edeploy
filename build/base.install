@@ -108,6 +108,12 @@ bootstrap() {
 	    fi
 	    ln -sf /usr/sbin/mngids.py ${target}/usr/sbin/${cmd}
 	done
+	
+	# We need to do some magic on gids to have stable ids for upgrades
+	if [ $dist = trusty ]; then
+	    sed -i -e 's/netdev:x:102:/netdev:x:127:/' "${target}"/etc/group
+	    find "${target}" -gid 102|xargs chgrp 127
+	fi
     else if [ "$(package_type)" = "rpm" ]; then
             if [ "$(package_tool)" = "yum" ]; then
                 check_binary yum

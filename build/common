@@ -266,8 +266,8 @@ cleanup() {
     fi
 
     # copy the ids file for later use
-    if [ -f ${target}/root/ids.tables ]; then
-	cp ${target}/root/ids.tables ${target}/../ids.tables
+    if [ -f ${dir}/root/ids.tables ]; then
+	cp ${dir}/root/ids.tables ${dir}/../ids.tables
     fi
 
     if [ "$ret" = "0" ]; then

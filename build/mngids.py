@@ -42,13 +42,25 @@ def parse(content, assoc, is_group=False):
     return assoc
 
 
-def parse_cmdline(args, uids, gids):
+def parse_cmdline(args, uids, gids, first=100, last=999, last_user=29999):
     args0 = args[0].split('/')[-1]
 
     def insert(ids, key, idx, opt):
         if not key in ids:
-            print('%s not found in %s' % (key, ids))
-            return
+            if not '--system' in args:
+                f = last + 1
+                l = last_user
+            else:
+                f = first
+                l = last
+            vals = [ids[k][idx] for k in ids]
+            for loop in range(f, l):
+                if not str(loop) in vals:
+                    args.insert(1, str(loop))
+                    args.insert(1, opt)
+                    return args
+            print('no more id for %s in %s' % (key, ids))
+            return args
 
         try:
             index = args.index(opt)

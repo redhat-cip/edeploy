@@ -110,14 +110,25 @@ class TestMngids(unittest.TestCase):
         self.assertEquals(cmd[4], '0')
         self.assertEquals(len(cmd), l + 2)
 
-    def test_parsecmdline_addgroup_non_exist(self):
+    def test_parsecmdline_addgroup_non_exist_system(self):
         cmd = 'addgroup --system root'.split(' ')
         content = 'user:x:15:'
         gids = {}
         l = len(cmd)
         mngids.parse(content, gids)
         mngids.parse_cmdline(cmd, {}, gids)
-        self.assertEquals(l, len(cmd))
+        self.assertEquals(l + 2, len(cmd))
+        self.assertEquals(cmd[2], '100')
+
+    def test_parsecmdline_addgroup_non_exist(self):
+        cmd = 'addgroup root'.split(' ')
+        content = 'user:x:1000:'
+        gids = {}
+        l = len(cmd)
+        mngids.parse(content, gids)
+        mngids.parse_cmdline(cmd, {}, gids)
+        self.assertEquals(l + 2, len(cmd))
+        self.assertEquals(cmd[2], '1001')
 
 GROUP = '''root:x:0:
 daemon:x:1:

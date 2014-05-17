@@ -1,6 +1,9 @@
 eDeploy
 =======
 
+.. image:: https://travis-ci.org/enovance/edeploy.svg?branch=master
+    :target: https://travis-ci.org/enovance/edeploy
+
 .. contents::
 
 Introduction

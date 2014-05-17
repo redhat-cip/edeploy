@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2013 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2013-2014 eNovance SAS <licensing@enovance.com>
 #
 # Author: Frederic Lepied <frederic.lepied@enovance.com>
 #
@@ -181,6 +181,7 @@ class TestDetect(unittest.TestCase):
              ('network', 'eth0', 'vendor', 'Intel Corporation'),
              ('network', 'eth0', 'product',
               '82579LM Gigabit Network Connection'),
+             ('network', 'eth0', 'firmware', '0.13-3'),
              ('network', 'eth0', 'businfo', 'pci@0000:00:19.0'),
              ('network', 'eth0', 'link', 'no'),
              ('network', 'eth0', 'driver', 'e1000e'),
@@ -190,6 +191,7 @@ class TestDetect(unittest.TestCase):
              ('network', 'wlan0', 'vendor', 'Intel Corporation'),
              ('network', 'wlan0', 'product',
               'Centrino Advanced-N 6205 [Taylor Peak]'),
+             ('network', 'wlan0', 'firmware', '18.168.6.1'),
              ('network', 'wlan0', 'businfo', 'pci@0000:03:00.0'),
              ('network', 'wlan0', 'ipv4', '192.168.1.185'),
              ('network', 'wlan0', 'ipv4-netmask', '255.255.255.0'),
@@ -199,6 +201,7 @@ class TestDetect(unittest.TestCase):
              ('network', 'wlan0', 'driver', 'iwlwifi'),
              ('network', 'wlan0', 'latency', '0'),
              ('network', 'wlan0', 'serial', '84:3a:4b:33:62:82'),
+             ('network', 'wwan0', 'firmware', 'Mobile Broadband Network Device'),
              ('network', 'wwan0', 'link', 'no'),
              ('network', 'wwan0', 'driver', 'cdc_ncm'),
              ('network', 'wwan0', 'serial', '02:15:e0:ec:01:00'),
@@ -276,6 +279,7 @@ class TestDetect(unittest.TestCase):
              ('network', 'tap0', 'speed', '10Mbit/s'),
              ('network', 'tap0', 'autonegotiation', 'off'),
              ('network', 'tap0', 'serial', 'e2:66:69:22:be:fb'),
+             ('network', 'wlan0', 'firmware', 'N/A'),
              ('network', 'wlan0', 'ipv4', '192.168.12.13'),
              ('network', 'wlan0', 'ipv4-netmask', '255.255.255.0'),
              ('network', 'wlan0', 'ipv4-cidr', '24'),

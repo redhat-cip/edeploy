@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (C) 2013 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2013-2014 eNovance SAS <licensing@enovance.com>
 #
 # Author: Frederic Lepied <frederic.lepied@enovance.com>
 #
@@ -139,7 +139,7 @@ cp -p ${ORIG}/edeploy ${TDIR}/usr/sbin/
 script="$BASE".d/${ROLE}_${FROM}_${TO}.upgrade
 
 if [ -x "$script" ]; then
-    dir=$TDIR "$script"
+    ORIG=$ORIG dir=$TDIR "$script"
 fi
 
 setup_metadata

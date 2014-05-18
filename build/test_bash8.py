@@ -40,11 +40,12 @@ class TestBash8(unittest.TestCase):
         except subprocess.CalledProcessError as e:
             self.assertTrue(False, filter_output(e.output))
 
-for fname in fnmatch.filter(os.listdir('.'), '*.install') + \
+dirname = os.path.dirname(__file__)
+for fname in fnmatch.filter(os.listdir(dirname), '*.install') + \
         ['common', 'distributions', 'functions', 'packages', 'repositories']:
     def ch(fname, mname):
         def test_aux(self):
-            return self.check(fname)
+            return self.check(os.path.join(dirname, fname))
         test_aux.__name__ = mname
         return test_aux
     mname = "test_%s" % fname.replace('.', '_')

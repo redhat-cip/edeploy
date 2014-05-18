@@ -38,8 +38,8 @@ compress() {
 
 check_usage() {
     if [ "$1" -ne "$2" ]; then
-	shift 2
-	fatal_error "Usage: $*"
+        shift 2
+        fatal_error "Usage: $*"
     fi
 }
 
@@ -178,7 +178,7 @@ do_chroot() {
 
 clean_chroot() {
     for log in $(find $dir/var/log -type f || :); do
-	> $log
+        > $log
     done
 }
 
@@ -231,10 +231,10 @@ cleanup() {
     ret=$?
 
     if [ "$src" = "$dir" ]; then
-	echo "Nested call, exiting"
-	exit $ret
+        echo "Nested call, exiting"
+        exit $ret
     fi
-    
+
     # This part of the code shall never by breaked by a user
     prevent_ctrl_c on
 
@@ -254,20 +254,20 @@ cleanup() {
 
     # Let's disable apt-get and yum for normal usage
     for pkgmngr in apt-get yum; do
-	if [ ! -f ${dir}/usr/bin/${pkgmngr}.moved -a -f ${dir}/usr/bin/${pkgmngr} ]; then
-	    mv -f ${dir}/usr/bin/${pkgmngr} ${dir}/usr/bin/${pkgmngr}.moved
-	    ln -s /bin/true ${dir}/usr/bin/${pkgmngr}
-	fi
+        if [ ! -f ${dir}/usr/bin/${pkgmngr}.moved -a -f ${dir}/usr/bin/${pkgmngr} ]; then
+            mv -f ${dir}/usr/bin/${pkgmngr} ${dir}/usr/bin/${pkgmngr}.moved
+            ln -s /bin/true ${dir}/usr/bin/${pkgmngr}
+        fi
     done
 
     # Remove policy for invoke-rc.d (this has side effects on puppet for exemple)
     if [ -f ${dir}/usr/sbin/policy-rc.d ]; then
-	mv ${dir}/usr/sbin/policy-rc.d ${dir}/usr/sbin/policy-rc.d.moved
+        mv ${dir}/usr/sbin/policy-rc.d ${dir}/usr/sbin/policy-rc.d.moved
     fi
 
     # copy the ids file for later use
     if [ -f ${dir}/root/ids.tables ]; then
-	cp ${dir}/root/ids.tables ${dir}/../ids.tables
+        cp ${dir}/root/ids.tables ${dir}/../ids.tables
     fi
 
     if [ "$ret" = "0" ]; then
@@ -293,7 +293,7 @@ cleanup() {
                     echo "VIRTUALIZED images requested but the pointed file ($VIRTUALIZED) doesn't exists"
                 else
                     ${ORIG}/create-image.sh $dir ${INST}/${ROLE}-${version}.img $VIRTUALIZED || ret=1
-		    (cd ${INST}; md5sum ${ROLE}-${version}.img > ${ROLE}-${version}.img.md5) || ret=1
+                    (cd ${INST}; md5sum ${ROLE}-${version}.img > ${ROLE}-${version}.img.md5) || ret=1
                 fi
             fi
         fi
@@ -302,7 +302,7 @@ cleanup() {
             cd ${dir}
             if [ -z "$NO_COMPRESSED_FILE" ]; then
                 tar c --numeric-owner . | compress -9v > ${INST}/${ROLE}-${version}.edeploy || ret=1
-		(cd ${INST}; md5sum ${ROLE}-${version}.edeploy > ${ROLE}-${version}.edeploy.md5) || ret=1
+                (cd ${INST}; md5sum ${ROLE}-${version}.edeploy > ${ROLE}-${version}.edeploy.md5) || ret=1
             fi
             cd -
         fi
@@ -390,21 +390,21 @@ common_setup() {
 
     # let apt-get and yum work in build scripts
     for pkgmngr in apt-get yum; do
-	if [ -f ${dir}/usr/bin/${pkgmngr}.moved ]; then
-	    mv -f ${dir}/usr/bin/${pkgmngr}.moved ${dir}/usr/bin/${pkgmngr}
-	fi
+        if [ -f ${dir}/usr/bin/${pkgmngr}.moved ]; then
+            mv -f ${dir}/usr/bin/${pkgmngr}.moved ${dir}/usr/bin/${pkgmngr}
+        fi
     done
 
     # put in place a policy for invoke-rc.d
     if [ -f ${dir}/usr/sbin/policy-rc.d.moved ]; then
-	mv ${dir}/usr/sbin/policy-rc.d.moved ${dir}/usr/sbin/policy-rc.d
+        mv ${dir}/usr/sbin/policy-rc.d.moved ${dir}/usr/sbin/policy-rc.d
     fi
 
     # copy the tables of uids and gids
     if [ -r ${dir}/../ids.tables ]; then
-	cp ${dir}/../ids.tables ${dir}/root/
+        cp ${dir}/../ids.tables ${dir}/root/
     else
-	touch ${dir}/root/ids.tables
+        touch ${dir}/root/ids.tables
     fi
 
     add_rhn_repository $DIST

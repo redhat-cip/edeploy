@@ -49,13 +49,13 @@ EOF
 
 install_edeploy() {
     if ! type -p ansible-playbook; then
-	echo "ansible isn't installed. Use 'pip install ansible' to do so." 1>&2
-	exit 1
+        echo "ansible isn't installed. Use 'pip install ansible' to do so." 1>&2
+        exit 1
     fi
 
     if [ $(ansible --version | cut -d' ' -f2 | sed -e 's/\.//' -e 's/\..*//') -lt 14 ]; then
-    	echo "ansible-1.4 needed. Use 'pip install --upgrade ansible' to do so." 1>&2
-	exit 1
+        echo "ansible-1.4 needed. Use 'pip install --upgrade ansible' to do so." 1>&2
+        exit 1
     fi
 
     # Install the packages needed by the chroot transport of ansible on the host and

@@ -35,8 +35,8 @@ export STRIPPED_TARGET=1
 . ${ORIG}/img.embedded
 
 if [ ! -d "$src" -o -z "$DST" -o -z "$IMG" -o -z "$vers" ]; then
-   echo "Usage: $0 <source dir> <dest dir> <initrd to generate> <version>" 1>&2
-   exit 1
+    echo "Usage: $0 <source dir> <dest dir> <initrd to generate> <version>" 1>&2
+    exit 1
 fi
 
 mkdir -p $dir

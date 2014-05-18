@@ -6,9 +6,9 @@ export DEBIAN_FRONTEND=noninteractive
 
 # A clever way to find the differences between two bash arrays
 array_diff() {
-  awk 'BEGIN{RS=ORS=" "}
-       {NR==FNR?a[$0]++:a[$0]--}
-       END{for(k in a)if(a[k])print k}' <(echo -n "${!1}") <(echo -n "${!2}")
+    awk 'BEGIN{RS=ORS=" "}
+    {NR==FNR?a[$0]++:a[$0]--}
+    END{for(k in a)if(a[k])print k}' <(echo -n "${!1}") <(echo -n "${!2}")
 }
 
 get_redhat_major_version() {
@@ -20,17 +20,17 @@ get_redhat_minor_version() {
 }
 
 save_package_list() {
-case $(package_type) in
-    "deb")
-        do_chroot ${dir} dpkg -l > ${INST}/${ROLE}.packages
-     ;;
-     "rpm")
-        do_chroot ${dir} rpm -qa > ${INST}/${ROLE}.packages
-     ;;
-     *)
-        fatal_error "Unsupported package_type ($package_type) in save_package_list()"
-     ;;
-esac
+    case $(package_type) in
+        "deb")
+            do_chroot ${dir} dpkg -l > ${INST}/${ROLE}.packages
+            ;;
+        "rpm")
+            do_chroot ${dir} rpm -qa > ${INST}/${ROLE}.packages
+            ;;
+        *)
+            fatal_error "Unsupported package_type ($package_type) in save_package_list()"
+            ;;
+    esac
 }
 
 package_type() {

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (C) 2013 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2013-2014 eNovance SAS <licensing@enovance.com>
 #
 # Author: Frederic Lepied <frederic.lepied@enovance.com>
 #
@@ -67,13 +67,13 @@ init_redhat_chroot() {
             if [ -n "$next_repository" ]; then
                 sed "0,/^baseurl=/ s/baseurl=.*/baseurl=${next_repository//\//\\/}/" -i ${target}/etc/yum.repos.d/rhel-source.repo
             fi
-	    ;;
-	 centos)
-	     if [ -f  "$target"/root/.rpmdb/Packages ]; then
-		 mv -f "$target"/root/.rpmdb/*  "$target"/root/.rpmdb/.??* "$target"/var/lib/rpm/
-		 rmdir "$target"/root/.rpmdb
-	     fi
-	     ;;
+            ;;
+        centos)
+            if [ -f  "$target"/root/.rpmdb/Packages ]; then
+                mv -f "$target"/root/.rpmdb/*  "$target"/root/.rpmdb/.??* "$target"/var/lib/rpm/
+                rmdir "$target"/root/.rpmdb
+            fi
+            ;;
     esac
 
     rebuild_db $target
@@ -98,22 +98,22 @@ bootstrap() {
         cp -p ${ORIG}/policy-rc.d ${target}/usr/sbin/
         echo 'APT::Install-Recommends "0" ;' >> "$target/etc/apt/apt.conf"
         echo 'APT::Install-Suggests "0" ;' >> "$target/etc/apt/apt.conf"
-	# Control the ids created by useradd and groupadd by wrapping
-	# the commands with mngids.py
-	install_packages ${target} python-minimal
-	cp -p ${ORIG}/mngids.py ${target}/usr/sbin/
-	for cmd in useradd groupadd; do
-	    if [ ! -f ${target}/usr/sbin/${cmd}.real ]; then
-		mv ${target}/usr/sbin/${cmd} ${target}/usr/sbin/${cmd}.real
-	    fi
-	    ln -sf /usr/sbin/mngids.py ${target}/usr/sbin/${cmd}
-	done
-	
-	# We need to do some magic on gids to have stable ids for upgrades
-	if [ $dist = trusty ]; then
-	    sed -i -e 's/netdev:x:102:/netdev:x:127:/' "${target}"/etc/group
-	    find "${target}" -gid 102|xargs chgrp 127
-	fi
+        # Control the ids created by useradd and groupadd by wrapping
+        # the commands with mngids.py
+        install_packages ${target} python-minimal
+        cp -p ${ORIG}/mngids.py ${target}/usr/sbin/
+        for cmd in useradd groupadd; do
+            if [ ! -f ${target}/usr/sbin/${cmd}.real ]; then
+                mv ${target}/usr/sbin/${cmd} ${target}/usr/sbin/${cmd}.real
+            fi
+            ln -sf /usr/sbin/mngids.py ${target}/usr/sbin/${cmd}
+        done
+
+        # We need to do some magic on gids to have stable ids for upgrades
+        if [ $dist = trusty ]; then
+            sed -i -e 's/netdev:x:102:/netdev:x:127:/' "${target}"/etc/group
+            find "${target}" -gid 102|xargs chgrp 127
+        fi
     else if [ "$(package_type)" = "rpm" ]; then
             if [ "$(package_tool)" = "yum" ]; then
                 check_binary yum
@@ -155,7 +155,7 @@ install_base_packages() {
             echo "deb $repository $dist-updates main universe multiverse" >> ${target}/etc/apt/sources.list
             echo "deb http://security.ubuntu.com/ubuntu $dist-security main universe multiverse" >> ${target}/etc/apt/sources.list
             ;;
-       $supported_debian_dists)
+        $supported_debian_dists)
             packages="$cross_distro_packages acpi-support-base firmware-linux firmware-netxen firmware-qlogic firmware-realtek firmware-bnx2 firmware-bnx2x htop inetutils-ping ipmitool libui-dialog-perl linux-image-amd64 $deb_packages"
             echo "deb $repository $dist non-free" > ${target}/etc/apt/sources.list.d/nonfree.list
             echo "deb http://security.debian.org/ $dist/updates main" >  ${target}/etc/apt/sources.list.d/updates.list
@@ -182,59 +182,58 @@ install_base_packages() {
         echo  'LANG=en_US.UTF-8' > $target/etc/default/locale
         do_chroot "$target" locale-gen
         rm -f "${target}"/etc/default/grub.d/edeploy.cfg
-    else if [ "$(package_type)" = "rpm" ]; then
-            install_packages $target "$packages"
-         fi
+    elif [ "$(package_type)" = "rpm" ]; then
+        install_packages $target "$packages"
     fi
 }
 
 add_megacli_repository() {
-  local dist=$1
-  local target=$2
-  case "$dist" in
-      $supported_debian_dists)
-          wget -O - http://hwraid.le-vert.net/debian/hwraid.le-vert.net.gpg.key | do_chroot $target apt-key add -
-          echo "deb http://hwraid.le-vert.net/debian ${dist} main" > $target/etc/apt/sources.list.d/hwraid.list
-	  ;;
-      # they don't support Trusty yet
-      trusty)
-          wget -O - http://hwraid.le-vert.net/ubuntu/hwraid.le-vert.net.gpg.key | do_chroot $target apt-key add -
-          echo "deb http://hwraid.le-vert.net/ubuntu precise main" > $target/etc/apt/sources.list.d/hwraid.list
-	  ;;
-      $supported_ubuntu_dists)
-          wget -O - http://hwraid.le-vert.net/ubuntu/hwraid.le-vert.net.gpg.key | do_chroot $target apt-key add -
-          echo "deb http://hwraid.le-vert.net/ubuntu ${dist} main" > $target/etc/apt/sources.list.d/hwraid.list
-	  ;;
-      $supported_centos_dists|$supported_redhat_dists)
-          check_binary unzip
-	  ;;
-      *)
-	  fatal_error "Unsupported distro for hwraid"
-	  exit 1
-	  ;;
-  esac
+    local dist=$1
+    local target=$2
+    case "$dist" in
+        $supported_debian_dists)
+            wget -O - http://hwraid.le-vert.net/debian/hwraid.le-vert.net.gpg.key | do_chroot $target apt-key add -
+            echo "deb http://hwraid.le-vert.net/debian ${dist} main" > $target/etc/apt/sources.list.d/hwraid.list
+            ;;
+        # they don't support Trusty yet
+        trusty)
+            wget -O - http://hwraid.le-vert.net/ubuntu/hwraid.le-vert.net.gpg.key | do_chroot $target apt-key add -
+            echo "deb http://hwraid.le-vert.net/ubuntu precise main" > $target/etc/apt/sources.list.d/hwraid.list
+            ;;
+        $supported_ubuntu_dists)
+            wget -O - http://hwraid.le-vert.net/ubuntu/hwraid.le-vert.net.gpg.key | do_chroot $target apt-key add -
+            echo "deb http://hwraid.le-vert.net/ubuntu ${dist} main" > $target/etc/apt/sources.list.d/hwraid.list
+            ;;
+        $supported_centos_dists|$supported_redhat_dists)
+            check_binary unzip
+            ;;
+        *)
+            fatal_error "Unsupported distro for hwraid"
+            exit 1
+            ;;
+    esac
 }
 
 install_megacli() {
-  case "$dist" in
-      $supported_debian_dists|$supported_ubuntu_dists)
-          install_packages $target megacli
-	  ;;
-      $supported_centos_dists|$supported_redhat_dists)
-          local MEGACLIVER=8.07.10
-          local MEGACLIZIP="$ORIG/${MEGACLIVER}_MegaCLI_Linux.zip"
-          if [ ! -f "$MEGACLIZIP" ]; then
-              wget "https://github.com/enovance/edeploy-roles/blob/master/files/${MEGACLIVER}_MegaCLI_Linux.zip?raw=true" -O  $MEGACLIZIP
-          fi
-          if [ -r "$MEGACLIZIP" ]; then
-              unzip "${MEGACLIZIP}" "${MEGACLIVER}_MegaCLI_Linux/Linux MegaCLI ${MEGACLIVER}/MegaCli-${MEGACLIVER}-1.noarch.rpm" -d $target/tmp
-              chroot $target rpm -ivh "/tmp/${MEGACLIVER}_MegaCLI_Linux/Linux MegaCLI ${MEGACLIVER}/MegaCli-${MEGACLIVER}-1.noarch.rpm"
-              chroot $target ln -sf /opt/MegaRAID/MegaCli/MegaCli64 /usr/sbin/megacli
-          else
-              echo "NO MEGACLI ARCHIVE AVAILABLE: download it from www.lsi.com" 1>&2
-          fi
-	  ;;
-  esac
+    case "$dist" in
+        $supported_debian_dists|$supported_ubuntu_dists)
+            install_packages $target megacli
+            ;;
+        $supported_centos_dists|$supported_redhat_dists)
+            local MEGACLIVER=8.07.10
+            local MEGACLIZIP="$ORIG/${MEGACLIVER}_MegaCLI_Linux.zip"
+            if [ ! -f "$MEGACLIZIP" ]; then
+                wget "https://github.com/enovance/edeploy-roles/blob/master/files/${MEGACLIVER}_MegaCLI_Linux.zip?raw=true" -O  $MEGACLIZIP
+            fi
+            if [ -r "$MEGACLIZIP" ]; then
+                unzip "${MEGACLIZIP}" "${MEGACLIVER}_MegaCLI_Linux/Linux MegaCLI ${MEGACLIVER}/MegaCli-${MEGACLIVER}-1.noarch.rpm" -d $target/tmp
+                chroot $target rpm -ivh "/tmp/${MEGACLIVER}_MegaCLI_Linux/Linux MegaCLI ${MEGACLIVER}/MegaCli-${MEGACLIVER}-1.noarch.rpm"
+                chroot $target ln -sf /opt/MegaRAID/MegaCli/MegaCli64 /usr/sbin/megacli
+            else
+                echo "NO MEGACLI ARCHIVE AVAILABLE: download it from www.lsi.com" 1>&2
+            fi
+            ;;
+    esac
 }
 
 install_hp_raid_cli_tool() {
@@ -245,7 +244,7 @@ install_hp_raid_cli_tool() {
         if [ ! -r $target/../../$package_name ]; then
             wget --no-verbose http://downloads.linux.hp.com/SDR/downloads/MCP/pool/non-free/$package_name -O $target/../../$package_name
         fi
-	cp $target/../../$package_name $target/tmp/
+        cp $target/../../$package_name $target/tmp/
         install_packages $target "python-pexpect"
         do_chroot $target dpkg -i /tmp/$package_name
         rm -f $target/tmp/$package_name
@@ -317,8 +316,8 @@ install_edeploy_bin() {
 ############################
 
 if [ -z "$1" -o -z "$dist" -o -z "$version" ]; then
-   echo "Usage: $0 <directory name> <distro name>" 1>&2
-   exit 1
+    echo "Usage: $0 <directory name> <distro name>" 1>&2
+    exit 1
 fi
 
 check_variables

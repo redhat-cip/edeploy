@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (C) 2013 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2013-2014 eNovance SAS <licensing@enovance.com>
 #
 # Author: Erwan Velu <erwan.velu@enovance.com>
 #
@@ -35,8 +35,8 @@ BOOT_MOUNT_POINT=/tmp/$2-$3.tmp
 . $LOCAL_PATH/img.embedded
 
 if [ ! -d "$src" ]; then
-   echo "Usage: $0 <source dir> <img> <version> <initrd_path> <ip_serv>" 1>&2
-   exit 1
+    echo "Usage: $0 <source dir> <img> <version> <initrd_path> <ip_serv>" 1>&2
+    exit 1
 fi
 
 step() {
@@ -390,23 +390,23 @@ check_embedded_os() {
 
     step "Checking Embedded OS"
 
-	if [ ! -f "$EMBEDDED_OS" ]; then
+        if [ ! -f "$EMBEDDED_OS" ]; then
         fatal_error "EMBEDDED_OS variable should reference an existing file"
     fi
 
-	if [ -z "$EMBEDDED_ROLE" ]; then
-		fatal_error "EMBEDDED_OS requires an EMBEDDED_ROLE"
-	else
-		echo "$EMBEDDED_ROLE" | grep '^/' || fatal_error "EMBBEDED_ROLE shall be an absolute path"
-	fi
+        if [ -z "$EMBEDDED_ROLE" ]; then
+                fatal_error "EMBEDDED_OS requires an EMBEDDED_ROLE"
+        else
+                echo "$EMBEDDED_ROLE" | grep '^/' || fatal_error "EMBBEDED_ROLE shall be an absolute path"
+        fi
 
-	for extension in cmdb specs configure; do
-		if [ ! -f $EMBEDDED_ROLE.$extension ]; then
-			fatal_error "Missing $EMBEDDED_ROLE.$extension file"
-		fi
-	done
+        for extension in cmdb specs configure; do
+                if [ ! -f $EMBEDDED_ROLE.$extension ]; then
+                        fatal_error "Missing $EMBEDDED_ROLE.$extension file"
+                fi
+        done
 
-	echo " -> Role $(basename $EMBEDDED_ROLE) is ok"
+        echo " -> Role $(basename $EMBEDDED_ROLE) is ok"
 
     file "$EMBEDDED_OS" | grep -q "gzip compressed data" || fatal_error "EMBEDDED variable shall point a gzipped edeploy file"
 

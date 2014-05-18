@@ -34,8 +34,8 @@ export STRIPPED_TARGET=1
 . ${ORIG}/common
 
 if [ ! -d "$src" -o -z "$DST" -o -z "$IMG" -o -z "$vers" ]; then
-   echo "Usage: $0 <source dir> <dest dir> <initrd to generate> <version>" 1>&2
-   exit 1
+    echo "Usage: $0 <source dir> <dest dir> <initrd to generate> <version>" 1>&2
+    exit 1
 fi
 
 mkdir -p $dir
@@ -85,7 +85,7 @@ clean_mount_points
 save_package_list $dir
 
 rsync -au --delete-excluded --delete --exclude /boot/ \
-   --exclude 'initrd*' \
+    --exclude 'initrd*' \
     --exclude 'lib/modules/*/kernel/drivers/bluetooth' \
     --exclude 'lib/modules/*/kernel/drivers/gpu/' \
     --exclude 'lib/modules/*/kernel/drivers/hwmon/' \

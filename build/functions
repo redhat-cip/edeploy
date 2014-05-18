@@ -19,8 +19,8 @@
 . ${ORIG}/common
 
 if [ -z "$dir" -o ! -d "$src" -o -z "$version" ]; then
-   echo "Usage: $0 <base directory> <target directory name> <version>" 1>&2
-   exit 1
+    echo "Usage: $0 <base directory> <target directory name> <version>" 1>&2
+    exit 1
 fi
 
 if [ -z "${SRC}" ]; then

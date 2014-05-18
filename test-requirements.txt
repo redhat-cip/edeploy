@@ -1,2 +1,3 @@
 mock
 bash8
+nose

@@ -21,7 +21,7 @@ import subprocess
 import unittest
 
 
-def filter_output(output):
+def filter_bash8_output(output):
     res = '\n'
     lines = output.split('\n')
     for idx in range(len(lines) // 2):
@@ -31,25 +31,45 @@ def filter_output(output):
     return res
 
 
+def filter_bashn_output(output):
+    res = '\n' + output
+    return res
+
+
 class TestBash8(unittest.TestCase):
 
-    def check(self, fname):
+    def check_bash8(self, fname):
         try:
             subprocess.check_output(('bash8', fname))
             self.assertTrue(True)
         except subprocess.CalledProcessError as e:
-            self.assertTrue(False, filter_output(e.output))
+            self.assertTrue(False, filter_bash8_output(e.output))
 
-dirname = os.path.dirname(__file__)
-for fname in fnmatch.filter(os.listdir(dirname), '*.install') + \
-        ['common', 'distributions', 'functions', 'packages', 'repositories']:
+    def check_bashn(self, fname):
+        try:
+            subprocess.check_output(('bash', '-n', fname),
+                                    stderr=subprocess.STDOUT)
+            self.assertTrue(True)
+        except subprocess.CalledProcessError as e:
+            self.assertTrue(False, filter_bashn_output(e.output))
+
+
+def create_methods(tname, fname, cname):
+    mname = "%s_%s" % (tname, fname.replace('.', '_'))
+
     def ch(fname, mname):
         def test_aux(self):
-            return self.check(os.path.join(dirname, fname))
+            return getattr(self, cname)(os.path.join(dirname, fname))
         test_aux.__name__ = mname
         return test_aux
-    mname = "test_%s" % fname.replace('.', '_')
     setattr(TestBash8, mname, ch(fname, mname))
+
+dirname = os.path.dirname(__file__)
+
+for fname in fnmatch.filter(os.listdir(dirname), '*.install') + \
+        ['common', 'distributions', 'functions', 'packages', 'repositories']:
+    create_methods('test_bash8', fname, 'check_bash8')
+    create_methods('test_bashn', fname, 'check_bashn')
 
 if __name__ == "__main__":
     unittest.main()

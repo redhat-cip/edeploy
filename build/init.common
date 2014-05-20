@@ -337,6 +337,15 @@ probe_pci_devices() {
 }
 
 
+probe_kernel_modules() {
+    step "Probing complementary kernel modules"
+    # Some kernel modules could be needed to perfom some operations
+
+    # Some linux distribution have dm-mod in module, some other in static.
+    # Let's try to probe it for the 1st case
+    modprobe "dm-mod" || true
+}
+
 enable_network_links() {
     nolink=$1
     retry_count=$2

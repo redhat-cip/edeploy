@@ -119,6 +119,8 @@ fi
 
 grep -q '\<quiet\>' /proc/cmdline || log "Loading, please wait..."
 
+probe_kernel_modules
+
 step "Starting services"
 if [ -x /etc/init.d/sysklogd ]; then
     /etc/init.d/sysklogd start

@@ -58,11 +58,17 @@ case "$DIST" in
         add_scn_feature $DIST python27
         do_chroot $dir scl enable python27 'easy_install netaddr pexpect'
         remove_scn_repository
-
     ;;
 esac
 
 update_repositories $dir
+
+case "$DIST" in
+    $supported_redhat_dists)
+        add_rhn_channel rhel-x86_64-server-sfs-6
+    ;;
+esac
+
 install_packages $dir $PACKAGES
 clear_packages_cache $dir
 

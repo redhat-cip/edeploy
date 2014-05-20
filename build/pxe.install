@@ -47,12 +47,13 @@ rsync -aH --delete-before --numeric-ids ${src}/ ${dir}/
 
 common_setup
 
-PACKAGES="python-netaddr python-ipaddr ethtool sdparm gzip lshw xfsprogs hdparm"
+PACKAGES="python-netaddr python-ipaddr ethtool sdparm gzip xfsprogs hdparm"
 case "$DIST" in
     $supported_debian_dists | $supported_ubuntu_dists)
-        PACKAGES="$PACKAGES libc6-i386"
+        PACKAGES="$PACKAGES libc6-i386 lshw"
     ;;
     $supported_centos_dists | $supported_redhat_dists)
+        PACKAGES="$PACKAGES http://pkgs.repoforge.org/lshw/lshw-2.17-1.el6.rf.x86_64.rpm"
         add_epel_repository $DIST
         add_scn_feature $DIST python27
         do_chroot $dir scl enable python27 'easy_install netaddr pexpect'

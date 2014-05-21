@@ -109,6 +109,9 @@ bootstrap() {
             ln -sf /usr/sbin/mngids.py ${target}/usr/sbin/${cmd}
         done
 
+        # copy the tables of uids and gids
+        cp ${dir}/../ids.tables ${dir}/root/
+
         # We need to do some magic on gids to have stable ids for upgrades
         if [ $dist = trusty ]; then
             sed -i -e 's/netdev:x:102:/netdev:x:127:/' "${target}"/etc/group

@@ -400,13 +400,6 @@ common_setup() {
         mv ${dir}/usr/sbin/policy-rc.d.moved ${dir}/usr/sbin/policy-rc.d
     fi
 
-    # copy the tables of uids and gids
-    if [ -r ${dir}/../ids.tables ]; then
-        cp ${dir}/../ids.tables ${dir}/root/
-    else
-        touch ${dir}/root/ids.tables
-    fi
-
     add_rhn_repository $DIST
 
 }

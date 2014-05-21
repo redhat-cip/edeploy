@@ -42,49 +42,45 @@ def parse(content, assoc, is_group=False):
     return assoc
 
 
+def get_index(array, key, default=None):
+    try:
+        return array.index(key)
+    except ValueError:
+        return default
+
+
 def parse_cmdline(args, uids, gids, first=100, last=999, last_user=29999):
     args0 = args[0].split('/')[-1]
 
     def insert(ids, key, idx, opt):
         if not key in ids:
-            if not '--system' in args:
-                f = last + 1
-                l = last_user
-            else:
-                f = first
-                l = last
-            vals = [ids[k][idx] for k in ids]
-            for loop in range(f, l):
-                if not str(loop) in vals:
-                    args.insert(1, str(loop))
-                    args.insert(1, opt)
-                    return args
-            print('no more id for %s in %s' % (key, ids))
-            return args
+            print('mngids.py: %s not found' % key, opt, ids)
+            raise KeyError(key)
 
-        try:
-            index = args.index(opt)
-        except ValueError:
-            try:
-                index = args.index('-' + opt[2])
-            except ValueError:
-                index = None
+        index = get_index(args, opt) or get_index(args, '-' + opt[2])
+
+        print('mngids.py: found %s at %s for val[%s]=%s' %
+              (opt, str(index), key, ids[key][idx]))
+
         if index:
             args[index + 1] = ids[key][idx]
         else:
-            if opt not in args and '-' + opt[2] not in args:
-                try:
-                    args.insert(1, ids[key][idx])
-                    args.insert(1, opt)
-                except KeyError:
-                    pass
+            args.insert(1, ids[key][idx])
+            args.insert(1, opt)
 
     if args0 == 'adduser' or args0 == 'useradd':
-        insert(uids, args[-1], 1, '--gid')
+        idx = get_index(args, '-g') or get_index(args, '--gid')
+
+        if idx:
+            insert(gids, args[idx + 1], 0, '--gid')
+        else:
+            insert(uids, args[-1], 1, '--gid')
         insert(uids, args[-1], 0, '--uid')
     elif args0 == 'addgroup' or args0 == 'groupadd':
         insert(gids, args[-1], 0, '--gid')
+
     args[0] = args[0] + '.real'
+
     return args
 
 

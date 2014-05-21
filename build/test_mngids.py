@@ -58,6 +58,20 @@ class TestMngids(unittest.TestCase):
         self.assertEquals(cmd[3], '--gid')
         self.assertEquals(cmd[4], '1')
 
+    def test_parsecmdline_group(self):
+        cmd = 'adduser --gid nogroup root'.split(' ')
+        passwd = 'root:x:0:1:root:/root:/bin/bash'
+        group = 'nogroup:x:65534:'
+        uids = {}
+        gids = {}
+        mngids.parse(passwd, uids)
+        mngids.parse(group, gids, True)
+        mngids.parse_cmdline(cmd, uids, gids)
+        self.assertEquals(cmd[1], '--uid')
+        self.assertEquals(cmd[2], '0')
+        self.assertEquals(cmd[3], '--gid')
+        self.assertEquals(cmd[4], '65534')
+
     def test_parsecmdline_addgroup(self):
         cmd = 'addgroup root'.split(' ')
         content = 'root:x:1:'
@@ -87,12 +101,15 @@ class TestMngids(unittest.TestCase):
         self.assertEquals(cmd[2], '1')
 
     def test_parsecmdline_noaction(self):
-        cmd = 'adduser --gid 2 root'.split(' ')
+        cmd = 'adduser --gid root root'.split(' ')
         l = len(cmd)
-        content = 'root:x:0:1:root:/root:/bin/bash'
+        passwd = 'root:x:0:1:root:/root:/bin/bash'
+        group = 'root:x:1:'
         uids = {}
-        mngids.parse(content, uids)
-        mngids.parse_cmdline(cmd, uids, {})
+        gids = {}
+        mngids.parse(passwd, uids)
+        mngids.parse(group, gids, True)
+        mngids.parse_cmdline(cmd, uids, gids)
         self.assertEquals(cmd[1], '--uid')
         self.assertEquals(cmd[2], '0')
         self.assertEquals(cmd[4], '1')
@@ -110,25 +127,14 @@ class TestMngids(unittest.TestCase):
         self.assertEquals(cmd[4], '0')
         self.assertEquals(len(cmd), l + 2)
 
-    def test_parsecmdline_addgroup_non_exist_system(self):
-        cmd = 'addgroup --system root'.split(' ')
-        content = 'user:x:15:'
-        gids = {}
-        l = len(cmd)
-        mngids.parse(content, gids)
-        mngids.parse_cmdline(cmd, {}, gids)
-        self.assertEquals(l + 2, len(cmd))
-        self.assertEquals(cmd[2], '100')
-
     def test_parsecmdline_addgroup_non_exist(self):
         cmd = 'addgroup root'.split(' ')
         content = 'user:x:1000:'
         gids = {}
         l = len(cmd)
         mngids.parse(content, gids)
-        mngids.parse_cmdline(cmd, {}, gids)
-        self.assertEquals(l + 2, len(cmd))
-        self.assertEquals(cmd[2], '1001')
+        with self.assertRaises(KeyError):
+            mngids.parse_cmdline(cmd, {}, gids)
 
 GROUP = '''root:x:0:
 daemon:x:1:

@@ -70,7 +70,7 @@ img: $(INST)/$(IMG)
 	./img.install $(INST)/base $(IMG) $(VERS) $(INST) $(SERV) $(HSERV) $(DEBUG)
 
 base: $(INST)/base.done
-$(INST)/base.done: base.install policy-rc.d edeploy common packages distributions $(DVER)-ids.tables
+$(INST)/base.done: base.install policy-rc.d edeploy common packages distributions $(DVER)-ids.tables mngids.py
 	if [ -r $(DVER)-ids.tables ]; then cp $(DVER)-ids.tables $(INST)/ids.tables; fi
 	./base.install $(INST)/base $(DIST) $(VERS)
 	if [ -r $(DVER)-ids.tables ]; then cp $(INST)/ids.tables $(DVER)-ids.tables; fi

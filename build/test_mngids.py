@@ -131,10 +131,24 @@ class TestMngids(unittest.TestCase):
         cmd = 'addgroup root'.split(' ')
         content = 'user:x:1000:'
         gids = {}
-        l = len(cmd)
         mngids.parse(content, gids)
         with self.assertRaises(KeyError):
             mngids.parse_cmdline(cmd, {}, gids)
+
+    def test_parsecmdline_wrong_order(self):
+        cmd = ['useradd', 'jenkins', '--shell', '/bin/bash',
+               '--gid', 'cloud-users',
+               '--comment', 'eNovance Jenkins User', '-m']
+        passwd = 'jenkins:x:1000:1000::/home/jenkins:/bin/bash'
+        group = 'cloud-users:x:1000:'
+        uids = {}
+        gids = {}
+        mngids.parse(passwd, uids)
+        mngids.parse(group, gids, True)
+        mngids.parse_cmdline(cmd, uids, gids)
+        self.assertEquals(cmd[1], '--uid')
+        self.assertEquals(cmd[2], '1000')
+        self.assertEquals(cmd[7], '1000')
 
 GROUP = '''root:x:0:
 daemon:x:1:

@@ -68,16 +68,23 @@ def parse_cmdline(args, uids, gids, first=100, last=999, last_user=29999):
             args.insert(1, ids[key][idx])
             args.insert(1, opt)
 
+    # support to have the user or group name as the first argument instead
+    # of the last
+    if args[1][0] != '-':
+        arg1 = args[1]
+    else:
+        arg1 = args[-1]
     if args0 == 'adduser' or args0 == 'useradd':
+        # lookup group argument
         idx = get_index(args, '-g') or get_index(args, '--gid')
 
         if idx:
             insert(gids, args[idx + 1], 0, '--gid')
         else:
-            insert(uids, args[-1], 1, '--gid')
-        insert(uids, args[-1], 0, '--uid')
+            insert(uids, arg1, 1, '--gid')
+        insert(uids, arg1, 0, '--uid')
     elif args0 == 'addgroup' or args0 == 'groupadd':
-        insert(gids, args[-1], 0, '--gid')
+        insert(gids, arg1, 0, '--gid')
 
     args[0] = args[0] + '.real'
 

@@ -53,19 +53,41 @@ def parse_cmdline(args, uids, gids, first=100, last=999, last_user=29999):
     args0 = args[0].split('/')[-1]
 
     def insert(ids, key, idx, opt):
-        if not key in ids:
-            print('mngids.py: %s not found' % key, opt, ids)
-            raise KeyError(key)
-
         index = get_index(args, opt) or get_index(args, '-' + opt[2])
 
+        if not key in ids:
+            print('mngids.py: %s not found' % key, opt, ids)
+            if index:
+                try:
+                    ival = int(args[index + 1])
+                except:
+                    ival = None
+            else:
+                ival = None
+            if '-s' in args or '--system' in args or ival and ival < last:
+                f = first
+                l = last
+            else:
+                f = last + 1
+                l = last_user
+            vals = [ids[k][idx] for k in ids]
+            for loop in range(f, l):
+                if not str(loop) in vals:
+                    val = str(loop)
+                    break
+            else:
+                print('no more id for %s in %s' % (key, ids))
+                return args
+        else:
+            val = ids[key][idx]
+
         print('mngids.py: found %s at %s for val[%s]=%s' %
-              (opt, str(index), key, ids[key][idx]))
+              (opt, str(index), key, val))
 
         if index:
-            args[index + 1] = ids[key][idx]
+            args[index + 1] = val
         else:
-            args.insert(1, ids[key][idx])
+            args.insert(1, val)
             args.insert(1, opt)
 
     # support to have the user or group name as the first argument instead

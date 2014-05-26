@@ -90,7 +90,6 @@
 /etc/init/ttyS1.conf
 /etc/keepalived/keepalived.conf
 /etc/init/keepalived.conf
-/etc/init/haproxy.conf
 /etc/logrotate.d/haproxy
 /etc/keystone/keystone.conf
 /etc/libvirt/secrets
@@ -176,7 +175,6 @@
 /etc/rc2.d/K04ntp
 /etc/rc2.d/K04rabbitmq-server
 /etc/rc2.d/S01ceph
-/etc/rc2.d/S01haproxy
 /etc/rc2.d/S01mongodb
 /etc/rc2.d/S01rabbitmq-server
 /etc/rc2.d/S02acpid
@@ -280,7 +278,6 @@
 /etc/rc3.d/K04ntp
 /etc/rc3.d/K04rabbitmq-server
 /etc/rc3.d/S01ceph
-/etc/rc3.d/K01haproxy
 /etc/rc3.d/S01mongodb
 /etc/rc3.d/S01rabbitmq-server
 /etc/rc3.d/S02acpid
@@ -384,7 +381,6 @@
 /etc/rc4.d/K04ntp
 /etc/rc4.d/K04rabbitmq-server
 /etc/rc4.d/S01ceph
-/etc/rc4.d/K01haproxy
 /etc/rc4.d/S01mongodb
 /etc/rc4.d/S01rabbitmq-server
 /etc/rc4.d/S02acpid
@@ -488,7 +484,6 @@
 /etc/rc5.d/K04ntp
 /etc/rc5.d/K04rabbitmq-server
 /etc/rc5.d/S01ceph
-/etc/rc5.d/K01haproxy
 /etc/rc5.d/S01mongodb
 /etc/rc5.d/S01rabbitmq-server
 /etc/rc5.d/S02acpid

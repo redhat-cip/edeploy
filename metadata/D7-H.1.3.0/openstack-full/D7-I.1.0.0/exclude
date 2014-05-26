@@ -603,6 +603,7 @@
 /var/lib/glance/images
 /var/lib/haproxy/dev/log
 /var/lib/haproxy/stats
+/etc/default/haproxy
 /etc/haproxy/haproxy.cfg
 /var/lib/heartbeat/crm/
 /var/lib/horizon/

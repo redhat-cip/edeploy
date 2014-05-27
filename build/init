@@ -243,8 +243,9 @@ if /configure; then
 
         if [ -n "${METADATA_URL}" ]; then
             log "Setting up cloudinit with METADATAURL=$METADATA_URL"
+            ORIGINAL_BOOT_ARG=$BOOT_ARG
             BOOT_ARG="$BOOT_ARG ds=nocloud-net\\\;s=${METADATA_URL}"
-            BOOT_ARG1="$BOOT_ARG ds=nocloud-net;s=${METADATA_URL}"
+            BOOT_ARG1="$ORIGINAL_BOOT_ARG ds=nocloud-net;s=${METADATA_URL}"
         else
             log "No METADATA_URL variable found, no cloud-init configuration done"
         fi

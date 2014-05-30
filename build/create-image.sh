@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (C) 2013 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2013-2014 eNovance SAS <licensing@enovance.com>
 #
 # Author: Frederic Lepied <frederic.lepied@enovance.com>
 #
@@ -55,10 +55,11 @@ clean_temporary() {
 
     losetup -d $DEV
     TRY=5
-    while [ $TRY -gt 0 ] && ! kpartx -d "$IMG"; do
+    while [ $TRY -gt 0 ] && ! kpartx -d "$DISK"; do
 	sleep 1
 	TRY=$(($TRY - 1))
     done
+    losetup -d $DISK
     rmdir "$MDIR"
 }
 
@@ -135,8 +136,8 @@ if [ -f "$IMG" ]; then
     do_fatal_error "Error: $IMG already exists"
 fi
 
-if [ ! -d "$DIR" ] ;then
-    do_fatal_error "Error: directory $DIR doesn't exist"
+if [ ! -d "$DIR" -a ! -r "$DIR" ] ;then
+    do_fatal_error "Error: directory or edeploy role $DIR doesn't exist"
 fi
 
 modprobe loop
@@ -148,12 +149,19 @@ check_binary qemu-img
 check_binary losetup
 check_binary mkfs.ext3
 check_binary rsync
+check_binary gunzip
+check_binary tail
 
 set -e
 set -x
 
-# Compute the size of the directory
-SIZE=$(du -s -BM "$DIR" | cut -f1 | sed -s 's/.$//')
+# Compute the size of the directory or the role
+    
+if [ -d "$DIR" ]; then
+    SIZE=$(du -s -BM "$DIR" | cut -f1 | sed -s 's/.$//')
+else
+    SIZE=$(($(gunzip -l $DIR|tail -1|sed -e 's/ *[0-9]* *//' -e 's/  *.*//') / 1024 / 1024))
+fi
 
 # Did the root fs size got user defined ?
 if [ "$ROOT_FS_SIZE" != "auto" ]; then
@@ -165,8 +173,8 @@ if [ "$ROOT_FS_SIZE" != "auto" ]; then
     # The destination size is now set to the user defined value
     SIZE=$ROOT_FS_SIZE
 else
-    # add 20% to be sure that metadata from the filesystem fit
-    SIZE=$(($SIZE * 120 / 100))
+    # add 30% to be sure that metadata from the filesystem fit
+    SIZE=$(($SIZE * 130 / 100))
 fi
 
 # Create the image file
@@ -197,7 +205,11 @@ trap do_cleanup 0
 
 # Copy the data
 
-rsync -a "$DIR/" "$MDIR/"
+if [ -d "$DIR" ]; then
+    rsync -a "$DIR/" "$MDIR/"
+else
+    tar xf "$DIR" -C "$MDIR"
+fi
 
 if [ -n "$VAGRANT" ]; then
   chroot "$MDIR" useradd -s /bin/bash -m vagrant
@@ -313,6 +325,8 @@ EOF
     echo "Your Vagrant box is ready, you can import it using the following command:
  vagrant box add ${IMG} ${IMG}.box --provider=${VAGRANT_PROVIDER}"
 else
-   qemu-img convert -O $IMAGE_FORMAT "$IMG" "$IMG".$IMAGE_FORMAT
+    if [ -n "$IMAGE_FORMAT" -a "$IMAGE_FORMAT" != raw ]; then
+        qemu-img convert -O $IMAGE_FORMAT "$IMG" "$IMG".$IMAGE_FORMAT
+    fi
 fi
 

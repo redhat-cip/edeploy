@@ -205,10 +205,14 @@ setup_bootloader() {
     mkdir $1/extlinux
     if [ "$MODE" = "health" ]; then
 COMMON_ARGS="$KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG UPLOAD_LOG=${UPLOAD_LOG} ONFAILURE=$ONFAILURE ONSUCCESS=$ONSUCCESS IP=$IP"
-if [ -n "$SESSION" ]; then
-    COMMON_ARGS="$COMMON_ARGS SESSION=$SESSION"
-fi
-cat << EOF >> $1/extlinux/extlinux.conf
+        if [ -n "$SESSION" ]; then
+            COMMON_ARGS="$COMMON_ARGS SESSION=$SESSION"
+        fi
+        if [ -n "$NONETWORKTEST" ]; then
+            COMMON_ARGS="$COMMON_ARGS NONETWORKTEST"
+        fi
+
+        cat << EOF >> $1/extlinux/extlinux.conf
 TIMEOUT 100
 PROMPT 1
 UI menu.c32
@@ -365,11 +369,11 @@ LABEL DESTRUCTIVE72H
 
 EOF
     else
-if [ -n "$EMBEDDED_OS" ]; then
-    EMBEDDED_STRING="EMBEDDED=1"
-    UPLOAD_LOG=1
-fi
-cat << EOF >> $1/extlinux/extlinux.conf
+        if [ -n "$EMBEDDED_OS" ]; then
+            EMBEDDED_STRING="EMBEDDED=1"
+            UPLOAD_LOG=1
+        fi
+        cat << EOF >> $1/extlinux/extlinux.conf
 TOTALTIMEOUT 10
 PROMPT 0
 DEFAULT FLASH

@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python2
 
 from socket import socket, AF_INET, SOCK_STREAM
 from health_messages import Health_Message as HM

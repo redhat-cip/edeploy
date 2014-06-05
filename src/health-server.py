@@ -1,10 +1,10 @@
-#!/usr/bin/python3
+#!/usr/bin/python2
 
 import curses
 import curses.textpad
 import curses.ascii
 import fcntl
-from socketserver import BaseRequestHandler, ThreadingTCPServer
+from SocketServer import BaseRequestHandler, ThreadingTCPServer
 import socket
 import struct
 from health_messages import Health_Message as HM

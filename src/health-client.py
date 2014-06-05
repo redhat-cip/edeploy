@@ -78,9 +78,9 @@ def module(socket, msg):
     handlers[msg.module](socket, msg)
 
 
-def connect_to_server(hrdw):
+def connect_to_server(hrdw, hostname):
     global s
-    s.connect(('localhost', 20000))
+    s.connect((hostname, 20000))
     HP.send_hm_message(s, HM(HM.CONNECT), True)
     while True:
         msg = HP.recv_hm_message(s)
@@ -117,4 +117,4 @@ if __name__ == '__main__':
     HP.start_log('/var/tmp/health-client.log', logging.DEBUG)
     atexit.register(cleanup)
     hrdw = eval(open(sys.argv[1]).read(-1))
-    connect_to_server(hrdw)
+    connect_to_server(hrdw, 'localhost')

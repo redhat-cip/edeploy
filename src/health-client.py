@@ -32,8 +32,7 @@ def connect(socket, msg):
 
 def disconnect(socket, msg):
     HP.logger.info("Disconnecting based on server request")
-    socket.close()
-    sys.exit(1)
+    cleanup()
 
 def ack(socket, msg):
     return

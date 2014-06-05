@@ -16,6 +16,7 @@ import termios
 import traceback
 import threading
 import time
+import yaml
 
 socket_list = {}
 lock_socket_list = threading.RLock()
@@ -23,6 +24,7 @@ hosts = {}
 lock_host = threading.RLock()
 hosts_cpu = {}
 lock_cpu = threading.RLock()
+results_cpu = {}
 serv = 0
 cpu = 0
 
@@ -64,7 +66,7 @@ class SocketHandler(BaseRequestHandler):
 
                     if msg.message == HM.MODULE and msg.action == HM.COMPLETED:
                         if msg.module == HM.CPU:
-                            cpu_completed(self.client_address)
+                            cpu_completed(self.client_address, msg)
 
 
 def createAndStartServer():
@@ -94,11 +96,12 @@ def update_time(screen):
         screen.refresh()
         time.sleep(1)
 
-def cpu_completed(host):
+def cpu_completed(host, msg):
     global hosts
     global cpu
     del hosts_cpu[host]
     cpu = cpu - 1
+    results_cpu[host] = msg.hw
 
 
 
@@ -165,6 +168,56 @@ def interactive_mode():
         traceback.print_exc()           # Print the exceptionif __name__ == '__main__':
 
 
+def start_cpu_bench(nb_hosts, runtime):
+    msg = HM(HM.MODULE, HM.CPU, HM.START)
+    msg.cpu_instances = 1
+    msg.running_time = runtime
+    for host in hosts.keys():
+        if nb_hosts == 0:
+            break;
+        if not host in hosts_cpu.keys():
+            nb_hosts = nb_hosts - 1
+            hosts_cpu[host] = True
+            lock_socket_list.acquire()
+            HP.send_hm_message(socket_list[host], msg)
+            lock_socket_list.release()
+
+
+def disconnect_clients():
+    global serv
+    msg = HM(HM.DISCONNECT)
+    for host in hosts.keys():
+            lock_socket_list.acquire()
+            HP.send_hm_message(socket_list[host], msg)
+            lock_socket_list.release()
+    serv.shutdown()
+    serv.socket.close()
+
+def compute_results():
+    for host in results_cpu.keys():
+        HP.logger.info("Dumping cpu result from host %s" % host)
+        print results_cpu[host]
+
+def non_interactive_mode():
+    runtime = 0
+    job = yaml.load(file('test.yaml','r'))
+    HP.logger.info("Expecting %d hosts to start job %s" % (job['required-host-count'], job['name']))
+    while (len(hosts.keys()) < job['required-host-count']):
+        time.sleep(1)
+    HP.logger.info("Starting job %s" % job['name'])
+    cpu_job = job['cpu']
+    if cpu_job:
+            runtime += cpu_job['runtime']
+            start_cpu_bench(job['required-host-count'], cpu_job['runtime'])
+
+    HP.logger.info("Waiting bench to finish (should take %d seconds)" % runtime)
+    while (hosts_cpu.keys()):
+            time.sleep(1)
+    HP.logger.info("End of job %s" % job['name'])
+    compute_results()
+    disconnect_clients()
+
+
 if __name__=='__main__':
 
     HP.start_log('/var/tmp/health-server.log', logging.DEBUG)
@@ -172,6 +225,9 @@ if __name__=='__main__':
     myThread = threading.Thread(target=createAndStartServer)
     myThread.start()
 
-    interactive = threading.Thread(target=interactive_mode)
-    interactive.start()
+    non_interactive = threading.Thread(target=non_interactive_mode)
+    non_interactive.start()
+
+#    interactive = threading.Thread(target=interactive_mode)
+#    interactive.start()
 

@@ -1,0 +1,4 @@
+name: cpu_load
+required-host-count: 1
+cpu:
+    runtime: 2

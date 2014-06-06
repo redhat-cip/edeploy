@@ -134,5 +134,8 @@ def cleanup():
 if __name__ == '__main__':
     HP.start_log('/var/tmp/health-client.log', logging.DEBUG)
     atexit.register(cleanup)
+    if (len(sys.argv) < 3) :
+        HP.logger.error("You must provide an hardware file and a host to connect as argument")
+        sys.exit(1)
     hrdw = eval(open(sys.argv[1]).read(-1))
-    connect_to_server(hrdw, 'localhost')
+    connect_to_server(hrdw, sys.argv[2])

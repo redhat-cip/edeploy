@@ -147,11 +147,11 @@ def get_default_value(job, item, default_value):
     return job.get(item, default_value)
 
 
-def non_interactive_mode():
+def non_interactive_mode(filename):
     total_runtime = 0
     name = "undefined"
 
-    job = yaml.load(file('test.yaml','r'))
+    job = yaml.load(file(filename,'r'))
     if job['name'] is None:
         HP.logger.error("Missing name parameter in yaml file")
         disconnect_clients()
@@ -218,9 +218,13 @@ if __name__=='__main__':
 
     HP.start_log('/var/tmp/health-server.log', logging.DEBUG)
 
+    if len(sys.argv) < 2:
+        HP.logger.error("You must provide a yaml file as argument")
+        sys.exit(1)
+
     myThread = threading.Thread(target=createAndStartServer)
     myThread.start()
 
-    non_interactive = threading.Thread(target=non_interactive_mode)
+    non_interactive = threading.Thread(target=non_interactive_mode, args=tuple([sys.argv[1]]))
     non_interactive.start()
 

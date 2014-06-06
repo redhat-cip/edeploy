@@ -120,10 +120,17 @@ def start_cpu_bench(nb_hosts, runtime):
 def disconnect_clients():
     global serv
     msg = HM(HM.DISCONNECT)
+    HP.logger.info("Asking %d hosts to disconnect" % len(hosts.keys()))
     for host in hosts.keys():
             lock_socket_list.acquire()
             HP.send_hm_message(socket_list[host], msg)
             lock_socket_list.release()
+
+    while(hosts.keys()):
+        time.sleep(1)
+        HP.logger.info("Still %d hosts connected" % len(hosts.keys()))
+
+    HP.logger.info("All hosts disconnected")
     serv.shutdown()
     serv.socket.close()
 

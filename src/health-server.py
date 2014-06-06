@@ -103,9 +103,9 @@ def get_host_list(item):
 
     return selected_hosts
 
-def start_cpu_bench(nb_hosts, runtime):
+def start_cpu_bench(nb_hosts, runtime, cores):
     msg = HM(HM.MODULE, HM.CPU, HM.START)
-    msg.cpu_instances = 1
+    msg.cpu_instances = cores
     msg.running_time = runtime
     for host in hosts.keys():
         if nb_hosts == 0:
@@ -180,11 +180,12 @@ def non_interactive_mode():
             cpu_runtime = get_default_value(cpu_job, 'runtime', runtime)
             total_runtime += cpu_runtime
             required_cpu_hosts = get_default_value(cpu_job, 'required-hosts', required_hosts)
+            cores = get_default_value(cpu_job, 'cores', 1)
             if required_cpu_hosts < 1:
                 required_cpu_hosts = required_hosts
                 HP.logger.error("CPU: required-hosts shall be greater than 0, defaulting to global required-hosts=%d" % required_cpu_hosts)
             HP.logger.info("CPU job will take %d seconds on %d hosts" % (cpu_runtime, required_cpu_hosts))
-            start_cpu_bench(required_cpu_hosts, cpu_runtime)
+            start_cpu_bench(required_cpu_hosts, cpu_runtime, cores)
 
     HP.logger.info("Waiting bench to finish (should take %d seconds)" % total_runtime)
     while (get_host_list(CPU_RUN).keys()):

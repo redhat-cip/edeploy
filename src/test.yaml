@@ -4,3 +4,4 @@ runtime: 1
 cpu:
     required-hosts: 1
     runtime: 2
+    cores : 2

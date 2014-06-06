@@ -22,12 +22,14 @@ socket_list = {}
 lock_socket_list = threading.RLock()
 hosts = {}
 lock_host = threading.RLock()
-hosts_cpu = {}
-lock_cpu = threading.RLock()
+hosts_state = {}
 results_cpu = {}
 serv = 0
-cpu = 0
-
+NOTHING_RUN = 0
+CPU_RUN     = 1 << 0
+MEMORY_RUN  = 1 << 1
+STORAGE_RUN = 1 << 2
+NETWORK_RUN = 1 << 3
 
 class SocketHandler(BaseRequestHandler):
     global hosts
@@ -51,6 +53,7 @@ class SocketHandler(BaseRequestHandler):
 
                     lock_host.acquire()
                     del hosts[self.client_address]
+                    del hosts_state[self.client_address]
                     lock_host.release()
 
                     socket_list[self.client_address].close()
@@ -62,6 +65,7 @@ class SocketHandler(BaseRequestHandler):
                 else:
                     lock_host.acquire()
                     hosts[self.client_address] = msg
+                    hosts_state[self.client_address] = NOTHING_RUN
                     lock_host.release()
 
                     if msg.message == HM.MODULE and msg.action == HM.COMPLETED:
@@ -82,91 +86,22 @@ def createAndStartServer():
     serv.serve_forever() #blocking method
 
 
-def update_time(screen):
-    global cpu
-    global hosts
-    while 1:
-        connected = len(hosts.keys())
-
-        bar_str = "CPU:%s" % cpu
-        host_str = "C:%d" % connected
-        screen.addstr(39, 0, "%s" % bar_str)
-        screen.addstr(40, 0, "%s" % host_str)
-        screen.addstr(0, 0, time.strftime("%a, %d %b %Y %H:%M:%S"))
-        screen.refresh()
-        time.sleep(1)
-
 def cpu_completed(host, msg):
-    global hosts
-    global cpu
-    del hosts_cpu[host]
-    cpu = cpu - 1
+    global hosts_state
+    global results_cpu
+    hosts_state[host] |= CPU_RUN
     results_cpu[host] = msg.hw
 
 
-
-def change_cpu(amount):
-    global cpu
+def get_host_list(item):
     global hosts
-    if (cpu + amount > 0):
-#        if amount < 0:
-        if amount > 0:
-            msg = HM(HM.MODULE, HM.CPU, HM.START)
-            msg.cpu_instances = 1
-            msg.running_time = 10
-            for host in hosts.keys():
-                if not host in hosts_cpu.keys():
-                    hosts_cpu[host] = True
-                    lock_socket_list.acquire()
-                    HP.send_hm_message(socket_list[host], msg)
-                    lock_socket_list.release()
-           
-        cpu = cpu + amount
-                
+    global hosts_state
+    selected_hosts = {}
+    for host in hosts.keys():
+        if hosts_state[host] & item == item:
+            selected_hosts[host] = True
 
-def interactive_mode():
-    global cpu
-    try:
-        stdscr = curses.initscr()
-        # Turn off echoing of keys, and enter cbreak mode,
-        # where no buffering is performed on keyboard input
-        curses.noecho()
-        curses.cbreak()
-
-        # In keypad mode, escape sequences for special keys
-        # (like the cursor keys) will be interpreted and
-        # a special value like curses.KEY_LEFT will be returned
-        stdscr.keypad(1)
-
-        stdscr.clear()
-        clock = threading.Thread(target=update_time, args=(stdscr,))
-        clock.daemon = True
-        clock.start()
-        while 1:
-            c = stdscr.getch()
-            if c == ord('c'):
-                    change_cpu(-1)
-            elif c == ord('C'):
-                    change_cpu(+1)
-            elif c == ord('q'):
-                break  # Exit the while()
-            elif c == curses.KEY_HOME:
-                x = y = 0
-
-        # Set everything back to normal
-        clock.stop()
-        stdscr.keypad(0)
-        curses.echo()
-        curses.nocbreak()
-        curses.endwin()                 # Terminate curses
-    except:
-        # In event of error, restore terminal to sane state.
-        stdscr.keypad(0)
-        curses.echo()
-        curses.nocbreak()
-        curses.endwin()
-        traceback.print_exc()           # Print the exceptionif __name__ == '__main__':
-
+    return selected_hosts
 
 def start_cpu_bench(nb_hosts, runtime):
     msg = HM(HM.MODULE, HM.CPU, HM.START)
@@ -175,9 +110,8 @@ def start_cpu_bench(nb_hosts, runtime):
     for host in hosts.keys():
         if nb_hosts == 0:
             break;
-        if not host in hosts_cpu.keys():
+        if not host in get_host_list(CPU_RUN).keys():
             nb_hosts = nb_hosts - 1
-            hosts_cpu[host] = True
             lock_socket_list.acquire()
             HP.send_hm_message(socket_list[host], msg)
             lock_socket_list.release()
@@ -237,7 +171,7 @@ def non_interactive_mode():
             start_cpu_bench(required_cpu_hosts, cpu_runtime)
 
     HP.logger.info("Waiting bench to finish (should take %d seconds)" % total_runtime)
-    while (hosts_cpu.keys()):
+    while (get_host_list(CPU_RUN).keys()):
             time.sleep(1)
     HP.logger.info("End of job %s" % job['name'])
     compute_results()
@@ -253,7 +187,4 @@ if __name__=='__main__':
 
     non_interactive = threading.Thread(target=non_interactive_mode)
     non_interactive.start()
-
-#    interactive = threading.Thread(target=interactive_mode)
-#    interactive.start()
 

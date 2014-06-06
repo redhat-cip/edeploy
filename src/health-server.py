@@ -193,24 +193,50 @@ def disconnect_clients():
     serv.shutdown()
     serv.socket.close()
 
+
 def compute_results():
     for host in results_cpu.keys():
         HP.logger.info("Dumping cpu result from host %s" % host)
         print results_cpu[host]
 
+
+def get_default_value(job, item, default_value):
+    return job.get(item, default_value)
+
+
 def non_interactive_mode():
-    runtime = 0
+    total_runtime = 0
     job = yaml.load(file('test.yaml','r'))
-    HP.logger.info("Expecting %d hosts to start job %s" % (job['required-host-count'], job['name']))
-    while (len(hosts.keys()) < job['required-host-count']):
+    if job['required-hosts'] is None:
+        HP.logger.error("Missing required-hosts parameter in yaml file")
+        disconnect_clients()
+        return
+
+    required_hosts = job['required-hosts']
+    if required_hosts < 1:
+        HP.logger.error("required-hosts shall be greater than 0")
+        disconnect_clients()
+        return
+
+    runtime = get_default_value(job, 'runtime', 0)
+
+    HP.logger.info("Expecting %d hosts to start job %s" % (required_hosts, job['name']))
+    while (len(hosts.keys()) < required_hosts):
         time.sleep(1)
+
     HP.logger.info("Starting job %s" % job['name'])
     cpu_job = job['cpu']
     if cpu_job:
-            runtime += cpu_job['runtime']
-            start_cpu_bench(job['required-host-count'], cpu_job['runtime'])
+            cpu_runtime = get_default_value(cpu_job, 'runtime', runtime)
+            total_runtime += cpu_runtime
+            required_cpu_hosts = get_default_value(cpu_job, 'required-hosts', required_hosts)
+            if required_cpu_hosts < 1:
+                required_cpu_hosts = required_hosts
+                HP.logger.error("CPU: required-hosts shall be greater than 0, defaulting to global required-hosts=%d" % required_cpu_hosts)
+            HP.logger.info("CPU job will take %d seconds on %d hosts" % (cpu_runtime, required_cpu_hosts))
+            start_cpu_bench(required_cpu_hosts, cpu_runtime)
 
-    HP.logger.info("Waiting bench to finish (should take %d seconds)" % runtime)
+    HP.logger.info("Waiting bench to finish (should take %d seconds)" % total_runtime)
     while (hosts_cpu.keys()):
             time.sleep(1)
     HP.logger.info("End of job %s" % job['name'])

@@ -3,6 +3,7 @@ class Health_Message():
     
     INVALID = 0
     NONE = 1 << 0
+    DISCONNECTED = 1 << 1
 
     STOP = 1 << 1
     START = 1 << 2

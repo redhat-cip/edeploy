@@ -34,7 +34,12 @@ def send_hm_message(sock, data, need_ack=False):
         msg = HM()
         while True:
             logger.debug("Waiting for ACK")
-            msg = recv_hm_message(sock)
+            try:
+                msg = recv_hm_message(sock)
+            except Exception as e:
+                logger.error("Broken socket, exiting")
+                break;
+
             if (msg.message == HM.ACK):
                 logger.debug("Got ACK, exiting")
                 break;
@@ -47,7 +52,9 @@ def recv_hm_message(sock):
     global logger
     try:
         lengthbuf = recvall(sock, 4)
-    except socket.error as v:
+    except socket.error as (errno, v):
+        if errno == 9:
+            return HM(HM.DISCONNECTED)
         logger.error(v)
         return HM(HM.INVALID)
 

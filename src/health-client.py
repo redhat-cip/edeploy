@@ -11,6 +11,7 @@ import time
 import sys
 
 s = socket(AF_INET, SOCK_STREAM)
+connected = False
 
 def invalid_message(msg):
     HP.logger.error("%s is not a valid message for a client" % msg.get_message_type())
@@ -79,10 +80,21 @@ def module(socket, msg):
 
 def connect_to_server(hrdw, hostname):
     global s
-    s.connect((hostname, 20000))
+    global connected
+    try:
+        s.connect((hostname, 20000))
+    except Exception as e:
+        HP.logger.error("Server %s is not available, exiting" % hostname)
+        return
+
+    connected = True
     HP.send_hm_message(s, HM(HM.CONNECT), True)
     while True:
-        msg = HP.recv_hm_message(s)
+        try:
+            msg = HP.recv_hm_message(s)
+        except Exception as e:
+            HP.logger.error("Broken socket, exiting !")
+            break;
 
         if not msg:
             continue;
@@ -90,6 +102,11 @@ def connect_to_server(hrdw, hostname):
         if msg.message == HM.INVALID:
             HP.logger.error("Ignoring invalid message")
             continue;
+
+        if msg.message == HM.DISCONNECTED:
+            connected = False
+            HP.logger.error("Got disconnected from server, exiting")
+            break;
 
         msg.hw = hrdw
 
@@ -108,9 +125,11 @@ def connect_to_server(hrdw, hostname):
 
 def cleanup():
     global s
-    HP.send_hm_message(s, HM(HM.DISCONNECT), False)
-    s.shutdown(1)
-    s.close()
+    global connected
+    if connected is True:
+        HP.send_hm_message(s, HM(HM.DISCONNECT), False)
+        s.shutdown(1)
+        s.close()
 
 if __name__ == '__main__':
     HP.start_log('/var/tmp/health-client.log', logging.DEBUG)

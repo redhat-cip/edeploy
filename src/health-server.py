@@ -89,7 +89,7 @@ def createAndStartServer():
 def cpu_completed(host, msg):
     global hosts_state
     global results_cpu
-    hosts_state[host] |= CPU_RUN
+    hosts_state[host] &= ~CPU_RUN
     results_cpu[host] = msg.hw
 
 
@@ -104,6 +104,7 @@ def get_host_list(item):
     return selected_hosts
 
 def start_cpu_bench(nb_hosts, runtime, cores):
+    global hosts_state
     msg = HM(HM.MODULE, HM.CPU, HM.START)
     msg.cpu_instances = cores
     msg.running_time = runtime
@@ -111,6 +112,7 @@ def start_cpu_bench(nb_hosts, runtime, cores):
         if nb_hosts == 0:
             break;
         if not host in get_host_list(CPU_RUN).keys():
+            hosts_state[host] |= CPU_RUN
             nb_hosts = nb_hosts - 1
             lock_socket_list.acquire()
             HP.send_hm_message(socket_list[host], msg)

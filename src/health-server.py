@@ -137,7 +137,7 @@ def disconnect_clients():
     serv.socket.close()
 
 
-def compute_results():
+def compute_results(nb_hosts):
     for host in results_cpu.keys():
         HP.logger.info("Dumping cpu result from host %s" % str(host))
         print results_cpu[host]
@@ -192,19 +192,24 @@ def non_interactive_mode():
                 max_hosts= min_hosts
                 HP.logger.error("CPU: required-hosts shall be greater than 0, defaulting to global required-hosts=%d" % max_hosts)
 
-            for nb_hosts in xrange(min_hosts, max_hosts+1, step_hosts):
-                cpu_runtime = get_default_value(cpu_job, 'runtime', runtime)
-                HP.logger.info("CPU: Loop %d / %d : step = %d : runtime = %d on %d hosts" % (nb_hosts, max_hosts, step_hosts, cpu_runtime, nb_hosts))
-                total_runtime += cpu_runtime
-                cores = get_default_value(cpu_job, 'cores', 1)
-                start_cpu_bench(nb_hosts, cpu_runtime, cores)
+            if max_hosts > required_hosts:
+                HP.logger.error("CPU: The maximum number of hosts to tests is greater than the amount of available hosts.")
+                HP.logger.error("CPU: Canceling Test")
+            else:
+                for nb_hosts in xrange(min_hosts, max_hosts+1, step_hosts):
+                    cpu_runtime = get_default_value(cpu_job, 'runtime', runtime)
+                    HP.logger.info("CPU: Loop %d / %d : step = %d : runtime = %d on %d hosts" % (nb_hosts, max_hosts, step_hosts, cpu_runtime, nb_hosts))
+                    total_runtime += cpu_runtime
+                    cores = get_default_value(cpu_job, 'cores', 1)
+                    start_cpu_bench(nb_hosts, cpu_runtime, cores)
 
-                HP.logger.info("CPU: Waiting bench to finish (should take %d seconds)" % total_runtime)
-                while (get_host_list(CPU_RUN).keys()):
-                    time.sleep(1)
+                    HP.logger.info("CPU: Waiting bench to finish (should take %d seconds)" % total_runtime)
+                    while (get_host_list(CPU_RUN).keys()):
+                        time.sleep(1)
+
+                    compute_results(nb_hosts)
 
     HP.logger.info("End of job %s" % name)
-    compute_results()
     disconnect_clients()
 
 

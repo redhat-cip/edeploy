@@ -140,7 +140,16 @@ def get_default_value(job, item, default_value):
 
 def non_interactive_mode():
     total_runtime = 0
+    name = "undefined"
+
     job = yaml.load(file('test.yaml','r'))
+    if job['name'] is None:
+        HP.logger.error("Missing name parameter in yaml file")
+        disconnect_clients()
+        return
+    else:
+        name = job['name']
+
     if job['required-hosts'] is None:
         HP.logger.error("Missing required-hosts parameter in yaml file")
         disconnect_clients()
@@ -154,11 +163,11 @@ def non_interactive_mode():
 
     runtime = get_default_value(job, 'runtime', 0)
 
-    HP.logger.info("Expecting %d hosts to start job %s" % (required_hosts, job['name']))
+    HP.logger.info("Expecting %d hosts to start job %s" % (required_hosts, name))
     while (len(hosts.keys()) < required_hosts):
         time.sleep(1)
 
-    HP.logger.info("Starting job %s" % job['name'])
+    HP.logger.info("Starting job %s" % name)
     cpu_job = job['cpu']
     if cpu_job:
             cpu_runtime = get_default_value(cpu_job, 'runtime', runtime)
@@ -173,7 +182,7 @@ def non_interactive_mode():
     HP.logger.info("Waiting bench to finish (should take %d seconds)" % total_runtime)
     while (get_host_list(CPU_RUN).keys()):
             time.sleep(1)
-    HP.logger.info("End of job %s" % job['name'])
+    HP.logger.info("End of job %s" % name)
     compute_results()
     disconnect_clients()
 

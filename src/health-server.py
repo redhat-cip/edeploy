@@ -179,19 +179,30 @@ def non_interactive_mode():
     HP.logger.info("Starting job %s" % name)
     cpu_job = job['cpu']
     if cpu_job:
-            cpu_runtime = get_default_value(cpu_job, 'runtime', runtime)
-            total_runtime += cpu_runtime
+            step_hosts = get_default_value(cpu_job, 'step-hosts', 1)
             required_cpu_hosts = get_default_value(cpu_job, 'required-hosts', required_hosts)
-            cores = get_default_value(cpu_job, 'cores', 1)
-            if required_cpu_hosts < 1:
-                required_cpu_hosts = required_hosts
-                HP.logger.error("CPU: required-hosts shall be greater than 0, defaulting to global required-hosts=%d" % required_cpu_hosts)
-            HP.logger.info("CPU job will take %d seconds on %d hosts" % (cpu_runtime, required_cpu_hosts))
-            start_cpu_bench(required_cpu_hosts, cpu_runtime, cores)
+            if "-" in str(required_cpu_hosts):
+                min_hosts = int(str(required_cpu_hosts).split("-")[0])
+                max_hosts = int(str(required_cpu_hosts).split("-")[1])
+            else:
+                min_hosts = required_cpu_hosts
+                max_hosts = min_hosts
 
-    HP.logger.info("Waiting bench to finish (should take %d seconds)" % total_runtime)
-    while (get_host_list(CPU_RUN).keys()):
-            time.sleep(1)
+            if max_hosts < 1:
+                max_hosts= min_hosts
+                HP.logger.error("CPU: required-hosts shall be greater than 0, defaulting to global required-hosts=%d" % max_hosts)
+
+            for nb_hosts in xrange(min_hosts, max_hosts+1, step_hosts):
+                cpu_runtime = get_default_value(cpu_job, 'runtime', runtime)
+                HP.logger.info("CPU: Loop %d / %d : step = %d : runtime = %d on %d hosts" % (nb_hosts, max_hosts, step_hosts, cpu_runtime, nb_hosts))
+                total_runtime += cpu_runtime
+                cores = get_default_value(cpu_job, 'cores', 1)
+                start_cpu_bench(nb_hosts, cpu_runtime, cores)
+
+                HP.logger.info("CPU: Waiting bench to finish (should take %d seconds)" % total_runtime)
+                while (get_host_list(CPU_RUN).keys()):
+                    time.sleep(1)
+
     HP.logger.info("End of job %s" % name)
     compute_results()
     disconnect_clients()

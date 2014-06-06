@@ -1,7 +1,8 @@
 name: cpu_load
-required-hosts: 1
+required-hosts: 2
 runtime: 1
 cpu:
-    required-hosts: 1
-    runtime: 2
+    required-hosts: 1-2
+    step-host: 1
+    runtime: 10
     cores : 2

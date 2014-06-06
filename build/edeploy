@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (C) 2013 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2013-2014 eNovance SAS <licensing@enovance.com>
 #
 # Author: Frederic Lepied <frederic.lepied@enovance.com>
 #
@@ -136,6 +136,31 @@ function check_args() {
 
 }
 
+function activate-pkgmngr() {
+    for pkgmngr in apt-get yum; do
+        if [ ! -L /usr/bin/${pkgmngr} ]; then
+            mv -f /usr/bin/${pkgmngr} /usr/bin/${pkgmngr}.real
+        fi
+        ln -sf /usr/bin/${pkgmngr}.real /usr/bin/${pkgmngr}
+    done
+}
+
+function deactivate-pkgmngr() {
+    cat > /usr/bin/pkgmngr.edeploy <<EOF
+#!/bin/sh
+
+echo "\$(basename \$0) is deactivated. Use \"edeploy activate-pkgmngr\" to bring it back."
+exit 0
+EOF
+    chmod a+x /usr/bin/pkgmngr.edeploy
+    for pkgmngr in apt-get yum; do
+        if [ ! -L /usr/bin/${pkgmngr} ]; then
+            mv -f /usr/bin/${pkgmngr} /usr/bin/${pkgmngr}.real
+        fi
+        ln -sf /usr/bin/pkgmngr.edeploy /usr/bin/${pkgmngr}
+    done
+}
+
 function help() {
     usage
     cat <<EOF
@@ -152,13 +177,16 @@ function help() {
 
     role: show the role the guest has been setup as.
 
-    help: display this help message.
+    activate-pkgmngr: activate the package manager
 
+    deactivate-pkgmngr: deactivate the package manager
+
+    help: display this help message.
 EOF
 }
 
 function usage() {
-    echo "Usage: $progname ({test-}upgrade <target version>|list|verify|help|version|role)"
+    echo "Usage: $progname ({test-}upgrade <target version>|list|verify|help|version|role|activate-pkgmngr|deactivate-pkgmngr)"
 }
 
 command="$1"
@@ -167,15 +195,18 @@ shift
 case "$command" in
     help)
         help
-    ;;
+        ;;
     test-upgrade|upgrade|list|verify|version|role)
         check_args
         "$command" "$@"
-    ;;
+        ;;
 
+    activate-pkgmngr|deactivate-pkgmngr)
+        "$command" "$@"
+        ;;
     *)
         usage 1>&2
         exit 1
-    ;;
+        ;;
 esac
 

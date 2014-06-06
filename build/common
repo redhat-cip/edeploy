@@ -252,13 +252,13 @@ cleanup() {
     # Let's remove any trace of a rhn configuration
     unregister_rhn $DIST $dir
 
+    # clear package cache before removing the pkg manager
+    clear_packages_cache $dir
+
     # Let's disable apt-get and yum for normal usage
-    for pkgmngr in apt-get yum; do
-        if [ ! -f ${dir}/usr/bin/${pkgmngr}.moved -a -f ${dir}/usr/bin/${pkgmngr} ]; then
-            mv -f ${dir}/usr/bin/${pkgmngr} ${dir}/usr/bin/${pkgmngr}.moved
-            ln -s /bin/true ${dir}/usr/bin/${pkgmngr}
-        fi
-    done
+    if [ -z "$KEEP_PKGMNGR" -a -x ${dir}/usr/sbin/edeploy ]; then
+        do_chroot ${dir} /usr/sbin/edeploy deactivate-pkgmngr
+    fi
 
     # Remove policy for invoke-rc.d (this has side effects on puppet for exemple)
     if [ -f ${dir}/usr/sbin/policy-rc.d ]; then
@@ -272,7 +272,6 @@ cleanup() {
 
     if [ "$ret" = "0" ]; then
         if [ -z "$STRIPPED_TARGET" ]; then
-            clear_packages_cache $dir
             save_package_list $dir
         fi
 
@@ -389,11 +388,9 @@ common_setup() {
     echo 'exit 0' > "${dir}"/etc/default/grub.d/edeploy.cfg
 
     # let apt-get and yum work in build scripts
-    for pkgmngr in apt-get yum; do
-        if [ -f ${dir}/usr/bin/${pkgmngr}.moved ]; then
-            mv -f ${dir}/usr/bin/${pkgmngr}.moved ${dir}/usr/bin/${pkgmngr}
-        fi
-    done
+    if [ -x ${dir}/usr/sbin/edeploy ]; then
+        do_chroot ${dir} /usr/sbin/edeploy activate-pkgmngr
+    fi
 
     # put in place a policy for invoke-rc.d
     if [ -f ${dir}/usr/sbin/policy-rc.d.moved ]; then

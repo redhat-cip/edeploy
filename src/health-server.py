@@ -198,12 +198,13 @@ def non_interactive_mode():
             else:
                 for nb_hosts in xrange(min_hosts, max_hosts+1, step_hosts):
                     cpu_runtime = get_default_value(cpu_job, 'runtime', runtime)
-                    HP.logger.info("CPU: Loop %d / %d : step = %d : runtime = %d on %d hosts" % (nb_hosts, max_hosts, step_hosts, cpu_runtime, nb_hosts))
+                    HP.logger.info("CPU: Waiting bench %d / %d (step = %d) to finish on %d hosts : should take %d seconds" % (nb_hosts, max_hosts, step_hosts, nb_hosts, cpu_runtime))
                     total_runtime += cpu_runtime
                     cores = get_default_value(cpu_job, 'cores', 1)
                     start_cpu_bench(nb_hosts, cpu_runtime, cores)
 
-                    HP.logger.info("CPU: Waiting bench to finish (should take %d seconds)" % total_runtime)
+                    time.sleep(cpu_runtime)
+
                     while (get_host_list(CPU_RUN).keys()):
                         time.sleep(1)
 

@@ -196,7 +196,7 @@ def disconnect_clients():
 
 def compute_results():
     for host in results_cpu.keys():
-        HP.logger.info("Dumping cpu result from host %s" % host)
+        HP.logger.info("Dumping cpu result from host %s" % str(host))
         print results_cpu[host]
 
 

@@ -183,6 +183,7 @@ eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^[HR]?SERV_PORT=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^HTTP_PORT=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^HTTP_PATH=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^SESSION=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^RBENCH=")
 
 if [ -z "$RSERV" ]; then
     RSERV="$SERV"
@@ -203,51 +204,55 @@ show_kernel_modules
 
 show_git_rev
 
-step "Benchmarking system"
-if [ -z "$NONETWORKTEST" ]; then
-    ./netdetect.py hw.py > /net.py
-    ./health-check.py /net.py > /health.py || give_up "Failed to run health-check"
+if [ -n "$RBENCH" ]; then
+    step "Contacting Benchmark Server ($RBENCH)"
+    ./health-client.py /hw.py $RBENCH || give_up "Failed to run benchmark client"
 else
-    ./health-check.py /hw.py > /health.py || give_up "Failed to run health-check"
-fi
-
-save_results
-
-if [ ! -z "$SMOKE" ]; then
-    step "Entering Smoke Test for $SMOKE minutes"
-    (while true; do
-        ./health-check.py hw.py storage-burn &>/dev/null;
-    done
-    ) &
-    PID_STORAGE="$!"
-    PID_CPU="$!"
-    (while true; do
-        ./health-check.py hw.py memory-burn &>/dev/null;
-    done
-    ) &
-    PID_MEMORY="$!"
-    (while true; do
-        ./health-check.py hw.py cpu-burn &>/dev/null;
-    done
-    ) &
-    PID_CPU="$!"
-
-    sleep ${SMOKE}m
-
-    step "Cleaning Smoke test"
-    kill -9 $PID_CPU
-    kill -9 $PID_MEMORY
-    kill -9 $PID_STORAGE
-    pkill -9 -f sysbench
-    pkill -9 -f fio
-    pkill -9 -f health-check.py
-
-    step "Benchmarking after Smoke test"
-    sleep 10
-    ./health-check.py hw.py > /health.py
+    step "Benchmarking system"
+    if [ -z "$NONETWORKTEST" ]; then
+        ./netdetect.py hw.py > /net.py
+        ./health-check.py /net.py > /health.py || give_up "Failed to run health-check"
+    else
+        ./health-check.py /hw.py > /health.py || give_up "Failed to run health-check"
+    fi
 
     save_results
-fi
+
+    if [ ! -z "$SMOKE" ]; then
+        step "Entering Smoke Test for $SMOKE minutes"
+        (while true; do
+            ./health-check.py hw.py storage-burn &>/dev/null;
+        done
+        ) &
+        PID_STORAGE="$!"
+        PID_CPU="$!"
+        (while true; do
+            ./health-check.py hw.py memory-burn &>/dev/null;
+        done
+        ) &
+        PID_MEMORY="$!"
+        (while true; do
+            ./health-check.py hw.py cpu-burn &>/dev/null;
+        done
+        ) &
+        PID_CPU="$!"
+
+        sleep ${SMOKE}m
+
+        step "Cleaning Smoke test"
+        kill -9 $PID_CPU
+        kill -9 $PID_MEMORY
+        kill -9 $PID_STORAGE
+        pkill -9 -f sysbench
+        pkill -9 -f fio
+        pkill -9 -f health-check.py
+
+        step "Benchmarking after Smoke test"
+        sleep 10
+        ./health-check.py hw.py > /health.py
+
+        save_results
+    fi
 
 log "#############################################################################"
 log "Benchmarking Complete"

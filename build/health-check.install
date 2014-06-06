@@ -143,7 +143,7 @@ rsync -au --delete-excluded --delete --exclude /boot/ \
 
 rm -rf ${dir}
 
-cp -p init.common $DEPS ${PYDIR}/netdetect.py ${PYDIR}/health-check.py ${DST}/
+cp -p init.common $DEPS ${PYDIR}/netdetect.py ${PYDIR}/health*.py  ${DST}/
 cp -p init.health ${DST}/init
 
 gcc -static -Os sources/timings.c -o ${DST}/usr/sbin/ddr-timings-$(uname -m)

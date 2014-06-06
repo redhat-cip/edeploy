@@ -211,6 +211,9 @@ COMMON_ARGS="$KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG UPLOAD_LOG=${U
         if [ -n "$NONETWORKTEST" ]; then
             COMMON_ARGS="$COMMON_ARGS NONETWORKTEST"
         fi
+        if [ -n "$RBENCH" ]; then
+            COMMON_ARGS="$COMMON_ARGS RBENCH=$RBENCH"
+        fi
 
         cat << EOF >> $1/extlinux/extlinux.conf
 TIMEOUT 100

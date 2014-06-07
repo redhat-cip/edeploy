@@ -87,12 +87,12 @@ do_cleanup() {
 usage() {
     echo "<top directory> directory of the eDeploy role"
     echo "<name> name of the image"
-    echo " -c optional: configuration file"
     echo " -V optional: enable the Vagrant support"
-    do_fatal_error "Usage: $0 [-c <configuration_file>] [-V (libvirt|kvm)] <top directory> <name>"
+    echo " -R allow to replace file"
+    do_fatal_error "Usage: $0 [-R] [-V (libvirt|kvm)] <top directory> <name>"
 }
 
-while getopts :V: FLAG; do
+while getopts :V:R FLAG; do
     case "${FLAG}" in
         V)
             if [ -z "${OPTARG}" ] || [ ! `echo "${OPTARG}" | egrep '^(libvirt|kvm)$'` ]; then
@@ -103,12 +103,15 @@ while getopts :V: FLAG; do
             echo "Enabling Vagrant support"
             VAGRANT_PROVIDER=${OPTARG}
             VAGRANT=1
-            shift $(( OPTIND - 1 ));
-        ;;
+            ;;
+        R)
+            REPLACE=1
+            ;;
         *)
             usage
     esac
 done
+shift $(( OPTIND - 1 ));
 
 dir="$1"
 
@@ -132,13 +135,15 @@ IMAGE_FORMAT=${IMAGE_FORMAT:-qcow2}
 ROOT_FS_SIZE=${ROOT_FS_SIZE:-auto}
 NETWORK_CONFIG=${NETWORK_CONFIG:-auto}
 
-if [ -f "$IMG" ]; then
+if [ "$REPLACE" != 1 -a -f "$IMG" ]; then
     do_fatal_error "Error: $IMG already exists"
 fi
 
 if [ ! -d "$DIR" -a ! -r "$DIR" ] ;then
     do_fatal_error "Error: directory or edeploy role $DIR doesn't exist"
 fi
+
+rm -f "$IMG"
 
 modprobe loop
 check_binary dd

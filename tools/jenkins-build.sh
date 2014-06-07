@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# Script used by Jenkins jobs to build roles and archive them if the target directory exists
+# Script used by Jenkins jobs to build roles and archive them if the
+# target directory exists
 
 if [ $# -lt 3 ]; then
     echo "$0 <src dir> <build dir> <archive dir> [<make params>...]" 1>&2
@@ -15,14 +16,6 @@ DIR="$1"
 shift
 ARCH="$1"
 shift
-
-cleanup() {
-    if [ -d "$DIR" ]; then
-	sudo rm -rf "$DIR"/install/
-    fi
-}
-
-#trap cleanup 0
 
 if [ -f /var/tmp/froze-builds ]; then
     exit 0
@@ -45,10 +38,15 @@ fi
 set -x
 
 cd $SRC
-#cleanup
 sudo mkdir -p "$DIR"/install
 RC=0
 BROKEN=
+
+# allow to replace vm images
+export REPLACE=1
+# default image format to raw
+export IMAGE_FORMAT=${IMAGE_FORMAT:=raw}
+
 for role in $ROLES; do
     if sudo make TOP="$DIR" ARCHIVE="$ARCH" "$@" $role; then
 	if [ -d "$ARCH" ]; then

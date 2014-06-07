@@ -255,6 +255,14 @@ cleanup() {
     # clear package cache before removing the pkg manager
     clear_packages_cache $dir
 
+    # store role information at the end for nested calls
+    echo -e "\nRole ${ROLE}\nVersion ${version}\n" > ${dir}/etc/motd
+
+    if [ ! -d ${dir}/var/lib/edeploy ]; then
+        mkdir -p ${dir}/var/lib/edeploy
+    fi
+    echo -e "VERS=${version}\nROLE=${ROLE}" > ${dir}/var/lib/edeploy/conf
+
     # Let's disable apt-get and yum for normal usage
     if [ -z "$KEEP_PKGMNGR" -a -x ${dir}/usr/sbin/edeploy ]; then
         do_chroot ${dir} /usr/sbin/edeploy deactivate-pkgmngr
@@ -373,13 +381,6 @@ common_setup() {
     cp -f /etc/resolv.conf "$dir/etc/"
 
     set -x
-
-    echo -e "\nRole ${ROLE}\nVersion ${version}\n" > ${dir}/etc/motd
-
-    if [ ! -d ${dir}/var/lib/edeploy ]; then
-        mkdir -p ${dir}/var/lib/edeploy
-    fi
-    echo -e "VERS=${version}\nROLE=${ROLE}\n" > ${dir}/var/lib/edeploy/conf
 
     export DEBIAN_FRONTEND=noninteractive
 

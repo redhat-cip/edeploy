@@ -155,13 +155,7 @@ serial="$(dmidecode -s system-serial-number | grep -v '#')"
 probe_pci_devices
 
 step "Starting networking"
-
-if [ "$DEBUG" = 1 -o "$ONFAILURE" = "console" ]; then
-    create_keys
-    update_ssh_port
-    /etc/init.d/ssh start
-fi
-
+start_ssh_server
 probe_network_devices
 
 ip a

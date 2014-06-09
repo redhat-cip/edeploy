@@ -1,7 +1,7 @@
 get_extlinux() {
     DEST=$1
     TESTING_SYSLINUX=Testing/6.03
-    SYSLINUX_VER=6.03-pre9
+    SYSLINUX_VER=6.03-pre12
     if [ ! -x $DEST/extlinux ] || [ ! -f $DEST/menu.c32 ] || [ ! -f $DEST/libutil.c32 ]; then
         rm -rf $DEST
         mkdir -p $DEST

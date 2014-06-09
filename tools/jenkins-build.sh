@@ -43,7 +43,7 @@ RC=0
 BROKEN=
 
 for role in $ROLES; do
-    if sudo make TOP="$DIR" ARCHIVE="$ARCH" "$@" $role; then
+    if sudo env VIRTUALIZED=$VIRTUALIZED make TOP="$DIR" ARCHIVE="$ARCH" "$@" $role; then
 	if [ -d "$ARCH" ]; then
 	    VERS=$(sudo make TOP="$DIR" "$@" version)
 	    mkdir -p "$ARCH"/$VERS/

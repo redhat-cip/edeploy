@@ -33,7 +33,7 @@ def connect(socket, msg):
 
 def disconnect(socket, msg):
     HP.logger.info("Disconnecting based on server request")
-    cleanup()
+    sys.exit(0)
 
 def ack(socket, msg):
     return
@@ -85,7 +85,7 @@ def connect_to_server(hrdw, hostname):
         s.connect((hostname, 20000))
     except Exception as e:
         HP.logger.error("Server %s is not available, exiting" % hostname)
-        return
+        sys.exit(1)
 
     connected = True
     HP.send_hm_message(s, HM(HM.CONNECT), True)

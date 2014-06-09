@@ -42,11 +42,6 @@ sudo mkdir -p "$DIR"/install
 RC=0
 BROKEN=
 
-# allow to replace vm images
-export REPLACE=1
-# default image format to raw
-export IMAGE_FORMAT=${IMAGE_FORMAT:=raw}
-
 for role in $ROLES; do
     if sudo make TOP="$DIR" ARCHIVE="$ARCH" "$@" $role; then
 	if [ -d "$ARCH" ]; then

@@ -247,6 +247,7 @@ else
 
         save_results
     fi
+fi
 
 log "#############################################################################"
 log "Benchmarking Complete"

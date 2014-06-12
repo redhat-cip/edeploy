@@ -200,7 +200,12 @@ show_git_rev
 
 if [ -n "$RBENCH" ]; then
     step "Contacting Benchmark Server ($RBENCH)"
-    ./health-client.py /hw.py $RBENCH || give_up "Failed to run benchmark client"
+    while true; do
+        ./health-client.py /hw.py $RBENCH
+        if [ $? -eq 0 ]; then
+            break;
+        fi
+    done
 else
     step "Benchmarking system"
     if [ -z "$NONETWORKTEST" ]; then

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2013 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2013-2014 eNovance SAS <licensing@enovance.com>
 #
 # Author: Erwan Velu <erwan.velu@enovance.com>
 #
@@ -103,7 +103,8 @@ def cpu_perf(hw_, testing_time=10, burn_test=False):
         if physical is not None:
             sys.stderr.write('CPU Performance: %d logical '
                              'CPU to test (ETA: %d seconds)\n'
-                             % (int(physical), (int(physical) + 1) * testing_time))
+                             % (int(physical),
+                                (int(physical) + 1) * testing_time))
             for cpu_nb in get_one_cpu_per_socket(hw_):
                 get_bogomips(hw_, cpu_nb)
                 get_cache_size(hw_, cpu_nb)
@@ -182,7 +183,8 @@ def run_memtest(hw_, max_time, block_size, cpu_count, processor_num=-1):
 def run_forked_memtest(hw_, max_time, block_size, cpu_count):
     'Running forked memtest on a processor'
     if check_mem_size(block_size, cpu_count) is False:
-        cmd = 'Avoid benchmarking memory @%s from all CPUs (%d processes), not enough memory\n'
+        cmd = 'Avoid benchmarking memory @%s from all' + \
+              ' CPUs (%d processes), not enough memory\n'
         sys.stderr.write(cmd % (block_size, cpu_count))
         return
     sys.stderr.write('Benchmarking memory @%s from all CPUs'
@@ -269,13 +271,14 @@ def mem_perf_burn(hw_, testing_time=10):
 
 
 def get_one_cpu_per_socket(hw):
-    logical = get_value(hw, 'cpu', 'logical', 'number')
+    logical = HL.get_value(hw, 'cpu', 'logical', 'number')
     current_phys_package_id = -1
     cpu_list = []
     for cpu_nb in range(int(logical)):
-        cmdline = "cat /sys/devices/system/cpu/cpu%d/topology/physical_package_id" % int(cpu_nb)
+        cmdline = "cat /sys/devices/system/cpu/cpu%d/topology" + \
+                  "/physical_package_id" % int(cpu_nb)
         phys_cmd = subprocess.Popen(cmdline,
-                                shell=True, stdout=subprocess.PIPE)
+                                    shell=True, stdout=subprocess.PIPE)
         for phys_str in phys_cmd.stdout:
             phys_id = int(phys_str.strip())
             if phys_id > current_phys_package_id:
@@ -283,6 +286,7 @@ def get_one_cpu_per_socket(hw):
                 cpu_list.append(current_phys_package_id)
 
     return cpu_list
+
 
 def mem_perf(hw_, testing_time=5):
     'Report the memory performance'

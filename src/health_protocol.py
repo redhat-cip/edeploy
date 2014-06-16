@@ -1,13 +1,30 @@
+#
+# Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
+#
+# Author: Erwan Velu <erwan.velu@enovance.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
 import logging
 import pickle
 import socket
 import struct
 import zlib
-import time
 from health_messages import Health_Message as HM
 logger = 0
 hdlr = 0
 formatter = 0
+
 
 def start_log(filename, level=logging.INFO):
     global logger
@@ -26,7 +43,10 @@ def start_log(filename, level=logging.INFO):
 def send_hm_message(sock, data, need_ack=False):
     global logger
     data.need_ack = need_ack
-    logger.debug("Sent %s/%s/%s to %s (need_ack=%r)" % (data.get_message_type(), data.get_module_type(), data.get_action_type(), sock.getpeername(), data.need_ack))
+    logger.debug("Sent %s/%s/%s to %s (need_ack=%r)" %
+                 (data.get_message_type(), data.get_module_type(),
+                  data.get_action_type(), sock.getpeername(),
+                  data.need_ack))
     to_be_sent = zlib.compress(pickle.dumps(data))
     sock.sendall(struct.pack('!I', len(to_be_sent)))
     sock.sendall(to_be_sent)
@@ -36,16 +56,17 @@ def send_hm_message(sock, data, need_ack=False):
             logger.debug("Waiting for ACK")
             try:
                 msg = recv_hm_message(sock)
-            except Exception as e:
+            except:
                 logger.error("Broken socket, exiting")
-                break;
+                break
 
-            if (msg.message == HM.ACK):
+            if msg.message == HM.ACK:
                 logger.debug("Got ACK, exiting")
-                break;
-            if (msg.message == HM.NACK):
-                logger.error("Received NACK from %s on message %s" % (sock.getpeername(), (data.get_message_type())))
-                break;
+                break
+            if msg.message == HM.NACK:
+                logger.error("Received NACK from %s on message %s" %
+                             (sock.getpeername(), (data.get_message_type())))
+                break
 
 
 def recv_hm_message(sock):
@@ -60,18 +81,22 @@ def recv_hm_message(sock):
 
     try:
         length = struct.unpack('!I', lengthbuf)
-    except Exception as e:
+    except:
         logger.error("Received incomplete message")
         return HM(HM.INVALID)
 
     msg = pickle.loads(zlib.decompress(recvall(sock, int(length[0]))))
     if msg.is_valid() is False:
-        logger.error("Message %d is not part of the valid message_list" % msg.message)
+        logger.error("Message %d is not part of the valid message_list" %
+                     msg.message)
         if (msg.need_ack is True) and (msg.message != HM.DISCONNECT):
             send_hm_message(sock, HM(HM.NACK), False)
         msg.message = HM.INVALID
     else:
-        logger.debug("Received %s/%s/%s from %s (need_ack=%r)" % (msg.get_message_type(), msg.get_module_type(), msg.get_action_type(), sock.getpeername(), msg.need_ack))
+        logger.debug("Received %s/%s/%s from %s (need_ack=%r)" %
+                     (msg.get_message_type(), msg.get_module_type(),
+                      msg.get_action_type(), sock.getpeername(),
+                      msg.need_ack))
         if (msg.need_ack is True) and (msg.message != HM.DISCONNECT):
             send_hm_message(sock, HM(HM.ACK), False)
     return msg
@@ -81,7 +106,8 @@ def recvall(sock, count):
     buf = b''
     while count:
         newbuf = sock.recv(count)
-        if not newbuf: return None
+        if not newbuf:
+            return None
         buf += newbuf
         count -= len(newbuf)
     return buf

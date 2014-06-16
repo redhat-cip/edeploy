@@ -1,6 +1,24 @@
+#
+# Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
+#
+# Author: Erwan Velu <erwan.velu@enovance.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+
 class Health_Message():
     protocol_version = 0
-    
+
     INVALID = 0
     NONE = 1 << 0
     DISCONNECTED = 1 << 1
@@ -11,21 +29,34 @@ class Health_Message():
     NOTCOMPLETED = 1 << 4
 
     CONNECT = 1 << 1
-    DISCONNECT = 1 << 2 
+    DISCONNECT = 1 << 2
     ACK = 1 << 3
     NACK = 1 << 4
     MODULE = 1 << 5
-    
+
     CPU = 1 << 1
     STORAGE = 1 << 2
     MEMORY = 1 << 3
     NETWORK = 1 << 4
 
-    message_string = {NONE: 'NONE', CONNECT: 'CONNECT', DISCONNECT: 'DISCONNECT', ACK: 'ACK', NACK: 'NACK', MODULE: 'MODULE'}
-    module_string = {NONE: 'NONE', CPU: 'CPU', STORAGE:'STORAGE', MEMORY:'MEMORY', NETWORK:'NETWORK'}
-    action_string = {NONE: 'NONE', STOP: 'STOP', START: 'START', COMPLETED: 'COMPLETED', NOTCOMPLETED: 'NOTCOMPLETED'}
+    message_string = {NONE: 'NONE',
+                      CONNECT: 'CONNECT',
+                      DISCONNECT: 'DISCONNECT',
+                      ACK: 'ACK',
+                      NACK: 'NACK',
+                      MODULE: 'MODULE'}
+    module_string = {NONE: 'NONE',
+                     CPU: 'CPU',
+                     STORAGE: 'STORAGE',
+                     MEMORY: 'MEMORY',
+                     NETWORK: 'NETWORK'}
+    action_string = {NONE: 'NONE',
+                     STOP: 'STOP',
+                     START: 'START',
+                     COMPLETED: 'COMPLETED',
+                     NOTCOMPLETED: 'NOTCOMPLETED'}
     message = NONE
-    action = NONE 
+    action = NONE
     module = NONE
 
     need_ack = False
@@ -34,18 +65,16 @@ class Health_Message():
     running_time = 0
     cpu_instances = 0
 
-
     def get_message_list(self):
-        return [self.NONE, self.CONNECT, self.DISCONNECT, self.ACK, self.NACK, self.MODULE]
-
+        return [self.NONE, self.CONNECT, self.DISCONNECT, self.ACK, self.NACK,
+                self.MODULE]
 
     def get_action_list(self):
-        return [self.NONE, self.STOP, self.START, self.COMPLETED, self.NOTCOMPLETED]
-
+        return [self.NONE, self.STOP, self.START, self.COMPLETED,
+                self.NOTCOMPLETED]
 
     def get_module_list(self):
         return [self.NONE, self.CPU, self.STORAGE, self.MEMORY, self.NETWORK]
-
 
     def is_valid(self):
         for msg in self.get_message_list():
@@ -53,12 +82,10 @@ class Health_Message():
                 return True
         return False
 
-
-    def __init__ (self, message = NONE, module = NONE, action = NONE):
+    def __init__(self, message=NONE, module=NONE, action=NONE):
         self.message = message
         self.module = module
         self.action = action
-
 
     def get_message_type(self):
         return self.message_string[self.message]

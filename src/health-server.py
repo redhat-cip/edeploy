@@ -1,19 +1,28 @@
-#!/usr/bin/python2
+#!/usr/bin/env python2
+#
+# Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
+#
+# Author: Erwan Velu <erwan.velu@enovance.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 
-import curses
-import curses.textpad
-import curses.ascii
-import fcntl
 from SocketServer import BaseRequestHandler, ThreadingTCPServer
 import socket
 import struct
 from health_messages import Health_Message as HM
 import health_protocol as HP
 import logging
-import os
-import sys    
-import termios
-import traceback
+import sys
 import threading
 import time
 import yaml
@@ -26,16 +35,17 @@ hosts_state = {}
 results_cpu = {}
 serv = 0
 NOTHING_RUN = 0
-CPU_RUN     = 1 << 0
-MEMORY_RUN  = 1 << 1
+CPU_RUN = 1 << 0
+MEMORY_RUN = 1 << 1
 STORAGE_RUN = 1 << 2
 NETWORK_RUN = 1 << 3
+
 
 class SocketHandler(BaseRequestHandler):
     global hosts
     global lock_host
     timeout = 5
-    disable_nagle_algorithm = False # Set TCP_NODELAY socket option
+    disable_nagle_algorithm = False  # Set TCP_NODELAY socket option
 
     def handle(self):
         lock_socket_list.acquire()
@@ -49,7 +59,8 @@ class SocketHandler(BaseRequestHandler):
                 continue
             if msg.message != HM.ACK:
                 if msg.message == HM.DISCONNECT:
-                    HP.logger.debug('Disconnecting from %s' % self.client_address[0])
+                    HP.logger.debug('Disconnecting from %s' %
+                                    self.client_address[0])
 
                     lock_host.acquire()
                     del hosts[self.client_address]
@@ -76,14 +87,16 @@ class SocketHandler(BaseRequestHandler):
 def createAndStartServer():
     global serv
     ThreadingTCPServer.allow_reuse_address = True
-    serv = ThreadingTCPServer(('', 20000), SocketHandler, bind_and_activate=False)
-    l_onoff = 1                                                                                                                                                           
-    l_linger = 0                                                                                                                                                          
-    serv.socket.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, struct.pack('ii', l_onoff, l_linger))
+    serv = ThreadingTCPServer(('', 20000), SocketHandler,
+                              bind_and_activate=False)
+    l_onoff = 1
+    l_linger = 0
+    serv.socket.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER,
+                           struct.pack('ii', l_onoff, l_linger))
     serv.server_bind()
     serv.server_activate()
     HP.logger.info('Starting server')
-    serv.serve_forever() #blocking method
+    serv.serve_forever()        # blocking method
 
 
 def cpu_completed(host, msg):
@@ -103,6 +116,7 @@ def get_host_list(item):
 
     return selected_hosts
 
+
 def start_cpu_bench(nb_hosts, runtime, cores):
     global hosts_state
     msg = HM(HM.MODULE, HM.CPU, HM.START)
@@ -110,7 +124,7 @@ def start_cpu_bench(nb_hosts, runtime, cores):
     msg.running_time = runtime
     for host in hosts.keys():
         if nb_hosts == 0:
-            break;
+            break
         if not host in get_host_list(CPU_RUN).keys():
             hosts_state[host] |= CPU_RUN
             nb_hosts = nb_hosts - 1
@@ -151,7 +165,7 @@ def non_interactive_mode(filename):
     total_runtime = 0
     name = "undefined"
 
-    job = yaml.load(file(filename,'r'))
+    job = yaml.load(file(filename, 'r'))
     if job['name'] is None:
         HP.logger.error("Missing name parameter in yaml file")
         disconnect_clients()
@@ -172,7 +186,8 @@ def non_interactive_mode(filename):
 
     runtime = get_default_value(job, 'runtime', 0)
 
-    HP.logger.info("Expecting %d hosts to start job %s" % (required_hosts, name))
+    HP.logger.info("Expecting %d hosts to start job %s" %
+                   (required_hosts, name))
     while (len(hosts.keys()) < required_hosts):
         time.sleep(1)
 
@@ -180,7 +195,8 @@ def non_interactive_mode(filename):
     cpu_job = job['cpu']
     if cpu_job:
             step_hosts = get_default_value(cpu_job, 'step-hosts', 1)
-            required_cpu_hosts = get_default_value(cpu_job, 'required-hosts', required_hosts)
+            required_cpu_hosts = get_default_value(cpu_job, 'required-hosts',
+                                                   required_hosts)
             if "-" in str(required_cpu_hosts):
                 min_hosts = int(str(required_cpu_hosts).split("-")[0])
                 max_hosts = int(str(required_cpu_hosts).split("-")[1])
@@ -189,16 +205,25 @@ def non_interactive_mode(filename):
                 max_hosts = min_hosts
 
             if max_hosts < 1:
-                max_hosts= min_hosts
-                HP.logger.error("CPU: required-hosts shall be greater than 0, defaulting to global required-hosts=%d" % max_hosts)
+                max_hosts = min_hosts
+                HP.logger.error("CPU: required-hosts shall be greater than"
+                                " 0, defaulting to global required-hosts=%d"
+                                % max_hosts)
 
             if max_hosts > required_hosts:
-                HP.logger.error("CPU: The maximum number of hosts to tests is greater than the amount of available hosts.")
+                HP.logger.error("CPU: The maximum number of hosts to tests"
+                                " is greater than the amount of available"
+                                " hosts.")
                 HP.logger.error("CPU: Canceling Test")
             else:
                 for nb_hosts in xrange(min_hosts, max_hosts+1, step_hosts):
-                    cpu_runtime = get_default_value(cpu_job, 'runtime', runtime)
-                    HP.logger.info("CPU: Waiting bench %d / %d (step = %d) to finish on %d hosts : should take %d seconds" % (nb_hosts, max_hosts, step_hosts, nb_hosts, cpu_runtime))
+                    cpu_runtime = get_default_value(cpu_job, 'runtime',
+                                                    runtime)
+                    HP.logger.info("CPU: Waiting bench %d / %d (step = %d)"
+                                   " to finish on %d hosts : should take"
+                                   " %d seconds" % (nb_hosts, max_hosts,
+                                                    step_hosts, nb_hosts,
+                                                    cpu_runtime))
                     total_runtime += cpu_runtime
                     cores = get_default_value(cpu_job, 'cores', 1)
                     start_cpu_bench(nb_hosts, cpu_runtime, cores)
@@ -214,7 +239,7 @@ def non_interactive_mode(filename):
     disconnect_clients()
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
 
     HP.start_log('/var/tmp/health-server.log', logging.DEBUG)
 
@@ -225,6 +250,6 @@ if __name__=='__main__':
     myThread = threading.Thread(target=createAndStartServer)
     myThread.start()
 
-    non_interactive = threading.Thread(target=non_interactive_mode, args=tuple([sys.argv[1]]))
+    non_interactive = threading.Thread(target=non_interactive_mode,
+                                       args=tuple([sys.argv[1]]))
     non_interactive.start()
-

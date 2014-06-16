@@ -146,6 +146,14 @@ rm -rf ${dir}
 cp -p init.common $DEPS ${PYDIR}/netdetect.py ${PYDIR}/health*.py  ${DST}/
 cp -p init.health ${DST}/init
 
+# RHEL6 do have an lshw that segfaults, so let's use a custom build.
+# Yes, it's crap.
+case "$DIST" in
+    $supported_centos_dists | $supported_redhat_dists)
+        cp -f sources/lshw ${DST}/usr/sbin
+    ;;
+esac
+
 gcc -static -Os sources/timings.c -o ${DST}/usr/sbin/ddr-timings-$(uname -m)
 
 if [ -r ${DST}/etc/init.d/ssh ]; then

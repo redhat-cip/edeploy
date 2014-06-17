@@ -150,7 +150,9 @@ cp -p init.health ${DST}/init
 # Yes, it's crap.
 case "$DIST" in
     $supported_centos_dists | $supported_redhat_dists)
-        cp -f sources/lshw ${DST}/usr/sbin
+        if [ -x ${ORIG}/sources/lshw ]; then
+            cp -f ${ORIG}/sources/lshw ${DST}/usr/sbin
+        fi
     ;;
 esac
 

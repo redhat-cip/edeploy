@@ -48,22 +48,14 @@ EOF
 }
 
 install_edeploy() {
-    if ! type -p ansible-playbook; then
-        echo "ansible isn't installed. Use 'pip install ansible' to do so." 1>&2
-        exit 1
-    fi
-
-    if [ $(ansible --version | cut -d' ' -f2 | sed -e 's/\.//' -e 's/\..*//') -lt 14 ]; then
-        echo "ansible-1.4 needed. Use 'pip install --upgrade ansible' to do so." 1>&2
-        exit 1
-    fi
-
-    # Install the packages needed by the chroot transport of ansible on the host and
-    # git to checkout pxemngr for its ansible playbook
-    install_packages $dir python-apt ca-certificates git
-
+    # Install the packages needed by the local transport of ansible
+    # on the host and git to checkout pxemngr for its ansible playbook
+    install_packages $dir python-apt ca-certificates git python-pip python-crypto
+    
+    chroot $dir pip install ansible
+    
     # temp file to store ansible chroot config
-    t=$(mktemp)
+    t=$dir/tmp/hosts
 
     # pxemngr part
 
@@ -73,18 +65,20 @@ install_edeploy() {
     cd pxemngr/ansible
     # do not start apache in the chroot
     sed -e 's@service apache2 restart@/bin/true@' < pxemngr-install.yml > pxemngr-install2.yml
-    ansible-playbook -c chroot -i $t pxemngr-install2.yml
-    rm -f pxemngr-install2.yml
+    chroot $dir bash -c "cd /srv/pxemngr/ansible; ansible-playbook -c local -i /tmp/hosts pxemngr-install2.yml"
+    rm -f $dir/srv/pxemngr/ansible/pxemngr-install2.yml
     popd
 
     # edeploy part
 
     generate_ansible_host $t edeployservers $dir
-    pushd $ORIG/../ansible
+    rsync -avP $ORIG/../ansible $dir/tmp/
+
     # do not start rsync in the chroot
+    pushd $dir/tmp/ansible
     sed -e 's/notify: start rsync daemon/#/' < edeploy-install.yml > edeploy-install2.yml
-    ansible-playbook -c chroot -i $t edeploy-install2.yml --extra-vars pxemngr=true
-    rm -f $t edeploy-install2.yml
+    chroot $dir bash -c "cd /tmp/ansible; ansible-playbook -c local -i /tmp/hosts edeploy-install2.yml --extra-vars pxemngr=true"
+    rm -rf $t $dir/srv/ansible/edeploy-install2.yml $dir/tmp/ansible
     popd
 }
 

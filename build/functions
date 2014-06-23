@@ -38,8 +38,4 @@ if [ ${src} != ${dir} ]; then
     echo ": done"
 fi
 
-echo ${ROLE} > ${dir}/etc/hostname
-mkdir -p "$dir/var/lib/edeploy/${version}"
-cat ${SRC}/${ROLE}.exclude >> "$dir/var/lib/edeploy/${version}/exclude"
-
 common_setup

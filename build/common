@@ -255,14 +255,6 @@ cleanup() {
     # clear package cache before removing the pkg manager
     clear_packages_cache $dir
 
-    # store role information at the end for nested calls
-    echo -e "\nRole ${ROLE}\nVersion ${version}\n" > ${dir}/etc/motd
-
-    if [ ! -d ${dir}/var/lib/edeploy ]; then
-        mkdir -p ${dir}/var/lib/edeploy
-    fi
-    echo -e "VERS=${version}\nROLE=${ROLE}" > ${dir}/var/lib/edeploy/conf
-
     # Let's disable apt-get and yum for normal usage
     if [ -z "$KEEP_PKGMNGR" -a -x ${dir}/usr/sbin/edeploy ]; then
         do_chroot ${dir} /usr/sbin/edeploy deactivate-pkgmngr
@@ -279,6 +271,18 @@ cleanup() {
     fi
 
     if [ "$ret" = "0" ]; then
+        # store role information at the end for nested calls
+        echo -e "\nRole ${ROLE}\nVersion ${version}\n" > ${dir}/etc/motd
+
+        if [ ! -d ${dir}/var/lib/edeploy ]; then
+            mkdir -p ${dir}/var/lib/edeploy
+        fi
+        echo -e "VERS=${version}\nROLE=${ROLE}" > ${dir}/var/lib/edeploy/conf
+
+        echo ${ROLE} > ${dir}/etc/hostname
+        mkdir -p "$dir/var/lib/edeploy/${version}"
+        cat ${SRC}/${ROLE}.exclude >> "$dir/var/lib/edeploy/${version}/exclude"
+
         if [ -z "$STRIPPED_TARGET" ]; then
             save_package_list $dir
         fi

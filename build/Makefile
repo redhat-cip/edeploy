@@ -22,7 +22,7 @@ MAKEFILE_DIR=$(shell pwd)
 SDIR=/root/edeploy
 TOP=/var/lib/debootstrap
 DVER=D7
-VERSION:=1.4.0
+VERSION:=1.5.0
 VERS=$(DVER)-$(VERSION)
 DIST=wheezy
 

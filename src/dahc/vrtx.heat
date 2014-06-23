@@ -1,0 +1,16 @@
+heat_template_version: 2013-05-23
+
+
+resources:
+   group:
+     type: OS::Heat::ResourceGroup
+     properties:
+       count: 80
+       resource_def:
+          type: OS::Nova::Server
+          properties:
+            image: change_the_image_name
+            flavor: change_the_flavor_name
+            networks:
+              - network: change_the_subnet_id
+

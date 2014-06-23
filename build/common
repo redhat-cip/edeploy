@@ -365,8 +365,10 @@ common_setup() {
 
     local git_version=$(git rev-parse HEAD 2>/dev/null || true)
 
-    if [ ! -z "$git_version" ]; then
+    if [ -n "$git_version" ]; then
         echo "Running edeploy on top of git $git_version"
+        mkdir -p ${dir}/usr/share/edeploy
+        echo "$git_version" > ${dir}/usr/share/edeploy/${ROLE}.rev
     fi
 
     export LC_ALL=C

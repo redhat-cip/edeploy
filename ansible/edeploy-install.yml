@@ -51,12 +51,9 @@
     file: path=/var/lib/edeploy/health state=directory owner=www-data group=www-data
   - name: link install trees location for web server
     file: src=/var/lib/debootstrap/install dest=/var/www/install state=link
-  - name: list cmdb files 
-    action: shell ls -1 /etc/edeploy/*.cmdb
-    register: cmdbfiles
   - name: fix cmdb permissions
     file: path={{ item }} owner=www-data group=www-data
-    with_items: ${cmdbfiles.stdout_lines}
+    with_fileglob: /etc/edeploy/*.cmdb
   - name: create rsync conf file
     copy: src=rsyncd.conf dest=/etc/rsyncd.conf
   - name: enable rsync daemon

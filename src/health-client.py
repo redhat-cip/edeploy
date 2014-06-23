@@ -110,7 +110,7 @@ def module(socket, msg):
     handlers[msg.module](socket, msg)
 
 
-def connect_to_server(hrdw, hostname):
+def connect_to_server(hostname):
     global s
     global connected
     try:
@@ -140,7 +140,7 @@ def connect_to_server(hrdw, hostname):
             HP.logger.error("Got disconnected from server, exiting")
             break
 
-        msg.hw = hrdw
+        msg.hw = eval(open(sys.argv[1]).read(-1))
 
         handlers = {HM.NONE: none,
                     HM.CONNECT: connect,
@@ -170,5 +170,4 @@ if __name__ == '__main__':
         HP.logger.error("You must provide an hardware file and a host to "
                         "connect as argument")
         sys.exit(1)
-    hrdw = eval(open(sys.argv[1]).read(-1))
-    connect_to_server(hrdw, sys.argv[2])
+    connect_to_server(sys.argv[2])

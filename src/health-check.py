@@ -490,7 +490,11 @@ def _main():
 
     hrdw = eval(open(sys.argv[1]).read(-1))
 
-    available_memory = psutil.virtual_memory().total
+    try:
+        available_memory = psutil.virtual_memory().total
+    except Exception:
+        available_memory = psutil.avail_phymem()
+
     sys.stderr.write("Available memory before run = %s\n" % available_memory)
 
     mode = 'cpu,memory,storage'

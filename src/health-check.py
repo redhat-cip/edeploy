@@ -70,11 +70,11 @@ def search_cpuinfo(cpu_nb, item):
     found = False
     for line in cpuinfo:
         if line.strip():
-            name, value = line.rstrip('\n').split(':')
-            if "processor" in name and int(value) == cpu_nb:
+            values = line.rstrip('\n').split(':')
+            if "processor" in values[0] and int(values[1]) == cpu_nb:
                 found = True
-            if (item in name) and (found is True):
-                return value.replace(' ', '')
+            if (item in values[0]) and (found is True):
+                return values[1].replace(' ', '')
     cpuinfo.close()
     return None
 

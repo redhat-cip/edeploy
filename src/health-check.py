@@ -183,7 +183,7 @@ def run_memtest(hw_, max_time, block_size, cpu_count, processor_num=-1):
 def run_forked_memtest(hw_, max_time, block_size, cpu_count):
     'Running forked memtest on a processor'
     if check_mem_size(block_size, cpu_count) is False:
-        cmd = 'Avoid benchmarking memory @%s from all' + \
+        cmd = 'Avoid benchmarking memory @%s from all' \
               ' CPUs (%d processes), not enough memory\n'
         sys.stderr.write(cmd % (block_size, cpu_count))
         return
@@ -275,7 +275,7 @@ def get_one_cpu_per_socket(hw):
     current_phys_package_id = -1
     cpu_list = []
     for cpu_nb in range(int(logical)):
-        cmdline = "cat /sys/devices/system/cpu/cpu%d/topology" + \
+        cmdline = "cat /sys/devices/system/cpu/cpu%d/topology" \
                   "/physical_package_id" % int(cpu_nb)
         phys_cmd = subprocess.Popen(cmdline,
                                     shell=True, stdout=subprocess.PIPE)

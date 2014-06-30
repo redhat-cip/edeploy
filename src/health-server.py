@@ -17,11 +17,15 @@
 # under the License.
 
 from SocketServer import BaseRequestHandler, ThreadingTCPServer
+import ConfigParser
 import socket
 import struct
 from health_messages import Health_Message as HM
+import health_libs as HL
 import health_protocol as HP
 import logging
+import os
+import pprint
 import sys
 import threading
 import time
@@ -151,10 +155,41 @@ def disconnect_clients():
     serv.socket.close()
 
 
+def save_hw(items, name, hwdir):
+    'Save hw items for inspection on the server.'
+    try:
+        filename = os.path.join(hwdir, name + '.hw')
+        pprint.pprint(items, stream=open(filename, 'w'))
+    except Exception, xcpt:
+        HP.logger.error("exception while saving hw file: %s" % str(xcpt))
+
+
 def compute_results(nb_hosts):
+    config = ConfigParser.ConfigParser()
+    config.read('/etc/edeploy.conf')
+
+    def config_get(section, name, default):
+        'Secured config getter.'
+        try:
+            return config.get(section, name)
+        except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
+            return default
+
+    cfg_dir = os.path.normpath(config_get('SERVER', 'HEALTHDIR', '')) + '/'
+    dirname = time.strftime("%Y_%m_%d-%Hh%M", time.localtime())
+    dest_dir = cfg_dir + 'dahc/%d/' % nb_hosts + dirname
+
+    try:
+        if not os.path.isdir(dest_dir):
+            os.makedirs(dest_dir)
+    except OSError, e:
+        fatal_error("Cannot create %s directory (%s)" % (dest_dir, e.errno))
+
     for host in results_cpu.keys():
         HP.logger.info("Dumping cpu result from host %s" % str(host))
-        print results_cpu[host]
+        filename_and_macs = HL.generate_filename_and_macs(results_cpu[host])
+        save_hw(results_cpu[host], filename_and_macs['sysname'], dest_dir)
+#        print results_cpu[host]
 
 
 def get_default_value(job, item, default_value):

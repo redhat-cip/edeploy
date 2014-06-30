@@ -17,7 +17,8 @@
 
 import sys
 import subprocess
-
+import matcher
+import re
 
 def get_value(hw_, level1, level2, level3):
     for entry in hw_:
@@ -51,3 +52,44 @@ def run_sysbench(hw_, max_time, cpu_count, processor_num=-1):
             else:
                 hw_.append(('cpu', 'logical_%d' % processor_num,
                             'loops_per_sec', str(int(perf) / max_time)))
+
+
+def generate_filename_and_macs(items):
+    '''Generate a file name for a hardware using DMI information
+    (product name and version) then if the DMI serial number is
+    available we use it unless we lookup the first mac address.
+    As a result, we do have a filename like :
+
+    <dmi_product_name>-<dmi_product_version>-{dmi_serial_num|mac_address}'''
+
+    # Duplicate items as it will be modified by match_* functions
+    hw_items = list(items)
+    sysvars = {}
+    sysvars['sysname'] = ''
+
+    matcher.match_spec(('system', 'product', 'name', '$sysprodname'),
+                       hw_items, sysvars)
+    if 'sysprodname' in sysvars:
+        sysvars['sysname'] = re.sub(r'\W+', '', sysvars['sysprodname']) + '-'
+
+    matcher.match_spec(('system', 'product', 'vendor', '$sysprodvendor'),
+                       hw_items, sysvars)
+    if 'sysprodvendor' in sysvars:
+        sysvars['sysname'] += re.sub(r'\W+', '', sysvars['sysprodvendor']) + \
+            '-'
+
+    matcher.match_spec(('system', 'product', 'serial', '$sysserial'),
+                       hw_items, sysvars)
+    # Let's use any existing DMI serial number or take the first mac address
+    if 'sysserial' in sysvars:
+        sysvars['sysname'] += re.sub(r'\W+', '', sysvars['sysserial']) + '-'
+
+    # we always need to have the mac addresses for pxemngr
+    if matcher.match_multiple(hw_items,
+                              ('network', '$eth', 'serial', '$serial'),
+                              sysvars):
+        sysvars['sysname'] += sysvars['serial'][0].replace(':', '-')
+    else:
+        HP.logger.error('unable to detect network macs')
+
+    return sysvars

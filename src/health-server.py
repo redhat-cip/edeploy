@@ -188,7 +188,13 @@ def non_interactive_mode(filename):
 
     HP.logger.info("Expecting %d hosts to start job %s" %
                    (required_hosts, name))
-    while (len(hosts.keys()) < required_hosts):
+    hosts_count = len(hosts.keys())
+    previous_hosts_count = hosts_count
+    while (int(hosts_count) < int(required_hosts)):
+	if (hosts_count != previous_hosts_count) :
+		HP.logger.info("Still %d hosts to connect" % (int(required_hosts) - int(hosts_count)))
+		previous_hosts_count = hosts_count
+	hosts_count = len(hosts.keys())
         time.sleep(1)
 
     HP.logger.info("Starting job %s" % name)

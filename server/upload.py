@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2013 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2013-2014 eNovance SAS <licensing@enovance.com>
 #
 # Author: Frederic Lepied <frederic.lepied@enovance.com>
 #
@@ -189,7 +189,7 @@ def load_cmdb(cfg_dir, name):
     filename = cmdb_filename(cfg_dir, name)
     try:
         if "generate(" in open(filename).read(20):
-           shutil.copy2(filename, filename + ".orig")
+            shutil.copy2(filename, filename + ".orig")
         return eval(open(filename).read(-1))
     except IOError, xcpt:
         if xcpt.errno != errno.ENOENT:
@@ -355,12 +355,12 @@ def main():
     hw_dir = os.path.normpath(config_get(
         'SERVER', 'HWDIR', cfg_dir)) + '/'
 
-    failure_role=''
+    failure_role = ''
     # parse hw file given in argument or passed to cgi script
     if len(sys.argv) >= 3 and sys.argv[1] == '-f':
         hw_file = open(sys.argv[2])
         if len(sys.argv) >= 5 and sys.argv[3] == '-F':
-            failure_role=sys.argv[4]
+            failure_role = sys.argv[4]
     else:
         cgitb.enable()
 
@@ -375,7 +375,9 @@ def main():
             logfile = logitem.file
             try:
                 # Let's save the file in LOGDIR directory
-                log_dir = os.path.normpath(config_get('SERVER', 'LOGDIR', cfg_dir)) + '/'
+                log_dir = os.path.normpath(config_get('SERVER',
+                                                      'LOGDIR',
+                                                      cfg_dir)) + '/'
                 filename = os.path.join(log_dir, logitem.filename)
                 output_file = open(filename, 'w')
                 output_file.write(logfile.read(-1))
@@ -442,7 +444,7 @@ def main():
                     names[idx] = (name, int(times) + 1)
                     with open(state_filename, 'w') as state_file:
                         pprint.pprint(names, stream=state_file)
-                    break;
+                    break
             idx += 1
         sys.exit(0)
 
@@ -463,7 +465,8 @@ def main():
                 break
         idx += 1
     else:
-        fatal_error('Unable to match requirements on the following roles : %s' % valid_roles)
+        fatal_error('Unable to match requirements on the following roles : %s'
+                    % valid_roles)
 
     forced = (var2 != {})
 

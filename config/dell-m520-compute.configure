@@ -67,24 +67,24 @@ config('/etc/network/interfaces').write('''
 auto lo
 iface lo inet loopback
 
-auto %(eth0)s
-allow-hotplug %(eth0)s
-iface %(eth0)s inet static
+auto eth0
+allow-hotplug eth0
+iface eth0 inet static
      address %(ip0)s
      netmask %(netmask0)s
      gateway %(gateway0)s
      hwaddress %(mac0)s
 
-auto %(eth1)s
-allow-hotplug %(eth1)s
-iface %(eth1)s inet static
+auto eth1
+allow-hotplug eth1
+iface eth1 inet static
      address %(ip1)s
      netmask %(netmask1)s
      hwaddress %(mac1)s
 
-auto %(eth3)s
-allow-hotplug %(eth3)s
-iface %(eth3)s inet static
+auto eth3
+allow-hotplug eth3
+iface eth3 inet static
      address %(ip3)s
      netmask %(netmask3)s
      hwaddress %(mac3)s

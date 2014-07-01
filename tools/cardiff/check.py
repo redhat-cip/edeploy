@@ -250,7 +250,7 @@ def print_summary(mode, array, array_name, unit, df, item_value=None):
         GREEN = "\033[1;32m"
 
         for host in array:
-            result.append(df[host].mean())
+            result.append(df[host].sum())
         if "unstable" in array_name:
             before = RED
             after = WHITE
@@ -270,7 +270,7 @@ def print_summary(mode, array, array_name, unit, df, item_value=None):
                         perf_status = ": " + GREEN + "PERF OK" + WHITE
                     else:
                         perf_status = ": " + RED + "PERF FAIL" + WHITE + " as min perf should have been : " + str(min_cpu_perf)
-        utils.do_print(mode, utils.Levels.SUMMARY, "%3d %s%-10s%s hosts with %8.2f %-2s as average value and %8.2f standard deviation %s", len(array), before, array_name, after, mean, unit, numpy.std(result), perf_status)
+        utils.do_print(mode, utils.Levels.SUMMARY, "%3d %s%-10s%s hosts with %8.2f %-4s as average value and %8.2f standard deviation %s", len(array), before, array_name, after, mean, unit, numpy.std(result), perf_status)
 
 
 def cpu_perf(systems, group_number, detail_options):
@@ -425,9 +425,9 @@ def memory_perf(systems, group_number, detail_options):
                 matched_category = []
                 prepare_detail(detail_options, group_number, mode, memory, details, matched_category)
                 print_detail(detail_options, details, memory_eff, matched_category)
-                print_summary(mode + " " + mode_text, consistent, "consistent", "MB/s", memory_eff)
-                print_summary(mode + " " + mode_text, curious, "curious", "MB/s", memory_eff)
-                print_summary(mode + " " + mode_text, unstable, "unstable", "MB/s", memory_eff)
+                print_summary(mode + " " + mode_text, consistent, "consistent", "%", memory_eff)
+                print_summary(mode + " " + mode_text, curious, "curious", "%", memory_eff)
+                print_summary(mode + " " + mode_text, unstable, "unstable", "%", memory_eff)
             else:
                 utils.do_print(real_mode, utils.Levels.WARNING, "%-12s : Benchmark not run on this group", mode_text)
         print

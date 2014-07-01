@@ -43,7 +43,7 @@ def physical_disks(systems):
 
 
 def logical_disks(systems):
-    sets = search_item(systems, "disk", "sd(\S+)", ['simultaneous', 'standalone'])
+    sets = search_item(systems, "disk", "sd(\S+)", ['simultaneous', 'standalone', 'id'])
     groups = compare_sets.compare(sets)
     compare_sets.print_groups(groups, "Logical Disks")
     return groups

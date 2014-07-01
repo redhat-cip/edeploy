@@ -276,6 +276,13 @@ def print_summary(mode, array, array_name, unit, df, item_value=None):
 def cpu_perf(systems, group_number, detail_options):
     print "Group %d : Checking CPU perf" % group_number
     host_cpu_list = search_item(systems, "cpu", "(.*)", [], ['product'])
+    host_cpu_number = search_item(systems, "cpu", "(.*logical.*)", [], ['number'])
+    core_counts = 1
+    for host in host_cpu_number:
+        for item in host_cpu_number[host]:
+            core_counts=item[3]
+            break;
+
     cpu_type = ''
     for host in host_cpu_list:
         for item in host_cpu_list[host]:
@@ -329,7 +336,7 @@ def cpu_perf(systems, group_number, detail_options):
 
             for system in sets:
                 host_efficiency_full_load = []
-                host_perf = df[system].sum()
+                host_perf = df[system].sum() * (int(core_counts) / df[system].count())
                 host_efficiency_full_load.append(global_perf[system] / host_perf * 100)
                 efficiency[system] = Series(host_efficiency_full_load, index=[mode_text])
 

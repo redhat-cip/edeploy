@@ -393,12 +393,12 @@ def detect_system(hw_lst, output=None):
         for elt in xml.findall(".//node[@class='network']"):
             name = elt.find('logicalname')
             if name is not None:
+                find_element(elt, 'businfo', 'businfo', name.text, 'network')
                 find_element(elt, 'vendor', 'vendor', name.text, 'network')
                 find_element(elt, 'product', 'product', name.text, 'network')
                 find_element(elt, "configuration/setting[@id='firmware']",
                              'firmware', name.text, 'network', 'value')
                 find_element(elt, 'size', 'size', name.text, 'network')
-                find_element(elt, 'businfo', 'businfo', name.text, 'network')
                 ipv4 = find_element(elt, "configuration/setting[@id='ip']",
                                     'ipv4',
                                     name.text, 'network', 'value')

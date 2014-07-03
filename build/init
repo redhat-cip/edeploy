@@ -353,8 +353,9 @@ if /configure; then
             umount $d/dev
             umount $d/proc
             save_log
-            log "Syncing data to disk"
+            log "Syncing data to disk in progress ..."
             sync
+            log "Data syncing done."
 
             if [ -n "$PXEMNGR_URL" ]; then
                 curl -s ${PXEMNGR_URL}localboot/

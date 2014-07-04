@@ -36,6 +36,13 @@ check_os() {
     esac
 }
 
+case "$OS" in
+    "Debian"|"Ubuntu")
+        # Install eNovance maintainers key
+        do_chroot $dir apt-key adv --keyserver keyserver.ubuntu.com --recv E52660B15D964F0B
+    ;;
+esac
+
 generate_ansible_host() {
     file=$1
     section=$2

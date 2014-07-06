@@ -266,9 +266,14 @@ if [ -x ${MDIR}/usr/sbin/grub-mkconfig ]; then
 (hd0,1) $PART
 EOF
 
+    # Display console on serial line
+    sed -i -E 's/GRUB_CMDLINE_LINUX_DEFAULT="?([^"]*)"?/GRUB_CMDLINE_LINUX_DEFAULT="\1 console=ttyS0"/' $MDIR/etc/default/grub
+
     do_chroot "$MDIR" grub-install --modules="ext2 part_msdos" --no-floppy "$DISK"
 
-    if [ ! -r "$MDIR"/boot/grub/grub.cfg ]; then
+    if [ -r "$MDIR"/boot/grub/grub.cfg ]; then
+        do_chroot "$MDIR" update-grub || :
+    else
         do_chroot "$MDIR" grub-mkconfig -o /boot/grub/grub.cfg || :
     fi
 

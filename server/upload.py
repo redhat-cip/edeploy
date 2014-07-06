@@ -35,6 +35,7 @@ import ConfigParser
 import cgi
 import cgitb
 import commands
+from datetime import datetime
 import errno
 import os
 import pprint
@@ -163,9 +164,14 @@ def unlock(lock_fd, filename):
         os.unlink(filename)
 
 
-def log(msg):
+def log(msg, prefix='eDeploy', module='upload.py'):
     'Error Logging.'
-    sys.stderr.write('eDeploy: ' + msg + '\n')
+    timestamp = datetime.strftime(datetime.now(), '%a %b %d %H:%M:%S.%f %Y')
+    sys.stderr.write('[%s] [%s] %s(%d): %s\n' % (timestamp,
+                                                 prefix,
+                                                 module,
+                                                 os.getpid(),
+                                                 msg))
 
 
 def is_included(dict1, dict2):
@@ -323,13 +329,13 @@ EOF
 
 exit 1
 ''' % error)
-    sys.stderr.write('%s\n' % error)
+    log('Aborting: ' + error)
 
 
 def fatal_error(error):
     '''Report a shell script with the error message and log
     the message on stderr.'''
-    warning_error("upload.py: " + error)
+    warning_error(error)
     sys.exit(1)
 
 
@@ -346,28 +352,42 @@ def main():
         except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
             return default
 
-    cfg_dir = os.path.normpath(config_get(
-        'SERVER', 'CONFIGDIR',
-        os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                     '..',
-                     'config'))) + '/'
-
-    hw_dir = os.path.normpath(config_get(
-        'SERVER', 'HWDIR', cfg_dir)) + '/'
-
     failure_role = ''
+    section = 'SERVER'
+
     # parse hw file given in argument or passed to cgi script
     if len(sys.argv) >= 3 and sys.argv[1] == '-f':
         hw_file = open(sys.argv[2])
         if len(sys.argv) >= 5 and sys.argv[3] == '-F':
             failure_role = sys.argv[4]
+
+        cfg_dir = os.path.normpath(config_get(
+            'SERVER', 'CONFIGDIR',
+            os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                         '..',
+                         'config'))) + '/'
+
+        hw_dir = os.path.normpath(config_get(
+            'SERVER', 'HWDIR', cfg_dir)) + '/'
+
     else:
         cgitb.enable()
 
         form = cgi.FieldStorage()
 
+        log('Called from %s' % os.getenv('REMOTE_ADDR', '<no address>'))
+
         print "Content-Type: text/x-python"     # HTML is following
         print                                   # blank line, end of headers
+
+        # Log form fields
+        for key in form:
+            if key == 'file':
+                log('form[%s]: %d bytes' % (key, len(form.getvalue(key))))
+            else:
+                log('form[%s]: "%s"' % (key, form.getvalue(key)))
+
+        section = form.getvalue('section', 'SERVER')
 
         # If the filename ends with a .log, we need to process it as a log file
         if ('file' in form) and (form['file'].filename.endswith('.log.gz')):
@@ -375,7 +395,7 @@ def main():
             logfile = logitem.file
             try:
                 # Let's save the file in LOGDIR directory
-                log_dir = os.path.normpath(config_get('SERVER',
+                log_dir = os.path.normpath(config_get(section,
                                                       'LOGDIR',
                                                       cfg_dir)) + '/'
                 filename = os.path.join(log_dir, logitem.filename)
@@ -400,13 +420,22 @@ def main():
         if form.getvalue('failure'):
             failure_role = form.getvalue('failure')
 
+        cfg_dir = os.path.normpath(config_get(
+            section, 'CONFIGDIR',
+            os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                         '..',
+                         'config'))) + '/'
+
+        hw_dir = os.path.normpath(config_get(
+            section, 'HWDIR', cfg_dir)) + '/'
+
     try:
         hw_items = eval(hw_file.read(-1))
     except Exception, excpt:
         fatal_error("'Invalid hardware file: %s'" % str(excpt))
 
     # avoid concurrent accesses
-    lock_filename = config_get('SERVER', 'LOCKFILE', '/tmp/edeploy.lock')
+    lock_filename = config_get(section, 'LOCKFILE', '/tmp/edeploy.lock')
     try:
         lockfd = lock(lock_filename)
     except Exception, excpt:
@@ -421,14 +450,15 @@ def main():
     filename_and_macs = generate_filename_and_macs(hw_items)
     save_hw(hw_items, filename_and_macs['sysname'], hw_dir)
 
-    use_pxemngr = (config_get('SERVER', 'USEPXEMNGR', False) == 'True')
-    pxemngr_url = config_get('SERVER', 'PXEMNGRURL', None)
-    metadata_url = config_get('SERVER', 'METADATAURL', None)
+    use_pxemngr = (config_get(section, 'USEPXEMNGR', False) == 'True')
+    pxemngr_url = config_get(section, 'PXEMNGRURL', None)
+    metadata_url = config_get(section, 'METADATAURL', None)
 
     if use_pxemngr:
         register_pxemngr(filename_and_macs)
 
     state_filename = cfg_dir + 'state'
+    log('Reading state from %s' % state_filename)
     names = eval(open(state_filename).read(-1))
 
     if failure_role:
@@ -451,22 +481,24 @@ def main():
     idx = 0
     times = '*'
     name = None
-    valid_roles = ""
+    valid_roles = []
     for name, times in names:
         if times == '*' or int(times) > 0:
-            if len(valid_roles) == 0:
-                valid_roles += " %s" % (name)
-            else:
-                valid_roles += ", %s" % (name)
+            valid_roles.append(name)
             specs = eval(open(cfg_dir + name + '.specs', 'r').read(-1))
             var = {}
             var2 = {}
             if matcher.match_all(hw_items, specs, var, var2):
+                log('Specs %s matches' % name)
                 break
         idx += 1
     else:
-        fatal_error('Unable to match requirements on the following roles : %s'
-                    % valid_roles)
+        if len(valid_roles) == 0:
+            fatal_error('No more role available in %s' % (state_filename,))
+        else:
+            fatal_error(
+                'Unable to match requirements on the following roles in %s: %s'
+                % (state_filename, ', '.join(valid_roles)))
 
     forced = (var2 != {})
 
@@ -475,6 +507,7 @@ def main():
 
     if times != '*':
         names[idx] = (name, int(times) - 1)
+        log('Decrementing %s to %d' % (name, int(times) - 1))
 
     cmdb = load_cmdb(cfg_dir, name)
     if cmdb:
@@ -533,17 +566,23 @@ var = ''')
     sys.stdout.write(cfg)
 
     if use_pxemngr and pxemngr_url:
+        log("Adding pxemngr url to configure script: %s" % pxemngr_url)
         print '''
 run('echo "PXEMNGR_URL=%s" >> /vars')
 ''' % pxemngr_url
 
     if metadata_url:
+        log("Adding metadata url to configure script: %s" % metadata_url)
         print '''
 run('echo "METADATA_URL=%s" >> /vars')
 ''' % metadata_url
 
+    log('Sending configure script')
     with open(state_filename, 'w') as state_file:
         pprint.pprint(names, stream=state_file)
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception, err:
+        fatal_error(str(err))

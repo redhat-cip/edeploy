@@ -170,6 +170,7 @@ HTTP_PORT=80
 HTTP_PATH=/cgi-bin/
 DURATION=
 SMOKE_TEST=
+SECTION=SERVER
 
 # Unless you override one or the other via the cmdline
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^[HR]?SERV=")
@@ -178,6 +179,7 @@ eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^HTTP_PORT=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^HTTP_PATH=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^SESSION=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^RBENCH=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^SECTION=")
 
 if [ -z "$RSERV" ]; then
     RSERV="$SERV"

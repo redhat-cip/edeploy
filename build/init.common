@@ -1,5 +1,9 @@
 # -*- shell-script -*-
 
+if [ "$VERBOSE" = 1 ]; then
+    set -x			# show commands
+fi
+
 GIT_REV=""
 
 export PATH=/sbin:/usr/sbin:/bin:/usr/bin:$PATH
@@ -149,7 +153,7 @@ upload_log() {
     else
         # Uploading log file
         log "Uploading log ($log_file) to server ${SERV}"
-        curl -s -S -o/log.stats -F file=@/${log_file} http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py || true
+        curl -s -S -o/log.stats -F section=${SECTION} -F file=@/${log_file} http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py || :
     fi
 }
 
@@ -242,7 +246,7 @@ report_failure() {
             /upload.py -f /hw.py -F $PROFILE
         else
             log "Reporting failure to reincrement profile's quantities on server $SERV"
-            curl -s -S -F failure=$PROFILE -F file=@/hw.py http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py
+            curl -s -S -F section=${SECTION} -F failure=$PROFILE -F file=@/hw.py http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py
         fi
     fi
 }

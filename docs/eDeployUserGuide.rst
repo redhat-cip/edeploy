@@ -937,8 +937,14 @@ An example of `/etc/edeploy.conf`
    PXEMNGRURL = http://192.168.122.1:8000/
    METADATAURL = http://192.168.122.1/
 
-The following table provide the list of setting and their usage. To
-insure a proper installation, the directory owner is mentioned.
+You can have multiple sections representing different deployments. The
+``<section>`` name is found according to the ``SECTION=<section>``
+kernel boot argument instead of the default ``SERVER`` section when no
+argument is specified.
+
+The following table provide the list of settings and their usage for
+each section. To insure a proper installation, the directory owner is
+mentioned.
 
 ================  ====================================================================  =========
 Setting name                   Usage                                                    Directory Owner

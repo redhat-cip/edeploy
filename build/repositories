@@ -46,11 +46,22 @@ add_main_repository() {
             return 0
             ;;
         $supported_redhat_dists)
+            case $DVER in
+                RH7*)
+                    local releaserpm=redhat-release-server-7.0-1.el7.x86_64.rpm
+                    ;;
+                RH6*)
+                    local releaserpm=redhat-release-server-6Server-6.5.0.1.el6.x86_64.rpm
+                    ;;
+                *)
+                    echo "Unsupported RHEL release"
+                    return 1
+            esac
             if [ -n "$ISO_PATH" ]; then
                 # We use the target variable here since we shall provide the path from the chroot, not from the host
-                echo "${target}/repo/Packages/redhat-release-server-6Server-6.5.0.1.el6.x86_64.rpm"
+                echo "${target}/repo/Packages/$releaserpm"
             else
-                echo "${REPOSITORY}/Packages/redhat-release-server-6Server-6.5.0.1.el6.x86_64.rpm"
+                echo "${REPOSITORY}/Packages/$releaserpm"
             fi
             return 0
             ;;

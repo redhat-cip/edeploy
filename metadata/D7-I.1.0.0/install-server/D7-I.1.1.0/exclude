@@ -1,5 +1,9 @@
 /boot/grub/
 /dev/
+/etc/apache2/site-available/puppetboard
+/etc/apache2/site-available/puppetmaster
+/etc/apache2/site-enabled/puppetboard
+/etc/apache2/site-enabled/puppetmaster
 /etc/config-tools/
 /etc/serverspec/
 /etc/jenkins_jobs/

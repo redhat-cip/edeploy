@@ -63,6 +63,7 @@
 /var/backups/
 /var/cache/debconf/
 /var/lib/debootstrap/
+/var/lib/edeploy
 /var/lib/initramfs-tools/
 /var/lib/logrotate/status
 /var/lib/mysql/

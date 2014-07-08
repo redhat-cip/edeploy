@@ -56,6 +56,7 @@ add_main_repository() {
                 *)
                     echo "Unsupported RHEL release"
                     return 1
+                    ;;
             esac
             if [ -n "$ISO_PATH" ]; then
                 # We use the target variable here since we shall provide the path from the chroot, not from the host

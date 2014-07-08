@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (C) 2013 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2013-2014 eNovance SAS <licensing@enovance.com>
 #
 # Author: Frederic Lepied <frederic.lepied@enovance.com>
 #
@@ -64,7 +64,7 @@ case "$DIST" in
         add_epel_repository $DIST
         PACKAGES="$PACKAGES numpy http://pkgs.repoforge.org/netperf/netperf-2.6.0-1.el6.rf.x86_64.rpm"
         PACKAGES="$PACKAGES http://pkgs.repoforge.org/fio/fio-2.1.7-1.el6.rf.x86_64.rpm http://pkgs.repoforge.org/lshw/lshw-2.17-1.el6.rf.x86_64.rpm"
-        if [[ "${vers}" =~ '[A-Z]6' ]]; then
+        if [ "$CODENAME_MAJOR" = '6' ]; then
             add_epel_repository $DIST
             add_scn_feature $DIST python27
             do_chroot $dir scl enable python27 'easy_install netaddr pexpect'

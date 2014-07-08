@@ -11,14 +11,6 @@ array_diff() {
     END{for(k in a)if(a[k])print k}' <(echo -n "${!1}") <(echo -n "${!2}")
 }
 
-get_redhat_major_version() {
-    echo $1 | sed -e 's/\(.*\)\..*/\1/g'
-}
-
-get_redhat_minor_version() {
-    echo $1 | sed -e 's/.*\.\(.*\)/\1/g'
-}
-
 save_package_list() {
     case $(package_type) in
         "deb")

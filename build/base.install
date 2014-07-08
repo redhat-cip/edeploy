@@ -53,11 +53,9 @@ init_redhat_chroot() {
     fi
     case "$dist" in
         "centos")
-            case "$version" in
-                C6*)
-                    sed -i 's/$releasever/6/g' ${target}/etc/yum.repos.d/*
-                    ;;
-            esac
+            if [ "$CODENAME_MAJOR" = '6' ]; then
+                sed -i 's/$releasever/6/g' ${target}/etc/yum.repos.d/*
+            fi
             ;;
         "redhat")
             sed "0,/^enabled=/ s/enabled=0/enabled=1/" -i ${target}/etc/yum.repos.d/rhel-source.repo

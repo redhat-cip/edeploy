@@ -1,5 +1,8 @@
 /boot/grub/
 /dev/
+/etc/config-tools
+/etc/serverspec
+/etc/jenkins_jobs
 /etc/adjtime
 /etc/blkid.tab
 /etc/blkid.tab.old
@@ -58,6 +61,7 @@
 /tmp/
 /var/backups/
 /var/cache/debconf/
+/var/lib/debootstrap/
 /var/lib/initramfs-tools/
 /var/lib/logrotate/status
 /var/lib/mysql/

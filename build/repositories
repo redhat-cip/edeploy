@@ -189,7 +189,9 @@ add_rhn_repository() {
 
             if [ ! -f "$target/etc/sysconfig/rhn/systemid" ]; then
                 install_packages $dir "subscription-manager"
-                do_chroot $dir subscription-manager register --username=$RHN_USERNAME --password=$RHN_PASSWORD
+                # we use --force here to avoid an error code return in case of
+                # we already subscribe.
+                do_chroot $dir subscription-manager register --force --username=$RHN_USERNAME --password=$RHN_PASSWORD
                 case "$release" in
                     RH6.5)
                         add_rhn_channel rhel-x86_64-server-optional-6

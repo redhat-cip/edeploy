@@ -3,6 +3,7 @@
 /etc/config-tools
 /etc/serverspec
 /etc/jenkins_jobs
+/etc/ansible
 /etc/adjtime
 /etc/blkid.tab
 /etc/blkid.tab.old

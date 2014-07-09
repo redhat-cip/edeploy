@@ -42,15 +42,38 @@ add_main_repository() {
             return 0
             ;;
         $supported_centos_dists)
-            echo "http://mirror.centos.org/centos/6.5/os/x86_64/Packages/centos-release-6-5.el6.centos.11.1.x86_64.rpm"
-            return 0
+            case "$version" in
+                C6*)
+                    echo "http://mirror.centos.org/centos/6.5/os/x86_64/Packages/centos-release-6-5.el6.centos.11.1.x86_64.rpm"
+                    return 0
+                    ;;
+                C7*)
+                    echo "http://mirror.centos.org/centos/7/os/x86_64/Packages/centos-release-7-0.1406.el7.centos.2.3.x86_64.rpm"
+                    return 0
+                    ;;
+                *)
+                    return 1
+                    ;;
+            esac
             ;;
         $supported_redhat_dists)
+            case "$version" in
+                RH7*)
+                    local releaserpm=redhat-release-server-7.0-1.el7.x86_64.rpm
+                    ;;
+                RH6*)
+                    local releaserpm=redhat-release-server-6Server-6.5.0.1.el6.x86_64.rpm
+                    ;;
+                *)
+                    echo "Unsupported RHEL release"
+                    return 1
+                    ;;
+            esac
             if [ -n "$ISO_PATH" ]; then
                 # We use the target variable here since we shall provide the path from the chroot, not from the host
-                echo "${target}/repo/Packages/redhat-release-server-6Server-6.5.0.1.el6.x86_64.rpm"
+                echo "${target}/repo/Packages/$releaserpm"
             else
-                echo "${REPOSITORY}/Packages/redhat-release-server-6Server-6.5.0.1.el6.x86_64.rpm"
+                echo "${REPOSITORY}/Packages/$releaserpm"
             fi
             return 0
             ;;
@@ -177,9 +200,18 @@ add_rhn_repository() {
             fi
 
             if [ ! -f "$target/etc/sysconfig/rhn/systemid" ]; then
-                install_packages $dir rhn-setup
-                do_chroot $dir rhnreg_ks --profilename=edeploy-$HOSTNAME --username=$RHN_USERNAME --password=$RHN_PASSWORD
-                add_rhn_channel rhel-x86_64-server-optional-6
+                install_packages $dir "subscription-manager"
+                # we use --force here to avoid an error code return in case of
+                # we already subscribe.
+                do_chroot $dir subscription-manager register --force --username=$RHN_USERNAME --password=$RHN_PASSWORD
+                case "$release" in
+                    RH6.5)
+                        add_rhn_channel rhel-x86_64-server-optional-6
+                        ;;
+                    RH7.0)
+                        add_rhn_channel rhel-x86_64-server-optional-7
+                        ;;
+                esac
             fi
             ;;
         *)

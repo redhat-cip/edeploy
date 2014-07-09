@@ -47,18 +47,30 @@ init_redhat_chroot() {
         rpm --initdb --root="$target"
         rpm -ivh --root "$target" "$release_rpm_url"
     fi
+    if [ ! -d ${target}/etc/yum.repos.d ]; then
+        mkdir -p ${target}/etc/yum.repos.d
+        curl ${REPOSITORY}/media.repo > ${target}/etc/yum.repos.d/rhel-source.repo
+    fi
     case "$dist" in
         "centos")
-            sed -i 's/$releasever/6/g' ${target}/etc/yum.repos.d/*
+            if [ "$CODENAME_MAJOR" = '6' ]; then
+                sed -i 's/$releasever/6/g' ${target}/etc/yum.repos.d/*
+            fi
             ;;
         "redhat")
             sed "0,/^enabled=/ s/enabled=0/enabled=1/" -i ${target}/etc/yum.repos.d/rhel-source.repo
             sed "0,/^baseurl=/ s/baseurl=.*/baseurl=${rpm_repository//\//\\/}/" -i ${target}/etc/yum.repos.d/rhel-source.repo
+            if ! fgrep -q enabled= ${target}/etc/yum.repos.d/rhel-source.repo; then
+                echo enabled=1 >> ${target}/etc/yum.repos.d/rhel-source.repo
+            fi
+            if ! fgrep -q baseurl= ${target}/etc/yum.repos.d/rhel-source.repo; then
+                echo baseurl=${rpm_repository} >> ${target}/etc/yum.repos.d/rhel-source.repo
+            fi
             ;;
     esac
     cp -f /etc/resolv.conf "$target/etc/"
     rebuild_db_with_local $target
-    rpm --root="$target" --import $target/etc/pki/rpm-gpg/RPM-GPG-KEY-*
+    rpm --root="$target" --import $(ls $target/etc/pki/rpm-gpg/RPM-GPG-KEY-* | fgrep -v Debug)
     # We cannot use install_packages since the basesystem isn't yet setup
     yum --installroot $target install -y basesystem yum
 

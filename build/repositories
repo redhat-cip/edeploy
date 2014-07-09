@@ -85,7 +85,6 @@ add_main_repository() {
     esac
 }
 
-EPEL_RELEASE=6-8
 add_epel_repository() {
     local dist=$1
 
@@ -93,7 +92,13 @@ add_epel_repository() {
 
     case "$dist" in
         $supported_centos_dists|$supported_redhat_dists)
-            install_packages $dir http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-$EPEL_RELEASE.noarch.rpm
+            if [ "$CODENAME_MAJOR" = 6 ]; then
+                EPEL_RELEASE=6-8
+                install_packages $dir http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-$EPEL_RELEASE.noarch.rpm
+            else
+                EPEL_RELEASE=7-0.2
+                install_packages $dir http://dl.fedoraproject.org/pub/epel/beta/7/x86_64/epel-release-$EPEL_RELEASE.noarch.rpm
+            fi
             ;;
     esac
 }

@@ -1,3 +1,5 @@
+# -*- shell-script -*-
+
 pin_repository() {
     local dist=$1
     local dir=$2
@@ -42,12 +44,12 @@ add_main_repository() {
             return 0
             ;;
         $supported_centos_dists)
-            case "$version" in
-                C6*)
+            case "$CODENAME_MAJOR" in
+                6)
                     echo "http://mirror.centos.org/centos/6.5/os/x86_64/Packages/centos-release-6-5.el6.centos.11.1.x86_64.rpm"
                     return 0
                     ;;
-                C7*)
+                7)
                     echo "http://mirror.centos.org/centos/7/os/x86_64/Packages/centos-release-7-0.1406.el7.centos.2.3.x86_64.rpm"
                     return 0
                     ;;
@@ -57,11 +59,11 @@ add_main_repository() {
             esac
             ;;
         $supported_redhat_dists)
-            case "$version" in
-                RH7*)
+            case "$CODENAME_MAJOR" in
+                7)
                     local releaserpm=redhat-release-server-7.0-1.el7.x86_64.rpm
                     ;;
-                RH6*)
+                6)
                     local releaserpm=redhat-release-server-6Server-6.5.0.1.el6.x86_64.rpm
                     ;;
                 *)

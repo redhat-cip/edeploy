@@ -91,6 +91,14 @@ init_redhat_chroot() {
     rebuild_db $target
 }
 
+# As we need some environment variables for bootstrap and as we cannot
+# get them from the file system before having bootstrapped as it
+# is not created yet, we need to fake them
+fake_setup() {
+    export CODENAME_MAJOR=$(sed -E 's/[A-Z]+([^.]+)\..*/\1/' <<< $version)
+    export CODENAME_MINOR=$(sed -E 's/[^.]+\.([^.]+).*/\1/' <<< $version)
+}
+
 bootstrap() {
     local target=$1
     local repository=$(add_main_repository $dist)
@@ -358,6 +366,7 @@ if [ "$(package_type)" = "deb" ]; then
 fi
 
 trap cleanup 0
+fake_setup
 bootstrap $dir
 common_setup
 install_base_packages $dir

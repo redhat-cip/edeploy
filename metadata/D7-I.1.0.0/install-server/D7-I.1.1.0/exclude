@@ -17,10 +17,6 @@
 /etc/default/locale
 /etc/facter/facts.d/environment.txt
 /etc/fstab
-/etc/group
-/etc/group-
-/etc/gshadow
-/etc/gshadow-
 /etc/hostname
 /etc/hosts
 /etc/init.d/.depend.*
@@ -37,15 +33,11 @@
 /etc/networks
 /etc/nologin
 /etc/ntp.conf
-/etc/passwd
-/etc/passwd-
 /etc/puppet/puppet.conf
 /etc/rc.local
 /etc/rc.local.REAL
 /etc/resolv.conf
 /etc/services
-/etc/shadow
-/etc/shadow-
 /etc/ssh/ssh_host_dsa_key
 /etc/ssh/ssh_host_dsa_key.pub
 /etc/ssh/ssh_host_ecdsa_key

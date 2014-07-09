@@ -76,10 +76,6 @@
 /etc/glance/glance-api.conf
 /etc/glance/glance-cache.conf
 /etc/glance/glance-registry.conf
-/etc/group
-/etc/group-
-/etc/gshadow
-/etc/gshadow-
 /etc/heat/heat.conf
 /etc/hostname
 /etc/hosts
@@ -122,8 +118,6 @@
 /etc/openvswitch/conf.db
 /etc/openvswitch/system-id.conf
 /var/lib/openvswitch/
-/etc/passwd
-/etc/passwd-
 /etc/puppet/puppet.conf
 /etc/rabbitmq/rabbitmq-env.conf
 /etc/rabbitmq/rabbitmq.config
@@ -339,8 +333,6 @@
 /etc/rcS.d/K04hdparm
 /etc/resolv.conf
 /etc/services
-/etc/shadow
-/etc/shadow-
 /etc/ssh/ssh_host_dsa_key
 /etc/ssh/ssh_host_dsa_key.pub
 /etc/ssh/ssh_host_ecdsa_key

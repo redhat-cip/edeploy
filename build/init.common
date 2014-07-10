@@ -236,7 +236,8 @@ update_ssh_port() {
 start_ssh_server() {
     create_keys
     update_ssh_port
-    /etc/init.d/ssh start || /etc/init.d/sshd start
+    mkdir -p /var/lock/subsys
+    /etc/init.d/ssh start &>/dev/null || /etc/init.d/sshd start &>/dev/null
 }
 
 report_failure() {

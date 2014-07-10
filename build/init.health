@@ -110,7 +110,7 @@ eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^NOREBOOT=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^ONSUCCESS=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^ONFAILURE=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^IP=")
-eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^NONETWORKTEST")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^NONETWORKTEST=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^USBBOOT=")
 
 if [ "$VERBOSE" = 1 ]; then

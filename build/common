@@ -375,12 +375,14 @@ common_setup() {
 
     mount_fs
 
-    # export these variables to let them be used by upgrade-from sub-scripts
-    export OS=$(do_chroot ${dir} lsb_release -i -s)
-    export RELEASE=$(do_chroot ${dir} lsb_release -c -s)
-    export CODENAME=$(do_chroot ${dir} lsb_release -r -s)
-    export CODENAME_MAJOR=$(sed -E 's/([^.]+)\..*/\1/' <<< $CODENAME)
-    export CODENAME_MINOR=$(sed -E 's/[^.]+\.([^.]+).*/\1/' <<< $CODENAME)
+    if type -p lsb_release > /dev/null; then
+        # export these variables to let them be used by upgrade-from sub-scripts
+        export OS=$(do_chroot ${dir} lsb_release -i -s)
+        export RELEASE=$(do_chroot ${dir} lsb_release -c -s)
+        export CODENAME=$(do_chroot ${dir} lsb_release -r -s)
+        export CODENAME_MAJOR=$(sed -E 's/([^.]+)\..*/\1/' <<< $CODENAME)
+        export CODENAME_MINOR=$(sed -E 's/[^.]+\.([^.]+).*/\1/' <<< $CODENAME)
+    fi
 
     # Resolv.conf got setup during the initial deboostrap
     # But since, you might have change your host to another network (office vs home vs mobile vs ...)

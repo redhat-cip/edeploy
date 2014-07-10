@@ -70,7 +70,9 @@ update_repositories $dir
 
 case "$DIST" in
     $supported_redhat_dists)
-        add_rhn_channel rhel-x86_64-server-sfs-6
+        if [ "$CODENAME_MAJOR" = '6' ]; then
+            add_rhn_channel rhel-x86_64-server-sfs-6
+        fi
     ;;
 esac
 

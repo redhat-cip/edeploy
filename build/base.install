@@ -96,7 +96,7 @@ init_redhat_chroot() {
 # is not created yet, we need to fake them
 fake_setup() {
     export CODENAME_MAJOR=$(sed -E 's/[A-Z]+([^.]+)\..*/\1/' <<< $version)
-    export CODENAME_MINOR=$(sed -E 's/[^.]+\.([^.]+).*/\1/' <<< $version)
+    export CODENAME_MINOR=$(sed -E 's/[^.]+\.([^.-]+).*/\1/' <<< $version)
 }
 
 bootstrap() {

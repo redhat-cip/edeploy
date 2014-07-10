@@ -207,13 +207,13 @@ add_rhn_repository() {
             fi
 
             if [ ! -f "$target/etc/sysconfig/rhn/systemid" ]; then
-                case "$release" in
-                    RH6.5)
+                case "$CODENAME_MAJOR" in
+                    6)
                         install_packages $dir rhn-setup
                         do_chroot $dir rhnreg_ks --profilename=edeploy-$HOSTNAME --username=$RHN_USERNAME --password=$RHN_PASSWORD
                         add_rhn_channel rhel-x86_64-server-optional-6
                         ;;
-                    RH7.0)
+                    7)
                         install_packages $dir "subscription-manager"
                         # we use --force here to avoid an error code return in case of
                         # we already subscribe.

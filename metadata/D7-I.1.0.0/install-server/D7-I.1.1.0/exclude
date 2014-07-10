@@ -24,6 +24,9 @@
 /etc/init.d/mysql-bootstrap
 /etc/motd
 /etc/mtab
+/etc/passwd
+/etc/shadow
+/etc/group
 /etc/mysql/conf.d/basic_config.cnf
 /etc/mysql/debian.cnf
 /etc/mysql/my.cnf

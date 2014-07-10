@@ -79,6 +79,9 @@
 /etc/heat/heat.conf
 /etc/hostname
 /etc/hosts
+/etc/passwd
+/etc/shadow
+/etc/group
 /etc/init.d/.depend.*
 /etc/init.d/mysql
 /etc/init.d/mysql-bootstrap

@@ -66,7 +66,8 @@ case "$DIST" in
         PACKAGES="$PACKAGES http://pkgs.repoforge.org/fio/fio-2.1.7-1.el6.rf.x86_64.rpm http://pkgs.repoforge.org/lshw/lshw-2.17-1.el6.rf.x86_64.rpm"
         if [ "$CODENAME_MAJOR" = '6' ]; then
             add_scn_feature $DIST python27
-            do_chroot $dir scl enable python27 'easy_install netaddr pexpect'
+            install_packages $dir "gcc"
+            do_chroot $dir scl enable python27 'easy_install netaddr pexpect psutil'
             remove_scn_repository
             PACKAGES="$PACKAGES sysbench python-psutil"
         else

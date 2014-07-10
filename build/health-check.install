@@ -65,7 +65,6 @@ case "$DIST" in
         PACKAGES="$PACKAGES numpy http://pkgs.repoforge.org/netperf/netperf-2.6.0-1.el6.rf.x86_64.rpm"
         PACKAGES="$PACKAGES http://pkgs.repoforge.org/fio/fio-2.1.7-1.el6.rf.x86_64.rpm http://pkgs.repoforge.org/lshw/lshw-2.17-1.el6.rf.x86_64.rpm"
         if [ "$CODENAME_MAJOR" = '6' ]; then
-            add_epel_repository $DIST
             add_scn_feature $DIST python27
             do_chroot $dir scl enable python27 'easy_install netaddr pexpect'
             remove_scn_repository

@@ -404,7 +404,7 @@ def get_output_filename(hw_):
     if mac:
         sysname += mac.replace(':', '-')
 
-    return sysname + ".hw_"
+    return sysname + ".hw"
 
 
 def is_booted_storage_device(disk):

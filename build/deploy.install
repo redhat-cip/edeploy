@@ -30,8 +30,10 @@ ORIG=$(cd $(dirname $0); pwd)
 check_os() {
     case "$OS" in
         "CentOS"|"RedHatEnterpriseServer")
-            echo "$OS is not supported as no python 2.7 available for it"
-            exit 0
+            if [ $CODENAME_MAJOR = 6 ]; then
+                echo "$OS is not supported as no python 2.7 available for it"
+                exit 0
+            fi
         ;;
     esac
 }
@@ -55,6 +57,7 @@ EOF
 }
 
 install_edeploy() {
+    add_epel_repository $DIST
     # Install the packages needed by the local transport of ansible
     # on the host and git to checkout pxemngr for its ansible playbook
     install_packages $dir python-apt ca-certificates git python-pip python-crypto

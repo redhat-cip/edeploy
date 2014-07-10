@@ -1,3 +1,4 @@
 for i in elasticsearch td-agent; do
+  groupadd $i
   useradd -G $i -s /bin/false $i
 done

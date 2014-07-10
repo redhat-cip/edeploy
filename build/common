@@ -375,7 +375,7 @@ common_setup() {
 
     mount_fs
 
-    if type -p lsb_release > /dev/null; then
+    if chroot ${dir} bash -c "type -p lsb_release" > /dev/null; then
         # export these variables to let them be used by upgrade-from sub-scripts
         export OS=$(do_chroot ${dir} lsb_release -i -s)
         export RELEASE=$(do_chroot ${dir} lsb_release -c -s)

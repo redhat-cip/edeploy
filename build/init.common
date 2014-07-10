@@ -8,19 +8,19 @@ GIT_REV=""
 
 export PATH=/sbin:/usr/sbin:/bin:/usr/bin:$PATH
 
-get_distro() {
-    lsb_release -si
+do_python() {
+    case $(lsb_release -sri) in
+       "RedHatEnterpriseServer 6.5"|"Centos 6.5")
+            scl enable python27 "$@"
+       ;;
+       *)
+            $@
+       ;;
+    esac
 }
 
 run_detect() {
-    case $(get_distro) in
-       "RedHatEnterpriseServer"|"Centos")
-            scl enable python27 /detect.py > /hw.py || fatal_error "Failed to detect hardware"
-       ;;
-       *)
-            /detect.py > /hw.py || fatal_error "Failed to detect hardware"
-       ;;
-    esac
+    do_python /detect.py > /hw.py || fatal_error "Failed to detect hardware"
 }
 
 get_system_info() {

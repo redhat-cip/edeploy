@@ -4,7 +4,7 @@
     - pxemngr: false
   user: root
   tasks:
-  - name: ensure needed packages for eDeploy are installed
+  - name: ensure needed packages for eDeploy are installed (apt)
     apt: pkg={{ item }} state=present
     with_items:
       - apache2
@@ -12,11 +12,25 @@
       - python-pip
       - git
       - rsync
+    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  - name: ensure needed packages for eDeploy are installed (yum)
+    yum: pkg={{ item }} state=present
+    with_items:
+      - httpd
+      - python-ipaddr
+      - python-pip
+      - git
+      - rsync
+    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
   - name: extract eDeploy git repo
     git: repo=https://github.com/enovance/edeploy.git
          dest=/srv/edeploy force=no
-  - name: create eDeploy config dir
+  - name: create eDeploy config dir (deb)
     file: path=/etc/edeploy state=directory owner=www-data group=www-data
+    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  - name: create eDeploy config dir (rhel)
+    file: path=/etc/edeploy state=directory owner=apache group=apache
+    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
   - name: copy config files
     cp: src=/srv/edeploy/config/* dest=/etc/edeploy
   - name: create edeploy CGI config
@@ -39,21 +53,42 @@
     file: src=/srv/edeploy/server/upload.py dest=/usr/lib/cgi-bin/upload.py state=link
   - name: install eDeploy health CGI script and set permissions for it
     file: src=/srv/edeploy/server/upload-health.py dest=/usr/lib/cgi-bin/upload-health.py state=link
-  - name: owner of state file
+  - name: owner of state file (deb)
     file: path=/etc/edeploy/state owner=www-data group=www-data
+    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  - name: owner of state file (rhel)
+    file: path=/etc/edeploy/state owner=www-data group=www-data
+    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
   - name: create directory for install trees
     file: path=/var/lib/debootstrap/install state=directory
-  - name: create directory for hw profiles
+  - name: create directory for hw profiles (deb)
     file: path=/var/lib/edeploy/hw state=directory owner=www-data group=www-data
-  - name: create directory for log
+    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  - name: create directory for hw profiles (rhel)
+    file: path=/var/lib/edeploy/hw state=directory owner=apache group=apache
+    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+  - name: create directory for log (deb)
     file: path=/var/lib/edeploy/logs state=directory owner=www-data group=www-data
-  - name: create directory for health files
+    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  - name: create directory for log (rhel)
+    file: path=/var/lib/edeploy/logs state=directory owner=apache group=apache
+    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+  - name: create directory for health files (deb)
     file: path=/var/lib/edeploy/health state=directory owner=www-data group=www-data
+    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  - name: create directory for health files (rhel)
+    file: path=/var/lib/edeploy/health state=directory owner=apache group=apache
+    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
   - name: link install trees location for web server
     file: src=/var/lib/debootstrap/install dest=/var/www/install state=link
-  - name: fix cmdb permissions
+  - name: fix cmdb permissions (deb)
     file: path={{ item }} owner=www-data group=www-data
     with_fileglob: /etc/edeploy/*.cmdb
+    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  - name: fix cmdb permissions (rhel)
+    file: path={{ item }} owner=apache group=apache
+    with_fileglob: /etc/edeploy/*.cmdb
+    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
   - name: create rsync conf file
     copy: src=rsyncd.conf dest=/etc/rsyncd.conf
   - name: enable rsync daemon

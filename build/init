@@ -348,8 +348,12 @@ if /configure; then
                 V=
             fi
             if chroot $d /bin/sh -c "/usr/sbin/grub$V-install ${DISK}"; then
-                sed -i -e "s@GRUB_CMDLINE_LINUX_DEFAULT=\"\{0,1\}\([^\"]*\)\"\{0,1\}@GRUB_CMDLINE_LINUX_DEFAULT=\"\1 ${BOOT_ARG}\"@" $d/etc/default/grub
-                chroot $d /bin/sh -c "/usr/sbin/grub$V-mkconfig -o /boot/grub/grub.cfg"
+                if [ -r $d/etc/default/grub ]; then
+                    sed -i -e "s@GRUB_CMDLINE_LINUX_DEFAULT=\"\{0,1\}\([^\"]*\)\"\{0,1\}@GRUB_CMDLINE_LINUX_DEFAULT=\"\1 ${BOOT_ARG}\"@" $d/etc/default/grub
+                else
+                    echo "GRUB_CMDLINE_LINUX_DEFAULT=\"${BOOT_ARG}\"" > $d/etc/default/grub
+                fi
+                chroot $d /bin/sh -c "/usr/sbin/grub$V-mkconfig -o /boot/grub$V/grub.cfg"
                 ret=$?
             else
                 ret=1

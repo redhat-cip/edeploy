@@ -275,7 +275,7 @@ if /configure; then
         echo  "# Installing grub on device ${DISK} which is a $MODEL from $VENDOR with SN=$SER"
         echo  "################################################################################################"
         # grub1 doesn't have /usr/sbin/grub-mkconfig
-        if [ ! -x $d/usr/sbin/grub-mkconfig ]; then
+        if [ ! -x $d/usr/sbin/grub-mkconfig -a ! -x $d/usr/sbin/grub2-mkconfig ]; then
             chroot $d /bin/sh -c "cat /proc/mounts > /etc/mtab"
             chroot $d /bin/sh -c "/sbin/grub-install ${DISK}"
             ret=$?
@@ -341,14 +341,20 @@ if /configure; then
                  ;;
             esac
             # grub 2
-        elif chroot $d /bin/sh -c "/usr/sbin/grub-install ${DISK}"; then
-            sed -i -e "s@GRUB_CMDLINE_LINUX_DEFAULT=\"\{0,1\}\([^\"]*\)\"\{0,1\}@GRUB_CMDLINE_LINUX_DEFAULT=\"\1 ${BOOT_ARG}\"@" $d/etc/default/grub
-            chroot $d /bin/sh -c "/usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"
-            ret=$?
         else
-            ret=1
+            if [ -x $d/usr/sbin/grub2-install ]; then
+                V=2
+            else
+                V=
+            fi
+            if chroot $d /bin/sh -c "/usr/sbin/grub$V-install ${DISK}"; then
+                sed -i -e "s@GRUB_CMDLINE_LINUX_DEFAULT=\"\{0,1\}\([^\"]*\)\"\{0,1\}@GRUB_CMDLINE_LINUX_DEFAULT=\"\1 ${BOOT_ARG}\"@" $d/etc/default/grub
+                chroot $d /bin/sh -c "/usr/sbin/grub$V-mkconfig -o /boot/grub/grub.cfg"
+                ret=$?
+            else
+                ret=1
+            fi
         fi
-
         # Bootloader successfully installed
         if [ $ret -eq 0 ]; then
             umount $d/sys

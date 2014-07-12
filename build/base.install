@@ -185,7 +185,12 @@ install_base_packages() {
             echo "deb $repository $dist-updates main" >> ${target}/etc/apt/sources.list.d/updates.list
             ;;
         $supported_centos_dists|$supported_redhat_dists)
-            packages="$cross_distro_packages coreutils dhclient e2fsprogs grub grubby hdparm initscripts iproute kernel module-init-tools net-tools passwd perl redhat-lsb-core upstart vconfig crontabs"
+            if [ $CODENAME_MAJOR = 6]; then
+                GRUB=grub
+            else
+                GRUB=grub2
+            fi
+            packages="$cross_distro_packages coreutils dhclient e2fsprogs $GRUB grubby hdparm initscripts iproute kernel module-init-tools net-tools passwd perl redhat-lsb-core upstart vconfig crontabs"
             ;;
         *)
             echo "unsupported distribution: $dist" 2>&1

@@ -218,7 +218,9 @@ add_rhn_repository() {
                         # we use --force here to avoid an error code return in case of
                         # we already subscribe.
                         do_chroot $dir subscription-manager register --force --username=$RHN_USERNAME --password=$RHN_PASSWORD
-                        add_rhn_channel rhel-x86_64-server-optional-7
+
+                        # does not exist now
+                        # add_rhn_channel rhel-x86_64-server-optional-7
                         ;;
                 esac
             fi

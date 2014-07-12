@@ -237,7 +237,7 @@ start_ssh_server() {
     create_keys
     update_ssh_port
     mkdir -p /var/lock/subsys
-    /etc/init.d/ssh start &>/dev/null || /etc/init.d/sshd start &>/dev/null
+    /etc/init.d/ssh start &>/dev/null || /etc/init.d/sshd start &>/dev/null || /usr/sbin/sshd
 }
 
 report_failure() {
@@ -315,15 +315,44 @@ mount_virtual_fs() {
 
 }
 
-probe_pci_devices() {
-    step "Probing PCI devices"
+get_pci_modules() {
     for d in $(cut -f2 /proc/bus/pci/devices ); do
         echo $d| sed 's/\(....\)/\1 /'|while read vendor device; do
-        grep "pci:v0000${vendor}d0000${device}" /lib/modules/$(uname -r)/modules.alias|while read a n module; do
+            egrep -i "pci:v0000${vendor}d(\*|0000${device})" /lib/modules/$(uname -r)/modules.alias|while read a n module; do
+                echo $module
+            done
+        done
+    done
+}
+
+get_virtio_modules() {
+    for id in $(cut -f2 -d: /sys/bus/virtio/devices/*/modalias | sed 's/v.*/v/' ); do
+        egrep -i "virtio:${id}\*" /lib/modules/$(uname -r)/modules.alias|while read a n module; do
+            echo $module
+        done
+     done
+}
+
+probe_virtio_devices() {
+    for loop in $(seq 10); do
+        if [ -d /sys/bus/virtio/devices ]; then
+            for module in $(get_virtio_modules|sort -u); do
                 log_n "Loading $module "
                 modprobe $module && log "done" || log "error"
             done
-        done
+            break
+        fi
+    done
+}
+
+probe_pci_devices() {
+    step "Probing PCI devices"
+    for module in $(get_pci_modules|sort -u); do
+        log_n "Loading $module "
+        modprobe $module && log "done" || log "error"
+        if [ $module = virtio_pci ]; then
+            probe_virtio_devices
+        fi
     done
 
     # Some kernel drivers doesn't have hardware dependencies but are required to make the device work

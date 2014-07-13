@@ -1,20 +1,12 @@
-
 # -*- python -*-
 
 bootable_disk = '/dev/' + var['disk']
 
-run('dmsetup remove_all || /bin/true')
-
 for disk, path in ((bootable_disk, '/chroot'), ):
     run('parted -s %s mklabel msdos' % disk)
     run('parted -s %s mkpart primary ext2 0%% 100%%' % disk)
-    run('dmsetup remove_all || /bin/true')
-    run('mkfs.ext4 %s1' % disk)
+    run('mkfs.ext4 -L root %s1' % disk)
     run('mkdir -p %s; mount %s1 %s' % (path, disk, path))
-
-config('/etc/fstab').write('''
-/%s1 /               ext4    errors=remount-ro 0       1
-''' % disk1)
 
 config('/etc/sysconfig/network-scripts/ifcfg-%s' % var['eth']).write('''
 DEVICE=%(eth)s
@@ -28,7 +20,11 @@ HWADDR=%(mac)s
 
 config('/etc/sysconfig/network').write('''
 NETWORKING=yes
-HOSTNAME=centos64
+HOSTNAME=%(hostname)s
+''' % var)
+
+config('/etc/fstab', mode='a').write('''
+LABEL=root / ext4 errors=remount-ro 0 1
 ''')
 
-set_role('base', 'C6.5-H.1.0.0', bootable_disk)
+set_role('base', 'C6.5-1.5.0', bootable_disk)

@@ -100,9 +100,9 @@ install_pxe() {
             cp -a $dir/usr/lib/syslinux/pxelinux.0 $dir/var/lib/tftpboot/
             ;;
         "CentOS"|"RedHatEnterpriseServer")
-            install_packages $dir dnsmasq tftp-server syslinux-tftpboot
+            install_packages $dir dnsmasq tftp-server syslinux
             sed -i "s/disable *= yes/disable			= no/" $dir/etc/xinetd.d/tftp
-            cp -a $dir/tftpboot/pxelinux.0 $dir/var/lib/tftpboot/
+            cp -a $dir/usr/share/syslinux/pxelinux.0 $dir/var/lib/tftpboot/
             ;;
     esac
 }

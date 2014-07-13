@@ -169,7 +169,7 @@ add_rhn_channel() {
 attach_pool_rh_cdn() {
     local pool=$1
 
-    check_user $# 1 "attach_pool_rh_cdn <pool-id>"
+    check_usage $# 1 "attach_pool_rh_cdn <pool-id>"
 
     do_chroot $dir subscription-manager attach --pool $pool
 }

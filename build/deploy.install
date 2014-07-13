@@ -61,6 +61,7 @@ install_edeploy() {
     # Install the packages needed by the local transport of ansible
     # on the host and git to checkout pxemngr for its ansible playbook
     install_packages $dir python-apt ca-certificates git python-pip python-crypto
+    remove_epel_repository $DIST
 
     chroot $dir pip install ansible
 

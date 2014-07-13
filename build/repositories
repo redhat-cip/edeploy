@@ -166,6 +166,14 @@ add_rhn_channel() {
     update_system $dir
 }
 
+attach_pool_rh_cdn() {
+    local pool=$1
+
+    check_user $# 1 "attach_pool_rh_cdn <pool-id>"
+
+    do_chroot $dir subscription-manager attach --pool $pool
+}
+
 add_rh_cdn_repo() {
     local repo=$1
 

@@ -166,6 +166,17 @@ add_rhn_channel() {
     update_system $dir
 }
 
+add_rh_cdn_repo() {
+    local repo=$1
+
+    check_usage $# 1 "add_rh_cdn_repo <repo>"
+
+    do_chroot $dir subscription-manager repos --enable=$repo
+    if [ "$?" != "0" ]; then
+        echo "Failed to add ${repo} Red Hat CDN repository"
+    fi
+}
+
 add_scn_feature() {
     local dist=$1
     local scn=$2

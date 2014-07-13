@@ -218,6 +218,9 @@ add_rhn_repository() {
                         # we use --force here to avoid an error code return in case of
                         # we already subscribe.
                         do_chroot $dir subscription-manager register --force --username=$RHN_USERNAME --password=$RHN_PASSWORD
+
+                        # wait a second to ensure consumer certificate is finished writing to disk
+                        sleep 1
                         ;;
                 esac
             fi

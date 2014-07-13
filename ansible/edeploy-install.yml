@@ -21,7 +21,7 @@
       - python-pip
       - git
       - rsync
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+    when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
   - name: extract eDeploy git repo
     git: repo=https://github.com/enovance/edeploy.git
          dest=/srv/edeploy force=no
@@ -30,7 +30,7 @@
     when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
   - name: create eDeploy config dir (rhel)
     file: path=/etc/edeploy state=directory owner=apache group=apache
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+    when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
   - name: copy config files
     cp: src=/srv/edeploy/config/* dest=/etc/edeploy
   - name: create edeploy CGI config
@@ -54,19 +54,19 @@
     when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
   - name: install eDeploy CGI script and set permissions for it
     file: src=/srv/edeploy/server/upload.py dest=/var/www/cgi-bin/upload.py state=link
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+    when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
   - name: install eDeploy health CGI script and set permissions for it (deb)
     file: src=/srv/edeploy/server/upload-health.py dest=/usr/lib/cgi-bin/upload-health.py state=link
     when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
   - name: install eDeploy health CGI script and set permissions for it
     file: src=/srv/edeploy/server/upload-health.py dest=/var/www/cgi-bin/upload-health.py state=link
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+    when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
   - name: owner of state file (deb)
     file: path=/etc/edeploy/state owner=www-data group=www-data
     when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
   - name: owner of state file (rhel)
     file: path=/etc/edeploy/state owner=apache group=apache
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+    when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
   - name: create directory for install trees
     file: path=/var/lib/debootstrap/install state=directory
   - name: create directory for hw profiles (deb)
@@ -74,19 +74,19 @@
     when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
   - name: create directory for hw profiles (rhel)
     file: path=/var/lib/edeploy/hw state=directory owner=apache group=apache
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+    when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
   - name: create directory for log (deb)
     file: path=/var/lib/edeploy/logs state=directory owner=www-data group=www-data
     when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
   - name: create directory for log (rhel)
     file: path=/var/lib/edeploy/logs state=directory owner=apache group=apache
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+    when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
   - name: create directory for health files (deb)
     file: path=/var/lib/edeploy/health state=directory owner=www-data group=www-data
     when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
   - name: create directory for health files (rhel)
     file: path=/var/lib/edeploy/health state=directory owner=apache group=apache
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+    when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
   - name: link install trees location for web server
     file: src=/var/lib/debootstrap/install dest=/var/www/install state=link
   - name: fix cmdb permissions (deb)
@@ -96,7 +96,7 @@
   - name: fix cmdb permissions (rhel)
     file: path={{ item }} owner=apache group=apache
     with_fileglob: /etc/edeploy/*.cmdb
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+    when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
   - name: create rsync conf file
     copy: src=rsyncd.conf dest=/etc/rsyncd.conf
   - name: enable rsync daemon

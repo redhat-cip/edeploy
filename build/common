@@ -250,7 +250,14 @@ cleanup() {
     rm -f "${dir}"/etc/default/grub.d/edeploy.cfg
 
     # Let's remove any trace of a rhn configuration
-    unregister_rhn $DIST $dir
+    case "$CODENAME_MAJOR" in
+        6)
+            unregister_rhn $DIST $dir
+            ;;
+        7)
+            unregister_cdn
+            ;;
+    esac
 
     # clear package cache before removing the pkg manager
     clear_packages_cache $dir

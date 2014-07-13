@@ -117,6 +117,13 @@ remove_epel_repository() {
     esac
 }
 
+unregister_cdn() {
+    do_chroot $dir subscription-manager unregister
+    if [ "$?" != "0" ]; then
+        echo "Failed to unregister to Red Hat CDN subscription"
+    fi
+}
+
 unregister_rhn() {
     local dist=$1
     local target=$2

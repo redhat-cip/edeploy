@@ -162,7 +162,7 @@ def memory_timing(systems):
 
 
 def memory_banks(systems):
-    sets = search_item(systems, "memory", "bank(.*)")
+    sets = search_item(systems, "memory", "bank(.*)", ['serial'])
     groups = compare_sets.compare(sets)
     compare_sets.print_groups(groups, "Memory Banks(RAM)")
     return groups

@@ -256,7 +256,7 @@ cleanup() {
                 unregister_rhn $DIST $dir
                 ;;
             7)
-                unregister_cdn
+                unregister_cdn $dir
                 ;;
         esac
     fi

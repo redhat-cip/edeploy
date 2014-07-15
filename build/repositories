@@ -118,7 +118,8 @@ remove_epel_repository() {
 }
 
 unregister_cdn() {
-    do_chroot $dir subscription-manager unregister
+    local target=$1
+    do_chroot $target subscription-manager unregister
     if [ "$?" != "0" ]; then
         echo "Failed to unregister to Red Hat CDN subscription"
     fi
@@ -174,19 +175,21 @@ add_rhn_channel() {
 }
 
 attach_pool_rh_cdn() {
-    local pool=$1
+    local target=$1
+    local pool=$2
 
-    check_usage $# 1 "attach_pool_rh_cdn <pool-id>"
+    check_usage $# 2 "attach_pool_rh_cdn <dir> <pool-id>"
 
-    do_chroot $dir subscription-manager attach --pool $pool
+    do_chroot $target subscription-manager attach --pool $pool
 }
 
 add_rh_cdn_repo() {
-    local repo=$1
+    local target=$1
+    local repo=$2
 
-    check_usage $# 1 "add_rh_cdn_repo <repo>"
+    check_usage $# 2 "add_rh_cdn_repo <dir> <repo>"
 
-    do_chroot $dir subscription-manager repos --enable=$repo
+    do_chroot $target subscription-manager repos --enable=$repo
     if [ "$?" != "0" ]; then
         echo "Failed to add ${repo} Red Hat CDN repository"
     fi

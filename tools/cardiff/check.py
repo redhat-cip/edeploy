@@ -421,9 +421,16 @@ def memory_perf(systems, group_number, detail_options):
                 consistent = []
                 curious = []
                 unstable = []
-                print_perf(2, 10, memory_eff.transpose()[mode_text], memory_eff, real_mode, mode_text, consistent, curious, unstable)
-                matched_category = []
-                prepare_detail(detail_options, group_number, mode, memory, details, matched_category)
+
+                for memory in memory_eff.transpose().columns:
+                    print_perf(2, 10, memory_eff.transpose()[memory], memory_eff, real_mode, memory, consistent, curious, unstable)
+                    matched_category = []
+                    prepare_detail(detail_options, group_number, mode, memory, details, matched_category)
+
+                # Let's pad if its a thread or forked effi in addition of the block size
+                if matched_category:
+                    matched_category[0] += " " + mode_text
+
                 print_detail(detail_options, details, memory_eff, matched_category)
                 print_summary(mode + " " + mode_text, consistent, "consistent", "%", memory_eff)
                 print_summary(mode + " " + mode_text, curious, "curious", "%", memory_eff)

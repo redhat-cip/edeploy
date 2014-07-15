@@ -43,8 +43,9 @@ def print_help():
     print '                                        cpu, disk, firmware, memory, network, system '
     print
     print 'Examples:'
-    print "cardiff.py -p 'sample/*.hw'  -l DETAIL -g '1' -c 'loops_per_sec' -i 'logical_1.*'"
-    print "cardiff.py -p 'sample/*.hw'  -l DETAIL -g '1' -c 'standalone_rand.*_4k_IOps' -i 'sd.*'"
+    print "cardiff.py -p 'sample/*.hw' -l DETAIL -g '1' -c 'loops_per_sec' -i 'logical_1.*'"
+    print "cardiff.py -p 'sample/*.hw' -l DETAIL -g '1' -c 'standalone_rand.*_4k_IOps' -i 'sd.*'"
+    print "cardiff.py -p 'sample/*.hw' -l DETAIL -g '0' -c '1G' -i '.*'"
     print "cardiff.py -p '*hw' -I disk,cpu"
 
 

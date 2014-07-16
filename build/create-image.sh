@@ -152,7 +152,7 @@ check_binary chroot
 check_binary kpartx
 check_binary qemu-img
 check_binary losetup
-check_binary mkfs.ext3
+check_binary mkfs.ext4
 check_binary rsync
 check_binary gunzip
 check_binary tail
@@ -192,7 +192,7 @@ parted -s "$DISK" mklabel msdos
 parted -s "$DISK" mkpart primary ext2 32k '100%'
 parted "$DISK" set 1 boot on
 
-# Format the partition as ext3
+# Format the partition as ext4
 
 PART=/dev/mapper/$(kpartx -av $DISK|cut -f3 -d' ')
 TRY=5
@@ -201,7 +201,7 @@ while [ $TRY -gt 0 -a ! -b $PART ]; do
     TRY=$(($TRY - 1))
 done
 
-mkfs.ext3 "$PART"
+mkfs.ext4 "$PART"
 MDIR=$(mktemp -d)
 DEV=$(losetup --show --find "$PART")
 mount "$DEV" "$MDIR"

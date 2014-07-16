@@ -181,6 +181,11 @@ attach_pool_rh_cdn() {
     check_usage $# 2 "attach_pool_rh_cdn <dir> <pool-id>"
 
     do_chroot $target subscription-manager attach --pool $pool
+    if [ "$?" != "0" ]; then
+        echo "Failed at attaching to the pool."
+        echo "You have to select a valid pool from this list:"
+        do_chroot $target subscription-manager list --available
+    fi
 }
 
 add_rh_cdn_repo() {

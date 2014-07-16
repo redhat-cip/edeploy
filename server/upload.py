@@ -389,6 +389,12 @@ def main():
 
         section = form.getvalue('section', 'SERVER')
 
+        cfg_dir = os.path.normpath(config_get(
+            section, 'CONFIGDIR',
+            os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                         '..',
+                         'config'))) + '/'
+
         # If the filename ends with a .log, we need to process it as a log file
         if ('file' in form) and (form['file'].filename.endswith('.log.gz')):
             logitem = form['file']
@@ -419,12 +425,6 @@ def main():
 
         if form.getvalue('failure'):
             failure_role = form.getvalue('failure')
-
-        cfg_dir = os.path.normpath(config_get(
-            section, 'CONFIGDIR',
-            os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                         '..',
-                         'config'))) + '/'
 
         hw_dir = os.path.normpath(config_get(
             section, 'HWDIR', cfg_dir)) + '/'

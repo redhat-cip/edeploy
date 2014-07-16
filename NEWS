@@ -1,0 +1,28 @@
+-*- outline -*-
+
+* Changes in eDeploy 1.5.0
+
+*** Changes in eDeploy Build
+
+- completed support for RHEL7 and CentOS7.
+
+- expose the CODENAME_MAJOR and CODENAME_MINOR variables to reflect
+  the major and minor version of a Linux distribution. For example,
+  for CentOS 7.0.1406, CODENAME_MAJOR will be 7 and CODENAME_MINOR
+  will be 0.
+
+- all the git sha1 are stored in /usr/share/edeploy/<role>.rev to
+  allow to trace back code revisions.
+
+*** Changes in eDeploy Server
+
+- implement multiple deployments on the same server described by
+  multiple sections in /etc/edeploy.conf. The section name is passed
+  as SECTION=<section> in the linux kernel parameters on PXE boots.
+
+- improved logging in the CGI script to allow to follow what is
+  happening by remote server: IP address, time of action, PID of the
+  script to follow parallel installations, more meaningful messages.
+
+*** Changes in eDeploy Automatic Health Check
+

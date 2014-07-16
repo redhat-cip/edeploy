@@ -26,3 +26,16 @@
 
 *** Changes in eDeploy Automatic Health Check
 
+- Adding sub directory reporting for distributed mode (dahc)
+
+- Fixing cpu identification on some prototypes
+
+- Adding sample heat file to spawn 80 benchmark VMs
+
+- Fixing consistency in cpu & memory reporting
+
+- Adding new CPU in tables
+
+- Ignoring IDs on disk to avoid useless sub groups
+
+- Counting remaining hosts to connect (dahc)

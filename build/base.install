@@ -87,6 +87,13 @@ init_redhat_chroot() {
                 mv -f "$target"/root/.rpmdb/*  "$target"/root/.rpmdb/.??* "$target"/var/lib/rpm/
                 rmdir "$target"/root/.rpmdb
             fi
+
+            # In some weird cases, the rpmdb is empty. Let's try to populate it again
+            nb_packages=$(do_chroot $target sh -c "rpm -qa | wc -l")
+            if [ "$nb_packages" = "0" ]; then
+                install_packages "$target" basesystem yum
+                return
+            fi
             ;;
     esac
 

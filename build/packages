@@ -149,9 +149,16 @@ install_packages() {
             # really installed.
             PKG_MISSING=
             for pkg in $packages; do
-                do_chroot $dir rpm -q $pkg &>/dev/null || PKG_MISSING="$PKG_MISSING $pkg"
+                # Some packages are passed with a full URL (ie. hpacucli)
+                # We need to retrieve the package name to be able to pass
+                # it through rpm -q
+                package_name=$(basename $pkg)
+                package_stripname="${package_name%.*}"
+                do_chroot $dir rpm -q $package_stripname &>/dev/null || PKG_MISSING="$PKG_MISSING $package_stripname"
             done
-            [[ -n "${PKG_MISSING}" ]] && fatal_error "The following packages are missing: ${PKG_MISSING}"
+            if [ -n "${PKG_MISSING}" ];then
+              fatal_error "The following packages are missing: ${PKG_MISSING}"
+            fi
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in install_packages()"

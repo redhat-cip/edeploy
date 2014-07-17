@@ -345,6 +345,13 @@ def detect_system(hw_lst, output=None):
         find_element(xml, "./node/product", 'name')
         find_element(xml, "./node/vendor", 'vendor')
         find_element(xml, "./node/version", 'version')
+        uuid_cmd = Popen("dmidecode -t 1 | grep UUID | "
+                               "awk '{print $2}'",
+                               shell=True,
+                               stdout=PIPE)
+        uuid = uuid_cmd.stdout.read().rstrip()
+        if uuid:
+            hw_lst.append(('system', 'product', 'uuid', uuid))
 
         for elt in xml.findall(".//node[@id='firmware']"):
             name = elt.find('physid')

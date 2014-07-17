@@ -75,7 +75,7 @@ EOF
         chmod +x ${dir}/sbin/sysctl_perf_tuning
     ;;
     "rpm")
-        PACKAGES="ibutils infiniband-diags ibacm libibcommon libibmad libibumad libibverbs libmlx4 libmthca rdma srptools openib"
+        PACKAGES="ibutils infiniband-diags ibacm libibcommon libibmad libibumad libibverbs libmlx4 libmthca rdma srptools"
     ;;
     *)
         fatal_error "$package_type is not supported in Infiniband configuration"

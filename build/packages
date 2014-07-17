@@ -157,7 +157,7 @@ install_packages() {
                 do_chroot $dir rpm -q $package_stripname &>/dev/null || PKG_MISSING="$PKG_MISSING $package_stripname"
             done
             if [ -n "${PKG_MISSING}" ];then
-              fatal_error "The following packages are missing: ${PKG_MISSING}"
+                fatal_error "The following packages are missing: ${PKG_MISSING}"
             fi
         ;;
         *)

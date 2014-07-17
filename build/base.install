@@ -170,7 +170,7 @@ install_base_packages() {
     cp -f /etc/resolv.conf "$target/etc/"
     local packages=""
     local cross_distro_packages="acpid bash curl dmidecode kbd lvm2 openssh-server parted pciutils rsync rsyslog sudo wget ntpdate logrotate ethtool hdparm iptables tcpdump"
-    local deb_packages="grub-pc ifenslave ifupdown isc-dhcp-client kexec-tools locales lsb-release lshw netbase netcat-openbsdnet-tools vim cron"
+    local deb_packages="grub-pc ifenslave ifupdown isc-dhcp-client kexec-tools locales lsb-release lshw man netbase netcat-openbsd net-tools vim cron"
     local repository=$(add_main_repository $dist)
     add_megacli_repository $dist $target
     case $dist in

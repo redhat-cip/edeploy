@@ -149,7 +149,7 @@ install_packages() {
             # really installed.
             PKG_MISSING=
             for pkg in $packages; do
-                rpm -q $pkg &>/dev/null || PKG_MISSING="$PKG_MISSING $pkg"
+                do_chroot $dir rpm -q $pkg &>/dev/null || PKG_MISSING="$PKG_MISSING $pkg"
             done
             [[ -n "${PKG_MISSING}" ]] && fatal_error "The following packages are missing: ${PKG_MISSING}"
         ;;

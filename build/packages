@@ -144,6 +144,14 @@ install_packages() {
         ;;
         yum)
             do_chroot $chroot yum $INSTALL_OPTIONS install -y $packages
+            # YUM does not fail when a package in the list is not available.
+            # That means we have to detect that all packages of our list are
+            # really installed.
+            PKG_MISSING=
+            for pkg in $packages; do
+                rpm -q $pkg &>/dev/null || PKG_MISSING="$PKG_MISSING $pkg"
+            done
+            [[ -n "${PKG_MISSING}" ]] && fatal_error "The following packages are missing: ${PKG_MISSING}"
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in install_packages()"

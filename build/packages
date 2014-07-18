@@ -14,7 +14,7 @@ array_diff() {
 save_package_list() {
     case $(package_type) in
         "deb")
-            do_chroot ${dir} dpkg -l | grep '^ii' | awk '{print $2 "\t" $3}' > ${INST}/${ROLE}.packages
+            do_chroot ${dir} dpkg -l | grep '^ii' | awk '{print $2 $3}' > ${INST}/${ROLE}.packages
             ;;
         "rpm")
             do_chroot ${dir} rpm -qa --queryformat '%{NAME} %{VERSION}-%{RELEASE}\n' > ${INST}/${ROLE}.packages

@@ -64,12 +64,20 @@ deleted_pkg() {
 }
 
 version_pkg() {
+  printf '%-25s %25s %25s\n' "Package name" "Previous version" "Newer version"
+  printf '%-25s %-25s %-25s\n' "-------------------------" "-------------------------" "-------------------------"
   for pkg in $new_package_names; do
       old_version=$(grep $pkg $OLD_LIST | awk '{print $2}')
       new_version=$(grep $pkg $NEW_LIST | awk '{print $2}')
       if [ -n $old_version ] && [ "$old_version" != "$new_version" ]; then
-          echo "old: $pkg $old_version"
-          echo "new: $pkg $new_version"
+
+          # If the package was not existing in previous relase
+          # Let's add a N/A as the previous version, and show the new one in new_version
+          if [ -z "$old_version" ]; then
+              old_version="N/A"
+          fi
+
+          printf '%-25s %25s %25s\n' "$pkg" "$old_version" "$new_version"
       fi
   done
 }

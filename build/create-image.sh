@@ -259,7 +259,12 @@ UUID=$(blkid -s UUID -o value "$PART")
 export GRUB_DEVICE_UUID=$UUID
 echo $GRUB_DEVICE_UUID
 
-if [ -x ${MDIR}/usr/sbin/grub-mkconfig ]; then
+if [ -x ${MDIR}/usr/sbin/grub-mkconfig -o -x ${MDIR}/usr/sbin/grub2-mkconfig ]; then
+    if [ -x ${MDIR}/usr/sbin/grub2-mkconfig ]; then
+        V=2
+    else
+        V=
+    fi
     # Install grub2
     cat > "$MDIR"/boot/grub/device.map <<EOF
 (hd0) $DISK
@@ -267,19 +272,19 @@ if [ -x ${MDIR}/usr/sbin/grub-mkconfig ]; then
 EOF
 
     # Display console on serial line
-    sed -i -E 's/GRUB_CMDLINE_LINUX_DEFAULT="?([^"]*)"?/GRUB_CMDLINE_LINUX_DEFAULT="\1 console=ttyS0"/' $MDIR/etc/default/grub
-
-    do_chroot "$MDIR" grub-install --modules="ext2 part_msdos" --no-floppy "$DISK"
-
-    if [ -r "$MDIR"/boot/grub/grub.cfg ]; then
-        do_chroot "$MDIR" update-grub || :
+    if [ -r $MDIR/etc/default/grub ]; then
+        sed -i -E 's/GRUB_CMDLINE_LINUX_DEFAULT="?([^"]*)"?/GRUB_CMDLINE_LINUX_DEFAULT="\1 console=ttyS0"/' $MDIR/etc/default/grub
     else
-        do_chroot "$MDIR" grub-mkconfig -o /boot/grub/grub.cfg || :
+        echo "GRUB_CMDLINE_LINUX_DEFAULT=\"console=ttyS0\"" > $MDIR/etc/default/grub
     fi
 
+    do_chroot "$MDIR" grub$V-install --modules="ext2 part_msdos" --no-floppy "$DISK"
+
+    do_chroot "$MDIR" grub$V-mkconfig -o /boot/grub$V/grub.cfg || :
+
     # Fix generated grub.cfg
-    sed -i -e 's/\t*loopback.*//' -e 's/\t*set root=.*//' -e "s/\(--set=root \|UUID=\)[^ ]*/\1$UUID/p" $MDIR/boot/grub/grub.cfg
-    sed -i -e 's/msdos5/msdos1/g' $MDIR/boot/grub/grub.cfg
+    sed -i -e 's/\t*loopback.*//' -e 's/\t*set root=.*//' -e "s/\(--set=root \|UUID=\)[^ ]*/\1$UUID/p" $MDIR/boot/grub$V/grub.cfg
+    sed -i -e 's/msdos5/msdos1/g' $MDIR/boot/grub$V/grub.cfg
 else
     # Grub1 doesn't have /usr/sbin/grub-mkconfig, failback on extlinux for booting
     if [ ! -x extlinux/extlinux ] || [ ! -f extlinux/menu.c32 ] || [ ! -f extlinux/libutil.c32 ]; then

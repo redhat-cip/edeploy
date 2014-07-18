@@ -35,49 +35,35 @@ fi
 
 OLD_LIST=$1
 NEW_LIST=$2
-PKG_LIST=
 
 IFS=$'\n'
-for list in $OLD_LIST $NEW_LIST;do
-      for pkg in `cat $list`; do
-          PKG_NAME=$(echo $pkg | awk '{print $1}')
-          PKG_VERSION=$(echo $pkg | awk '{print $2}')
-          PKG_LIST="${PKG_LIST}\n${list} ${PKG_NAME} ${PKG_VERSION}"
-      done
-done
-
-echo -e ${PKG_LIST} > all_pkg
-old_package_names=$(grep $OLD_LIST all_pkg | awk '{print $2}')
-new_package_names=$(grep $NEW_LIST all_pkg | awk '{print $2}')
-
 
 new_pkg() {
-  for pkg in $new_package_names; do
-      echo $old_package_names | grep -qw "\<$pkg\>" || echo "$pkg"
+  for pkg in `cat $NEW_LIST | awk '{print $1}'`; do
+      grep -qw "\<$pkg\>" $OLD_LIST || echo "$pkg" | awk '{print $1}'
   done
 }
 
 deleted_pkg() {
-  for pkg in $old_package_names; do
-      echo $new_package_names | grep -qw "\<$pkg\>" || echo "$pkg"
+  for pkg in `cat $OLD_LIST | awk '{print $1}'`; do
+      grep -qw "\<$pkg\>" $NEW_LIST || echo "$pkg" | awk '{print $1}'
   done
 }
 
 version_pkg() {
-  printf '%-25s %25s %25s\n' "Package name" "Previous version" "Newer version"
-  printf '%-25s %-25s %-25s\n' "-------------------------" "-------------------------" "-------------------------"
-  for pkg in $new_package_names; do
-      old_version=$(grep $pkg $OLD_LIST | awk '{print $2}')
-      new_version=$(grep $pkg $NEW_LIST | awk '{print $2}')
-      if [ -n $old_version ] && [ "$old_version" != "$new_version" ]; then
+  printf '%-35s %25s %25s\n' "Package name" "Previous version" "Newer version"
+  printf '%-35s %-25s %-25s\n' "-------------------------" "-------------------------" "-------------------------"
+  for pkg in `cat $NEW_LIST | awk '{print $1}'`; do
+      old_version=$(grep -w "^\<$pkg\> .*" $OLD_LIST 2>&1 | awk '{print $2}')
+      new_version=$(grep -w "^\<$pkg\> .*" $NEW_LIST 2>&1 | awk '{print $2}')
+      # If the package was not existing in previous relase
+      # Let's add a N/A as the previous version, and show the new one in new_version
+      if [ -z "$old_version" ]; then
+         old_version="N/A"
+      fi
 
-          # If the package was not existing in previous relase
-          # Let's add a N/A as the previous version, and show the new one in new_version
-          if [ -z "$old_version" ]; then
-              old_version="N/A"
-          fi
-
-          printf '%-25s %25s %25s\n' "$pkg" "$old_version" "$new_version"
+      if [ "$old_version" != "$new_version" ]; then
+          printf '%-35s %25s %25s\n' "$pkg" "$old_version" "$new_version"
       fi
   done
 }
@@ -93,4 +79,3 @@ version_pkg
 
 # cleanup
 unset IFS
-rm all_pkg

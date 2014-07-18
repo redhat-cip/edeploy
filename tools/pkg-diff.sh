@@ -50,19 +50,16 @@ echo -e ${PKG_LIST} > all_pkg
 old_package_names=$(grep $OLD_LIST all_pkg | awk '{print $2}')
 new_package_names=$(grep $NEW_LIST all_pkg | awk '{print $2}')
 
+
 new_pkg() {
   for pkg in $new_package_names; do
-      if ! echo $old_package_names | grep -w "\<$pkg\>"; then
-          echo "$pkg"
-      fi
+      echo $old_package_names | grep -qw "\<$pkg\>" || echo "$pkg"
   done
 }
 
 deleted_pkg() {
   for pkg in $old_package_names; do
-      if ! echo $new_package_names | grep -w "\<$pkg\>"; then
-          echo "$pkg"
-      fi
+      echo $new_package_names | grep -qw "\<$pkg\>" || echo "$pkg"
   done
 }
 

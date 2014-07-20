@@ -264,12 +264,12 @@ if [ -x ${MDIR}/usr/sbin/grub-mkconfig -o -x ${MDIR}/usr/sbin/grub2-mkconfig ]; 
         V=2
     else
         V=
-    fi
-    # Install grub2
-    cat > "$MDIR"/boot/grub/device.map <<EOF
+        # Install grub1
+        cat > "$MDIR"/boot/grub/device.map <<EOF
 (hd0) $DISK
 (hd0,1) $PART
 EOF
+    fi
 
     # Display console on serial line
     if [ -r $MDIR/etc/default/grub ]; then

@@ -49,8 +49,9 @@ for role in $ROLES; do
 	    mkdir -p "$ARCH"/$VERS/
 	    sudo rsync -a "$DIR"/install/$VERS/*.* "$ARCH"/$VERS/
 	    git rev-parse HEAD > "$ARCH"/$VERS/$role.rev
-            OLD=$(git describe --abbrev=0 --tags)
-            /srv/edeploy/tools/pkg-diff.sh $ARCH/$DVER-$OLD/$role.packages $ARCH/$VERS/$role.packages > $SRC/$DVER-$role-diff
+            #TODO: do not work on Jenkins, because of local tags
+            # OLD=$(git describe --abbrev=0 --tags)
+            # /srv/edeploy/tools/pkg-diff.sh $ARCH/$DVER-$OLD/$role.packages $ARCH/$VERS/$role.packages > $SRC/$DVER-$role-diff
 	fi
     else
 	BROKEN="$BROKEN $role"

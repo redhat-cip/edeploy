@@ -50,7 +50,7 @@ for role in $ROLES; do
 	    sudo rsync -a "$DIR"/install/$VERS/*.* "$ARCH"/$VERS/
 	    git rev-parse HEAD > "$ARCH"/$VERS/$role.rev
             OLD=$(git describe --abbrev=0 --tags)
-            $DIR/tools/pkg-diff.sh $ARCH/$DVER-$OLD/$role.packages $ARCH/$VERS/$role.packages > $SRC/$DVER-$role-diff
+            /srv/edeploy/tools/pkg-diff.sh $ARCH/$DVER-$OLD/$role.packages $ARCH/$VERS/$role.packages > $SRC/$DVER-$role-diff
 	fi
     else
 	BROKEN="$BROKEN $role"

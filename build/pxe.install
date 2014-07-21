@@ -18,7 +18,7 @@
 
 src="$1"
 DST="$2"
-dir="$2.temp"
+dir="$2_tmp"
 IMG="$3"
 vers="$4"
 
@@ -169,6 +169,8 @@ fi
 
 echo "Creating initrd and compressing with $COMPRESS"
 cd ${DST}; find . | cpio --quiet -R 0:0 -o -H newc | compress -9v > ../${IMG}
+cd ..
+md5sum ${IMG} > ${IMG}.md5
 
 echo "### Build complete ###"
 echo "### initrd is now available at ${DST}/../${IMG}"

@@ -50,6 +50,7 @@ for role in $ROLES; do
 	    sudo rsync -a "$DIR"/install/$VERS/*.* "$ARCH"/$VERS/
             if [ -d "$DIR"/install/$VERS/base/boot ]; then
                 sudo rsync -a "$DIR"/install/$VERS/base/boot/vmlinuz* "$ARCH"/$VERS/vmlinuz
+                (cd "$ARCH"/$VERS; md5sum vmlinuz > vmlinuz.md5)
             fi
 	    git rev-parse HEAD > "$ARCH"/$VERS/$role.rev
             #TODO: do not work on Jenkins, because of local tags

@@ -48,6 +48,9 @@ for role in $ROLES; do
 	    VERS=$(sudo make TOP="$DIR" "$@" version)
 	    mkdir -p "$ARCH"/$VERS/
 	    sudo rsync -a "$DIR"/install/$VERS/*.* "$ARCH"/$VERS/
+            if [ -d "$DIR"/install/$VERS/base/boot ]; then
+                sudo rsync -a "$DIR"/install/$VERS/base/boot/vmlinuz* "$ARCH"/$VERS/vmlinuz
+            fi
 	    git rev-parse HEAD > "$ARCH"/$VERS/$role.rev
             #TODO: do not work on Jenkins, because of local tags
             # OLD=$(git describe --abbrev=0 --tags)

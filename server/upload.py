@@ -404,7 +404,8 @@ def main():
                 log_dir = os.path.normpath(config_get(section,
                                                       'LOGDIR',
                                                       cfg_dir)) + '/'
-                filename = os.path.join(log_dir, logitem.filename)
+                filename = os.path.join(log_dir,
+                                        os.path.basename(logitem.filename))
                 output_file = open(filename, 'w')
                 output_file.write(logfile.read(-1))
                 output_file.close()

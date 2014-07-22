@@ -287,7 +287,7 @@ else
         mkdir -p extlinux
         # Installing extlinux & mbr from source
         SYSLINUX_VER=5.10
-        wget --no-verbose http://ftp.kernel.org/pub/linux/utils/boot/syslinux/${TESTING_SYSLINUX}/syslinux-${SYSLINUX_VER}.tar.xz
+        wget --no-verbose https://kernel.org/pub/linux/utils/boot/syslinux/${TESTING_SYSLINUX}/syslinux-${SYSLINUX_VER}.tar.xz
         tar -xf syslinux-${SYSLINUX_VER}.tar.xz
         cp syslinux-${SYSLINUX_VER}/extlinux/extlinux extlinux/
         cp syslinux-${SYSLINUX_VER}/mbr/mbr.bin extlinux/

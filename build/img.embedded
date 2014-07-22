@@ -6,7 +6,7 @@ get_extlinux() {
         rm -rf $DEST
         mkdir -p $DEST
         # Installing extlinux & mbr from source
-        wget --no-verbose http://ftp.kernel.org/pub/linux/utils/boot/syslinux/${TESTING_SYSLINUX}/syslinux-${SYSLINUX_VER}.tar.xz
+        wget --no-verbose https://kernel.org/pub/linux/utils/boot/syslinux/${TESTING_SYSLINUX}/syslinux-${SYSLINUX_VER}.tar.xz
         tar -xf syslinux-${SYSLINUX_VER}.tar.xz
         cp syslinux-${SYSLINUX_VER}/bios/extlinux/extlinux $DEST
         cp syslinux-${SYSLINUX_VER}/bios/mbr/mbr.bin $DEST

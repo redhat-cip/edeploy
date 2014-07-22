@@ -313,6 +313,15 @@ def detect_infiniband(hw_lst):
         return False
 
 
+def get_uuid():
+    'Get uuid from dmidecode'
+    uuid_cmd = Popen("dmidecode -t 1 | grep UUID | "
+                     "awk '{print $2}'",
+                     shell=True,
+                     stdout=PIPE)
+    return uuid_cmd.stdout.read().rstrip()
+
+
 def detect_system(hw_lst, output=None):
     'Detect system characteristics from the output of lshw.'
 
@@ -345,11 +354,7 @@ def detect_system(hw_lst, output=None):
         find_element(xml, "./node/product", 'name')
         find_element(xml, "./node/vendor", 'vendor')
         find_element(xml, "./node/version", 'version')
-        uuid_cmd = Popen("dmidecode -t 1 | grep UUID | "
-                               "awk '{print $2}'",
-                               shell=True,
-                               stdout=PIPE)
-        uuid = uuid_cmd.stdout.read().rstrip()
+        uuid = get_uuid()
         if uuid:
             hw_lst.append(('system', 'product', 'uuid', uuid))
 

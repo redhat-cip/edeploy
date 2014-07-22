@@ -430,7 +430,7 @@ def main():
             section, 'HWDIR', cfg_dir)) + '/'
 
     try:
-        hw_items = eval(hw_file.read(-1))
+        hw_items = eval(hw_file.read(-1), {"__builtins__": None}, {})
     except Exception, excpt:
         fatal_error("'Invalid hardware file: %s'" % str(excpt))
 

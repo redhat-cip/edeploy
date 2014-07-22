@@ -33,7 +33,6 @@ $ curl -i -F name=test -F file=@/tmp/hw.lst http://localhost/cgi-bin/upload.py
 import ConfigParser
 import cgi
 import cgitb
-import commands
 import os
 import pprint
 import re
@@ -144,7 +143,7 @@ def main():
         hw_file = fileitem.file
 
     try:
-        hw_items = eval(hw_file.read(-1))
+        hw_items = eval(hw_file.read(-1), {"__builtins__": None}, {})
     except Exception, excpt:
         fatal_error("'Invalid hardware file: %s'" % str(excpt))
 

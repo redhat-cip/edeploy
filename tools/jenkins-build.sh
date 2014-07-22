@@ -22,17 +22,7 @@ if [ -f /var/tmp/froze-builds ]; then
 fi
 
 if [ -z "$ROLES" ]; then
-    ROLES="base pxe health-check"
-    # Build the deploy role under Debian and Ubuntu only
-    if [ -r /etc/debian_version ]; then
-	ROLES="$ROLES deploy"
-	if ! type -p ansible; then
-	    if ! type -p pip; then
-		sudo apt-get install python-pip
-	    fi
-	    sudo pip install ansible
-	fi
-    fi
+    ROLES="base pxe health-check deploy"
 fi
 
 set -x

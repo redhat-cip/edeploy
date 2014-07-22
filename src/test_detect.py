@@ -58,6 +58,7 @@ class TestDetect(unittest.TestCase):
         self.output_lines = detect.output_lines
         self.saved_ntoa = socket.inet_ntoa
         self.saved_ioctl = fcntl.ioctl
+        self.saved_get_uuid = detect.get_uuid
 
         def fake(x):
             return (0, nbproc)
@@ -67,6 +68,10 @@ class TestDetect(unittest.TestCase):
 
         def fake_ioctl(arg, arg2, arg3):
             return []
+
+        def fake_get_uuid():
+            return '83462C81-52BA-11CB-870F'
+
         detect.cmd = fake
         keeper = Keeper('detect.output_lines',
                         [('vmx', ) for idx in range(nbphys)] +
@@ -78,12 +83,14 @@ class TestDetect(unittest.TestCase):
         detect.output_lines = mock.MagicMock(side_effect=keeper.fake)
         socket.inet_ntoa = fake_ntoa
         fcntl.ioctl = fake_ioctl
+        detect.get_uuid = fake_get_uuid
 
     def _restore_functions(self):
         detect.cmd = self.save
         detect.output_lines = self.output_lines
         socket.inet_ntoa = self.saved_ntoa
         fcntl.ioctl = self.saved_ioctl
+        detect.get_uuid = self.saved_get_uuid
 
     def test_detect_system_3(self):
         l = []
@@ -96,7 +103,7 @@ class TestDetect(unittest.TestCase):
              ('system', 'product', 'name', 'S2915'),
              ('system', 'product', 'vendor', 'Tyan Computer Corporation'),
              ('system', 'product', 'version', 'REFERENCE'),
-             ('system', 'product', 'uuid', '83462C81-52BA-11CB-870F-D479C358B3BE'),
+             ('system', 'product', 'uuid', '83462C81-52BA-11CB-870F'),
              ('firmware', 'bios', 'version', 'v3.00.2915 (10/10/2008)'),
              ('firmware', 'bios', 'vendor', 'Phoenix Technologies Ltd.'),
              ('memory', 'total', 'size', '4294967296'),
@@ -158,7 +165,7 @@ class TestDetect(unittest.TestCase):
              ('system', 'product', 'name', '2347GF8 (LENOVO_MT_2347)'),
              ('system', 'product', 'vendor', 'LENOVO'),
              ('system', 'product', 'version', 'ThinkPad T430'),
-             ('system', 'product', 'uuid', '83462C81-52BA-11CB-870F-D479C358B3BE'),
+             ('system', 'product', 'uuid', '83462C81-52BA-11CB-870F'),
              ('firmware', 'bios', 'version', 'G1ET73WW (2.09 )'),
              ('firmware', 'bios', 'date', '10/19/2012'),
              ('firmware', 'bios', 'vendor', 'LENOVO'),
@@ -240,7 +247,7 @@ class TestDetect(unittest.TestCase):
              ('system', 'product', 'name', 'MacBookAir5,2 (System SKU#)'),
              ('system', 'product', 'vendor', 'Apple Inc.'),
              ('system', 'product', 'version', '1.0'),
-             ('system', 'product', 'uuid', '83462C81-52BA-11CB-870F-D479C358B3BE'),
+             ('system', 'product', 'uuid', '83462C81-52BA-11CB-870F'),
              ('firmware', 'bios', 'version', 'MBA51.88Z.00EF.B01.1207271122'),
              ('firmware', 'bios', 'date', '07/27/2012'),
              ('firmware', 'bios', 'vendor', 'Apple Inc.'),

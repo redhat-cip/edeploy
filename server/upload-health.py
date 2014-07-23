@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2013 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2013-2014 eNovance SAS <licensing@enovance.com>
 #
-# Author: Frederic Lepied <frederic.lepied@enovance.com>
+# Author: Erwan Velu <erwan.velu@enovance.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -151,7 +151,8 @@ def main():
     dirname = time.strftime("%Y_%m_%d-%Hh%M", time.localtime())
 
     if form.getvalue('session'):
-        dest_dir = cfg_dir + form.getvalue('session') + '/' + dirname
+        dest_dir = cfg_dir + os.path.basename(form.getvalue('session')) + \
+                '/' + dirname
     else:
         dest_dir = cfg_dir + '/' + dirname
 

@@ -44,8 +44,12 @@
     ini_file: dest=/etc/edeploy.conf section=SERVER option=LOGDIR value=/var/lib/edeploy/logs mode=0644
   - name: set health dir in CGI config
     ini_file: dest=/etc/edeploy.conf section=SERVER option=HEALTHDIR value=/var/lib/edeploy/health mode=0644
-  - name: set lock file in CGI config
+  - name: set lock file in CGI config (deb)
     ini_file: dest=/etc/edeploy.conf section=SERVER option=LOCKFILE value=/var/lock/apache2/edeploy.lock mode=0644
+    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  - name: set lock file in CGI config (rhel)
+    ini_file: dest=/etc/edeploy.conf section=SERVER option=LOCKFILE value=/var/run/httpd/edeploy.lock mode=0644
+    when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
   - name: set pxemngr URL in CGI config
     ini_file: dest=/etc/edeploy.conf section=SERVER option=PXEMNGRURL value=http://{{ ansible_default_ipv4["address"] }}/ mode=0644
     when: pxemngr

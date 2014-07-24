@@ -1,0 +1,9 @@
+DEFAULT health
+
+prompt 0
+timeout 0
+
+LABEL health
+KERNEL vmlinuz
+APPEND initrd=health.pxe SERV={{ ansible_default_ipv4["address"] }} IP=all:dhcp SESSION=install NONETWORKTEST=1 ONSUCCESS=halt ONFAILURE=console
+#SMOKE=60

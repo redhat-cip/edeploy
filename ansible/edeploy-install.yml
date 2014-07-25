@@ -111,6 +111,14 @@
     template: src=edeploy.prof dest=/var/lib/tftpboot/pxelinux.cfg/profiles/edeploy.prof mode=0644
     notify: sync bootnames
     when: pxemngr
+  - name: enable edeploy site in apache (deb)
+    copy: src=edeploy-apache.conf dest=/etc/apache2/sites-available/edeploy
+    notify: enable edeploy site (deb)
+    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  - name: enable edeploy site in apache (rhel)
+    copy: src=edeploy-httpd.conf dest=/etc/httpd/conf.d/edeploy.conf
+    notify: enable edeploy site (rhel)
+    when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
   - name: install eDeploy AHC profile in pxemngr
     template: src=health-check.prof dest=/var/lib/tftpboot/pxelinux.cfg/profiles/health-check.prof mode=0644
     notify: sync bootnames
@@ -123,3 +131,7 @@
       command: pxemngr nextboot default edeploy
     - name: start rsync daemon
       service: name=rsync state=started
+    - name: enable edeploy site (deb)
+      shell: a2ensite edeploy; service apache2 restart
+    - name: enable edeploy site (rhel)
+      shell: systemctl restart httpd.service

@@ -176,7 +176,7 @@ install_base_packages() {
     # So let's copy the current one to insure the setup is good
     cp -f /etc/resolv.conf "$target/etc/"
     local packages=""
-    local cross_distro_packages="acpid bash curl dmidecode kbd lvm2 openssh-server parted pciutils rsync rsyslog sudo wget ntpdate logrotate ethtool hdparm iptables tcpdump"
+    local cross_distro_packages="acpid bash curl dmidecode kbd lvm2 openssh-server parted pciutils rsync rsyslog sudo wget ntpdate logrotate ethtool hdparm iptables tcpdump ipmitool"
     local deb_packages="grub-pc ifenslave ifupdown isc-dhcp-client kexec-tools locales lsb-release lshw man netbase netcat-openbsd net-tools vim cron"
     local repository=$(add_main_repository $dist)
     add_megacli_repository $dist $target
@@ -188,7 +188,7 @@ install_base_packages() {
             echo "deb http://security.ubuntu.com/ubuntu $dist-security main universe multiverse" >> ${target}/etc/apt/sources.list
             ;;
         $supported_debian_dists)
-            packages="$cross_distro_packages acpi-support-base firmware-linux firmware-netxen firmware-qlogic firmware-realtek firmware-bnx2 firmware-bnx2x htop inetutils-ping ipmitool libui-dialog-perl linux-image-amd64 $deb_packages"
+            packages="$cross_distro_packages acpi-support-base firmware-linux firmware-netxen firmware-qlogic firmware-realtek firmware-bnx2 firmware-bnx2x htop inetutils-ping libui-dialog-perl linux-image-amd64 $deb_packages"
             echo "deb $repository $dist non-free" > ${target}/etc/apt/sources.list.d/nonfree.list
             echo "deb http://security.debian.org/ $dist/updates main" >  ${target}/etc/apt/sources.list.d/updates.list
             echo "deb $repository $dist-updates main" >> ${target}/etc/apt/sources.list.d/updates.list

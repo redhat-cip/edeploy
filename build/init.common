@@ -456,10 +456,10 @@ DHCP_NO_RACETIMING=1
 if [ -f /etc/dhcp/dhclient.conf ]; then
     sed -i "s/^\#timeout.*/timeout $DHCP_TIMEOUT/g" /etc/dhcp/dhclient.conf
 else
-    echo "timeout $DHCP_TIMEOUT" > /etc/dhcp/dhclient.conf
+    echo "timeout $DHCP_TIMEOUT;" > /etc/dhcp/dhclient.conf
 fi
 
-MAX_RUN=3
+MAX_RUN=6
 RUN=0
 while true; do
 
@@ -481,11 +481,14 @@ while true; do
             CARRIER_DEVICE_LIST="$CARRIER_DEVICE_LIST $iface"
             # Let's run all the dhclients in parallel
             config=$(get_network_configuration $iface)
+	    echo "$config for $iface"
             case "$config" in
                 "dhcp")
                     DHCP_IFACES_COUNT=$(($DHCP_IFACES_COUNT + 1))
                     ( log "Waiting for $iface to get a DHCP answer."
-                        dhclient $iface
+			if [ $RUN = 0 ]; then
+                            dhclient -d $iface >> /$iface.log 2>&1 &
+			fi
                         count=$DHCP_GRACE_TIME
                         while [ $count -gt 0 ] && ! ifconfig $iface|grep -q 'inet addr'; do
                             sleep 1
@@ -545,12 +548,12 @@ while true; do
         fi
 
         RUN=$(( $RUN + 1 ))
-        sleep 10
         if [ "$RUN" != "$MAX_RUN" ]; then
             log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
             log "!! NO DHCP FOUND ! Waiting 10 seconds before trying again. !!"
             log "!! ($RUN / $MAX_RUN)                                       !!"
             log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	    sleep 10
         else
             log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
             log "!! NO DHCP FOUND after $RUN tries. Rebooting in 10 seconds !!"

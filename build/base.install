@@ -291,6 +291,17 @@ install_hp_raid_cli_tool() {
             install_packages $target \
                 http://downloads.linux.hp.com/SDR/downloads/ServicePackforProLiant/2013.02.0/hp/swpackages/hpacucli-9.40-12.0.x86_64.rpm
         fi
+        do_chroot $dir rpm --import http://downloads.linux.hp.com/SDR/hpPublicKey1024.pub
+        do_chroot $dir rpm --import http://downloads.linux.hp.com/SDR/hpPublicKey2048.pub
+        cat > $dir/etc/yum.repos.d/spp.repo <<EOF
+[spp]
+name=Service Pack for ProLiant
+baseurl=http://downloads.linux.hp.com/repo/spp/rhel/$CODENAME_MAJOR.$CODENAME_MINOR/x86_64/current
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/GPG-KEY-ServicePackforProLiant
+EOF
+        install_packages $target hpssacli
     else
         fatal_error "package_type $(package_type) isn't suported in install_hp_raid_cli_tool()"
     fi

@@ -486,9 +486,10 @@ while true; do
                 "dhcp")
                     DHCP_IFACES_COUNT=$(($DHCP_IFACES_COUNT + 1))
                     ( log "Waiting for $iface to get a DHCP answer."
-			if [ $RUN = 0 ]; then
-                            dhclient -d $iface >> /$iface.log 2>&1 &
+			if [ -r /var/run/dhclient-$iface.pid ]; then
+			    kill $(cat /var/run/dhclient-$iface.pid)
 			fi
+                        dhclient -d -pf /var/run/dhclient-$iface.pid $iface >> /$iface.log 2>&1 &
                         count=$DHCP_GRACE_TIME
                         while [ $count -gt 0 ] && ! ifconfig $iface|grep -q 'inet addr'; do
                             sleep 1
@@ -556,9 +557,12 @@ while true; do
 	    sleep 10
         else
             log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-            log "!! NO DHCP FOUND after $RUN tries. Rebooting in 10 seconds !!"
+            log "!! NO DHCP FOUND after $RUN tries.                         !!"
+            log "!! last chance, let dhclient handle the discovery          !!"
             log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-            give_up "!! DEBUG mode is set, let's give up as no DHCP server found"
+	    killall dhclient
+	    dhclient
+	    break
         fi
     fi
 done

@@ -139,9 +139,19 @@ interact with it to configure or gather information.'''
     def launch(self):
         '''Launch an hpacucli from /usr/sbin. Must be called before
 any other method.'''
-        if os.path.exists('/usr/sbin/hpacucli'):
+        # With the hpsa kernel module, we need to load the sg kernel
+        # module before to have everything working. So we always load
+        # it.
+        os.system('modprobe sg')
+        path = None
+        for path2 in ('/usr/sbin/hpssacli', '/usr/sbin/hpacucli'):
+            if os.path.exists(path2):
+                path = path2
+        if path:
             try:
-                self.process = pexpect.spawn('/usr/sbin/hpacucli')
+                if self.debug:
+                    print 'Launching', path
+                self.process = pexpect.spawn(path)
                 self.process.expect(PROMPT_REGEXP)
             except (OSError, pexpect.EOF, pexpect.TIMEOUT):
                 return False
@@ -205,5 +215,29 @@ raid=<raid>" sub-command and return the created device name like
         last_created_id = lds[-1][1][0][0]
         info = self.ctrl_ld_show(selector, last_created_id)
         return info['Disk Name']
+
+
+def _main():
+    'CLI entry point to test the module'
+    import sys
+
+    disk_count = 0
+    cli = Cli(debug=False)
+    if not cli.launch():
+        return False
+    controllers = cli.ctrl_all_show()
+    if len(controllers) == 0:
+        sys.stderr.write("Info: No hpa controller found\n")
+        return False
+
+    for controller in controllers:
+        slot = 'slot=%d' % controller[0]
+        for _, disks in cli.ctrl_pd_all_show(slot):
+            for disk in disks:
+                disk_count += 1
+                print(disk)
+
+if __name__ == "__main__":
+    _main()
 
 # hpacucli.py ends here

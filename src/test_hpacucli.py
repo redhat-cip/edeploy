@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2013 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2013-2014 eNovance SAS <licensing@enovance.com>
 #
 # Author: Frederic Lepied <frederic.lepied@enovance.com>
 #
@@ -21,6 +21,7 @@ import mock
 
 import hpacucli
 
+
 class TestParsing(unittest.TestCase):
 
     def test_parse_ctrl_all_show(self):
@@ -29,11 +30,23 @@ class TestParsing(unittest.TestCase):
             hpacucli.parse_ctrl_all_show(CTRL_ALL_SHOW_OUTPUT),
             CTRL_ALL_SHOW_RESULT)
 
+    def test_parse_ctrl_all_show_hpssacli(self):
+        # => ctrl all show
+        return self.assertEqual(
+            hpacucli.parse_ctrl_all_show(CTRL_ALL_SHOW_OUTPUT_HPSSAPI),
+            CTRL_ALL_SHOW_RESULT_HPSSAPI)
+
     def test_parse_ctrl_pd_all_show(self):
         # => ctrl slot=2 pd all show
         return self.assertEqual(
             hpacucli.parse_ctrl_pd_all_show(CTRL_PD_ALL_SHOW_OUTPUT),
             CTRL_PD_ALL_SHOW_RESULT)
+
+    def test_parse_ctrl_pd_all_show_hpssacli(self):
+        # => ctrl slot=0 pd all show
+        return self.assertEqual(
+            hpacucli.parse_ctrl_pd_all_show(CTRL_PD_ALL_SHOW_OUTPUT_HPSSACLI),
+            CTRL_PD_ALL_SHOW_RESULT_HPSSACLI)
 
     def test_parse_ctrl_pd_all_show_unassigned(self):
         # => ctrl slot=2 pd all show
@@ -48,6 +61,16 @@ class TestParsing(unittest.TestCase):
                   ('2I:1:6', 'SATA', '1 TB', 'OK'),
                   ('2I:1:7', 'Solid State SATA', '100 GB', 'OK'),
                   ('2I:1:8', 'Solid State SATA', '100 GB', 'OK')])])
+
+    def test_parse_ctrl_pd_all_show_unassigned_hpssacli(self):
+        # => ctrl slot=0 pd all show
+        return self.assertEqual(
+            hpacucli.parse_ctrl_pd_all_show(CTRL_PD_ALL_SHOW_UNASSIGNED_OUTPUT_HPSSACLI),
+            [('unassigned',
+             [('1I:1:1', 'SATA', '2 TB', 'OK'),
+              ('1I:1:2', 'SATA', '2 TB', 'OK'),
+              ('1I:1:3', 'SATA', '2 TB', 'OK'),
+              ('1I:1:4', 'Solid State SATA', '100 GB', 'OK')])])
 
     def test_parse_ctrl_ld_all_show(self):
         # => ctrl slot=2 ld all show
@@ -78,6 +101,7 @@ Error: Syntax error at "force"
             hpacucli.parse_ctrl_ld_show(CTRL_LD_SHOW_OUTPUT2),
             CTRL_LD_SHOW_RESULT2
             )
+
 
 class TestController(unittest.TestCase):
     def setUp(self):
@@ -132,6 +156,13 @@ Smart Array P420 in Slot 2                (sn: PDKRH0ARH4F1R6)
 
 CTRL_ALL_SHOW_RESULT = [(2, 'Smart Array P420', 'PDKRH0ARH4F1R6')]
 
+CTRL_ALL_SHOW_OUTPUT_HPSSAPI = '''
+Smart Array P420i in Slot 0 (Embedded)    (sn: 5001438025E9D500)
+
+'''
+
+CTRL_ALL_SHOW_RESULT_HPSSAPI = [(0, 'Smart Array P420i', '5001438025E9D500')]
+
 CTRL_PD_ALL_SHOW_OUTPUT = '''
 Smart Array P420 in Slot 2
 
@@ -177,6 +208,34 @@ CTRL_PD_ALL_SHOW_RESULT = [
     ('array G', [('2I:1:6', 'SATA', '1 TB', 'OK')]),
     ]
 
+CTRL_PD_ALL_SHOW_OUTPUT_HPSSACLI = '''
+Smart Array P420i in Slot 0 (Embedded)
+
+   array A
+
+      physicaldrive 1I:1:4 (port 1I:box 1:bay 4, Solid State SATA, 100 GB, OK)
+
+   array B
+
+      physicaldrive 1I:1:1 (port 1I:box 1:bay 1, SATA, 2 TB, OK)
+
+   array C
+
+      physicaldrive 1I:1:2 (port 1I:box 1:bay 2, SATA, 2 TB, OK)
+
+   array D
+
+      physicaldrive 1I:1:3 (port 1I:box 1:bay 3, SATA, 2 TB, OK)
+
+'''
+
+CTRL_PD_ALL_SHOW_RESULT_HPSSACLI = [
+    ('array A', [('1I:1:4', 'Solid State SATA', '100 GB', 'OK')]),
+    ('array B', [('1I:1:1', 'SATA', '2 TB', 'OK')]),
+    ('array C', [('1I:1:2', 'SATA', '2 TB', 'OK')]),
+    ('array D', [('1I:1:3', 'SATA', '2 TB', 'OK')]),
+    ]
+
 CTRL_PD_ALL_SHOW_UNASSIGNED_OUTPUT = '''
 
 Smart Array P420 in Slot 2
@@ -191,6 +250,19 @@ Smart Array P420 in Slot 2
       physicaldrive 2I:1:6 (port 2I:box 1:bay 6, SATA, 1 TB, OK)
       physicaldrive 2I:1:7 (port 2I:box 1:bay 7, Solid State SATA, 100 GB, OK)
       physicaldrive 2I:1:8 (port 2I:box 1:bay 8, Solid State SATA, 100 GB, OK)
+
+'''
+
+CTRL_PD_ALL_SHOW_UNASSIGNED_OUTPUT_HPSSACLI = '''
+
+Smart Array P420i in Slot 0 (Embedded)
+
+   unassigned
+
+      physicaldrive 1I:1:1 (port 1I:box 1:bay 1, SATA, 2 TB, OK)
+      physicaldrive 1I:1:2 (port 1I:box 1:bay 2, SATA, 2 TB, OK)
+      physicaldrive 1I:1:3 (port 1I:box 1:bay 3, SATA, 2 TB, OK)
+      physicaldrive 1I:1:4 (port 1I:box 1:bay 4, Solid State SATA, 100 GB, OK)
 
 '''
 
@@ -267,6 +339,38 @@ Smart Array P420 in Slot 2
          Drive Authentication Status: OK
          Carrier Application Version: 11
          Carrier Bootloader Version: 6
+
+'''
+
+CTRL_PD_SHOW_OUTPUT_HPSSACLI = '''
+
+Smart Array P420i in Slot 0 (Embedded)
+
+   unassigned
+
+      physicaldrive 1I:1:1
+         Port: 1I
+         Box: 1
+         Bay: 1
+         Status: OK
+         Drive Type: Unassigned Drive
+         Interface Type: SATA
+         Size: 2 TB
+         Native Block Size: 512
+         Rotational Speed: 7200
+         Firmware Revision: MK7OHPG3
+         Serial Number: YFK70EZA            
+         Model: ATA     MB2000GBUPB     
+         SATA NCQ Capable: True
+         SATA NCQ Enabled: True
+         Current Temperature (C): 32
+         Maximum Temperature (C): 36
+         PHY Count: 1
+         PHY Transfer Rate: 6.0Gbps
+         Drive Authentication Status: OK
+         Carrier Application Version: 11
+         Carrier Bootloader Version: 6
+
 
 '''
 

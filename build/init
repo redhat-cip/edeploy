@@ -96,7 +96,13 @@ echo "" > /proc/sys/kernel/hotplug
 
 step "Start Udev"
 # Start the udev daemon to process events
-/sbin/udevd --daemon --resolve-names=never
+if [ -x /sbin/udevd ]; then
+    /sbin/udevd --daemon --resolve-names=never
+elif [ -x /usr/lib/systemd/systemd-udevd ]; then
+    /usr/lib/systemd/systemd-udevd --daemon --resolve-names=never
+else
+    log "No udev daemon so hardware detection will be weird"
+fi
 
 # Iterate sysfs and fire off everything; if we include a rule for it then
 # it'll get handled; otherwise it'll get handled later when we do this again

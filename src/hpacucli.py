@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2013 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2013-2014 eNovance SAS <licensing@enovance.com>
 #
 # Author: Frederic Lepied <frederic.lepied@enovance.com>
 #
@@ -124,6 +124,12 @@ def parse_ctrl_ld_show(output):
             else:
                 idx = None
                 arr[res[0].strip()] = res[1].strip()
+        # handle this kind of lines:
+        # Disk Name: /dev/sda          Mount Points: None
+        elif len(res) == 3:
+            middle = re.split('\s+', res[1].strip(), 1)
+            arr[res[0].strip()] = middle[0]
+            arr[middle[1]] = res[2].strip()
     return arr
 
 PROMPT_REGEXP = re.compile('=> ')
@@ -147,6 +153,7 @@ any other method.'''
         for path2 in ('/usr/sbin/hpssacli', '/usr/sbin/hpacucli'):
             if os.path.exists(path2):
                 path = path2
+                break
         if path:
             try:
                 if self.debug:
@@ -221,8 +228,7 @@ def _main():
     'CLI entry point to test the module'
     import sys
 
-    disk_count = 0
-    cli = Cli(debug=False)
+    cli = Cli(debug=True)
     if not cli.launch():
         return False
     controllers = cli.ctrl_all_show()
@@ -234,8 +240,9 @@ def _main():
         slot = 'slot=%d' % controller[0]
         for _, disks in cli.ctrl_pd_all_show(slot):
             for disk in disks:
-                disk_count += 1
                 print(disk)
+        for ld in cli.ctrl_ld_all_show(slot):
+            print cli.ctrl_ld_show(slot, ld[1][0][0])
 
 if __name__ == "__main__":
     _main()

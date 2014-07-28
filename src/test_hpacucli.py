@@ -78,6 +78,12 @@ class TestParsing(unittest.TestCase):
             hpacucli.parse_ctrl_ld_all_show(CTRL_LD_ALL_SHOW_OUTPUT),
             CTRL_LD_ALL_SHOW_RESULT)
 
+    def test_parse_ctrl_ld_all_show_hpssacli(self):
+        # => ctrl slot=0 ld all show
+        return self.assertEqual(
+            hpacucli.parse_ctrl_ld_all_show(CTRL_LD_ALL_SHOW_OUTPUT_HPSSACLI),
+            CTRL_LD_ALL_SHOW_RESULT_HPSSACLI)
+
     def test_error(self):
         # => ctrl slot=2 delete force
         return self.assertRaisesRegexp(hpacucli.Error,
@@ -93,6 +99,13 @@ Error: Syntax error at "force"
         return self.assertEqual(
             hpacucli.parse_ctrl_ld_show(CTRL_LD_SHOW_OUTPUT),
             CTRL_LD_SHOW_RESULT
+            )
+
+    def test_parse_ctrl_ld_show_hpssacli(self):
+        # => ctrl slot=0 ld 1 show
+        return self.assertEqual(
+            hpacucli.parse_ctrl_ld_show(CTRL_LD_SHOW_OUTPUT_HPSSACLI),
+            CTRL_LD_SHOW_RESULT_HPSSACLI
             )
 
     def test_parse_ctrl_ld_show2(self):
@@ -309,6 +322,20 @@ CTRL_LD_ALL_SHOW_RESULT = [
     ('array G', [('7', '931.5 GB', 'RAID 0', 'OK')]),
     ]
 
+CTRL_LD_ALL_SHOW_OUTPUT_HPSSACLI = '''
+
+Smart Array P420i in Slot 0 (Embedded)
+
+   array A
+
+      logicaldrive 1 (93.1 GB, RAID 0, OK)
+
+'''
+
+CTRL_LD_ALL_SHOW_RESULT_HPSSACLI = [
+    ('array A', [('1', '93.1 GB', 'RAID 0', 'OK')]),
+]
+
 #=> ctrl slot=2 pd 2I:1:8 show
 CTRL_PD_SHOW_OUTPUT = '''
 
@@ -423,6 +450,49 @@ CTRL_LD_SHOW_RESULT = {
     'Status': 'OK',
     'Strip Size': '256 KB',
     'Unique Identifier': '600508B1001CE81A48ACAE0E3331C2F6'}
+
+CTRL_LD_SHOW_OUTPUT_HPSSACLI = '''
+
+Smart Array P420i in Slot 0 (Embedded)
+
+   array A
+
+      Logical Drive: 1
+         Size: 93.1 GB
+         Fault Tolerance: 0
+         Heads: 255
+         Sectors Per Track: 32
+         Cylinders: 23934
+         Strip Size: 256 KB
+         Full Stripe Size: 256 KB
+         Status: OK
+         Caching:  Enabled
+         Unique Identifier: 600508B1001C32C501A237950F9370AB
+         Disk Name: /dev/sda          Mount Points: None
+         Logical Drive Label: 01B8A4585001438025E9D500  21EF
+         Drive Type: Data
+         LD Acceleration Method: Controller Cache
+
+'''
+
+CTRL_LD_SHOW_RESULT_HPSSACLI = {
+    'Caching': 'Enabled',
+    'Cylinders': '23934',
+    'Disk Name': '/dev/sda',
+    'Drive Type': 'Data',
+    'Fault Tolerance': '0',
+    'Full Stripe Size': '256 KB',
+    'Heads': '255',
+    'LD Acceleration Method': 'Controller Cache',
+    'Logical Drive': '1',
+    'Logical Drive Label': '01B8A4585001438025E9D500  21EF',
+    'Mount Points': 'None',
+    'Sectors Per Track': '32',
+    'Size': '93.1 GB',
+    'Status': 'OK',
+    'Strip Size': '256 KB',
+    'Unique Identifier': '600508B1001C32C501A237950F9370AB'
+}
 
 #=> ctrl slot=2 ld 2 show
 

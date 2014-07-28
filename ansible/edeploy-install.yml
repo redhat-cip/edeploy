@@ -111,10 +111,6 @@
     template: src=edeploy.prof dest=/var/lib/tftpboot/pxelinux.cfg/profiles/edeploy.prof mode=0644
     notify: sync bootnames
     when: pxemngr
-  - name: enable edeploy site in apache (deb)
-    copy: src=edeploy-apache.conf dest=/etc/apache2/sites-available/edeploy
-    notify: enable edeploy site (deb)
-    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
   - name: enable edeploy site in apache (rhel)
     copy: src=edeploy-httpd.conf dest=/etc/httpd/conf.d/edeploy.conf
     notify: enable edeploy site (rhel)

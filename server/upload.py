@@ -534,14 +534,14 @@ import ipmi
 import time
 
 def run(cmd):
-    print '+ ' + cmd
+    sys.stderr.write('+ ' + cmd + '\\n')
     status, output = commands.getstatusoutput(cmd)
-    print output
+    sys.stderr.write(output + '\\n')
     if status != 0:
-        print "Command '%s' failed" % cmd
-        print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-        print "!!! Configure script exited prematurely !!!"
-        print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        sys.stderr.write("Command '%s' failed\\n" % cmd)
+        sys.stderr.write("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\\n")
+        sys.stderr.write("!!! Configure script exited prematurely !!!\\n")
+        sys.stderr.write("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\\n")
         sys.exit(status)
 
 def set_role(role, version, disk):

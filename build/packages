@@ -153,7 +153,7 @@ install_packages() {
                 # We need to retrieve the package name to be able to pass
                 # it through rpm -q
                 package_name=$(basename $pkg)
-                package_stripname="${package_name%.*}"
+                package_stripname="${package_name%.rpm}"
                 do_chroot $dir rpm -q $package_stripname &>/dev/null || PKG_MISSING="$PKG_MISSING $package_stripname"
             done
             if [ -n "${PKG_MISSING}" ];then

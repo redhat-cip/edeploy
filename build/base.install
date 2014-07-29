@@ -221,6 +221,10 @@ install_base_packages() {
         rm -f "${target}"/etc/default/grub.d/edeploy.cfg
     elif [ "$(package_type)" = "rpm" ]; then
         install_packages $target "$packages"
+        if [ "$CODENAME_MAJOR" = '7' ]; then
+            # don't rename net ifaces
+            ln -s /dev/null $dir/etc/udev/rules.d/80-net-name-slot.rules
+        fi
     fi
 }
 

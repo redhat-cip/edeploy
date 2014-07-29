@@ -72,9 +72,6 @@ case "$DIST" in
     $supported_redhat_dists)
         if [ "$CODENAME_MAJOR" = '6' ]; then
             add_rhn_channel rhel-x86_64-server-sfs-6
-        else
-            # don't rename net ifaces
-            ln -s /dev/null $dir/etc/udev/rules.d/80-net-name-slot.rules
         fi
     ;;
 esac

@@ -367,6 +367,11 @@ if /configure; then
         fi
         # Bootloader successfully installed
         if [ $ret -eq 0 ]; then
+            # Ask pxemngr to boot locally on the next PXE boot
+            if [ -n "$PXEMNGR_URL" ]; then
+                curl -s ${PXEMNGR_URL}localboot/
+            fi
+
             umount $d/sys
             umount $d/dev
             umount $d/proc
@@ -374,10 +379,6 @@ if /configure; then
             log "Syncing data to disk in progress ..."
             sync
             log "Data syncing done."
-
-            if [ -n "$PXEMNGR_URL" ]; then
-                curl -s ${PXEMNGR_URL}localboot/
-            fi
 
             case "$ONSUCCESS" in
                 "kexec")

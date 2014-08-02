@@ -406,6 +406,15 @@ def main():
                                                       cfg_dir)) + '/'
                 filename = os.path.join(log_dir,
                                         os.path.basename(logitem.filename))
+                if os.path.exists(filename):
+                    backupname = '%s.%s.log.gz' % \
+                                 (filename[:-7],
+                                  time.strftime('%Y%m%d%H%M%S',
+                                                time.gmtime(
+                                                    os.path.getmtime(
+                                                        filename))))
+                    log('Renaming log file %s to %s' % (filename, backupname))
+                    os.rename(filename, backupname)
                 output_file = open(filename, 'w')
                 output_file.write(logfile.read(-1))
                 output_file.close()

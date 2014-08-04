@@ -46,7 +46,7 @@ check_usage() {
 install_mellanox() {
     RELEASE=$1
     CHROOT=$2
-    URL=http://www.mellanox.com/downloads/ofed/MLNX_OFED-2.0-3.0.0/
+    URL=https://www.mellanox.com/downloads/ofed/MLNX_OFED-2.0-3.0.0/
     FILE=
     KVER=
     KVER_TO_REMOVE=

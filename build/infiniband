@@ -28,7 +28,7 @@ ORIG=$(cd $(dirname $0); pwd)
 
 # sdpnetstat is not in Ubuntu Trusty yet.
 if [ "$RELEASE" = "trusty" ]; then
-    wget --no-verbose 'http://cs.stanford.edu/pub/mirrors/ubuntu/ubuntu/pool/universe/s/sdpnetstat/sdpnetstat_1.60-1ubuntu2_amd64.deb' -O ${dir}/tmp/sdpnetstat_1.60-1ubuntu2_amd64.deb
+    wget --no-verbose 'https://cs.stanford.edu/pub/mirrors/ubuntu/ubuntu/pool/universe/s/sdpnetstat/sdpnetstat_1.60-1ubuntu2_amd64.deb' -O ${dir}/tmp/sdpnetstat_1.60-1ubuntu2_amd64.deb
     do_chroot $dir dpkg -i /tmp/sdpnetstat_1.60-1ubuntu2_amd64.deb
     do_chroot $dir rm /tmp/sdpnetstat_1.60-1ubuntu2_amd64.deb
 fi
@@ -69,9 +69,9 @@ RUN_SYSCTL=y
 EOF
 
         # Mellanox OpenIB init script
-        wget --no-verbose 'http://git.openfabrics.org/git?p=ofed_1_5/linux-2.6.git;a=blob_plain;f=ofed_scripts/openibd;h=4eab48c92292e9edbcc85abecd60558adad1e02d;hb=HEAD' -O ${dir}/etc/init.d/openibd
+        wget --no-verbose 'https://git.openfabrics.org/git?p=ofed_1_5/linux-2.6.git;a=blob_plain;f=ofed_scripts/openibd;h=4eab48c92292e9edbcc85abecd60558adad1e02d;hb=HEAD' -O ${dir}/etc/init.d/openibd
         chmod +x ${dir}/etc/init.d/openibd
-        wget --no-verbose 'http://git.openfabrics.org/git?p=ofed_1_5/linux-2.6.git;a=blob_plain;f=ofed_scripts/sysctl_perf_tuning;h=a375c5600d63131a6d7657debeb299ed43f407ed;hb=HEAD' -O ${dir}/sbin/sysctl_perf_tuning
+        wget --no-verbose 'https://git.openfabrics.org/git?p=ofed_1_5/linux-2.6.git;a=blob_plain;f=ofed_scripts/sysctl_perf_tuning;h=a375c5600d63131a6d7657debeb299ed43f407ed;hb=HEAD' -O ${dir}/sbin/sysctl_perf_tuning
         chmod +x ${dir}/sbin/sysctl_perf_tuning
     ;;
     "rpm")

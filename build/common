@@ -180,6 +180,7 @@ clean_chroot() {
     for log in $(find $dir/var/log -type f || :); do
         > $log
     done
+    rm -rf $dir/tmp/* $dir/var/tmp/* $dir/tmp/.??* $dir/var/tmp/* $dir/var/tmp/.??* || :
 }
 
 clean_mount_points() {

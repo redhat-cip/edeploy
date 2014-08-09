@@ -24,7 +24,7 @@ run_detect() {
 }
 
 get_system_info() {
-vendor=$(dmidecode -s system-manufacturer | grep -v '#' | sed 's/ *$//g' | tr ' ' '-' | tr -d '\n')
+vendor=$(dmidecode -s system-manufacturer | grep -v '#' | sed 's/[ .]*$//g' | tr ' ' '-' | tr -d '\n')
 product=$(dmidecode -s system-product-name | grep -v '#' | sed 's/ *$//g' | tr ' ' '-' | tr -d '\n')
 serial=$(dmidecode -s system-serial-number | grep -v '#' | sed 's/ *$//g' | tr ' ' '-' | tr -d '\n')
 }

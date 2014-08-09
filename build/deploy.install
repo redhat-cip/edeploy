@@ -104,14 +104,12 @@ install_edeploy() {
 install_pxe() {
     case "$OS" in
         "Debian"|"Ubuntu")
-            install_packages_disabled $dir isc-dhcp-server tftpd-hpa syslinux-common
-            sed -i 's@/srv/tftp@/var/lib/tftpboot@' $dir/etc/default/tftpd-hpa
-            cp -a $dir/usr/lib/syslinux/pxelinux.0 $dir/var/lib/tftpboot/
+            install_packages_disabled $dir dnsmasq syslinux-common
+            cp -a $dir/usr/lib/syslinux/*pxelinux.0 $dir/var/lib/tftpboot/
             ;;
         "CentOS"|"RedHatEnterpriseServer")
-            install_packages_disabled $dir dnsmasq tftp-server syslinux
-            sed -i "s/disable *= yes/disable			= no/" $dir/etc/xinetd.d/tftp
-            cp -a $dir/usr/share/syslinux/pxelinux.0 $dir/var/lib/tftpboot/
+            install_packages_disabled $dir dnsmasq syslinux
+            cp -a $dir/usr/share/syslinux/*pxelinux.0 $dir/var/lib/tftpboot/
             ;;
     esac
 }

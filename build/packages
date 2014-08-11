@@ -106,6 +106,18 @@ chkconfig.save \$* || exit 1
 chkconfig.save \$service off || exit 0
 EOF
             chmod +x ${chroot}/sbin/chkconfig
+
+            if which systemctl >/dev/null; then
+                do_chroot ${chroot} mv /usr/bin/systemctl /usr/bin/systemctl.save
+                cat >> ${chroot}/usr/bin/systemctl << EOF
+#!/bin/bash
+if echo \$1 | egrep -q '^(enable|disable)$'; then
+    shift
+    systemctl.save disable \$* || exit 1
+fi
+EOF
+                chmod +x ${chroot}/usr/bin/systemctl
+            fi
         ;;
         *)
             fatal_error "$OS is not supported yet by install_packages_disabled()"
@@ -130,6 +142,11 @@ EOF
         ;;
         "CentOS"|"RedHatEnterpriseServer")
             do_chroot ${chroot} mv /sbin/chkconfig.save /sbin/chkconfig
+
+            # systemd support starts from 7
+            if which systemctl >/dev/null; then
+                do_chroot ${chroot} mv /usr/bin/systemctl.save /usr/bin/systemctl
+            fi
         ;;
     esac
 }

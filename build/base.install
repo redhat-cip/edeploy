@@ -327,6 +327,20 @@ EOF
     fi
 }
 
+systemd_fix() {
+    # TODO(EmilienM) Temporary fix while this bug is fixed:
+    # https://bugzilla.redhat.com/show_bug.cgi?id=1130939
+    target=$1
+    case "$OS" in
+        $supported_centos_dists|$supported_redhat_dists)
+            if [ $CODENAME_MAJOR = 7 ]; then
+                mkdir "$target"/run/dbus
+                do_chroot $target ln -sf /var/run/dbus/system_bus_socket /run/dbus/
+            fi
+        ;;
+    esac
+}
+
 set_firstboot() {
     target=$1
     mkdir -p ${target}/etc/first-boot.d
@@ -403,6 +417,7 @@ install_hp_raid_cli_tool $dir
 install_megacli $dist $dir
 set_firstboot $dir
 ssh_fix $dir
+systemd_fix $dir
 install_edeploy_bin $dir
 clean_tmp_dir $dir
 

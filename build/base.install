@@ -331,7 +331,7 @@ systemd_fix() {
     # TODO(EmilienM) Temporary fix while this bug is fixed:
     # https://bugzilla.redhat.com/show_bug.cgi?id=1130939
     target=$1
-    case "$OS" in
+    case "$dist" in
         $supported_centos_dists|$supported_redhat_dists)
             if [ $CODENAME_MAJOR = 7 ]; then
                 mkdir "$target"/run/dbus

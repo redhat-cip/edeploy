@@ -120,7 +120,11 @@ def connect_to_server(hostname):
         sys.exit(1)
 
     connected = True
-    HP.send_hm_message(s, HM(HM.CONNECT), True)
+
+    msg = HM(HM.CONNECT)
+    msg.hw = eval(open(sys.argv[1]).read(-1))
+
+    HP.send_hm_message(s, msg, True)
     while True:
         try:
             msg = HP.recv_hm_message(s)

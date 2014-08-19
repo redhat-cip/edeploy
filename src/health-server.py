@@ -45,7 +45,6 @@ STORAGE_RUN = 1 << 2
 NETWORK_RUN = 1 << 3
 
 SCHED_FAIR = "Fair"
-affinity = SCHED_FAIR
 
 
 class SocketHandler(BaseRequestHandler):
@@ -255,7 +254,6 @@ def get_default_value(job, item, default_value):
 def non_interactive_mode(filename):
     total_runtime = 0
     name = "undefined"
-    global affinity
 
     job = yaml.load(file(filename, 'r'))
     if job['name'] is None:
@@ -293,6 +291,7 @@ def non_interactive_mode(filename):
     cpu_job = job['cpu']
     if cpu_job:
             step_hosts = get_default_value(cpu_job, 'step-hosts', 1)
+            affinity = get_default_value(cpu_job, 'affinity', SCHED_FAIR)
             required_cpu_hosts = get_default_value(cpu_job, 'required-hosts',
                                                    required_hosts)
             if "-" in str(required_cpu_hosts):

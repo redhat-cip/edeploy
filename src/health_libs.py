@@ -20,11 +20,20 @@ import subprocess
 import matcher
 import re
 
+
 def get_value(hw_, level1, level2, level3):
     for entry in hw_:
         if (level1 == entry[0] and level2 == entry[1] and level3 == entry[2]):
             return entry[3]
     return None
+
+
+def fatal_error(error):
+    '''Report a shell script with the error message and log
+       the message on stderr.
+    '''
+    HP.logger.error('%s\n' % error)
+    sys.exit(1)
 
 
 def run_sysbench(hw_, max_time, cpu_count, processor_num=-1):

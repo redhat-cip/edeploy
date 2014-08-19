@@ -47,6 +47,7 @@ NETWORK_RUN = 1 << 3
 SCHED_FAIR = "Fair"
 affinity = SCHED_FAIR
 
+
 class SocketHandler(BaseRequestHandler):
     global hosts
     global lock_host
@@ -127,10 +128,9 @@ def compute_affinity():
     affinity = {}
     for host in hosts.keys():
         hw = hosts[host].hw
-        cpu_flags = HL.get_value(hw, "cpu", "physical_0", "flags")
         system_id = HL.get_value(hw, "system", "product", "serial")
 
-        if not system_id in affinity.keys():
+        if system_id not in affinity.keys():
             affinity[system_id] = [host]
         else:
             # If the system is already known, it means that several
@@ -143,10 +143,10 @@ def compute_affinity():
 def get_fair_hosts_list(affinity_hosts_list, nb_hosts):
     hosts_list = []
     while (len(hosts_list) < nb_hosts):
-	for hypervisor in affinity_hosts_list.keys():
-		hosts_list.append(affinity_hosts_list[hypervisor].pop())
-		if (len(hosts_list) == nb_hosts):
-			break;
+        for hypervisor in affinity_hosts_list.keys():
+            hosts_list.append(affinity_hosts_list[hypervisor].pop())
+            if (len(hosts_list) == nb_hosts):
+                break
 
     return hosts_list
 
@@ -155,7 +155,7 @@ def get_hosts_list_from_affinity(nb_hosts, affinity):
     affinity_hosts_list = compute_affinity()
 
     if affinity == SCHED_FAIR:
-	return get_fair_hosts_list(affinity_hosts_list, nb_hosts)
+        return get_fair_hosts_list(affinity_hosts_list, nb_hosts)
 
 
 def print_affinity(affinity):
@@ -172,7 +172,7 @@ def start_cpu_bench(nb_hosts, affinity, runtime, cores):
     for host in get_hosts_list_from_affinity(nb_hosts, affinity):
         if nb_hosts == 0:
             break
-        if not host in get_host_list(CPU_RUN).keys():
+        if host not in get_host_list(CPU_RUN).keys():
             hosts_state[host] |= CPU_RUN
             nb_hosts = nb_hosts - 1
             lock_socket_list.acquire()
@@ -226,7 +226,7 @@ def compute_results(nb_hosts):
         if not os.path.isdir(dest_dir):
             os.makedirs(dest_dir)
     except OSError, e:
-        fatal_error("Cannot create %s directory (%s)" % (dest_dir, e.errno))
+        HL.fatal_error("Cannot create %s directory (%s)" % (dest_dir, e.errno))
 
     for host in results_cpu.keys():
         HP.logger.info("Dumping cpu result from host %s" % str(host))
@@ -270,10 +270,10 @@ def non_interactive_mode(filename):
     hosts_count = len(hosts.keys())
     previous_hosts_count = hosts_count
     while (int(hosts_count) < int(required_hosts)):
-	if (hosts_count != previous_hosts_count) :
-		HP.logger.info("Still %d hosts to connect" % (int(required_hosts) - int(hosts_count)))
-		previous_hosts_count = hosts_count
-	hosts_count = len(hosts.keys())
+        if (hosts_count != previous_hosts_count):
+            HP.logger.info("Still %d hosts to connect" % (int(required_hosts) - int(hosts_count)))
+            previous_hosts_count = hosts_count
+        hosts_count = len(hosts.keys())
         time.sleep(1)
 
     HP.logger.info("Starting job %s" % name)

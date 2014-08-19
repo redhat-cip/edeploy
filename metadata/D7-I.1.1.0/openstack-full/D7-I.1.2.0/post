@@ -4,5 +4,5 @@
 
 export DEBIAN_FRONTEND=noninteractive
 
-/var/lib/dpkg/info/linux-image-3.14-0.bpo.1-amd64.postinst configure
+/var/lib/dpkg/info/linux-image-3.14-0.bpo.2-amd64.postinst configure
 exit 100

@@ -1,8 +1,0 @@
-#!/bin/sh
-# Update the system after a new kernel
-# and reboot the node
-
-export DEBIAN_FRONTEND=noninteractive
-
-/var/lib/dpkg/info/linux-image-3.14-0.bpo.1-amd64.postinst configure
-exit 100

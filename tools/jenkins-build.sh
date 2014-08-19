@@ -43,9 +43,6 @@ for role in $ROLES; do
                 (cd "$ARCH"/$VERS; md5sum vmlinuz > vmlinuz.md5)
             fi
 	    git rev-parse HEAD > "$ARCH"/$VERS/$role.rev
-            #TODO: do not work on Jenkins, because of local tags
-            # OLD=$(git describe --abbrev=0 --tags)
-            # /srv/edeploy/tools/pkg-diff.sh $ARCH/$DVER-$OLD/$role.packages $ARCH/$VERS/$role.packages > $SRC/$DVER-$role-diff
 	fi
     else
 	BROKEN="$BROKEN $role"

@@ -44,6 +44,8 @@ MEMORY_RUN = 1 << 1
 STORAGE_RUN = 1 << 2
 NETWORK_RUN = 1 << 3
 
+SCHED_FAIR = "Fair"
+affinity = SCHED_FAIR
 
 class SocketHandler(BaseRequestHandler):
     global hosts
@@ -121,12 +123,53 @@ def get_host_list(item):
     return selected_hosts
 
 
-def start_cpu_bench(nb_hosts, runtime, cores):
+def compute_affinity():
+    affinity = {}
+    for host in hosts.keys():
+        hw = hosts[host].hw
+        cpu_flags = HL.get_value(hw, "cpu", "physical_0", "flags")
+        system_id = HL.get_value(hw, "system", "product", "serial")
+
+        if not system_id in affinity.keys():
+            affinity[system_id] = [host]
+        else:
+            # If the system is already known, it means that several
+            # virtual machines are sharing the same Hypervisor
+            affinity[system_id].append(host)
+
+    return affinity
+
+
+def get_fair_hosts_list(affinity_hosts_list, nb_hosts):
+    hosts_list = []
+    while (len(hosts_list) < nb_hosts):
+	for hypervisor in affinity_hosts_list.keys():
+		hosts_list.append(affinity_hosts_list[hypervisor].pop())
+		if (len(hosts_list) == nb_hosts):
+			break;
+
+    return hosts_list
+
+
+def get_hosts_list_from_affinity(nb_hosts, affinity):
+    affinity_hosts_list = compute_affinity()
+
+    if affinity == SCHED_FAIR:
+	return get_fair_hosts_list(affinity_hosts_list, nb_hosts)
+
+
+def print_affinity(affinity):
+    HP.logger.info("Using affinity %s on the following mapping" % affinity)
+    pprint.pprint(compute_affinity())
+
+
+def start_cpu_bench(nb_hosts, affinity, runtime, cores):
     global hosts_state
     msg = HM(HM.MODULE, HM.CPU, HM.START)
     msg.cpu_instances = cores
     msg.running_time = runtime
-    for host in hosts.keys():
+
+    for host in get_hosts_list_from_affinity(nb_hosts, affinity):
         if nb_hosts == 0:
             break
         if not host in get_host_list(CPU_RUN).keys():
@@ -199,6 +242,7 @@ def get_default_value(job, item, default_value):
 def non_interactive_mode(filename):
     total_runtime = 0
     name = "undefined"
+    global affinity
 
     job = yaml.load(file(filename, 'r'))
     if job['name'] is None:
@@ -233,6 +277,7 @@ def non_interactive_mode(filename):
         time.sleep(1)
 
     HP.logger.info("Starting job %s" % name)
+    print_affinity(affinity)
     cpu_job = job['cpu']
     if cpu_job:
             step_hosts = get_default_value(cpu_job, 'step-hosts', 1)
@@ -267,7 +312,7 @@ def non_interactive_mode(filename):
                                                     cpu_runtime))
                     total_runtime += cpu_runtime
                     cores = get_default_value(cpu_job, 'cores', 1)
-                    start_cpu_bench(nb_hosts, cpu_runtime, cores)
+                    start_cpu_bench(nb_hosts, affinity, cpu_runtime, cores)
 
                     time.sleep(cpu_runtime)
 

@@ -158,18 +158,29 @@ def get_hosts_list_from_affinity(nb_hosts, affinity):
         return get_fair_hosts_list(affinity_hosts_list, nb_hosts)
 
 
-def print_affinity(affinity):
+def dump_affinity(affinity, selected_host_list, dest_dir):
     HP.logger.info("Using affinity %s on the following mapping" % affinity)
-    pprint.pprint(compute_affinity())
+    host_affinity = compute_affinity()
+    final_list = {}
+    for hypervisor in host_affinity.keys():
+        for hostname in selected_host_list:
+            if hostname in host_affinity[hypervisor]:
+                if hypervisor not in final_list.keys():
+                    final_list[hypervisor] = [hostname]
+                else:
+                    final_list[hypervisor].append(hostname)
+
+    pprint.pprint(final_list)
+    pprint.pprint(final_list, stream=open(dest_dir+"/affinity", 'w'))
 
 
-def start_cpu_bench(nb_hosts, affinity, runtime, cores):
+def start_cpu_bench(nb_hosts, hosts_list, runtime, cores):
     global hosts_state
     msg = HM(HM.MODULE, HM.CPU, HM.START)
     msg.cpu_instances = cores
     msg.running_time = runtime
 
-    for host in get_hosts_list_from_affinity(nb_hosts, affinity):
+    for host in hosts_list:
         if nb_hosts == 0:
             break
         if host not in get_host_list(CPU_RUN).keys():
@@ -207,7 +218,7 @@ def save_hw(items, name, hwdir):
         HP.logger.error("exception while saving hw file: %s" % str(xcpt))
 
 
-def compute_results(nb_hosts):
+def compute_results(nb_hosts, affinity, hosts_list):
     config = ConfigParser.ConfigParser()
     config.read('/etc/edeploy.conf')
 
@@ -227,6 +238,8 @@ def compute_results(nb_hosts):
             os.makedirs(dest_dir)
     except OSError, e:
         HL.fatal_error("Cannot create %s directory (%s)" % (dest_dir, e.errno))
+
+    dump_affinity(affinity, hosts_list, dest_dir)
 
     for host in results_cpu.keys():
         HP.logger.info("Dumping cpu result from host %s" % str(host))
@@ -277,7 +290,6 @@ def non_interactive_mode(filename):
         time.sleep(1)
 
     HP.logger.info("Starting job %s" % name)
-    print_affinity(affinity)
     cpu_job = job['cpu']
     if cpu_job:
             step_hosts = get_default_value(cpu_job, 'step-hosts', 1)
@@ -312,14 +324,16 @@ def non_interactive_mode(filename):
                                                     cpu_runtime))
                     total_runtime += cpu_runtime
                     cores = get_default_value(cpu_job, 'cores', 1)
-                    start_cpu_bench(nb_hosts, affinity, cpu_runtime, cores)
+                    hosts_list = get_hosts_list_from_affinity(nb_hosts, affinity)
+
+                    start_cpu_bench(nb_hosts, hosts_list, cpu_runtime, cores)
 
                     time.sleep(cpu_runtime)
 
                     while (get_host_list(CPU_RUN).keys()):
                         time.sleep(1)
 
-                    compute_results(nb_hosts)
+                    compute_results(nb_hosts, affinity, hosts_list)
 
     HP.logger.info("End of job %s" % name)
     disconnect_clients()

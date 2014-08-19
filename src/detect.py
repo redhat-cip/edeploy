@@ -358,6 +358,14 @@ def detect_system(hw_lst, output=None):
         if uuid:
             hw_lst.append(('system', 'product', 'uuid', uuid))
 
+        for elt in xml.findall(".//node[@id='core']"):
+            name = elt.find('physid')
+            if name is not None:
+                find_element(elt, 'product', 'name', 'motherboard', 'system')
+                find_element(elt, 'vendor', 'vendor', 'motherboard', 'system')
+                find_element(elt, 'version', 'version', 'motherboard', 'system')
+                find_element(elt, 'serial', 'serial', 'motherboard', 'system')
+
         for elt in xml.findall(".//node[@id='firmware']"):
             name = elt.find('physid')
             if name is not None:

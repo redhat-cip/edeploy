@@ -337,7 +337,7 @@ systemd_fix() {
                 if [ -d $target/var/run ]; then
                     rm -rf $target/var/run
                 fi
-                do_chroot $target ln -sf /run /var/run
+                do_chroot $target ln -sf /var/run /run
             fi
         ;;
     esac

@@ -236,20 +236,8 @@ def save_hw(items, name, hwdir):
         HP.logger.error("exception while saving hw file: %s" % str(xcpt))
 
 
-def compute_results(nb_hosts, affinity, affinity_hosts, hosts_list):
-    config = ConfigParser.ConfigParser()
-    config.read('/etc/edeploy.conf')
-
-    def config_get(section, name, default):
-        'Secured config getter.'
-        try:
-            return config.get(section, name)
-        except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
-            return default
-
-    cfg_dir = os.path.normpath(config_get('SERVER', 'HEALTHDIR', '')) + '/'
-    dirname = time.strftime("%Y_%m_%d-%Hh%M", time.localtime())
-    dest_dir = cfg_dir + 'dahc/%d/' % nb_hosts + dirname
+def compute_results(log_dir, nb_hosts, affinity, affinity_hosts, hosts_list):
+    dest_dir = log_dir + '/%d/' % nb_hosts
 
     try:
         if not os.path.isdir(dest_dir):
@@ -268,6 +256,31 @@ def compute_results(nb_hosts, affinity, affinity_hosts, hosts_list):
 
 def get_default_value(job, item, default_value):
     return job.get(item, default_value)
+
+
+def prepare_log_dir(name):
+    config = ConfigParser.ConfigParser()
+    config.read('/etc/edeploy.conf')
+
+    def config_get(section, name, default):
+        'Secured config getter.'
+        try:
+            return config.get(section, name)
+        except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
+            return default
+
+    cfg_dir = os.path.normpath(config_get('SERVER', 'HEALTHDIR', '')) + '/'
+    dirname = time.strftime("%Y_%m_%d-%Hh%M", time.localtime())
+    dest_dir = cfg_dir + 'dahc/%s/' % name + dirname
+
+    try:
+        if not os.path.isdir(dest_dir):
+            os.makedirs(dest_dir)
+    except OSError, e:
+        HL.fatal_error("Cannot create %s directory (%s)" % (dest_dir, e.errno))
+
+    HP.logger.info("Results will be stored in %s" % dest_dir)
+    return dest_dir
 
 
 def non_interactive_mode(filename):
@@ -294,6 +307,8 @@ def non_interactive_mode(filename):
         return
 
     runtime = get_default_value(job, 'runtime', 0)
+
+    log_dir = prepare_log_dir(name)
 
     HP.logger.info("Expecting %d hosts to start job %s" %
                    (required_hosts, name))
@@ -366,7 +381,7 @@ def non_interactive_mode(filename):
                     while (get_host_list(CPU_RUN).keys()):
                         time.sleep(1)
 
-                    compute_results(nb_hosts, affinity, affinity_hosts, hosts_list)
+                    compute_results(log_dir, nb_hosts, affinity, affinity_hosts, hosts_list)
             else:
                 HP.logger.error("CPU: Canceling Test")
     HP.logger.info("End of job %s" % name)

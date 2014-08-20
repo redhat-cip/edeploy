@@ -334,8 +334,10 @@ systemd_fix() {
     case "$dist" in
         $supported_centos_dists|$supported_redhat_dists)
             if [ $CODENAME_MAJOR = 7 ]; then
-                mkdir "$target"/run/dbus
-                do_chroot $target ln -sf /var/run/dbus/system_bus_socket /run/dbus/
+                if [ -d $target/var/run ]; then
+                    rm -rf $target/var/run
+                fi
+                do_chroot $target ln -sf /run /var/run
             fi
         ;;
     esac

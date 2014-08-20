@@ -141,8 +141,11 @@ def compute_affinity():
 
 def get_fair_hosts_list(affinity_hosts_list, nb_hosts):
     hosts_list = []
+
     while (len(hosts_list) < nb_hosts):
         for hypervisor in affinity_hosts_list.keys():
+            if (len(affinity_hosts_list[hypervisor]) == 0):
+                return hosts_list
             hosts_list.append(affinity_hosts_list[hypervisor].pop())
             if (len(hosts_list) == nb_hosts):
                 break

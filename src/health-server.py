@@ -44,7 +44,7 @@ MEMORY_RUN = 1 << 1
 STORAGE_RUN = 1 << 2
 NETWORK_RUN = 1 << 3
 
-SCHED_FAIR = "Fair"
+SCHED_FAIR = "fair"
 
 
 class SocketHandler(BaseRequestHandler):

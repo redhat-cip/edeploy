@@ -342,7 +342,7 @@ def non_interactive_mode(filename):
             affinity_hosts = []
             if affinity_list:
                 for manual_host in affinity_list.split(","):
-                    affinity_hosts.append(manual_host)
+                    affinity_hosts.append(manual_host.strip())
 
             required_cpu_hosts = get_default_value(cpu_job, 'required-hosts',
                                                    required_hosts)

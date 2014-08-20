@@ -123,11 +123,22 @@ def get_host_list(item):
     return selected_hosts
 
 
-def compute_affinity():
+def compute_affinity(affinity_hosts):
     affinity = {}
+
+    def acceptable_host(host_list, host):
+        if (len(host_list) == 0):
+            return True
+        if host in host_list:
+            return True
+        return False
+
     for host in hosts.keys():
         hw = hosts[host].hw
         system_id = HL.get_value(hw, "system", "product", "serial")
+
+        if acceptable_host(affinity_hosts, system_id) is False:
+            continue
 
         if system_id not in affinity.keys():
             affinity[system_id] = [host]
@@ -153,16 +164,21 @@ def get_fair_hosts_list(affinity_hosts_list, nb_hosts):
     return hosts_list
 
 
-def get_hosts_list_from_affinity(nb_hosts, affinity):
-    affinity_hosts_list = compute_affinity()
+def get_hosts_list_from_affinity(nb_hosts, affinity, affinity_hosts):
+    affinity_hosts_list = compute_affinity(affinity_hosts)
+    hosts_list = []
 
     if affinity == SCHED_FAIR:
-        return get_fair_hosts_list(affinity_hosts_list, nb_hosts)
+        hosts_list = get_fair_hosts_list(affinity_hosts_list, nb_hosts)
+    else:
+        HP.logger.error("Unsupported affinity : %s" % affinity)
+
+    return hosts_list
 
 
-def dump_affinity(affinity, selected_host_list, dest_dir):
-    HP.logger.info("Using affinity %s on the following mapping" % affinity)
-    host_affinity = compute_affinity()
+def dump_affinity(affinity, affinity_hosts, selected_host_list, dest_dir):
+    HP.logger.info("Using affinity %s on the following mapping :" % affinity)
+    host_affinity = compute_affinity(affinity_hosts)
     final_list = {}
     for hypervisor in host_affinity.keys():
         for hostname in selected_host_list:
@@ -220,7 +236,7 @@ def save_hw(items, name, hwdir):
         HP.logger.error("exception while saving hw file: %s" % str(xcpt))
 
 
-def compute_results(nb_hosts, affinity, hosts_list):
+def compute_results(nb_hosts, affinity, affinity_hosts, hosts_list):
     config = ConfigParser.ConfigParser()
     config.read('/etc/edeploy.conf')
 
@@ -241,7 +257,7 @@ def compute_results(nb_hosts, affinity, hosts_list):
     except OSError, e:
         HL.fatal_error("Cannot create %s directory (%s)" % (dest_dir, e.errno))
 
-    dump_affinity(affinity, hosts_list, dest_dir)
+    dump_affinity(affinity, affinity_hosts, hosts_list, dest_dir)
 
     for host in results_cpu.keys():
         HP.logger.info("Dumping cpu result from host %s" % str(host))
@@ -293,8 +309,15 @@ def non_interactive_mode(filename):
     HP.logger.info("Starting job %s" % name)
     cpu_job = job['cpu']
     if cpu_job:
+            cancel_job = False
             step_hosts = get_default_value(cpu_job, 'step-hosts', 1)
             affinity = get_default_value(cpu_job, 'affinity', SCHED_FAIR)
+            affinity_list = get_default_value(cpu_job, 'affinity-hosts', '')
+            affinity_hosts = []
+            if affinity_list:
+                for manual_host in affinity_list.split(","):
+                    affinity_hosts.append(manual_host)
+
             required_cpu_hosts = get_default_value(cpu_job, 'required-hosts',
                                                    required_hosts)
             if "-" in str(required_cpu_hosts):
@@ -309,24 +332,32 @@ def non_interactive_mode(filename):
                 HP.logger.error("CPU: required-hosts shall be greater than"
                                 " 0, defaulting to global required-hosts=%d"
                                 % max_hosts)
+                cancel_job = True
 
             if max_hosts > required_hosts:
                 HP.logger.error("CPU: The maximum number of hosts to tests"
                                 " is greater than the amount of available"
                                 " hosts.")
-                HP.logger.error("CPU: Canceling Test")
-            else:
+                cancel_job = True
+
+            if cancel_job is False:
                 for nb_hosts in xrange(min_hosts, max_hosts+1, step_hosts):
                     cpu_runtime = get_default_value(cpu_job, 'runtime',
                                                     runtime)
+                    total_runtime += cpu_runtime
+                    cores = get_default_value(cpu_job, 'cores', 1)
+                    hosts_list = get_hosts_list_from_affinity(nb_hosts, affinity, affinity_hosts)
+
+                    if (len(hosts_list) < nb_hosts):
+                        HP.logger.error("CPU: %d hosts expected while affinity only provides %d hosts available" % (nb_hosts, len(hosts_list)))
+                        HP.logger.error("CPU: Canceling test %d / %d" % ((nb_hosts, max_hosts)))
+                        continue
+
                     HP.logger.info("CPU: Waiting bench %d / %d (step = %d)"
                                    " to finish on %d hosts : should take"
                                    " %d seconds" % (nb_hosts, max_hosts,
                                                     step_hosts, nb_hosts,
                                                     cpu_runtime))
-                    total_runtime += cpu_runtime
-                    cores = get_default_value(cpu_job, 'cores', 1)
-                    hosts_list = get_hosts_list_from_affinity(nb_hosts, affinity)
 
                     start_cpu_bench(nb_hosts, hosts_list, cpu_runtime, cores)
 
@@ -335,8 +366,9 @@ def non_interactive_mode(filename):
                     while (get_host_list(CPU_RUN).keys()):
                         time.sleep(1)
 
-                    compute_results(nb_hosts, affinity, hosts_list)
-
+                    compute_results(nb_hosts, affinity, affinity_hosts, hosts_list)
+            else:
+                HP.logger.error("CPU: Canceling Test")
     HP.logger.info("End of job %s" % name)
     disconnect_clients()
 

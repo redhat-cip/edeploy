@@ -236,6 +236,15 @@ def save_hw(items, name, hwdir):
         HP.logger.error("exception while saving hw file: %s" % str(xcpt))
 
 
+def dump_hosts(log_dir):
+    unique_hosts_list = []
+    for host in hosts.keys():
+        uuid = HL.get_value(hosts[host].hw, "system", "product", "serial")
+        if uuid not in unique_hosts_list:
+            unique_hosts_list.append(uuid)
+    pprint.pprint(unique_hosts_list, stream=open(log_dir+"/hosts", 'w'))
+
+
 def compute_results(log_dir, nb_hosts, affinity, affinity_hosts, hosts_list):
     dest_dir = log_dir + '/%d/' % nb_hosts
 
@@ -320,6 +329,8 @@ def non_interactive_mode(filename):
             previous_hosts_count = hosts_count
         hosts_count = len(hosts.keys())
         time.sleep(1)
+
+    dump_hosts(log_dir)
 
     HP.logger.info("Starting job %s" % name)
     cpu_job = job['cpu']

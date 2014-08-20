@@ -343,7 +343,7 @@ def non_interactive_mode(filename):
 
 if __name__ == '__main__':
 
-    HP.start_log('/var/tmp/health-server.log', logging.DEBUG)
+    HP.start_log('/var/tmp/health-server.log', logging.INFO)
 
     if len(sys.argv) < 2:
         HP.logger.error("You must provide a yaml file as argument")

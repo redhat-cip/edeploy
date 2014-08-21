@@ -49,7 +49,11 @@ init_redhat_chroot() {
     fi
     if [ ! -d ${target}/etc/yum.repos.d ]; then
         mkdir -p ${target}/etc/yum.repos.d
-        curl ${REPOSITORY}/media.repo > ${target}/etc/yum.repos.d/rhel-source.repo
+        if [ ! -z "$ISO_PATH" ]; then
+           cp $dir/repo/media.repo ${target}/etc/yum.repos.d/rhel-source.repo
+	else
+           curl ${REPOSITORY}/media.repo > ${target}/etc/yum.repos.d/rhel-source.repo
+	fi
     fi
     case "$dist" in
         "centos")

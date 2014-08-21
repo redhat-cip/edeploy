@@ -292,6 +292,26 @@ def prepare_log_dir(name):
     return dest_dir
 
 
+def compute_nb_hosts_series(min_hosts, max_hosts, step_hosts):
+    nb_hosts_series = []
+
+    # Insure that min_hosts is always part of the serie
+    nb_hosts_series.append(min_hosts)
+    
+    # Using the modulo to get the number of interations we have
+    for modulo in xrange(1, divmod(max_hosts, step_hosts)[0]+1):
+        nb_hosts = modulo * step_hosts
+        # Don't save hosts that are below min_hosts
+        if nb_hosts > min_hosts:
+            nb_hosts_series.append(nb_hosts)
+
+    # Insure that the max_hosts is always part of the serie
+    if max_hosts not in nb_hosts_series:
+        nb_hosts_series.append(max_hosts)
+
+    return nb_hosts_series
+
+
 def non_interactive_mode(filename):
     total_runtime = 0
     name = "undefined"
@@ -367,7 +387,7 @@ def non_interactive_mode(filename):
                 cancel_job = True
 
             if cancel_job is False:
-                for nb_hosts in xrange(min_hosts, max_hosts+1, step_hosts):
+                for nb_hosts in compute_nb_hosts_series(min_hosts, max_hosts, step_hosts):
                     cpu_runtime = get_default_value(cpu_job, 'runtime',
                                                     runtime)
                     total_runtime += cpu_runtime

@@ -336,8 +336,8 @@ systemd_fix() {
             if [ $CODENAME_MAJOR = 7 ]; then
                 if [ -d $target/run/dbus ]; then
                     rm -rf $target/run/dbus
-                    mkdir $target/run/dbus
                 fi
+                mkdir $target/run/dbus
                 do_chroot $target ln -sf /var/run/dbus/system_bus_socket /run/dbus/
             fi
         ;;

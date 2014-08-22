@@ -55,7 +55,8 @@ class Health_Message():
                      STOP: 'STOP',
                      START: 'START',
                      COMPLETED: 'COMPLETED',
-                     NOTCOMPLETED: 'NOTCOMPLETED'}
+                     NOTCOMPLETED: 'NOTCOMPLETED',
+                     STARTING: 'STARTING'}
     message = NONE
     action = NONE
     module = NONE

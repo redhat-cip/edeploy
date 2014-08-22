@@ -52,7 +52,6 @@ class Health_Bench():
         self.message.module = module
         self.message.action = HM.STARTING
         HP.send_hm_message(self.socket, self.message)
-        return
 
     def __init__(self, msg, socket, logger):
         logger.info("INIT BENCH")

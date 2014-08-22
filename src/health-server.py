@@ -30,6 +30,7 @@ import sys
 import threading
 import time
 import yaml
+import math
 
 socket_list = {}
 lock_socket_list = threading.RLock()
@@ -45,6 +46,45 @@ STORAGE_RUN = 1 << 2
 NETWORK_RUN = 1 << 3
 
 SCHED_FAIR = "fair"
+
+start_jitter = {}
+stop_jitter = {}
+running_jitter = False
+average = lambda x: sum(x) * 1.0 / len(x)
+variance = lambda x: map(lambda y: (y - average(x)) ** 2, x)
+stdev = lambda x: math.sqrt(average(variance(x)))
+
+
+def init_jitter():
+    global start_jitter
+    global stop_jitter
+    global running_jitter
+
+    start_jitter = {}
+    stop_jitter = {}
+    running_jitter = True
+
+
+def disable_jitter():
+    global running_jitter
+    running_jitter = False
+
+
+def start_time(host):
+    timestamp = time.time()
+
+    global start_jitter
+    if host not in start_jitter:
+        start_jitter[host] = [timestamp]
+    else:
+        start_jitter[host].append(timestamp)
+
+
+def stop_time(host):
+    timestamp = time.time()
+
+    global stop_jitter
+    stop_jitter[host] = timestamp
 
 
 class SocketHandler(BaseRequestHandler):
@@ -64,6 +104,13 @@ class SocketHandler(BaseRequestHandler):
             if not msg:
                 continue
             if msg.message != HM.ACK:
+
+                # If we do receive a STARTING message, let's record the starting time
+                # No need to continue processing the packet, we can wait the next one
+                if msg.action == HM.STARTING:
+                    start_time(self.client_address)
+                    continue
+
                 if msg.message == HM.DISCONNECT:
                     HP.logger.debug('Disconnecting from %s' %
                                     self.client_address[0])
@@ -86,6 +133,9 @@ class SocketHandler(BaseRequestHandler):
                     lock_host.release()
 
                     if msg.message == HM.MODULE and msg.action == HM.COMPLETED:
+                        if running_jitter is True:
+                            stop_time(self.client_address)
+
                         if msg.module == HM.CPU:
                             cpu_completed(self.client_address, msg)
 
@@ -205,6 +255,7 @@ def start_cpu_bench(nb_hosts, hosts_list, runtime, cores):
             hosts_state[host] |= CPU_RUN
             nb_hosts = nb_hosts - 1
             lock_socket_list.acquire()
+            start_time(host)
             HP.send_hm_message(socket_list[host], msg)
             lock_socket_list.release()
 
@@ -245,7 +296,7 @@ def dump_hosts(log_dir):
     pprint.pprint(unique_hosts_list, stream=open(log_dir+"/hosts", 'w'))
 
 
-def compute_results(log_dir, nb_hosts, affinity, affinity_hosts, hosts_list):
+def compute_results(log_dir, nb_hosts, affinity, affinity_hosts, hosts_list, runtime):
     dest_dir = log_dir + '/%d/' % nb_hosts
 
     try:
@@ -256,11 +307,32 @@ def compute_results(log_dir, nb_hosts, affinity, affinity_hosts, hosts_list):
 
     dump_affinity(affinity, affinity_hosts, hosts_list, dest_dir)
 
+    delta_start_jitter = {}
+    duration = {}
+    real_start = []
+
     for host in results_cpu.keys():
+        # Checking jitter settings
+        if host not in start_jitter:
+            HP.logger.error("Host %s should have a jitter value !" % host)
+        else:
+            if len(start_jitter[host]) < 2:
+                HP.logger.error("Not enough start jitter information for host %s" % host)
+            else:
+                real_start.append(start_jitter[host][1])
+                delta_start_jitter[host] = (start_jitter[host][1] - start_jitter[host][0])
+                duration[host] = (stop_jitter[host] - start_jitter[host][1])
+                if (float(duration[host]) > float(runtime + 1)):
+                    HP.logger.error("Host %s took too much time : %.2f while expecting %d" % (host, duration[host], runtime))
+
         HP.logger.info("Dumping cpu result from host %s" % str(host))
         filename_and_macs = HL.generate_filename_and_macs(results_cpu[host])
         save_hw(results_cpu[host], filename_and_macs['sysname'], dest_dir)
-#        print results_cpu[host]
+
+    pprint.pprint("RESULT")
+    pprint.pprint(delta_start_jitter)
+    pprint.pprint(duration)
+    pprint.pprint(stdev(real_start))
 
 
 def get_default_value(job, item, default_value):
@@ -405,6 +477,8 @@ def non_interactive_mode(filename):
                                                     step_hosts, nb_hosts,
                                                     cpu_runtime))
 
+                    init_jitter()
+
                     start_cpu_bench(nb_hosts, hosts_list, cpu_runtime, cores)
 
                     time.sleep(cpu_runtime)
@@ -412,7 +486,9 @@ def non_interactive_mode(filename):
                     while (get_host_list(CPU_RUN).keys()):
                         time.sleep(1)
 
-                    compute_results(log_dir, nb_hosts, affinity, affinity_hosts, hosts_list)
+                    disable_jitter()
+
+                    compute_results(log_dir, nb_hosts, affinity, affinity_hosts, hosts_list, cpu_runtime)
             else:
                 HP.logger.error("CPU: Canceling Test")
     HP.logger.info("End of job %s" % name)

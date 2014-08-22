@@ -98,7 +98,10 @@ def recv_hm_message(sock):
                       msg.get_action_type(), sock.getpeername(),
                       msg.need_ack))
         if (msg.need_ack is True) and (msg.message != HM.DISCONNECT):
-            send_hm_message(sock, HM(HM.ACK), False)
+            message = HM(HM.ACK)
+            message.module = msg.module
+            message.action = msg.action
+            send_hm_message(sock, message, False)
     return msg
 
 

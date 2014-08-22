@@ -369,7 +369,7 @@ def compute_nb_hosts_series(min_hosts, max_hosts, step_hosts):
 
     # Insure that min_hosts is always part of the serie
     nb_hosts_series.append(min_hosts)
-    
+
     # Using the modulo to get the number of interations we have
     for modulo in xrange(1, divmod(max_hosts, step_hosts)[0]+1):
         nb_hosts = modulo * step_hosts

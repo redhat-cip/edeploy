@@ -53,7 +53,7 @@ init_redhat_chroot() {
             cp $dir/repo/media.repo ${target}/etc/yum.repos.d/rhel-source.repo
         else
             curl ${REPOSITORY}/media.repo > ${target}/etc/yum.repos.d/rhel-source.repo
-	    fi
+        fi
     fi
     case "$dist" in
         "centos")

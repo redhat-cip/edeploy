@@ -27,6 +27,7 @@ class Health_Message():
     START = 1 << 2
     COMPLETED = 1 << 3
     NOTCOMPLETED = 1 << 4
+    STARTING = 1 << 5
 
     CONNECT = 1 << 1
     DISCONNECT = 1 << 2

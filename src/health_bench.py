@@ -47,6 +47,13 @@ class Health_Bench():
         self.message.action = HM.COMPLETED
         HP.send_hm_message(self.socket, self.message)
 
+    def starting(self, module):
+        self.message.message = HM.MODULE
+        self.message.module = module
+        self.message.action = HM.STARTING
+        HP.send_hm_message(self.socket, self.message)
+        return
+
     def __init__(self, msg, socket, logger):
         logger.info("INIT BENCH")
         self.message = msg
@@ -59,9 +66,13 @@ class Health_CPU(Health_Bench):
     def start(self):
         self.logger.info("Starting CPU Bench for %d seconds" %
                          self.message.running_time)
+        self.starting()
         HL.run_sysbench(self.message.hw, self.message.running_time,
                         self.message.cpu_instances)
         self.completed()
+
+    def starting(self):
+        Health_Bench.starting(self, HM.CPU)
 
     def stop(self):
         self.logger.info("Stopping CPU Bench")

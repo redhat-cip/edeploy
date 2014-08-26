@@ -322,7 +322,7 @@ def compute_metrics(log_dir, bench):
                 if (float(duration[host]) > float(bench['runtime'] + 1)):
                     HP.logger.error("Host %s took too much time : %.2f while expecting %d" % (host, duration[host], bench['runtime']))
 
-        HP.logger.info("Dumping cpu result from host %s" % str(host))
+        HP.logger.debug("Dumping cpu result from host %s" % str(host))
         filename_and_macs = HL.generate_filename_and_macs(results_cpu[host])
         save_hw(results_cpu[host], filename_and_macs['sysname'], dest_dir)
 

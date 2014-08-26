@@ -24,7 +24,10 @@ def generate(g):
 
 key = sys.argv[1]
 val = sys.argv[2]
-cmdb = eval(open(sys.argv[3]).read(-1))
+cmdb = []
+
+for fname in sys.argv[3:]:
+    cmdb = cmdb + eval(open(fname).read(-1))
 
 for entry in cmdb:
     try:

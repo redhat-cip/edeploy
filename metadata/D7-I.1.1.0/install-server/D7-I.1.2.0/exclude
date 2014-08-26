@@ -66,6 +66,7 @@
 /var/lib/debootstrap/
 /var/lib/edeploy/
 /var/lib/initramfs-tools/
+/var/lib/jenkins/
 /var/lib/logrotate/status
 /var/lib/mysql/
 /var/lib/ntp/drift

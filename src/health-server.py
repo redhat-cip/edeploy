@@ -467,8 +467,10 @@ def non_interactive_mode(filename):
             bench['max_hosts'] = max_hosts
 
             if cancel_job is False:
-                for nb_hosts in compute_nb_hosts_series(bench):
-
+                nb_loops = 0
+                hosts_series = compute_nb_hosts_series(bench)
+                for nb_hosts in hosts_series:
+                    nb_loops = nb_loops + 1
                     iter_bench = dict(bench)
                     iter_bench['runtime'] = get_default_value(cpu_job, 'runtime', bench['runtime'])
                     iter_bench['cores'] = get_default_value(cpu_job, 'cores', 1)
@@ -482,10 +484,10 @@ def non_interactive_mode(filename):
                         HP.logger.error("CPU: Canceling test %d / %d" % ((iter_bench['nb-hosts'], iter_bench['max_hosts'])))
                         continue
 
-                    HP.logger.info("CPU: Waiting bench %d / %d (step = %d)"
-                                   " to finish on %d hosts : should take"
-                                   " %d seconds" % (iter_bench['nb_hosts'], iter_bench['max_hosts'],
-                                                    iter_bench['step-hosts'], iter_bench['nb_hosts'],
+                    HP.logger.info("CPU: Waiting bench %d / %d"
+                                   " to finish on %d hosts (step = %d): should take"
+                                   " %d seconds" % (nb_loops, len(hosts_series),
+                                                    iter_bench['nb-hosts'], iter_bench['step-hosts'],
                                                     iter_bench['runtime']))
 
                     init_jitter()

@@ -442,8 +442,8 @@ def non_interactive_mode(filename):
         disconnect_clients()
         return
 
-    required_hosts = job['required-hosts']
-    if required_hosts < 1:
+    bench_all['required-hosts'] = int(job['required-hosts'])
+    if bench_all['required-hosts'] < 1:
         HP.logger.error("required-hosts shall be greater than 0")
         disconnect_clients()
         return
@@ -453,12 +453,12 @@ def non_interactive_mode(filename):
     log_dir = prepare_log_dir(name)
 
     HP.logger.info("Expecting %d hosts to start job %s" %
-                   (required_hosts, name))
+                   (bench_all['required-hosts'], name))
     hosts_count = len(hosts.keys())
     previous_hosts_count = hosts_count
-    while (int(hosts_count) < int(required_hosts)):
+    while (int(hosts_count) < bench_all['required-hosts']):
         if (hosts_count != previous_hosts_count):
-            HP.logger.info("Still %d hosts to connect" % (int(required_hosts) - int(hosts_count)))
+            HP.logger.info("Still %d hosts to connect" % (bench_all['required-hosts'] - int(hosts_count)))
             previous_hosts_count = hosts_count
         hosts_count = len(hosts.keys())
         time.sleep(1)

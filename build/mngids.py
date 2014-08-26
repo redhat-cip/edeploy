@@ -64,7 +64,7 @@ def parse_cmdline(args, uids, gids, first=100, last=999, last_user=29999):
         index = get_index(args, opt) or get_index(args, '-' + opt[2])
 
         if not key in ids:
-            debug('mngids.py: %s not found' % key, opt, ids)
+            debug('mngids.py: %s not found (%s) in %s' % (key, opt, str(ids)))
             if index:
                 try:
                     ival = int(args[index + 1])

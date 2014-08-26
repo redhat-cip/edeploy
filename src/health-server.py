@@ -173,7 +173,7 @@ def get_host_list(item):
     return selected_hosts
 
 
-def compute_affinity(affinity_hosts):
+def compute_affinity(bench):
     affinity = {}
 
     def acceptable_host(host_list, host):
@@ -187,7 +187,7 @@ def compute_affinity(affinity_hosts):
         hw = hosts[host].hw
         system_id = HL.get_value(hw, "system", "product", "serial")
 
-        if acceptable_host(affinity_hosts, system_id) is False:
+        if acceptable_host(bench['affinity-hosts'], system_id) is False:
             continue
 
         if system_id not in affinity.keys():
@@ -214,41 +214,40 @@ def get_fair_hosts_list(affinity_hosts_list, nb_hosts):
     return hosts_list
 
 
-def get_hosts_list_from_affinity(nb_hosts, affinity, affinity_hosts):
-    affinity_hosts_list = compute_affinity(affinity_hosts)
+def get_hosts_list_from_affinity(bench):
+    affinity_hosts_list = compute_affinity(bench)
     hosts_list = []
 
-    if affinity == SCHED_FAIR:
-        hosts_list = get_fair_hosts_list(affinity_hosts_list, nb_hosts)
+    if bench['affinity'] == SCHED_FAIR:
+        hosts_list = get_fair_hosts_list(affinity_hosts_list, bench['nb_hosts'])
     else:
-        HP.logger.error("Unsupported affinity : %s" % affinity)
+        HP.logger.error("Unsupported affinity : %s" % bench['affinity'])
 
     return hosts_list
 
 
-def dump_affinity(affinity, affinity_hosts, selected_host_list, dest_dir):
-    HP.logger.info("Using affinity %s on the following mapping :" % affinity)
-    host_affinity = compute_affinity(affinity_hosts)
+def dump_affinity(bench):
+    HP.logger.debug("Using affinity %s on the following mapping :" % bench['affinity'])
+    host_affinity = compute_affinity(bench)
     final_list = {}
     for hypervisor in host_affinity.keys():
-        for hostname in selected_host_list:
+        for hostname in bench['hosts-list']:
             if hostname in host_affinity[hypervisor]:
                 if hypervisor not in final_list.keys():
                     final_list[hypervisor] = [hostname]
                 else:
                     final_list[hypervisor].append(hostname)
-
-    pprint.pprint(final_list)
-    pprint.pprint(final_list, stream=open(dest_dir+"/affinity", 'w'))
+    return final_list
 
 
-def start_cpu_bench(nb_hosts, hosts_list, runtime, cores):
+def start_cpu_bench(bench):
     global hosts_state
+    nb_hosts = bench['nb_hosts']
     msg = HM(HM.MODULE, HM.CPU, HM.START)
-    msg.cpu_instances = cores
-    msg.running_time = runtime
+    msg.cpu_instances = bench['cores']
+    msg.running_time = bench['runtime']
 
-    for host in hosts_list:
+    for host in bench['hosts-list']:
         if nb_hosts == 0:
             break
         if host not in get_host_list(CPU_RUN).keys():
@@ -296,16 +295,14 @@ def dump_hosts(log_dir):
     pprint.pprint(unique_hosts_list, stream=open(log_dir+"/hosts", 'w'))
 
 
-def compute_results(log_dir, nb_hosts, affinity, affinity_hosts, hosts_list, runtime):
-    dest_dir = log_dir + '/%d/' % nb_hosts
+def compute_metrics(log_dir, bench):
+    dest_dir = log_dir + '/%d/' % bench['nb_hosts']
 
     try:
         if not os.path.isdir(dest_dir):
             os.makedirs(dest_dir)
     except OSError, e:
         HL.fatal_error("Cannot create %s directory (%s)" % (dest_dir, e.errno))
-
-    dump_affinity(affinity, affinity_hosts, hosts_list, dest_dir)
 
     delta_start_jitter = {}
     duration = {}
@@ -322,17 +319,21 @@ def compute_results(log_dir, nb_hosts, affinity, affinity_hosts, hosts_list, run
                 real_start.append(start_jitter[host][1])
                 delta_start_jitter[host] = (start_jitter[host][1] - start_jitter[host][0])
                 duration[host] = (stop_jitter[host] - start_jitter[host][1])
-                if (float(duration[host]) > float(runtime + 1)):
-                    HP.logger.error("Host %s took too much time : %.2f while expecting %d" % (host, duration[host], runtime))
+                if (float(duration[host]) > float(bench['runtime'] + 1)):
+                    HP.logger.error("Host %s took too much time : %.2f while expecting %d" % (host, duration[host], bench['runtime']))
 
         HP.logger.info("Dumping cpu result from host %s" % str(host))
         filename_and_macs = HL.generate_filename_and_macs(results_cpu[host])
         save_hw(results_cpu[host], filename_and_macs['sysname'], dest_dir)
 
-    pprint.pprint("RESULT")
-    pprint.pprint(delta_start_jitter)
-    pprint.pprint(duration)
-    pprint.pprint(stdev(real_start))
+    output = {}
+    output['bench'] = bench
+    output['hosts'] = results_cpu.keys()
+    output['affinity'] = dump_affinity(bench)
+    output['start_time'] = real_start
+    output['start_lag'] = delta_start_jitter
+    output['duration'] = duration
+    pprint.pprint(output, stream=open(dest_dir+"/metrics", 'w'))
 
 
 def get_default_value(job, item, default_value):
@@ -364,22 +365,22 @@ def prepare_log_dir(name):
     return dest_dir
 
 
-def compute_nb_hosts_series(min_hosts, max_hosts, step_hosts):
+def compute_nb_hosts_series(bench):
     nb_hosts_series = []
 
     # Insure that min_hosts is always part of the serie
-    nb_hosts_series.append(min_hosts)
+    nb_hosts_series.append(bench['min_hosts'])
 
     # Using the modulo to get the number of interations we have
-    for modulo in xrange(1, divmod(max_hosts, step_hosts)[0]+1):
-        nb_hosts = modulo * step_hosts
+    for modulo in xrange(1, divmod(bench['max_hosts'], bench['step-hosts'])[0]+1):
+        nb_hosts = modulo * bench['step-hosts']
         # Don't save hosts that are below min_hosts
-        if nb_hosts > min_hosts:
+        if nb_hosts > bench['min_hosts']:
             nb_hosts_series.append(nb_hosts)
 
     # Insure that the max_hosts is always part of the serie
-    if max_hosts not in nb_hosts_series:
-        nb_hosts_series.append(max_hosts)
+    if bench['max_hosts'] not in nb_hosts_series:
+        nb_hosts_series.append(bench['max_hosts'])
 
     return nb_hosts_series
 
@@ -387,6 +388,7 @@ def compute_nb_hosts_series(min_hosts, max_hosts, step_hosts):
 def non_interactive_mode(filename):
     total_runtime = 0
     name = "undefined"
+    bench_all = {}
 
     job = yaml.load(file(filename, 'r'))
     if job['name'] is None:
@@ -407,7 +409,7 @@ def non_interactive_mode(filename):
         disconnect_clients()
         return
 
-    runtime = get_default_value(job, 'runtime', 0)
+    bench_all['runtime'] = get_default_value(job, 'runtime', 10)
 
     log_dir = prepare_log_dir(name)
 
@@ -427,15 +429,18 @@ def non_interactive_mode(filename):
     HP.logger.info("Starting job %s" % name)
     cpu_job = job['cpu']
     if cpu_job:
+            bench = dict(bench_all)
+            bench['type'] = HM.CPU
             cancel_job = False
-            step_hosts = get_default_value(cpu_job, 'step-hosts', 1)
-            affinity = get_default_value(cpu_job, 'affinity', SCHED_FAIR)
+            bench['step-hosts'] = get_default_value(cpu_job, 'step-hosts', 1)
+            bench['affinity'] = get_default_value(cpu_job, 'affinity', SCHED_FAIR)
             affinity_list = get_default_value(cpu_job, 'affinity-hosts', '')
             affinity_hosts = []
             if affinity_list:
                 for manual_host in affinity_list.split(","):
                     affinity_hosts.append(manual_host.strip())
 
+            bench['affinity-hosts'] = affinity_hosts
             required_cpu_hosts = get_default_value(cpu_job, 'required-hosts',
                                                    required_hosts)
             if "-" in str(required_cpu_hosts):
@@ -458,37 +463,43 @@ def non_interactive_mode(filename):
                                 " hosts.")
                 cancel_job = True
 
-            if cancel_job is False:
-                for nb_hosts in compute_nb_hosts_series(min_hosts, max_hosts, step_hosts):
-                    cpu_runtime = get_default_value(cpu_job, 'runtime',
-                                                    runtime)
-                    total_runtime += cpu_runtime
-                    cores = get_default_value(cpu_job, 'cores', 1)
-                    hosts_list = get_hosts_list_from_affinity(nb_hosts, affinity, affinity_hosts)
+            bench['min_hosts'] = min_hosts
+            bench['max_hosts'] = max_hosts
 
-                    if (len(hosts_list) < nb_hosts):
-                        HP.logger.error("CPU: %d hosts expected while affinity only provides %d hosts available" % (nb_hosts, len(hosts_list)))
-                        HP.logger.error("CPU: Canceling test %d / %d" % ((nb_hosts, max_hosts)))
+            if cancel_job is False:
+                for nb_hosts in compute_nb_hosts_series(bench):
+
+                    iter_bench = dict(bench)
+                    iter_bench['runtime'] = get_default_value(cpu_job, 'runtime', bench['runtime'])
+                    iter_bench['cores'] = get_default_value(cpu_job, 'cores', 1)
+                    iter_bench['nb_hosts'] = nb_hosts
+                    total_runtime += iter_bench['runtime']
+
+                    iter_bench['hosts-list'] = get_hosts_list_from_affinity(iter_bench)
+
+                    if (len(iter_bench['hosts-list']) < iter_bench['nb_hosts']):
+                        HP.logger.error("CPU: %d hosts expected while affinity only provides %d hosts available" % (iter_bench['nb_hosts'], len(iter_bench['hosts-list'])))
+                        HP.logger.error("CPU: Canceling test %d / %d" % ((iter_bench['nb_hosts'], iter_bench['max_hosts'])))
                         continue
 
                     HP.logger.info("CPU: Waiting bench %d / %d (step = %d)"
                                    " to finish on %d hosts : should take"
-                                   " %d seconds" % (nb_hosts, max_hosts,
-                                                    step_hosts, nb_hosts,
-                                                    cpu_runtime))
+                                   " %d seconds" % (iter_bench['nb_hosts'], iter_bench['max_hosts'],
+                                                    iter_bench['step-hosts'], iter_bench['nb_hosts'],
+                                                    iter_bench['runtime']))
 
                     init_jitter()
 
-                    start_cpu_bench(nb_hosts, hosts_list, cpu_runtime, cores)
+                    start_cpu_bench(iter_bench)
 
-                    time.sleep(cpu_runtime)
+                    time.sleep(bench['runtime'])
 
                     while (get_host_list(CPU_RUN).keys()):
                         time.sleep(1)
 
                     disable_jitter()
 
-                    compute_results(log_dir, nb_hosts, affinity, affinity_hosts, hosts_list, cpu_runtime)
+                    compute_metrics(log_dir, iter_bench)
             else:
                 HP.logger.error("CPU: Canceling Test")
     HP.logger.info("End of job %s" % name)

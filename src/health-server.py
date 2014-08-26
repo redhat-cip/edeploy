@@ -385,6 +385,45 @@ def compute_nb_hosts_series(bench):
     return nb_hosts_series
 
 
+def parse_job_config(bench, job, job_type):
+    bench['type'] = job_type
+    bench['step-hosts'] = get_default_value(job, 'step-hosts', 1)
+    bench['affinity'] = get_default_value(job, 'affinity', SCHED_FAIR)
+    affinity_list = get_default_value(job, 'affinity-hosts', '')
+    affinity_hosts = []
+    if affinity_list:
+        for manual_host in affinity_list.split(","):
+            affinity_hosts.append(manual_host.strip())
+
+    bench['affinity-hosts'] = affinity_hosts
+    required_cpu_hosts = get_default_value(job, 'required-hosts',
+                                           bench['required-hosts'])
+    if "-" in str(required_cpu_hosts):
+        min_hosts = int(str(required_cpu_hosts).split("-")[0])
+        max_hosts = int(str(required_cpu_hosts).split("-")[1])
+    else:
+        min_hosts = required_cpu_hosts
+        max_hosts = min_hosts
+
+    if max_hosts < 1:
+        max_hosts = min_hosts
+        HP.logger.error("CPU: required-hosts shall be greater than"
+                        " 0, defaulting to global required-hosts=%d"
+                        % max_hosts)
+        return False
+
+    if max_hosts > bench['required-hosts']:
+        HP.logger.error("CPU: The maximum number of hosts to tests"
+                        " is greater than the amount of available"
+                        " hosts.")
+        return False
+
+    bench['min_hosts'] = min_hosts
+    bench['max_hosts'] = max_hosts
+
+    return True
+
+
 def non_interactive_mode(filename):
     total_runtime = 0
     name = "undefined"
@@ -430,43 +469,8 @@ def non_interactive_mode(filename):
     cpu_job = job['cpu']
     if cpu_job:
             bench = dict(bench_all)
-            bench['type'] = HM.CPU
-            cancel_job = False
-            bench['step-hosts'] = get_default_value(cpu_job, 'step-hosts', 1)
-            bench['affinity'] = get_default_value(cpu_job, 'affinity', SCHED_FAIR)
-            affinity_list = get_default_value(cpu_job, 'affinity-hosts', '')
-            affinity_hosts = []
-            if affinity_list:
-                for manual_host in affinity_list.split(","):
-                    affinity_hosts.append(manual_host.strip())
 
-            bench['affinity-hosts'] = affinity_hosts
-            required_cpu_hosts = get_default_value(cpu_job, 'required-hosts',
-                                                   required_hosts)
-            if "-" in str(required_cpu_hosts):
-                min_hosts = int(str(required_cpu_hosts).split("-")[0])
-                max_hosts = int(str(required_cpu_hosts).split("-")[1])
-            else:
-                min_hosts = required_cpu_hosts
-                max_hosts = min_hosts
-
-            if max_hosts < 1:
-                max_hosts = min_hosts
-                HP.logger.error("CPU: required-hosts shall be greater than"
-                                " 0, defaulting to global required-hosts=%d"
-                                % max_hosts)
-                cancel_job = True
-
-            if max_hosts > required_hosts:
-                HP.logger.error("CPU: The maximum number of hosts to tests"
-                                " is greater than the amount of available"
-                                " hosts.")
-                cancel_job = True
-
-            bench['min_hosts'] = min_hosts
-            bench['max_hosts'] = max_hosts
-
-            if cancel_job is False:
+            if parse_job_config(bench, cpu_job, HM.CPU) is True:
                 nb_loops = 0
                 hosts_series = compute_nb_hosts_series(bench)
                 for nb_hosts in hosts_series:
@@ -504,6 +508,7 @@ def non_interactive_mode(filename):
                     compute_metrics(log_dir, iter_bench)
             else:
                 HP.logger.error("CPU: Canceling Test")
+
     HP.logger.info("End of job %s" % name)
     disconnect_clients()
 

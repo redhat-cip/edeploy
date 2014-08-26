@@ -219,7 +219,7 @@ def get_hosts_list_from_affinity(bench):
     hosts_list = []
 
     if bench['affinity'] == SCHED_FAIR:
-        hosts_list = get_fair_hosts_list(affinity_hosts_list, bench['nb_hosts'])
+        hosts_list = get_fair_hosts_list(affinity_hosts_list, bench['nb-hosts'])
     else:
         HP.logger.error("Unsupported affinity : %s" % bench['affinity'])
 
@@ -242,7 +242,7 @@ def dump_affinity(bench):
 
 def start_cpu_bench(bench):
     global hosts_state
-    nb_hosts = bench['nb_hosts']
+    nb_hosts = bench['nb-hosts']
     msg = HM(HM.MODULE, HM.CPU, HM.START)
     msg.cpu_instances = bench['cores']
     msg.running_time = bench['runtime']
@@ -296,7 +296,7 @@ def dump_hosts(log_dir):
 
 
 def compute_metrics(log_dir, bench):
-    dest_dir = log_dir + '/%d/' % bench['nb_hosts']
+    dest_dir = log_dir + '/%d/' % bench['nb-hosts']
 
     try:
         if not os.path.isdir(dest_dir):
@@ -472,14 +472,14 @@ def non_interactive_mode(filename):
                     iter_bench = dict(bench)
                     iter_bench['runtime'] = get_default_value(cpu_job, 'runtime', bench['runtime'])
                     iter_bench['cores'] = get_default_value(cpu_job, 'cores', 1)
-                    iter_bench['nb_hosts'] = nb_hosts
+                    iter_bench['nb-hosts'] = nb_hosts
                     total_runtime += iter_bench['runtime']
 
                     iter_bench['hosts-list'] = get_hosts_list_from_affinity(iter_bench)
 
-                    if (len(iter_bench['hosts-list']) < iter_bench['nb_hosts']):
-                        HP.logger.error("CPU: %d hosts expected while affinity only provides %d hosts available" % (iter_bench['nb_hosts'], len(iter_bench['hosts-list'])))
-                        HP.logger.error("CPU: Canceling test %d / %d" % ((iter_bench['nb_hosts'], iter_bench['max_hosts'])))
+                    if (len(iter_bench['hosts-list']) < iter_bench['nb-hosts']):
+                        HP.logger.error("CPU: %d hosts expected while affinity only provides %d hosts available" % (iter_bench['nb-hosts'], len(iter_bench['hosts-list'])))
+                        HP.logger.error("CPU: Canceling test %d / %d" % ((iter_bench['nb-hosts'], iter_bench['max_hosts'])))
                         continue
 
                     HP.logger.info("CPU: Waiting bench %d / %d (step = %d)"

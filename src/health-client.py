@@ -142,6 +142,7 @@ def connect_to_server(hostname):
         if msg.message == HM.DISCONNECTED:
             connected = False
             HP.logger.error("Got disconnected from server, exiting")
+            return True
             break
 
         msg.hw = eval(open(sys.argv[1]).read(-1))
@@ -174,4 +175,6 @@ if __name__ == '__main__':
         HP.logger.error("You must provide an hardware file and a host to "
                         "connect as argument")
         sys.exit(1)
-    connect_to_server(sys.argv[2])
+    need_exit = False
+    while (need_exit is False):
+            need_exit = connect_to_server(sys.argv[2])

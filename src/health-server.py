@@ -306,7 +306,7 @@ def compute_metrics(log_dir, bench):
 
     delta_start_jitter = {}
     duration = {}
-    real_start = []
+    real_start = {}
 
     for host in results_cpu.keys():
         # Checking jitter settings
@@ -316,7 +316,7 @@ def compute_metrics(log_dir, bench):
             if len(start_jitter[host]) < 2:
                 HP.logger.error("Not enough start jitter information for host %s" % host)
             else:
-                real_start.append(start_jitter[host][1])
+                real_start[host] = start_jitter[host][1]
                 delta_start_jitter[host] = (start_jitter[host][1] - start_jitter[host][0])
                 duration[host] = (stop_jitter[host] - start_jitter[host][1])
                 if (float(duration[host]) > float(bench['runtime'] + 1)):

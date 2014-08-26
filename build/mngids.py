@@ -20,9 +20,17 @@
 '''
 from __future__ import print_function
 
+import os
 import pprint
 import subprocess
 import sys
+
+_DEBUG = os.getenv('MNGIDS_DEBUG', None) is not None
+
+
+def debug(output):
+    if _DEBUG:
+        sys.stderr.write(output + '\n')
 
 
 def parse(content, assoc, is_group=False):
@@ -56,7 +64,7 @@ def parse_cmdline(args, uids, gids, first=100, last=999, last_user=29999):
         index = get_index(args, opt) or get_index(args, '-' + opt[2])
 
         if not key in ids:
-            print('mngids.py: %s not found' % key, opt, ids)
+            debug('mngids.py: %s not found' % key, opt, ids)
             if index:
                 try:
                     ival = int(args[index + 1])
@@ -76,12 +84,12 @@ def parse_cmdline(args, uids, gids, first=100, last=999, last_user=29999):
                     val = str(loop)
                     break
             else:
-                print('no more id for %s in %s' % (key, ids))
+                debug('no more id for %s in %s' % (key, ids))
                 return args
         else:
             val = ids[key][idx]
 
-        print('mngids.py: found %s at %s for val[%s]=%s' %
+        debug('mngids.py: found %s at %s for val[%s]=%s' %
               (opt, str(index), key, val))
 
         if index:
@@ -117,7 +125,7 @@ def main():
     uids = {}
     gids = {}
 
-    print('ORIG', sys.argv)
+    debug('ORIG %s' % str(sys.argv))
 
     IDS = '/root/ids.tables'
 
@@ -129,7 +137,7 @@ def main():
     parse(open('/etc/group').read(), gids, True)
     parse_cmdline(sys.argv, uids, gids)
     #
-    print(sys.argv)
+    debug('REWRITTEN %s' % str(sys.argv))
     ret = subprocess.call(sys.argv)
     if ret != 0:
         sys.exit(ret)

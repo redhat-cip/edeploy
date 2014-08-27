@@ -150,6 +150,8 @@ if [ -z "$RSERV" ]; then
     RSERV="$SERV"
 fi
 
+get_config_from_cloudinit
+
 ################################################################################
 step "Detecting hardware"
 

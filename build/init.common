@@ -8,6 +8,25 @@ GIT_REV=""
 
 export PATH=/sbin:/usr/sbin:/bin:/usr/bin:$PATH
 
+is_virtualized() {
+    grep -qw hypervisor /proc/cpuinfo
+    return $?
+}
+
+
+get_config_from_cloudinit() {
+    if is_virtualized; then
+         #Let's try to get a user-data in the next minute (sometimes cloud-init is long to answer the initial request)
+         curl http://169.254.169.254/2009-04-04/user-data -fso /user-data -m 5 --retry 10 --retry-delay 2
+         if [ -f /user-data ]; then
+             grep -q "EDEPLOYMAGIC" /user-data && source /user-data
+         else
+             log "No user data found, ignoring"
+         fi
+    fi
+}
+
+
 do_python() {
     case $(lsb_release -sri) in
        "RedHatEnterpriseServer 6.5"|"Centos 6.5")

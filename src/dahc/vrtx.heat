@@ -13,4 +13,7 @@ resources:
             flavor: change_the_flavor_name
             networks:
               - network: change_the_subnet_id
-
+            user_data_format: RAW
+            user_data: |
+              #EDEPLOYMAGIC
+              RBENCH=ip_of_bench_server

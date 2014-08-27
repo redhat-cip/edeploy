@@ -185,6 +185,8 @@ if [ -z "$RSERV" ]; then
     RSERV="$SERV"
 fi
 
+get_config_from_cloudinit
+
 if [ -n "$USBBOOT" ]; then
     mkdir -p /ahcexport
     mount /dev/disk/by-label/AHCEXPORT /ahcexport || mount /dev/disk/by-label/ahcexport /ahcexport || give_up "Failed to detect an ahcexport directory when booting on a USB device"

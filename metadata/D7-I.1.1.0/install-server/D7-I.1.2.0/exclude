@@ -5,6 +5,7 @@
 /etc/apache2/site-enabled/puppetboard
 /etc/apache2/site-enabled/puppetmaster
 /etc/config-tools/
+/etc/elasticsearch/
 /etc/serverspec/
 /etc/jenkins_jobs/
 /etc/puppet/
@@ -53,6 +54,7 @@
 /etc/sysconfig/network
 /etc/sysconfig/network-scripts/
 /etc/sysconfig/network-scripts/ifcfg-eth0
+/etc/td-agent/
 /etc/udev/rules.d/
 /home/jenkins/
 /lib/init/rw
@@ -61,16 +63,21 @@
 /run/
 /sys/
 /tmp/
+/usr/share/elasticsearch/
 /var/backups/
 /var/cache/debconf/
 /var/lib/debootstrap/
+/var/lib/dhclient/
+/var/lib/dnsmasq/
 /var/lib/edeploy/
+/var/lib/elasticsearch/
 /var/lib/initramfs-tools/
 /var/lib/jenkins/
 /var/lib/logrotate/status
 /var/lib/mysql/
 /var/lib/ntp/drift
 /var/lib/pengine/
+/var/lib/pxemngr/
 /var/lib/puppet/
 /var/lib/puppetdb/
 /var/lib/puppet/client_data/
@@ -82,6 +89,7 @@
 /var/lib/puppet/ssl/
 /var/lib/puppet/state/
 /var/lib/rabbitmq/
+/var/lib/tftpboot/
 /var/lib/ucf
 /var/lib/urandom/
 /var/lib/xml-core/

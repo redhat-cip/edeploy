@@ -209,6 +209,7 @@ if [ -n "$RBENCH" ]; then
         if [ $? -eq 0 ]; then
             break;
         fi
+    sleep $[ ( $RANDOM % 5 )  + 1 ]s
     done
 else
     step "Benchmarking system"

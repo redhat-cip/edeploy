@@ -43,6 +43,7 @@ import re
 import sys
 import shutil
 import time
+import traceback
 
 import matcher
 
@@ -209,7 +210,7 @@ def save_cmdb(cfg_dir, name, cmdb):
     try:
         pprint.pprint(cmdb, stream=open(filename, 'w'))
     except IOError, xcpt:
-        log("exception while processing CMDB %s" % str(xcpt))
+        log("exception while saving CMDB %s" % str(xcpt))
 
 
 def update_cmdb(cmdb, var, pref, forced_find):
@@ -330,6 +331,8 @@ EOF
 exit 1
 ''' % error)
     log('Aborting: ' + error)
+    if sys.exc_info()[0] is not None:
+        traceback.print_exc(file=sys.stderr)
 
 
 def fatal_error(error):

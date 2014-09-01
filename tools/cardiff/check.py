@@ -141,7 +141,7 @@ def logical_disks_perf(systems, group_number, detail_options):
 
 
 def systems(systems):
-    sets = search_item(systems, "system", "(.*)", ['serial'])
+    sets = search_item(systems, "system", "(.*)", ['serial', 'uuid'])
     groups = compare_sets.compare(sets)
     compare_sets.print_groups(groups, "System")
     return groups

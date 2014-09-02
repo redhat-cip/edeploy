@@ -89,22 +89,22 @@ def compare_cpu(bench_values, systems_groups):
 
 
 def group_systems(bench_values, systems_groups, ignore_list):
-    if not "disk" in ignore_list:
+    if "disk" not in ignore_list:
         compare_disks(bench_values, systems_groups)
 
-    if not "system" in ignore_list:
+    if "system" not in ignore_list:
         compare_systems(bench_values, systems_groups)
 
-    if not "firmware" in ignore_list:
+    if "firmware" not in ignore_list:
         compare_firmware(bench_values, systems_groups)
 
-    if not "memory" in ignore_list:
+    if "memory" not in ignore_list:
         compare_memory(bench_values, systems_groups)
 
-    if not "network" in ignore_list:
+    if "network" not in ignore_list:
         compare_network(bench_values, systems_groups)
 
-    if not "cpu" in ignore_list:
+    if "cpu" not in ignore_list:
         compare_cpu(bench_values, systems_groups)
 
 
@@ -215,6 +215,6 @@ def main(argv):
     # It's time to compare performance in each group
     compare_performance(bench_values, systems_groups, detail)
 
-#Main
+# Main
 if __name__ == "__main__":
     sys.exit(main(sys.argv))

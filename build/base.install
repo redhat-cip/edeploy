@@ -181,7 +181,7 @@ install_base_packages() {
     cp -f /etc/resolv.conf "$target/etc/"
     local packages=""
     local cross_distro_packages="acpid bash curl dmidecode kbd lvm2 openssh-server parted pciutils rsync rsyslog sudo wget ntpdate logrotate ethtool hdparm iptables tcpdump ipmitool"
-    local deb_packages="grub-pc ifenslave ifupdown isc-dhcp-client kexec-tools locales lsb-release lshw man netbase netcat-openbsd net-tools vim cron"
+    local deb_packages="grub-pc ifenslave ifupdown isc-dhcp-client kexec-tools locales lsb-release lshw man netbase netcat-openbsd net-tools vim cron dnsutils"
     local repository=$(add_main_repository $dist)
     add_megacli_repository $dist $target
     case $dist in
@@ -203,7 +203,7 @@ install_base_packages() {
             else
                 CODENAME_MAJOR_PACKAGES="man-db grub2"
             fi
-            packages="$cross_distro_packages coreutils dhclient e2fsprogs $CODENAME_MAJOR_PACKAGES grubby hdparm initscripts iproute kernel net-tools passwd perl redhat-lsb-core crontabs openssh-clients"
+            packages="$cross_distro_packages coreutils dhclient e2fsprogs $CODENAME_MAJOR_PACKAGES grubby hdparm initscripts iproute kernel net-tools passwd perl redhat-lsb-core crontabs openssh-clients bind-utils"
             ;;
         *)
             echo "unsupported distribution: $dist" 2>&1

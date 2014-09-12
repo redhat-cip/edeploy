@@ -15,6 +15,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import errno
 import logging
 import pickle
 import socket
@@ -73,10 +74,10 @@ def recv_hm_message(sock):
     global logger
     try:
         lengthbuf = recvall(sock, 4)
-    except socket.error as (errno, v):
-        if errno in [errno.ECONNRESET, errno.EBADF]:
+    except socket.error, e:
+        if e[0] in [errno.ECONNRESET, errno.EBADF, errno.ESHUTDOWN, errno.ENOTCONN]:
             return HM(HM.DISCONNECTED)
-        logger.error(v)
+        logger.error(e[1])
         return HM(HM.INVALID)
 
     try:

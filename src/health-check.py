@@ -78,14 +78,14 @@ def search_cpuinfo(cpu_nb, item):
 
 
 def get_bogomips(hw_, cpu_nb):
-#    print "Getting Bogomips for CPU %d" % cpu_nb
+    #   print "Getting Bogomips for CPU %d" % cpu_nb
     bogo = search_cpuinfo(cpu_nb, "bogomips")
     if bogo is not None:
         hw_.append(('cpu', 'logical_%d' % cpu_nb, 'bogomips', bogo))
 
 
 def get_cache_size(hw_, cpu_nb):
-#    print "Getting CacheSize for CPU %d" % cpu_nb
+    #   print "Getting CacheSize for CPU %d" % cpu_nb
     cache_size = search_cpuinfo(cpu_nb, "cache size")
     if cache_size is not None:
         hw_.append(('cpu', 'logical_%d' % cpu_nb, 'cache_size', cache_size))
@@ -347,7 +347,7 @@ def run_fio(hw_, disks_list, mode, io_size, time):
             current_disk = re.search('MYJOB-(.*): \(groupid', line).group(1)
             continue
         if ("read : io=" in line) or ("write: io=" in line):
-             # read : io=169756KB, bw=16947KB/s, iops=4230, runt= 10017msec
+            # read : io=169756KB, bw=16947KB/s, iops=4230, runt= 10017msec
             if (len(disks_list) > 1):
                 mode_str = "simultaneous_%s_%s" % (mode, io_size)
             else:

@@ -15,6 +15,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import psutil
 import sys
 import subprocess
 import matcher
@@ -30,8 +31,7 @@ def get_value(hw_, level1, level2, level3):
 
 def fatal_error(error):
     '''Report a shell script with the error message and log
-       the message on stderr.
-    '''
+       the message on stderr.'''
     HP.logger.error('%s\n' % error)
     sys.exit(1)
 

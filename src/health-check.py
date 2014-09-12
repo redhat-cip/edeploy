@@ -25,11 +25,9 @@ import subprocess
 import sys
 import health_libs as HL
 import os
-import psutil
 
 RAMP_TIME = 5
 DEBUG = 0
-available_memory = 0
 
 
 def is_included(dict1, dict2):
@@ -479,7 +477,6 @@ def storage_perf(hw_, allow_destructive, running_time=10):
 
 
 def _main():
-    global available_memory
     'Command line entry point.'
     allow_destructive = False
     try:
@@ -490,12 +487,7 @@ def _main():
 
     hrdw = eval(open(sys.argv[1]).read(-1))
 
-    try:
-        available_memory = psutil.virtual_memory().total
-    except Exception:
-        available_memory = psutil.avail_phymem()
-
-    sys.stderr.write("Available memory before run = %s\n" % available_memory)
+    sys.stderr.write("Available memory before run = %s\n" % HL.get_available_memory())
 
     mode = 'cpu,memory,storage'
     try:

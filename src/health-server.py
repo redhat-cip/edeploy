@@ -38,6 +38,7 @@ hosts = {}
 lock_host = threading.RLock()
 hosts_state = {}
 results_cpu = {}
+results_memory = {}
 serv = 0
 NOTHING_RUN = 0
 CPU_RUN = 1 << 0
@@ -138,6 +139,8 @@ class SocketHandler(BaseRequestHandler):
 
                         if msg.module == HM.CPU:
                             cpu_completed(self.client_address, msg)
+                        elif msg.module == HM.MEMORY:
+                            memory_completed(self.client_address, msg)
 
 
 def createAndStartServer():
@@ -160,6 +163,13 @@ def cpu_completed(host, msg):
     global results_cpu
     hosts_state[host] &= ~CPU_RUN
     results_cpu[host] = msg.hw
+
+
+def memory_completed(host, msg):
+    global hosts_state
+    global results_memory
+    hosts_state[host] &= ~MEMORY_RUN
+    results_memory[host] = msg.hw
 
 
 def get_host_list(item):
@@ -259,6 +269,27 @@ def start_cpu_bench(bench):
             lock_socket_list.release()
 
 
+def start_memory_bench(bench):
+    global hosts_state
+    nb_hosts = bench['nb-hosts']
+    msg = HM(HM.MODULE, HM.MEMORY, HM.START)
+    msg.cpu_instances = bench['cores']
+    msg.block_size = bench['block-size']
+    msg.running_time = bench['runtime']
+    msg.parallel_mode = bench['mode']
+
+    for host in bench['hosts-list']:
+        if nb_hosts == 0:
+            break
+        if host not in get_host_list(MEMORY_RUN).keys():
+            hosts_state[host] |= MEMORY_RUN
+            nb_hosts = nb_hosts - 1
+            lock_socket_list.acquire()
+            start_time(host)
+            HP.send_hm_message(socket_list[host], msg)
+            lock_socket_list.release()
+
+
 def disconnect_clients():
     global serv
     msg = HM(HM.DISCONNECT)
@@ -295,8 +326,15 @@ def dump_hosts(log_dir):
     pprint.pprint(unique_hosts_list, stream=open(log_dir+"/hosts", 'w'))
 
 
-def compute_metrics(log_dir, bench):
+def compute_metrics(log_dir, bench, bench_type):
     dest_dir = log_dir + '/%d/' % bench['nb-hosts']
+
+    if bench_type == HM.CPU:
+        results = results_cpu
+        dest_dir = dest_dir + "/cpu"
+    elif bench_type == HM.MEMORY:
+        results = results_memory
+        dest_dir = dest_dir + "/memory"
 
     try:
         if not os.path.isdir(dest_dir):
@@ -308,7 +346,7 @@ def compute_metrics(log_dir, bench):
     duration = {}
     real_start = {}
 
-    for host in results_cpu.keys():
+    for host in results.keys():
         # Checking jitter settings
         if host not in start_jitter:
             HP.logger.error("Host %s should have a jitter value !" % host)
@@ -322,13 +360,13 @@ def compute_metrics(log_dir, bench):
                 if (float(duration[host]) > float(bench['runtime'] + 1)):
                     HP.logger.error("Host %s took too much time : %.2f while expecting %d" % (host, duration[host], bench['runtime']))
 
-        HP.logger.debug("Dumping cpu result from host %s" % str(host))
-        filename_and_macs = HL.generate_filename_and_macs(results_cpu[host])
-        save_hw(results_cpu[host], filename_and_macs['sysname'], dest_dir)
+        HP.logger.debug("Dumping result from host %s" % str(host))
+        filename_and_macs = HL.generate_filename_and_macs(results[host])
+        save_hw(results[host], filename_and_macs['sysname'], dest_dir)
 
     output = {}
     output['bench'] = bench
-    output['hosts'] = results_cpu.keys()
+    output['hosts'] = results.keys()
     output['affinity'] = dump_affinity(bench)
     output['start_time'] = real_start
     output['start_lag'] = delta_start_jitter
@@ -424,6 +462,94 @@ def parse_job_config(bench, job, job_type):
     return True
 
 
+def do_memory_job(bench_all, current_job, log_dir, total_runtime):
+    bench = dict(bench_all)
+
+    if parse_job_config(bench, current_job, HM.MEMORY) is True:
+        nb_loops = 0
+        hosts_series = compute_nb_hosts_series(bench)
+        for nb_hosts in hosts_series:
+            nb_loops = nb_loops + 1
+            iter_bench = dict(bench)
+            iter_bench['runtime'] = get_default_value(current_job, 'runtime', bench['runtime'])
+            iter_bench['cores'] = get_default_value(current_job, 'cores', 1)
+            iter_bench['block-size'] = get_default_value(current_job, 'block-size', "128M")
+            iter_bench['mode'] = get_default_value(current_job, 'mode', "forked")
+            iter_bench['nb-hosts'] = nb_hosts
+            total_runtime += iter_bench['runtime']
+
+            iter_bench['hosts-list'] = get_hosts_list_from_affinity(iter_bench)
+
+            if (len(iter_bench['hosts-list']) < iter_bench['nb-hosts']):
+                HP.logger.error("MEMORY: %d hosts expected while affinity only provides %d hosts available" % (iter_bench['nb-hosts'], len(iter_bench['hosts-list'])))
+                HP.logger.error("MEMORY: Canceling test %d / %d" % ((iter_bench['nb-hosts'], iter_bench['max_hosts'])))
+                continue
+
+            HP.logger.info("MEMORY: Waiting bench @%s %d / %d"
+                           " to finish on %d hosts (step = %d): should take"
+                           " %d seconds" % (iter_bench['block-size'], nb_loops, len(hosts_series),
+                                            iter_bench['nb-hosts'], iter_bench['step-hosts'],
+                                            iter_bench['runtime']))
+
+            init_jitter()
+
+            start_memory_bench(iter_bench)
+
+            time.sleep(bench['runtime'])
+
+            while (get_host_list(MEMORY_RUN).keys()):
+                time.sleep(1)
+
+            disable_jitter()
+
+            compute_metrics(log_dir, iter_bench, HM.MEMORY)
+    else:
+        HP.logger.error("MEMORY: Canceling Test")
+
+
+def do_cpu_job(bench_all, current_job, log_dir, total_runtime):
+    bench = dict(bench_all)
+
+    if parse_job_config(bench, current_job, HM.CPU) is True:
+        nb_loops = 0
+        hosts_series = compute_nb_hosts_series(bench)
+        for nb_hosts in hosts_series:
+            nb_loops = nb_loops + 1
+            iter_bench = dict(bench)
+            iter_bench['runtime'] = get_default_value(current_job, 'runtime', bench['runtime'])
+            iter_bench['cores'] = get_default_value(current_job, 'cores', 1)
+            iter_bench['nb-hosts'] = nb_hosts
+            total_runtime += iter_bench['runtime']
+
+            iter_bench['hosts-list'] = get_hosts_list_from_affinity(iter_bench)
+
+            if (len(iter_bench['hosts-list']) < iter_bench['nb-hosts']):
+                HP.logger.error("CPU: %d hosts expected while affinity only provides %d hosts available" % (iter_bench['nb-hosts'], len(iter_bench['hosts-list'])))
+                HP.logger.error("CPU: Canceling test %d / %d" % ((iter_bench['nb-hosts'], iter_bench['max_hosts'])))
+                continue
+
+            HP.logger.info("CPU: Waiting bench %d / %d"
+                           " to finish on %d hosts (step = %d): should take"
+                           " %d seconds" % (nb_loops, len(hosts_series),
+                                            iter_bench['nb-hosts'], iter_bench['step-hosts'],
+                                            iter_bench['runtime']))
+
+            init_jitter()
+
+            start_cpu_bench(iter_bench)
+
+            time.sleep(bench['runtime'])
+
+            while (get_host_list(CPU_RUN).keys()):
+                time.sleep(1)
+
+            disable_jitter()
+
+            compute_metrics(log_dir, iter_bench, HM.CPU)
+    else:
+        HP.logger.error("CPU: Canceling Test")
+
+
 def non_interactive_mode(filename):
     total_runtime = 0
     name = "undefined"
@@ -465,51 +591,16 @@ def non_interactive_mode(filename):
 
     dump_hosts(log_dir)
 
-    HP.logger.info("Starting job %s" % name)
-    cpu_job = job['cpu']
-    if cpu_job:
-            bench = dict(bench_all)
+    HP.logger.info("Starting %s" % name)
+    for next_job in job['jobs']:
+        HP.logger.info("Starting job %s" % next_job)
+        current_job = job['jobs'][next_job]
+        if "cpu" in next_job:
+                do_cpu_job(bench_all, current_job, log_dir, total_runtime)
+        if "memory" in next_job:
+                do_memory_job(bench_all, current_job, log_dir, total_runtime)
 
-            if parse_job_config(bench, cpu_job, HM.CPU) is True:
-                nb_loops = 0
-                hosts_series = compute_nb_hosts_series(bench)
-                for nb_hosts in hosts_series:
-                    nb_loops = nb_loops + 1
-                    iter_bench = dict(bench)
-                    iter_bench['runtime'] = get_default_value(cpu_job, 'runtime', bench['runtime'])
-                    iter_bench['cores'] = get_default_value(cpu_job, 'cores', 1)
-                    iter_bench['nb-hosts'] = nb_hosts
-                    total_runtime += iter_bench['runtime']
-
-                    iter_bench['hosts-list'] = get_hosts_list_from_affinity(iter_bench)
-
-                    if (len(iter_bench['hosts-list']) < iter_bench['nb-hosts']):
-                        HP.logger.error("CPU: %d hosts expected while affinity only provides %d hosts available" % (iter_bench['nb-hosts'], len(iter_bench['hosts-list'])))
-                        HP.logger.error("CPU: Canceling test %d / %d" % ((iter_bench['nb-hosts'], iter_bench['max_hosts'])))
-                        continue
-
-                    HP.logger.info("CPU: Waiting bench %d / %d"
-                                   " to finish on %d hosts (step = %d): should take"
-                                   " %d seconds" % (nb_loops, len(hosts_series),
-                                                    iter_bench['nb-hosts'], iter_bench['step-hosts'],
-                                                    iter_bench['runtime']))
-
-                    init_jitter()
-
-                    start_cpu_bench(iter_bench)
-
-                    time.sleep(bench['runtime'])
-
-                    while (get_host_list(CPU_RUN).keys()):
-                        time.sleep(1)
-
-                    disable_jitter()
-
-                    compute_metrics(log_dir, iter_bench)
-            else:
-                HP.logger.error("CPU: Canceling Test")
-
-    HP.logger.info("End of job %s" % name)
+    HP.logger.info("End of %s" % name)
     disconnect_clients()
 
 

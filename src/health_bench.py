@@ -66,8 +66,8 @@ class Health_CPU(Health_Bench):
         self.logger.info("Starting CPU Bench for %d seconds" %
                          self.message.running_time)
         self.starting()
-        HL.run_sysbench(self.message.hw, self.message.running_time,
-                        self.message.cpu_instances)
+        HL.run_sysbench_cpu(self.message.hw, self.message.running_time,
+                self.message.cpu_instances)
         self.completed()
 
     def starting(self):
@@ -81,3 +81,25 @@ class Health_CPU(Health_Bench):
 
     def completed(self):
         Health_Bench.completed(self, HM.CPU)
+
+
+class Health_MEMORY(Health_Bench):
+
+    def start(self):
+        self.logger.info("Starting Memory Bench for %d seconds with blocksize=%s" %
+                         (self.message.running_time, self.message.block_size))
+        self.starting()
+        HL.run_sysbench_memory(self.message)
+        self.completed()
+
+    def starting(self):
+        Health_Bench.starting(self, HM.MEMORY)
+
+    def stop(self):
+        self.logger.info("Stopping Memory Bench")
+
+    def notcompleted(self):
+        Health_Bench.notcompleted(self, HM.MEMORY)
+
+    def completed(self):
+        Health_Bench.completed(self, HM.MEMORY)

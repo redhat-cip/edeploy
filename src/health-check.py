@@ -106,81 +106,18 @@ def cpu_perf(hw_, testing_time=10, burn_test=False):
             for cpu_nb in get_one_cpu_per_socket(hw_):
                 get_bogomips(hw_, cpu_nb)
                 get_cache_size(hw_, cpu_nb)
-                HL.run_sysbench(hw_, testing_time, 1, cpu_nb)
+                HL.run_sysbench_cpu(hw_, testing_time, 1, cpu_nb)
     else:
         sys.stderr.write('CPU Burn: %d logical'
                          ' CPU to test (ETA: %d seconds)\n' % (
                              int(result), testing_time))
 
-    HL.run_sysbench(hw_, testing_time, int(result))
-
-
-def check_mem_size(block_size, cpu_count):
-    dsplit = re.compile(r'\d+')
-    ssplit = re.compile(r'[A-Z]+')
-    unit = ssplit.findall(block_size)
-    unit_in_bytes = 1
-    if unit[0] == 'K':
-        unit_in_bytes = 1024
-    elif unit[0] == 'M':
-        unit_in_bytes = 1024 * 1024
-    elif unit[0] == 'G':
-        unit_in_bytes = 1024 * 1024 * 1024
-
-    size_in_bytes = unit_in_bytes * \
-        int(dsplit.findall(block_size)[0]) * cpu_count
-    if (size_in_bytes > available_memory):
-        return False
-
-    return True
-
-
-def run_memtest(hw_, max_time, block_size, cpu_count, processor_num=-1):
-    'Running memtest on a processor'
-    check_mem = check_mem_size(block_size, cpu_count)
-    taskset = ''
-    if (processor_num < 0):
-        if check_mem is False:
-            msg = ("Avoid Benchmarking memory @%s "
-                   "from all CPUs, not enough memory\n")
-            sys.stderr.write(msg % block_size)
-            return
-        sys.stderr.write('Benchmarking memory @%s from all CPUs '
-                         'for %d seconds (%d threads)\n'
-                         % (block_size, max_time, cpu_count))
-    else:
-        if check_mem is False:
-            msg = ("Avoid Benchmarking memory @%s "
-                   "from CPU %d, not enough memory\n")
-            sys.stderr.write(msg % (block_size, processor_num))
-            return
-
-        sys.stderr.write('Benchmarking memory @%s from CPU %d'
-                         ' for %d seconds (%d threads)\n'
-                         % (block_size, processor_num, max_time, cpu_count))
-        taskset = 'taskset %s' % hex(1 << processor_num)
-
-    _cmd = '%s sysbench --max-time=%d --max-requests=1000000 ' \
-           '--num-threads=%d --test=memory --memory-block-size=%s run'
-    sysbench_cmd = subprocess.Popen(_cmd % (taskset, max_time,
-                                            cpu_count, block_size),
-                                    shell=True, stdout=subprocess.PIPE)
-
-    for line in sysbench_cmd.stdout:
-        if "transferred" in line:
-            title, right = line.rstrip('\n').replace(' ', '').split('(')
-            perf, useless = right.split('.')
-            if processor_num == -1:
-                hw_.append(('cpu', 'logical', 'threaded_bandwidth_%s'
-                            % block_size, perf))
-            else:
-                hw_.append(('cpu', 'logical_%d' % processor_num, 'bandwidth_%s'
-                            % block_size, perf))
+    HL.run_sysbench_cpu(hw_, testing_time, int(result))
 
 
 def run_forked_memtest(hw_, max_time, block_size, cpu_count):
     'Running forked memtest on a processor'
-    if check_mem_size(block_size, cpu_count) is False:
+    if HL.check_mem_size(block_size, cpu_count) is False:
         cmd = 'Avoid benchmarking memory @%s from all' \
               ' CPUs (%d processes), not enough memory\n'
         sys.stderr.write(cmd % (block_size, cpu_count))
@@ -265,7 +202,7 @@ def mem_perf_burn(hw_, testing_time=10):
         sys.stderr.write('Memory Burn: %d logical CPU'
                          ' to test (ETA: %d seconds)\n' % (
                              int(result), testing_time))
-        run_memtest(hw_, testing_time, '128M', int(result))
+        HL.run_sysbench_memory(hw_, testing_time, '128M', int(result))
 
 
 def get_one_cpu_per_socket(hw):
@@ -300,17 +237,16 @@ def mem_perf(hw_, testing_time=5):
                          % (int(physical), int(eta)))
         for cpu_nb in get_one_cpu_per_socket(hw_):
             for block_size in block_size_list:
-                run_memtest(hw_, testing_time, block_size, 1, cpu_nb)
+                HL.run_sysbench_memory_threaded(hw_, testing_time, block_size, 1, cpu_nb)
 
         # There is not need to test fork vs thread
         #  if only a single logical cpu is present
         if (int(result) > 1):
             for block_size in block_size_list:
-                run_memtest(hw_, all_cpu_testing_time, block_size, int(result))
+                HL.run_sysbench_memory_threaded(hw_, all_cpu_testing_time, block_size, int(result))
 
             for block_size in block_size_list:
-                run_forked_memtest(hw_, all_cpu_testing_time,
-                                   block_size, int(result))
+                HL.run_sysbench_memory_forked(hw_, all_cpu_testing_time, block_size, int(result))
 
     get_ddr_timing(hw_)
 

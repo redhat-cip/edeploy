@@ -36,7 +36,7 @@ def fatal_error(error):
     sys.exit(1)
 
 
-def run_sysbench(hw_, max_time, cpu_count, processor_num=-1):
+def run_sysbench_cpu(hw_, max_time, cpu_count, processor_num=-1):
     'Running sysbench cpu stress of a give amount of logical cpu'
     taskset = ''
     if (processor_num < 0):
@@ -61,6 +61,115 @@ def run_sysbench(hw_, max_time, cpu_count, processor_num=-1):
             else:
                 hw_.append(('cpu', 'logical_%d' % processor_num,
                             'loops_per_sec', str(int(perf) / max_time)))
+
+
+def get_available_memory():
+    try:
+        return psutil.virtual_memory().total
+    except Exception:
+        return psutil.avail_phymem()
+
+
+def check_mem_size(block_size, cpu_count):
+    dsplit = re.compile(r'\d+')
+    ssplit = re.compile(r'[A-Z]+')
+    unit = ssplit.findall(block_size)
+    unit_in_bytes = 1
+    if unit[0] == 'K':
+        unit_in_bytes = 1024
+    elif unit[0] == 'M':
+        unit_in_bytes = 1024 * 1024
+    elif unit[0] == 'G':
+        unit_in_bytes = 1024 * 1024 * 1024
+
+    size_in_bytes = unit_in_bytes * \
+        int(dsplit.findall(block_size)[0]) * cpu_count
+    if (size_in_bytes > get_available_memory()):
+        return False
+
+    return True
+
+
+def run_sysbench_memory(message):
+    if message.parallel_mode == "forked":
+        run_sysbench_memory_forked(message.hw, message.running_time, message.block_size, message.cpu_instances)
+    else:
+        run_sysbench_memory_threaded(message.hw, message.running_time, message.block_size, message.cpu_instances)
+
+
+def run_sysbench_memory_threaded(hw_, max_time, block_size, cpu_count, processor_num=-1):
+    'Running memtest on a processor'
+    check_mem = check_mem_size(block_size, cpu_count)
+    taskset = ''
+    if (processor_num < 0):
+        if check_mem is False:
+            msg = ("Avoid Benchmarking memory @%s "
+                   "from all CPUs, not enough memory\n")
+            sys.stderr.write(msg % block_size)
+            return
+        sys.stderr.write('Benchmarking memory @%s from all CPUs '
+                         'for %d seconds (%d threads)\n'
+                         % (block_size, max_time, cpu_count))
+    else:
+        if check_mem is False:
+            msg = ("Avoid Benchmarking memory @%s "
+                   "from CPU %d, not enough memory\n")
+            sys.stderr.write(msg % (block_size, processor_num))
+            return
+
+        sys.stderr.write('Benchmarking memory @%s from CPU %d'
+                         ' for %d seconds (%d threads)\n'
+                         % (block_size, processor_num, max_time, cpu_count))
+        taskset = 'taskset %s' % hex(1 << processor_num)
+
+    _cmd = '%s sysbench --max-time=%d --max-requests=1000000 ' \
+           '--num-threads=%d --test=memory --memory-block-size=%s run'
+    sysbench_cmd = subprocess.Popen(_cmd % (taskset, max_time,
+                                            cpu_count, block_size),
+                                    shell=True, stdout=subprocess.PIPE)
+
+    for line in sysbench_cmd.stdout:
+        if "transferred" in line:
+            title, right = line.rstrip('\n').replace(' ', '').split('(')
+            perf, useless = right.split('.')
+            if processor_num == -1:
+                hw_.append(('cpu', 'logical', 'threaded_bandwidth_%s'
+                            % block_size, perf))
+            else:
+                hw_.append(('cpu', 'logical_%d' % processor_num, 'bandwidth_%s'
+                            % block_size, perf))
+
+
+def run_sysbench_memory_forked(hw_, max_time, block_size, cpu_count):
+    'Running forked memtest on a processor'
+    if check_mem_size(block_size, cpu_count) is False:
+        cmd = 'Avoid benchmarking memory @%s from all' \
+              ' CPUs (%d forked processes), not enough memory\n'
+        sys.stderr.write(cmd % (block_size, cpu_count))
+        return
+    sys.stderr.write('Benchmarking memory @%s from all CPUs'
+                     ' for %d seconds (%d forked processes)\n'
+                     % (block_size, max_time, cpu_count))
+    sysbench_cmd = '('
+    for cpu in range(cpu_count):
+        _cmd = 'sysbench --max-time=%d --max-requests=1000000 ' \
+               '--num-threads=1 --test=memory --memory-block-size=%s run &'
+        sysbench_cmd += _cmd % (max_time, block_size)
+
+    sysbench_cmd.rstrip('&')
+    sysbench_cmd += ')'
+
+    global_perf = 0
+    process = subprocess.Popen(
+        sysbench_cmd, shell=True, stdout=subprocess.PIPE)
+    for line in process.stdout:
+        if "transferred" in line:
+            title, right = line.rstrip('\n').replace(' ', '').split('(')
+            perf, useless = right.split('.')
+            global_perf += int(perf)
+
+    hw_.append(('cpu', 'logical', 'forked_bandwidth_%s' %
+               (block_size), str(global_perf)))
 
 
 def generate_filename_and_macs(items):

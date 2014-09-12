@@ -19,6 +19,7 @@
 from socket import socket, AF_INET, SOCK_STREAM
 from health_messages import Health_Message as HM
 from health_bench import Health_CPU as HCPU
+from health_bench import Health_MEMORY as HMEMORY
 import atexit
 import health_protocol as HP
 import logging
@@ -77,6 +78,8 @@ def storage(socket, msg):
 
 
 def memory(socket, msg):
+    HP.logger.info("Module Memory (%d sec)" % msg.running_time)
+    action(socket, msg, HMEMORY(msg, socket, HP.logger))
     return
 
 

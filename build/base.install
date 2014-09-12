@@ -191,6 +191,7 @@ install_base_packages() {
             echo "deb $repository $dist-updates main universe multiverse" >> ${target}/etc/apt/sources.list
             echo "deb http://security.ubuntu.com/ubuntu $dist-security main universe multiverse" >> ${target}/etc/apt/sources.list
             wget --no-verbose "https://github.com/darkhelmet/ntpstat/raw/master/dist/ntpstat" -O ${target}/usr/sbin/ntpstat
+            chmod +x ${target}/usr/sbin/ntpstat
             ;;
         $supported_debian_dists)
             packages="$cross_distro_packages acpi-support-base firmware-linux firmware-netxen firmware-qlogic firmware-realtek firmware-bnx2 firmware-bnx2x htop inetutils-ping libui-dialog-perl linux-image-amd64 $deb_packages"
@@ -198,6 +199,7 @@ install_base_packages() {
             echo "deb http://security.debian.org/ $dist/updates main" >  ${target}/etc/apt/sources.list.d/updates.list
             echo "deb $repository $dist-updates main" >> ${target}/etc/apt/sources.list.d/updates.list
             wget --no-verbose "https://github.com/darkhelmet/ntpstat/raw/master/dist/ntpstat" -O ${target}/usr/sbin/ntpstat
+            chmod +x ${target}/usr/sbin/ntpstat
             ;;
         $supported_centos_dists|$supported_redhat_dists)
             if [ "$CODENAME_MAJOR" = '6' ]; then

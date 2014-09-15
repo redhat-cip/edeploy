@@ -71,8 +71,9 @@ case "$DIST" in
             remove_scn_repository
             PACKAGES="$PACKAGES sysbench python-psutil"
         else
-            # TODO: find a solution for sysbench
             install_packages $dir python-setuptools python-devel gcc
+            # TODO: take sysbench from epel when it'll be out of testing
+            install_packages $dir https://dl.fedoraproject.org/pub/epel/testing/7/x86_64/s/sysbench-0.4.12-12.el7.x86_64.rpm
             do_chroot $dir easy_install netaddr pexpect psutil
         fi
     ;;

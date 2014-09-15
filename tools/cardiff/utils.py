@@ -51,27 +51,27 @@ def dump_item(output, item, item1, item2, item3):
     return
 
 
-def get_hosts_list(bench_values):
+def get_hosts_list(bench_values, unique_id):
     systems = set()
     for bench in bench_values:
         for line in bench:
-            dump_item(systems, line, 'system', 'product', 'serial')
+            dump_item(systems, line, 'system', 'product', unique_id)
 
     return systems
 
 
 # Extract a sub element from the results
-def find_sub_element(bench_values, element, hosts=set()):
+def find_sub_element(bench_values, unique_id, element, hosts=set()):
     systems = []
     for bench in bench_values:
-        system = {'serial': ''}
+        system = {unique_id: ''}
         stuff = []
         for line in bench:
-            get_item(system, line, 'system', 'product', 'serial')
+            get_item(system, line, 'system', 'product', unique_id)
             if element in line[0]:
                 stuff.append(line)
 
-        if (len(hosts) == 0) or system['serial'] in hosts:
+        if (len(hosts) == 0) or system[unique_id] in hosts:
             system[element] = stuff
             systems.append(system)
 

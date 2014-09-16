@@ -281,6 +281,28 @@ def main(argv):
             print "Processing Job '%s'" % job
             for rampup_value in sorted(rampup_values):
                 analyze_data(rampup+'/'+str(rampup_value)+'/'+job+'/', ignore_list, detail, rampup_value, max(rampup_values), current_dir)
+
+            gpm_dir = "./"
+            unit = {}
+            if "cpu" in job:
+                unit["variance"] = "loops_per_sec"
+                unit["variance_percentage"] = "% of variance (vs global perf)"
+                unit["mean"] = unit["variance"]
+                unit["sum"] = unit["variance"]
+            if "memory" in job:
+                unit["variance"] = "MB/sec"
+                unit["variance_percentage"] = "% of variance (vs global perf)"
+                unit["mean"] = unit["variance"]
+                unit["sum"] = unit["variance"]
+            for kind in unit:
+                title = "Study of %s %s from %d to %d hosts" % (job, kind, min(rampup_values), max(rampup_values))
+                filename = current_dir+"/"+kind+".gnuplot"
+                with open(filename, "a") as f:
+                    f.write("call \'%s/graph2D.gpm\' \'%s' \'%s\' \'%s\' \'%s\' \'%s\'\n" % (gpm_dir, title, current_dir+"/"+kind+".plot", kind, current_dir+kind, unit[kind]))
+                try:
+                    os.system("gnuplot %s" % filename)
+                except:
+                    True
     else:
         analyze_data(pattern, ignore_list, detail)
 

@@ -125,7 +125,7 @@ def compare_performance(bench_values, unique_id, systems_groups, detail, rampup_
         check.memory_perf(systems, unique_id, systems_groups.index(group), detail)
 
 
-def analyze_data(pattern, ignore_list, detail, rampup_value=0):
+def analyze_data(pattern, ignore_list, detail, rampup_value=0, max_rampup_value=0):
     if rampup_value > 0:
         pattern = pattern + "*.hw"
 
@@ -145,8 +145,10 @@ def analyze_data(pattern, ignore_list, detail, rampup_value=0):
         print "No log file found with pattern %s!" % pattern
         sys.exit(1)
     else:
-        print "##########################################"
-        print "%d files Selected with pattern '%s'" % (len(health_data_file), pattern)
+        if rampup_value == 0:
+            print "### %d files Selected with pattern '%s' ###" % (len(health_data_file), pattern)
+        else:
+            print "########## Rampup: %d / %d hosts #########" % (rampup_value, max_rampup_value)
 
     # Extract data from the hw files
     bench_values = []
@@ -262,7 +264,7 @@ def main(argv):
         for job in os.listdir("%s/%s" % (rampup+'/', rampup_values[0])):
             print "Processing Job '%s'" % job
             for rampup_value in sorted(rampup_values):
-                analyze_data(rampup+'/'+str(rampup_value)+'/'+job+'/', ignore_list, detail, rampup_value)
+                analyze_data(rampup+'/'+str(rampup_value)+'/'+job+'/', ignore_list, detail, rampup_value, max(rampup_values))
     else:
         analyze_data(pattern, ignore_list, detail)
 

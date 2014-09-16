@@ -215,6 +215,16 @@ def compute_metrics(current_dir, rampup_value, job, metrics):
     compute_metric(current_dir, rampup_value, start_lag, "jitter")
 
 
+def do_plot(current_dir, gpm_dir, title, name, unit):
+    filename = current_dir+"/"+name+".gnuplot"
+    with open(filename, "a") as f:
+        f.write("call \'%s/graph2D.gpm\' \'%s' \'%s\' \'%s\' \'%s\' \'%s\'\n" % (gpm_dir, title, current_dir+"/"+name+".plot", name, current_dir+name, unit))
+    try:
+        os.system("gnuplot %s" % filename)
+    except:
+        True
+
+
 def plot_results(current_dir, rampup_values, job):
     gpm_dir = "./"
     unit = {}
@@ -230,13 +240,7 @@ def plot_results(current_dir, rampup_values, job):
         unit["sum"] = unit["variance"]
     for kind in unit:
         title = "Study of %s %s from %d to %d hosts" % (job, kind, min(rampup_values), max(rampup_values))
-        filename = current_dir+"/"+kind+".gnuplot"
-        with open(filename, "a") as f:
-            f.write("call \'%s/graph2D.gpm\' \'%s' \'%s\' \'%s\' \'%s\' \'%s\'\n" % (gpm_dir, title, current_dir+"/"+kind+".plot", kind, current_dir+kind, unit[kind]))
-        try:
-            os.system("gnuplot %s" % filename)
-        except:
-            True
+        do_plot(current_dir, gpm_dir, title, kind, unit[kind])
 
 
 def main(argv):

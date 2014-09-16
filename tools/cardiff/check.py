@@ -2,6 +2,7 @@ import re
 import compare_sets
 import utils
 import numpy
+import math
 from pandas import *
 import perf_cpu_tables
 
@@ -97,7 +98,7 @@ def prepare_detail(detail_options, group_number, category, item, details, matche
     return ""
 
 
-def logical_disks_perf(systems, unique_id, group_number, detail_options):
+def logical_disks_perf(systems, unique_id, group_number, detail_options, rampup_value=0, current_dir=""):
     have_disk_data = False
     sets = search_item(systems, unique_id, "disk", "sd(\S+)", [], ['simultaneous', 'standalone'])
     modes = ['standalone_randwrite_4k_IOps', 'standalone_randread_4k_IOps', 'standalone_read_1M_IOps', 'standalone_write_1M_IOps',  'simultaneous_randwrite_4k_IOps', 'simultaneous_randread_4k_IOps', 'simultaneous_read_1M_IOps', 'simultaneous_write_1M_IOps']
@@ -133,7 +134,7 @@ def logical_disks_perf(systems, unique_id, group_number, detail_options):
                 tolerance_min = 5
                 tolerance_max = 15
 
-            print_perf(tolerance_min, tolerance_max, df.transpose()[disk], df, mode, disk, consistent, curious, unstable)
+            print_perf(tolerance_min, tolerance_max, df.transpose()[disk], df, mode, disk, consistent, curious, unstable, rampup_value, current_dir)
 
             prepare_detail(detail_options, group_number, mode, disk, details, matched_category)
             print_summary("%-30s %s" % (mode, disk), consistent, "consistent", "IOps", df)
@@ -185,18 +186,34 @@ def cpu(systems, unique_id):
     return groups
 
 
-def print_perf(tolerance_min, tolerance_max, item, df, mode, title, consistent=None, curious=None, unstable=None):
+def print_perf(tolerance_min, tolerance_max, item, df, mode, title, consistent=None, curious=None, unstable=None, rampup_value=0, current_dir=""):
     # Tolerance_min represents the min where variance shall be considered (in %)
     # Tolerance_max represents the maximum that variance represent regarding the average (in %)
 
     variance_group = item.std()
     mean_group = item.mean()
+    sum_group = item.sum()
     min_group = mean_group - 2*variance_group
     max_group = mean_group + 2*variance_group
 
     utils.do_print(mode, utils.Levels.INFO, "%-12s : Group performance : min=%8.2f, mean=%8.2f, max=%8.2f, stddev=%8.2f", title, item.min(), mean_group, item.max(), variance_group)
 
     variance_tolerance = compute_variance_percentage(title, df.transpose())
+
+    if (rampup_value > 0) and (current_dir):
+        with open(current_dir+"/variance.plot", "a") as myfile:
+            if math.isnan(variance_group) is False:
+                myfile.write("%d %.2f\n" % (rampup_value, variance_group))
+        with open(current_dir+"/variance_percent.plot", "a") as myfile:
+            if math.isnan(variance_tolerance) is False:
+                myfile.write("%d %.2f\n" % (rampup_value, variance_tolerance))
+        with open(current_dir+"/mean.plot", "a") as myfile:
+            if math.isnan(mean_group) is False:
+                myfile.write("%d %.2f\n" % (rampup_value, mean_group))
+        with open(current_dir+"/sum.plot", "a") as myfile:
+            if math.isnan(sum_group) is False:
+                myfile.write("%d %.2f\n" % (rampup_value, sum_group))
+
     if (variance_tolerance > tolerance_max):
         utils.do_print(mode, utils.Levels.ERROR, "%-12s : Group's variance is too important : %7.2f%% of %7.2f whereas limit is set to %3.2f%%", title, variance_tolerance, mean_group, tolerance_max)
         utils.do_print(mode, utils.Levels.ERROR, "%-12s : Group performance : UNSTABLE", title)
@@ -276,7 +293,7 @@ def print_summary(mode, array, array_name, unit, df, item_value=None):
         utils.do_print(mode, utils.Levels.SUMMARY, "%3d %s%-10s%s hosts with %8.2f %-4s as average value and %8.2f standard deviation %s", len(array), before, array_name, after, mean, unit, numpy.std(result), perf_status)
 
 
-def cpu_perf(systems, unique_id, group_number, detail_options, rampup_value=0):
+def cpu_perf(systems, unique_id, group_number, detail_options, rampup_value=0, current_dir=""):
     have_cpu_data = False
     host_cpu_list = search_item(systems, unique_id, "cpu", "(.*)", [], ['product'])
     host_cpu_number = search_item(systems, unique_id, "cpu", "(.*logical.*)", [], ['number'])
@@ -338,7 +355,7 @@ def cpu_perf(systems, unique_id, group_number, detail_options, rampup_value=0):
                 print
                 print "Group %d : Checking CPU perf" % group_number
                 have_cpu_data = True
-            print_perf(2, 7, df.transpose()[cpu], df, mode, cpu, consistent, curious, unstable)
+            print_perf(2, 7, df.transpose()[cpu], df, mode, cpu, consistent, curious, unstable, rampup_value, current_dir)
             prepare_detail(detail_options, group_number, mode, cpu, details, matched_category)
 
         print_detail(detail_options, details, df, matched_category)
@@ -372,7 +389,7 @@ def cpu_perf(systems, unique_id, group_number, detail_options, rampup_value=0):
             print_summary("CPU Efficiency", unstable, "unstable", '%', cpu_eff)
 
 
-def memory_perf(systems, unique_id, group_number, detail_options):
+def memory_perf(systems, unique_id, group_number, detail_options, rampup_value=0, current_dir=""):
     have_memory_data = False
     modes = ['1K', '4K', '1M', '16M', '128M', '256M', '1G', '2G']
     sets = search_item(systems, unique_id, "cpu", "(.*)", [], modes)
@@ -427,7 +444,7 @@ def memory_perf(systems, unique_id, group_number, detail_options):
                 print "Group %d : Checking Memory perf" % group_number
                 have_memory_data = True
 
-            print_perf(1, 7, df.transpose()[memory], df, real_mode, memory, consistent, curious, unstable)
+            print_perf(1, 7, df.transpose()[memory], df, real_mode, memory, consistent, curious, unstable, rampup_value, current_dir)
             matched_category = []
             prepare_detail(detail_options, group_number, mode, memory, details, matched_category)
 

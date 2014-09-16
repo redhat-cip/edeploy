@@ -25,6 +25,7 @@ import getopt
 import check
 import utils
 import compare_sets
+import shutil
 
 
 def print_help():
@@ -111,21 +112,21 @@ def group_systems(bench_values, unique_id, systems_groups, ignore_list):
         compare_cpu(bench_values, unique_id, systems_groups)
 
 
-def compare_performance(bench_values, unique_id, systems_groups, detail, rampup_value=0):
+def compare_performance(bench_values, unique_id, systems_groups, detail, rampup_value=0, current_dir=""):
     for group in systems_groups:
         systems = utils.find_sub_element(bench_values, unique_id, 'disk', group)
-        check.logical_disks_perf(systems, unique_id, systems_groups.index(group), detail)
+        check.logical_disks_perf(systems, unique_id, systems_groups.index(group), detail, rampup_value, current_dir)
 
     for group in systems_groups:
         systems = utils.find_sub_element(bench_values, unique_id, 'cpu', group)
-        check.cpu_perf(systems, unique_id, systems_groups.index(group), detail, rampup_value)
+        check.cpu_perf(systems, unique_id, systems_groups.index(group), detail, rampup_value, current_dir)
 
     for group in systems_groups:
         systems = utils.find_sub_element(bench_values, unique_id, 'cpu', group)
-        check.memory_perf(systems, unique_id, systems_groups.index(group), detail)
+        check.memory_perf(systems, unique_id, systems_groups.index(group), detail, rampup_value, current_dir)
 
 
-def analyze_data(pattern, ignore_list, detail, rampup_value=0, max_rampup_value=0):
+def analyze_data(pattern, ignore_list, detail, rampup_value=0, max_rampup_value=0, current_dir=""):
     if rampup_value > 0:
         pattern = pattern + "*.hw"
 
@@ -171,7 +172,7 @@ def analyze_data(pattern, ignore_list, detail, rampup_value=0, max_rampup_value=
         compare_sets.print_systems_groups(systems_groups)
 
     # It's time to compare performance in each group
-    compare_performance(bench_values, unique_id, systems_groups, detail, rampup_value)
+    compare_performance(bench_values, unique_id, systems_groups, detail, rampup_value, current_dir)
     print "##########################################"
     print
 
@@ -250,21 +251,36 @@ def main(argv):
             print "Exiting"
             sys.exit(2)
 
+        current_dir = "%s/results/" % (rampup)
+        try:
+            if os.path.exists(current_dir):
+                shutil.rmtree(current_dir)
+        except IOError as e:
+            print "Unable to delete directory %s" % current_dir
+            print e
+            sys.exit(2)
+
         rampup_values = [int(name) for name in os.listdir(rampup) if os.path.isdir(rampup+name)]
         if len(rampup_values) < 2:
             print "A valid rampup directory shall have more than 1 output in it"
             print "Exiting"
             sys.exit(2)
 
-        print os.listdir("%s/%s" % (rampup+'/', rampup_values[0]))
-
         print "Found %d rampup tests to analyse (from %d host up to %d)" % (len(rampup_values), min(rampup_values), max(rampup_values))
 
     if rampup_values:
-        for job in os.listdir("%s/%s" % (rampup+'/', rampup_values[0])):
+        for job in os.listdir("%s/%s" % (rampup, rampup_values[0])):
+            current_dir = "%s/results/%s/" % (rampup, job)
+            try:
+                if not os.path.exists(current_dir):
+                    os.makedirs(current_dir)
+            except:
+                print "Unable to create directory %s" % current_dir
+                sys.exit(2)
+
             print "Processing Job '%s'" % job
             for rampup_value in sorted(rampup_values):
-                analyze_data(rampup+'/'+str(rampup_value)+'/'+job+'/', ignore_list, detail, rampup_value, max(rampup_values))
+                analyze_data(rampup+'/'+str(rampup_value)+'/'+job+'/', ignore_list, detail, rampup_value, max(rampup_values), current_dir)
     else:
         analyze_data(pattern, ignore_list, detail)
 

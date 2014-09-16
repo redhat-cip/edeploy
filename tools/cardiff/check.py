@@ -50,7 +50,7 @@ def logical_disks(systems, unique_id):
     return groups
 
 
-def compute_variance_percentage(item, df):
+def compute_deviance_percentage(item, df):
     # If we have a single item
     # checking the variance is useless
     if df[item].count() == 1:
@@ -198,13 +198,13 @@ def print_perf(tolerance_min, tolerance_max, item, df, mode, title, consistent=N
 
     utils.do_print(mode, utils.Levels.INFO, "%-12s : Group performance : min=%8.2f, mean=%8.2f, max=%8.2f, stddev=%8.2f", title, item.min(), mean_group, item.max(), variance_group)
 
-    variance_tolerance = compute_variance_percentage(title, df.transpose())
+    variance_tolerance = compute_deviance_percentage(title, df.transpose())
 
     if (rampup_value > 0) and (current_dir):
         with open(current_dir+"/variance.plot", "a") as myfile:
             if math.isnan(variance_group) is False:
                 myfile.write("%d %.2f\n" % (rampup_value, variance_group))
-        with open(current_dir+"/variance_percentage.plot", "a") as myfile:
+        with open(current_dir+"/deviance_percentage.plot", "a") as myfile:
             if math.isnan(variance_tolerance) is False:
                 myfile.write("%d %.2f\n" % (rampup_value, variance_tolerance))
         with open(current_dir+"/mean.plot", "a") as myfile:

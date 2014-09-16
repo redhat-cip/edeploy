@@ -26,6 +26,7 @@ import check
 import utils
 import compare_sets
 import shutil
+import numpy
 
 
 def print_help():
@@ -177,17 +178,54 @@ def analyze_data(pattern, ignore_list, detail, rampup_value=0, max_rampup_value=
     print
 
 
+def compute_deviance_percentage(metric):
+    # If we have a single item
+    # checking the variance is useless
+    array = numpy.array(metric)
+    if len(metric) == 1:
+        return 0
+    return (numpy.std(array) / numpy.mean(array) * 100)
+
+
+def compute_metric(current_dir, rampup_value, metric, metric_name):
+    array = numpy.array(metric)
+    mean_group = numpy.mean(metric)
+    deviance_percentage = compute_deviance_percentage(metric)
+    deviance = numpy.std(array)
+    with open(current_dir+"/%s-mean.plot" % metric_name, "a") as myfile:
+        if math.isnan(mean_group) is False:
+            myfile.write("%d %.2f\n" % (rampup_value, mean_group))
+    with open(current_dir+"/%s-deviance_percentage.plot" % metric_name, "a") as myfile:
+        if math.isnan(deviance_percentage) is False:
+            myfile.write("%d %.2f\n" % (rampup_value, deviance_percentage))
+    with open(current_dir+"/%s-deviance.plot" % metric_name, "a") as myfile:
+        if math.isnan(deviance) is False:
+            myfile.write("%d %.2f\n" % (rampup_value, deviance))
+
+
+def compute_metrics(current_dir, rampup_value, job, metrics):
+    duration = []
+    start_lag = []
+    for value in metrics["duration"]:
+        duration.append(metrics["duration"][value])
+    for value in metrics["start_lag"]:
+        start_lag.append(float(metrics["start_lag"][value]) * 1000)# in ms
+
+    compute_metric(current_dir, rampup_value, duration, "job_duration")
+    compute_metric(current_dir, rampup_value, start_lag, "jitter")
+
+
 def plot_results(current_dir, rampup_values, job):
     gpm_dir = "./"
     unit = {}
     if "cpu" in job:
         unit["variance"] = "loops_per_sec"
-        unit["variance_percentage"] = "% of variance (vs global perf)"
+        unit["deviance_percentage"] = "% of variance (vs global perf)"
         unit["mean"] = unit["variance"]
         unit["sum"] = unit["variance"]
     if "memory" in job:
         unit["variance"] = "MB/sec"
-        unit["variance_percentage"] = "% of variance (vs global perf)"
+        unit["deviance_percentage"] = "% of variance (vs global perf)"
         unit["mean"] = unit["variance"]
         unit["sum"] = unit["variance"]
     for kind in unit:
@@ -304,6 +342,16 @@ def main(argv):
 
             print "Processing Job '%s'" % job
             for rampup_value in sorted(rampup_values):
+
+                metrics = {}
+                metrics_file = rampup + "/%d/%s/metrics" % (rampup_value, job)
+                if not os.path.isfile(metrics_file):
+                    print "Missing metric file for rampup=%d (%s)" % (rampup_value, metrics_file)
+                    print "Skipping %d" % rampup_value
+                    continue
+                metrics = eval(open(metrics_file).read())
+                compute_metrics(current_dir, rampup_value, job, metrics)
+
                 analyze_data(rampup+'/'+str(rampup_value)+'/'+job+'/', ignore_list, detail, rampup_value, max(rampup_values), current_dir)
 
             plot_results(current_dir, rampup_values, job)

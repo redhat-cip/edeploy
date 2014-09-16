@@ -201,7 +201,7 @@ def print_perf(tolerance_min, tolerance_max, item, df, mode, title, consistent=N
     variance_tolerance = compute_deviance_percentage(title, df.transpose())
 
     if (rampup_value > 0) and (current_dir):
-        with open(current_dir+"/variance.plot", "a") as myfile:
+        with open(current_dir+"/deviance.plot", "a") as myfile:
             if math.isnan(variance_group) is False:
                 myfile.write("%d %.2f\n" % (rampup_value, variance_group))
         with open(current_dir+"/deviance_percentage.plot", "a") as myfile:

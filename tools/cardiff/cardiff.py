@@ -216,32 +216,46 @@ def compute_metrics(current_dir, rampup_value, job, metrics):
     compute_metric(current_dir, rampup_value, start_lag, "jitter")
 
 
-def do_plot(current_dir, gpm_dir, title, name, unit):
+def do_plot(current_dir, gpm_dir, title, name, unit, expected_value=""):
     filename = current_dir+"/"+name+".gnuplot"
     with open(filename, "a") as f:
-        f.write("call \'%s/graph2D.gpm\' \'%s' \'%s\' \'%s\' \'%s\' \'%s\'\n" % (gpm_dir, title, current_dir+"/"+name+".plot", name, current_dir+name, unit))
+        if expected_value:
+            f.write("call \'%s/graph2D_expected.gpm\' \'%s' \'%s\' \'%s\' \'%s\' \'%s\' \'%s\'\n" % (gpm_dir, title, current_dir+"/"+name+".plot", name, current_dir+name, unit, expected_value))
+        else:
+            f.write("call \'%s/graph2D.gpm\' \'%s' \'%s\' \'%s\' \'%s\' \'%s\'\n" % (gpm_dir, title, current_dir+"/"+name+".plot", name, current_dir+name, unit))
     try:
         os.system("gnuplot %s" % filename)
     except:
         True
 
 
-def plot_results(current_dir, rampup_values, job):
+def plot_results(current_dir, rampup_values, job, metrics):
     gpm_dir = "./"
     unit = {}
+    expected_value = {}
+    expected_value["job_duration-mean"] = metrics["bench"]["runtime"]
+    unit["job_duration-mean"] = "seconds (s)"
+    unit["job_duration-deviance"] = unit["job_duration-mean"]
+    unit["job_duration-deviance_percentage"] = "% of variance (vs global perf)"
+    unit["jitter-mean"] = "milliseconds (ms)"
+    unit["jitter-deviance"] = unit["jitter-mean"]
+    unit["jitter-deviance_percentage"] = "% of variance (vs global perf)"
     if "cpu" in job:
-        unit["variance"] = "loops_per_sec"
+        unit["deviance"] = "loops_per_sec"
         unit["deviance_percentage"] = "% of variance (vs global perf)"
-        unit["mean"] = unit["variance"]
-        unit["sum"] = unit["variance"]
+        unit["mean"] = unit["deviance"]
+        unit["sum"] = unit["deviance"]
     if "memory" in job:
-        unit["variance"] = "MB/sec"
+        unit["deviance"] = "MB/sec"
         unit["deviance_percentage"] = "% of variance (vs global perf)"
-        unit["mean"] = unit["variance"]
-        unit["sum"] = unit["variance"]
+        unit["mean"] = unit["deviance"]
+        unit["sum"] = unit["deviance"]
     for kind in unit:
         title = "Study of %s %s from %d to %d hosts" % (job, kind, min(rampup_values), max(rampup_values))
-        do_plot(current_dir, gpm_dir, title, kind, unit[kind])
+        if kind in expected_value:
+            do_plot(current_dir, gpm_dir, title, kind, unit[kind], expected_value[kind])
+        else:
+            do_plot(current_dir, gpm_dir, title, kind, unit[kind])
 
 
 def main(argv):
@@ -359,7 +373,7 @@ def main(argv):
 
                 analyze_data(rampup+'/'+str(rampup_value)+'/'+job+'/', ignore_list, detail, rampup_value, max(rampup_values), current_dir)
 
-            plot_results(current_dir, rampup_values, job)
+            plot_results(current_dir, rampup_values, job, metrics)
 
     else:
         analyze_data(pattern, ignore_list, detail)

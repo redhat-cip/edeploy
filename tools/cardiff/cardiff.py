@@ -276,7 +276,7 @@ def plot_results(current_dir, rampup_values, job, metrics, bench_values):
         total_disk_size = 0
         for disk_size in extract_hw_info(bench_values[0], 'disk', '*', 'size'):
             total_disk_size = total_disk_size + int(disk_size)
-        system = "HW per %s host: %s %s CPUs, %d MB of RAM, %d disks : %d GB total, %d NICs\\n OS : %s running kernel %s, cpu_arch=%s" % \
+        system = "HW per %s host: %s x %s CPUs, %d MB of RAM, %d disks : %d GB total, %d NICs\\n OS : %s running kernel %s, cpu_arch=%s" % \
             (is_virtualized(bench_values),
                 extract_hw_info(bench_values[0], 'cpu', 'physical', 'number')[0],
                 extract_hw_info(bench_values[0], 'cpu', 'physical_0', 'product')[0],

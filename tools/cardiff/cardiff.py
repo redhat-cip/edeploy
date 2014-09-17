@@ -255,19 +255,19 @@ def plot_results(current_dir, rampup_values, job, metrics, bench_values):
     expected_value["job_duration-mean"] = metrics["bench"]["runtime"]
     unit["job_duration-mean"] = "seconds (s)"
     unit["job_duration-deviance"] = unit["job_duration-mean"]
-    unit["job_duration-deviance_percentage"] = "% of deviance (vs global perf)"
+    unit["job_duration-deviance_percentage"] = "% of deviance (vs mean perf)"
     unit["jitter-mean"] = "milliseconds (ms)"
     unit["jitter-deviance"] = unit["jitter-mean"]
-    unit["jitter-deviance_percentage"] = "% of deviance (vs global perf)"
+    unit["jitter-deviance_percentage"] = "% of deviance (vs mean perf)"
     if "cpu" in job:
         unit["deviance"] = "loops_per_sec"
-        unit["deviance_percentage"] = "% of deviance (vs global perf)"
+        unit["deviance_percentage"] = "% of deviance (vs mean perf)"
         unit["mean"] = unit["deviance"]
         unit["sum"] = unit["deviance"]
         context = "%d cpu load per host" % metrics["bench"]["cores"]
     if "memory" in job:
         unit["deviance"] = "MB/sec"
-        unit["deviance_percentage"] = "% of deviance (vs global perf)"
+        unit["deviance_percentage"] = "% of deviance (vs mean perf)"
         unit["mean"] = unit["deviance"]
         unit["sum"] = unit["deviance"]
         context = "%d %s threads per host, blocksize=%s" % (metrics["bench"]["cores"], metrics["bench"]["mode"], metrics["bench"]["block-size"])

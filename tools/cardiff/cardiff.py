@@ -177,6 +177,7 @@ def analyze_data(pattern, ignore_list, detail, rampup_value=0, max_rampup_value=
     compare_performance(bench_values, unique_id, systems_groups, detail, rampup_value, current_dir)
     print "##########################################"
     print
+    return bench_values
 
 
 def compute_deviance_percentage(metric):
@@ -216,46 +217,66 @@ def compute_metrics(current_dir, rampup_value, job, metrics):
     compute_metric(current_dir, rampup_value, start_lag, "jitter")
 
 
-def do_plot(current_dir, gpm_dir, title, name, unit, expected_value=""):
+def do_plot(current_dir, gpm_dir, title, subtitle, name, unit, expected_value=""):
     filename = current_dir+"/"+name+".gnuplot"
     with open(filename, "a") as f:
         if expected_value:
-            f.write("call \'%s/graph2D_expected.gpm\' \'%s' \'%s\' \'%s\' \'%s\' \'%s\' \'%s\'\n" % (gpm_dir, title, current_dir+"/"+name+".plot", name, current_dir+name, unit, expected_value))
+            f.write("call \'%s/graph2D_expected.gpm\' \'%s' \'%s\' \'%s\' \'%s\' \'%s\' \'%s\' \'%s\'\n" % (gpm_dir, title, subtitle, current_dir+"/"+name+".plot", name, current_dir+name, unit, expected_value))
         else:
-            f.write("call \'%s/graph2D.gpm\' \'%s' \'%s\' \'%s\' \'%s\' \'%s\'\n" % (gpm_dir, title, current_dir+"/"+name+".plot", name, current_dir+name, unit))
+            f.write("call \'%s/graph2D.gpm\' \'%s' \'%s\' \'%s\' \'%s\' \'%s\' \'%s\'\n" % (gpm_dir, title, subtitle, current_dir+"/"+name+".plot", name, current_dir+name, unit))
     try:
         os.system("gnuplot %s" % filename)
     except:
         True
 
 
-def plot_results(current_dir, rampup_values, job, metrics):
+def extract_hw_info(hw, level1, level2, level3):
+    for entry in hw:
+        if (level1 == entry[0] and level2 == entry[1] and level3 == entry[2]):
+            return entry[3]
+    return None
+
+
+def plot_results(current_dir, rampup_values, job, metrics, bench_values):
     gpm_dir = "./"
+    context = ""
     unit = {}
     expected_value = {}
     expected_value["job_duration-mean"] = metrics["bench"]["runtime"]
     unit["job_duration-mean"] = "seconds (s)"
     unit["job_duration-deviance"] = unit["job_duration-mean"]
-    unit["job_duration-deviance_percentage"] = "% of variance (vs global perf)"
+    unit["job_duration-deviance_percentage"] = "% of deviance (vs global perf)"
     unit["jitter-mean"] = "milliseconds (ms)"
     unit["jitter-deviance"] = unit["jitter-mean"]
-    unit["jitter-deviance_percentage"] = "% of variance (vs global perf)"
+    unit["jitter-deviance_percentage"] = "% of deviance (vs global perf)"
     if "cpu" in job:
         unit["deviance"] = "loops_per_sec"
-        unit["deviance_percentage"] = "% of variance (vs global perf)"
+        unit["deviance_percentage"] = "% of deviance (vs global perf)"
         unit["mean"] = unit["deviance"]
         unit["sum"] = unit["deviance"]
+        context = "%d CPUs per host" % metrics["bench"]["cores"]
     if "memory" in job:
         unit["deviance"] = "MB/sec"
-        unit["deviance_percentage"] = "% of variance (vs global perf)"
+        unit["deviance_percentage"] = "% of deviance (vs global perf)"
         unit["mean"] = unit["deviance"]
         unit["sum"] = unit["deviance"]
+        context = "%d %s threads per host, blocksize=%s" % (metrics["bench"]["cores"], metrics["bench"]["mode"], metrics["bench"]["block-size"])
     for kind in unit:
-        title = "Study of %s %s from %d to %d hosts" % (job, kind, min(rampup_values), max(rampup_values))
+        title = "Study of %s %s from %d to %d hosts (step=%d)" % (job, kind, min(rampup_values), max(rampup_values), metrics["bench"]["step-hosts"])
+        system = "HW per host: %s %s CPUs, %d MB of RAM \\n OS : %s running kernel %s, cpu_arch=%s" % \
+                (extract_hw_info(bench_values[0], 'cpu', 'physical', 'number'),
+                extract_hw_info(bench_values[0], 'cpu', 'physical_0', 'product'),
+                int(extract_hw_info(bench_values[0], 'memory', 'total', 'size')) / 1024 / 1024,
+                extract_hw_info(bench_values[0], 'system', 'os', 'version'),
+                extract_hw_info(bench_values[0], 'system', 'kernel', 'version'),
+                extract_hw_info(bench_values[0], 'system', 'kernel', 'arch'))
+
+        subtitle = "%s, runtime=%d seconds, %d hypervisors with %s scheduling, \\n\\n%s" % (context, metrics["bench"]["runtime"], len(metrics["affinity"]), metrics["bench"]["affinity"], system)
+
         if kind in expected_value:
-            do_plot(current_dir, gpm_dir, title, kind, unit[kind], expected_value[kind])
+            do_plot(current_dir, gpm_dir, title, subtitle, kind, unit[kind], expected_value[kind])
         else:
-            do_plot(current_dir, gpm_dir, title, kind, unit[kind])
+            do_plot(current_dir, gpm_dir, title, subtitle, kind, unit[kind])
 
 
 def main(argv):
@@ -371,9 +392,9 @@ def main(argv):
                 metrics = eval(open(metrics_file).read())
                 compute_metrics(current_dir, rampup_value, job, metrics)
 
-                analyze_data(rampup+'/'+str(rampup_value)+'/'+job+'/', ignore_list, detail, rampup_value, max(rampup_values), current_dir)
+                bench_values = analyze_data(rampup+'/'+str(rampup_value)+'/'+job+'/', ignore_list, detail, rampup_value, max(rampup_values), current_dir)
 
-            plot_results(current_dir, rampup_values, job, metrics)
+            plot_results(current_dir, rampup_values, job, metrics, bench_values)
 
     else:
         analyze_data(pattern, ignore_list, detail)

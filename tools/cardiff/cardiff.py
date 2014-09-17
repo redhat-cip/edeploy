@@ -231,10 +231,14 @@ def do_plot(current_dir, gpm_dir, title, subtitle, name, unit, expected_value=""
 
 
 def extract_hw_info(hw, level1, level2, level3):
+    result = []
+    temp_level2 = level2
     for entry in hw:
-        if (level1 == entry[0] and level2 == entry[1] and level3 == entry[2]):
-            return entry[3]
-    return None
+        if level2 == '*':
+            temp_level2 = entry[1]
+        if (level1 == entry[0] and temp_level2 == entry[1] and level3 == entry[2]):
+            result.append(entry[3])
+    return result
 
 
 def plot_results(current_dir, rampup_values, job, metrics, bench_values):
@@ -263,13 +267,19 @@ def plot_results(current_dir, rampup_values, job, metrics, bench_values):
         context = "%d %s threads per host, blocksize=%s" % (metrics["bench"]["cores"], metrics["bench"]["mode"], metrics["bench"]["block-size"])
     for kind in unit:
         title = "Study of %s %s from %d to %d hosts (step=%d)" % (job, kind, min(rampup_values), max(rampup_values), metrics["bench"]["step-hosts"])
-        system = "HW per host: %s %s CPUs, %d MB of RAM \\n OS : %s running kernel %s, cpu_arch=%s" % \
-                (extract_hw_info(bench_values[0], 'cpu', 'physical', 'number'),
-                extract_hw_info(bench_values[0], 'cpu', 'physical_0', 'product'),
-                int(extract_hw_info(bench_values[0], 'memory', 'total', 'size')) / 1024 / 1024,
-                extract_hw_info(bench_values[0], 'system', 'os', 'version'),
-                extract_hw_info(bench_values[0], 'system', 'kernel', 'version'),
-                extract_hw_info(bench_values[0], 'system', 'kernel', 'arch'))
+        total_disk_size = 0
+        for disk_size in extract_hw_info(bench_values[0], 'disk', '*', 'size'):
+            total_disk_size = total_disk_size + int(disk_size)
+        system = "HW per host: %s %s CPUs, %d MB of RAM, %d disks : %d GB total, %d NICs\\n OS : %s running kernel %s, cpu_arch=%s" % \
+            (extract_hw_info(bench_values[0], 'cpu', 'physical', 'number')[0],
+                extract_hw_info(bench_values[0], 'cpu', 'physical_0', 'product')[0],
+                int(extract_hw_info(bench_values[0], 'memory', 'total', 'size')[0]) / 1024 / 1024,
+                int(extract_hw_info(bench_values[0], 'disk', 'logical', 'count')[0]),
+                total_disk_size,
+                len(extract_hw_info(bench_values[0], 'network', '*', 'serial')),
+                extract_hw_info(bench_values[0], 'system', 'os', 'version')[0],
+                extract_hw_info(bench_values[0], 'system', 'kernel', 'version')[0],
+                extract_hw_info(bench_values[0], 'system', 'kernel', 'arch')[0])
 
         subtitle = "%s, runtime=%d seconds, %d hypervisors with %s scheduling, \\n\\n%s" % (context, metrics["bench"]["runtime"], len(metrics["affinity"]), metrics["bench"]["affinity"], system)
 

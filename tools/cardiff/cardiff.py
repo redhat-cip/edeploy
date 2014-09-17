@@ -211,7 +211,7 @@ def compute_metrics(current_dir, rampup_value, job, metrics):
     for value in metrics["duration"]:
         duration.append(metrics["duration"][value])
     for value in metrics["start_lag"]:
-        start_lag.append(float(metrics["start_lag"][value]) * 1000)# in ms
+        start_lag.append(float(metrics["start_lag"][value]) * 1000)  # in ms
 
     compute_metric(current_dir, rampup_value, duration, "job_duration")
     compute_metric(current_dir, rampup_value, start_lag, "jitter")

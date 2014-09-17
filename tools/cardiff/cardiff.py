@@ -264,7 +264,7 @@ def plot_results(current_dir, rampup_values, job, metrics, bench_values):
         unit["deviance_percentage"] = "% of deviance (vs global perf)"
         unit["mean"] = unit["deviance"]
         unit["sum"] = unit["deviance"]
-        context = "%d CPUs per host" % metrics["bench"]["cores"]
+        context = "%d cpu load per host" % metrics["bench"]["cores"]
     if "memory" in job:
         unit["deviance"] = "MB/sec"
         unit["deviance_percentage"] = "% of deviance (vs global perf)"

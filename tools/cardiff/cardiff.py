@@ -250,6 +250,7 @@ def is_virtualized(bench_values):
 def plot_results(current_dir, rampup_values, job, metrics, bench_values):
     gpm_dir = "./"
     context = ""
+    bench_type = job
     unit = {}
     expected_value = {}
     expected_value["job_duration-mean"] = metrics["bench"]["runtime"]
@@ -265,14 +266,16 @@ def plot_results(current_dir, rampup_values, job, metrics, bench_values):
         unit["mean"] = unit["deviance"]
         unit["sum"] = unit["deviance"]
         context = "%d cpu load per host" % metrics["bench"]["cores"]
+        bench_type = "%s power" % job
     if "memory" in job:
         unit["deviance"] = "MB/sec"
         unit["deviance_percentage"] = "% of deviance (vs mean perf)"
         unit["mean"] = unit["deviance"]
         unit["sum"] = unit["deviance"]
+        bench_type = "%s bandwidth" % job
         context = "%d %s threads per host, blocksize=%s" % (metrics["bench"]["cores"], metrics["bench"]["mode"], metrics["bench"]["block-size"])
     for kind in unit:
-        title = "Study of %s %s from %d to %d hosts (step=%d)" % (job, kind, min(rampup_values), max(rampup_values), metrics["bench"]["step-hosts"])
+        title = "Study of %s %s from %d to %d hosts (step=%d)" % (bench_type, kind, min(rampup_values), max(rampup_values), metrics["bench"]["step-hosts"])
         total_disk_size = 0
         for disk_size in extract_hw_info(bench_values[0], 'disk', '*', 'size'):
             total_disk_size = total_disk_size + int(disk_size)

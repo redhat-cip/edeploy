@@ -241,6 +241,12 @@ def extract_hw_info(hw, level1, level2, level3):
     return result
 
 
+def is_virtualized(bench_values):
+    if "hypervisor" in extract_hw_info(bench_values[0], 'cpu', 'physical_0', 'flags')[0]:
+        return "virtualized"
+    return ""
+
+
 def plot_results(current_dir, rampup_values, job, metrics, bench_values):
     gpm_dir = "./"
     context = ""
@@ -270,8 +276,9 @@ def plot_results(current_dir, rampup_values, job, metrics, bench_values):
         total_disk_size = 0
         for disk_size in extract_hw_info(bench_values[0], 'disk', '*', 'size'):
             total_disk_size = total_disk_size + int(disk_size)
-        system = "HW per host: %s %s CPUs, %d MB of RAM, %d disks : %d GB total, %d NICs\\n OS : %s running kernel %s, cpu_arch=%s" % \
-            (extract_hw_info(bench_values[0], 'cpu', 'physical', 'number')[0],
+        system = "HW per %s host: %s %s CPUs, %d MB of RAM, %d disks : %d GB total, %d NICs\\n OS : %s running kernel %s, cpu_arch=%s" % \
+            (is_virtualized(bench_values),
+                extract_hw_info(bench_values[0], 'cpu', 'physical', 'number')[0],
                 extract_hw_info(bench_values[0], 'cpu', 'physical_0', 'product')[0],
                 int(extract_hw_info(bench_values[0], 'memory', 'total', 'size')[0]) / 1024 / 1024,
                 int(extract_hw_info(bench_values[0], 'disk', 'logical', 'count')[0]),

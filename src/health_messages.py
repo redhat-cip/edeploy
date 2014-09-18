@@ -40,6 +40,9 @@ class Health_Message():
     MEMORY = 1 << 3
     NETWORK = 1 << 4
 
+    FORKED = "forked"
+    THREADED = "threaded"
+
     message_string = {NONE: 'NONE',
                       CONNECT: 'CONNECT',
                       DISCONNECT: 'DISCONNECT',
@@ -67,7 +70,7 @@ class Health_Message():
     running_time = 0
     cpu_instances = 0
     block_size = ""
-    parallel_mode = "forked"
+    parallel_mode = FORKED
 
     def get_message_list(self):
         return [self.NONE, self.CONNECT, self.DISCONNECT, self.ACK, self.NACK,

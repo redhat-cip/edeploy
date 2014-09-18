@@ -15,6 +15,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from health_messages import Health_Message as HM
+import health_protocol as HP
 import psutil
 import sys
 import subprocess
@@ -91,7 +93,7 @@ def check_mem_size(block_size, cpu_count):
 
 
 def run_sysbench_memory(message):
-    if message.parallel_mode == "forked":
+    if message.parallel_mode == HM.FORKED:
         run_sysbench_memory_forked(message.hw, message.running_time, message.block_size, message.cpu_instances)
     else:
         run_sysbench_memory_threaded(message.hw, message.running_time, message.block_size, message.cpu_instances)

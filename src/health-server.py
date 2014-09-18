@@ -474,7 +474,7 @@ def do_memory_job(bench_all, current_job, log_dir, total_runtime):
             iter_bench['runtime'] = get_default_value(current_job, 'runtime', bench['runtime'])
             iter_bench['cores'] = get_default_value(current_job, 'cores', 1)
             iter_bench['block-size'] = get_default_value(current_job, 'block-size', "128M")
-            iter_bench['mode'] = get_default_value(current_job, 'mode', "forked")
+            iter_bench['mode'] = get_default_value(current_job, 'mode', HM.forked)
             iter_bench['nb-hosts'] = nb_hosts
             total_runtime += iter_bench['runtime']
 

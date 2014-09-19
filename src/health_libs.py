@@ -182,7 +182,7 @@ def run_netperf(message):
     nb = 0
     sys.stderr.write('Benchmarking %s @%s for %d seconds\n' % (message.network_test, message.block_size, message.running_time))
     for server in message.peer_servers:
-        if message.my_peer_name != server[1]:
+        if message.my_peer_name == server[1]:
             continue
         port_number = message.port_base + message.peer_servers.index(server)
         threads[nb] = threading.Thread(

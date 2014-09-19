@@ -344,6 +344,17 @@ filesystem_fix() {
     esac
 }
 
+network_fix() {
+    target=$1
+    if [ "$(package_type)" = "rpm" ]; then
+	cat > ${target}/etc/sysconfig/network <<EOF
+NETWORKING=yes
+NOZEROCONF=yes
+EOF
+	chmod 644 ${target}/etc/sysconfig/network
+    fi
+}
+
 set_firstboot() {
     target=$1
     mkdir -p ${target}/etc/first-boot.d
@@ -421,6 +432,7 @@ install_megacli $dist $dir
 set_firstboot $dir
 ssh_fix $dir
 filesystem_fix $dir
+network_fix $dir
 install_edeploy_bin $dir
 clean_tmp_dir $dir
 

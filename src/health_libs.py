@@ -21,10 +21,11 @@ import ipaddr
 import psutil
 import sys
 import subprocess
-import os
 import matcher
 import re
-import time
+from commands import getstatusoutput as cmd
+import threading
+from sets import Set
 
 
 def is_in_network(left, right):
@@ -113,7 +114,57 @@ def check_mem_size(block_size, cpu_count):
 
 def stop_netservers(message):
     sys.stderr.write('Stopping netservers\n')
-    os.system("pkill -9 netperf")
+    status, output = cmd('pkill -9 netserver')
+
+
+def start_bench_server(port):
+    sys.stderr.write('Spawning netserver on port %d\n' % port)
+    status, output = cmd('netserver -p %d' % port)
+
+
+def start_netservers(message):
+    threads = {}
+    sys.stderr.write('Starting %d netservers\n' % (len(message.peer_servers) - 1))
+    for server in message.peer_servers:
+        if message.my_peer_name != server[1]:
+            port_number = message.port_base + message.peer_servers.index(server)
+            threads[port_number] = threading.Thread(target=start_bench_server, args=tuple([port_number]))
+            threads[port_number].start()
+
+
+def start_bench_client(ip, port, message):
+    netperf_mode = "TCP_STREAM"
+    unit = ""
+    if message.network_connection == HM.TCP:
+        if message.network_test == HM.BANDWIDTH:
+            netperf_mode = "TCP_STREAM"
+            unit = "-f m"
+        elif message.network_test == HM.LATENCY:
+            netperf_mode = "TCP_RR"
+    if message.network_connection == HM.UDP:
+        if message.network_test == HM.BANDWIDTH:
+            netperf_mode = "UDP_STREAM"
+            unit = "-f m"
+        elif message.network_test == HM.LATENCY:
+            netperf_mode = "UDP_RR"
+
+    sys.stderr.write("Starting bench client (%s) on server %s:%s\n" % (netperf_mode, ip, port))
+    cmd_netperf = subprocess.Popen(
+        'netperf -l %d -H %s -p %s -t %s %s' % (message.running_time, ip, port, netperf_mode, unit),
+        shell=True, stdout=subprocess.PIPE)
+
+    for line in cmd_netperf.stdout:
+        stop = Set(['bytes', 'AF_INET', 'Local', 'Socket', 'Send', 'Throughput'])
+        current = Set(line.split())
+        if current.intersection(stop):
+            continue
+        elif (len(line.split()) < 4):
+            continue
+        else:
+            if message.network_test == HM.BANDWIDTH:
+                message.hw.append(('network', 'performance', '%s/%s' % (ip, port), str(line.split()[4])))
+            elif message.network_test == HM.LATENCY:
+                message.hw.append(('network', 'performance', '%s/%s' % (ip, port), str(line.split()[5])))
 
 
 def run_network_bench(message):
@@ -121,8 +172,21 @@ def run_network_bench(message):
 
 
 def run_netperf(message):
+    threads = {}
+    nb = 0
     sys.stderr.write('Benchmarking %s @%s for %d seconds\n' % (message.network_test, message.block_size, message.running_time))
-    time.sleep(message.running_time)
+    for server in message.peer_servers:
+        if message.my_peer_name != server[1]:
+            continue
+        port_number = message.port_base + message.peer_servers.index(server)
+        threads[nb] = threading.Thread(
+            target=start_bench_client, args=[server[1], port_number, message])
+        threads[nb].start()
+        nb += 1
+
+    sys.stderr.write('Waiting %d bench clients to finish\n' % nb)
+    for i in range(nb):
+        threads[i].join()
 
 
 def run_sysbench_memory(message):

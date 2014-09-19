@@ -128,6 +128,7 @@ class Health_NETWORK(Health_Bench):
     def initialize(self):
         self.logger.info("Starting init for %s Network Bench " %
                          (self.message.network_test))
+        HL.start_netservers(self.message)
         self.completed()
 
     def clean(self):

@@ -331,6 +331,7 @@ def prepare_network_bench(bench, mode):
     msg = HM(HM.MODULE, HM.NETWORK, mode)
     msg.network_test = bench['mode']
     msg.network_connection = bench['connection']
+    msg.peer_servers = bench['ip-list'].items()
 
     for host in bench['hosts-list']:
         if nb_hosts == 0:
@@ -339,6 +340,7 @@ def prepare_network_bench(bench, mode):
             hosts_state[host] |= NETWORK_RUN
             nb_hosts = nb_hosts - 1
             lock_socket_list.acquire()
+            msg.my_peer_name = bench['ip-list'][host]
             HP.send_hm_message(socket_list[host], msg)
             lock_socket_list.release()
 
@@ -362,11 +364,14 @@ def start_network_bench(bench):
     msg.block_size = bench['block-size']
     msg.running_time = bench['runtime']
     msg.network_test = bench['mode']
+    msg.network_connection = bench['connection']
+    msg.peer_servers = bench['ip-list'].items()
 
     for host in bench['hosts-list']:
         if nb_hosts == 0:
             break
         if host not in get_host_list(NETWORK_RUN).keys():
+            msg.my_peer_name = bench['ip-list'][host]
             hosts_state[host] |= NETWORK_RUN
             nb_hosts = nb_hosts - 1
             lock_socket_list.acquire()
@@ -602,9 +607,10 @@ def do_network_job(bench_all, current_job, log_dir, total_runtime):
 
             iter_bench['hosts-list'] = get_hosts_list_from_affinity(iter_bench)
             select_vms_from_networks(iter_bench)
+            iter_bench['ip-list'] = hosts_selected_ip
 
-            if (len(hosts_selected_ip) < iter_bench['nb-hosts']):
-                HP.logger.error("NETWORK: %d hosts expected while affinity only provides %d hosts available" % (iter_bench['nb-hosts'], len(hosts_selected_ip)))
+            if (len(iter_bench['ip-list']) < iter_bench['nb-hosts']):
+                HP.logger.error("NETWORK: %d hosts expected while affinity only provides %d hosts available" % (iter_bench['nb-hosts'], len(iter_bench['ip-list'])))
                 HP.logger.error("NETWORK: Canceling test %d / %d" % ((iter_bench['nb-hosts'], iter_bench['max_hosts'])))
                 continue
 

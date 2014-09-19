@@ -86,6 +86,7 @@ class Health_Message():
     network_connection = TCP
     ports_list = []
     peer_servers = []
+    my_peer_name = ""
     port_base = 10000
 
     def get_message_list(self):

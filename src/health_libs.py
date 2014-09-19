@@ -153,18 +153,24 @@ def start_bench_client(ip, port, message):
         'netperf -l %d -H %s -p %s -t %s %s' % (message.running_time, ip, port, netperf_mode, unit),
         shell=True, stdout=subprocess.PIPE)
 
-    for line in cmd_netperf.stdout:
-        stop = Set(['bytes', 'AF_INET', 'Local', 'Socket', 'Send', 'Throughput'])
-        current = Set(line.split())
-        if current.intersection(stop):
-            continue
-        elif (len(line.split()) < 4):
-            continue
-        else:
-            if message.network_test == HM.BANDWIDTH:
-                message.hw.append(('network', 'performance', '%s/%s' % (ip, port), str(line.split()[4])))
-            elif message.network_test == HM.LATENCY:
-                message.hw.append(('network', 'performance', '%s/%s' % (ip, port), str(line.split()[5])))
+    return_code = cmd_netperf.wait()
+    if return_code == 0:
+        for line in cmd_netperf.stdout:
+            stop = Set(['bytes', 'AF_INET', 'Local', 'Socket', 'Send', 'Throughput'])
+            current = Set(line.split())
+            if current.intersection(stop):
+                continue
+            elif (len(line.split()) < 4):
+                continue
+            else:
+                if message.network_test == HM.BANDWIDTH:
+                    message.hw.append(('network', 'performance', '%s/%s' % (ip, port), str(line.split()[4])))
+                elif message.network_test == HM.LATENCY:
+                    message.hw.append(('network', 'performance', '%s/%s' % (ip, port), str(line.split()[5])))
+    else:
+        sys.stderr.write("Netperf failed (err:%d) with the following errors:\n" % cmd_netperf.returncode)
+        for line in cmd_netperf.stdout:
+            sys.stderr.write(line)
 
 
 def run_network_bench(message):

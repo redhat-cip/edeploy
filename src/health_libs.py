@@ -117,21 +117,36 @@ def stop_netservers(message):
     status, output = cmd('pkill -9 netserver')
 
 
-def start_bench_server(port):
-    sys.stderr.write('Spawning netserver on port %d\n' % port)
-    status, output = cmd('netserver -p %d' % port)
+def start_bench_server(message, port_number):
+    sys.stderr.write('Spawning netserver : (%s:%d)\n' % (message.my_peer_name, port_number))
+    status, output = cmd('netserver -p %d' % port_number)
+
+
+def get_my_ip_port(message):
+    port_number = 0
+    for host in message.peer_servers:
+        if host[1] == message.my_peer_name:
+            port_number = message.ports_list[host[0]]
+            break
+    return port_number
+
+
+def get_ip_port(message, ip):
+    port_number = 0
+    for host in message.peer_servers:
+        if host[1] == ip:
+            port_number = message.ports_list[host[0]]
+            break
+    return port_number
 
 
 def start_netservers(message):
     threads = {}
-    port_number = 0
     sys.stderr.write('Starting %d netservers\n' % (len(message.peer_servers) - 1))
     for server in message.peer_servers:
         if message.my_peer_name != server[1]:
-            for host in message.peer_servers:
-                if host[1] == message.my_peer_name:
-                    port_number = message.ports_list[host[0]]
-            threads[port_number] = threading.Thread(target=start_bench_server, args=tuple([port_number]))
+            port_number = get_ip_port(message, server[1])
+            threads[port_number] = threading.Thread(target=start_bench_server, args=tuple([message, port_number]))
             threads[port_number].start()
 
 
@@ -151,7 +166,7 @@ def start_bench_client(ip, port, message):
         elif message.network_test == HM.LATENCY:
             netperf_mode = "UDP_RR"
 
-    sys.stderr.write("Starting bench client (%s) on server %s:%s\n" % (netperf_mode, ip, port))
+    sys.stderr.write("Starting bench client (%s) from %s to %s:%s\n" % (netperf_mode, message.my_peer_name, ip, port))
     cmd_netperf = subprocess.Popen(
         'netperf -l %d -H %s -p %s -t %s %s' % (message.running_time, ip, port, netperf_mode, unit),
         shell=True, stdout=subprocess.PIPE)
@@ -183,14 +198,11 @@ def run_network_bench(message):
 def run_netperf(message):
     threads = {}
     nb = 0
-    port_number = 0
     sys.stderr.write('Benchmarking %s @%s for %d seconds\n' % (message.network_test, message.block_size, message.running_time))
     for server in message.peer_servers:
         if message.my_peer_name == server[1]:
             continue
-        port_number = message.ports_list[server[0]]
-        threads[nb] = threading.Thread(
-            target=start_bench_client, args=[server[1], port_number, message])
+        threads[nb] = threading.Thread(target=start_bench_client, args=[server[1], get_my_ip_port(message), message])
         threads[nb].start()
         nb += 1
 

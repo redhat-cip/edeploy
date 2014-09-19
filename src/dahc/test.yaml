@@ -2,7 +2,8 @@ name: all_load
 required-hosts: 1-81
 runtime: 1
 jobs:
-    memory:
+    mem:
+        component: memory
         required-hosts: 1-81
         step-hosts: 6
         runtime: 10
@@ -10,7 +11,8 @@ jobs:
         block-size: 16M
         mode: forked
         affinity-hosts : 44454c4c-4b00-1039-8050-b9c04f573032, 44454c4c-4b00-1039-8058-c2c04f573032
-    cpu:
+    proc:
+        component: cpu
         required-hosts: 1-81
         step-hosts: 6
         runtime: 10

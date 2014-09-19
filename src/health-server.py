@@ -421,13 +421,13 @@ def compute_metrics(log_dir, bench, bench_type):
 
     if bench_type == HM.CPU:
         results = results_cpu
-        dest_dir = dest_dir + "/cpu"
+        dest_dir = dest_dir + "/cpu-" + bench['name']
     elif bench_type == HM.MEMORY:
         results = results_memory
-        dest_dir = dest_dir + "/memory"
+        dest_dir = dest_dir + "/memory-" + bench['name']
     elif bench_type == HM.NETWORK:
         results = results_network
-        dest_dir = dest_dir + "/network"
+        dest_dir = dest_dir + "/network-" + bench['name']
 
     try:
         if not os.path.isdir(dest_dir):
@@ -516,9 +516,10 @@ def compute_nb_hosts_series(bench):
     return nb_hosts_series
 
 
-def parse_job_config(bench, job, job_type):
-    bench['type'] = job_type
+def parse_job_config(bench, job, component):
+    bench['component'] = component
     bench['step-hosts'] = get_default_value(job, 'step-hosts', 1)
+    bench['name'] = get_default_value(job, 'name', '')
     bench['affinity'] = get_default_value(job, 'affinity', SCHED_FAIR)
     affinity_list = get_default_value(job, 'affinity-hosts', '')
     affinity_hosts = []
@@ -773,11 +774,12 @@ def non_interactive_mode(filename):
     for next_job in job['jobs']:
         HP.logger.info("Starting job %s" % next_job)
         current_job = job['jobs'][next_job]
-        if "cpu" in next_job:
+        current_job['name'] = next_job
+        if "cpu" in current_job['component']:
                 do_cpu_job(bench_all, current_job, log_dir, total_runtime)
-        if "memory" in next_job:
+        if "memory" in current_job['component']:
                 do_memory_job(bench_all, current_job, log_dir, total_runtime)
-        if "network" in next_job:
+        if "network" in current_job['component']:
                 do_network_job(bench_all, current_job, log_dir, total_runtime)
 
     HP.logger.info("End of %s" % name)

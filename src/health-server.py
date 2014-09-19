@@ -38,7 +38,6 @@ lock_socket_list = threading.RLock()
 hosts = {}
 lock_host = threading.RLock()
 hosts_state = {}
-hosts_selected_ip = {}
 results_cpu = {}
 results_memory = {}
 results_network = {}
@@ -122,8 +121,6 @@ class SocketHandler(BaseRequestHandler):
                     lock_host.acquire()
                     del hosts[self.client_address]
                     del hosts_state[self.client_address]
-                    if self.client_address in hosts_selected_ip:
-                        del hosts_selected_ip[self.client_address]
                     lock_host.release()
 
                     socket_list[self.client_address].close()
@@ -332,17 +329,19 @@ def prepare_network_bench(bench, mode):
     msg.network_test = bench['mode']
     msg.network_connection = bench['connection']
     msg.peer_servers = bench['ip-list'].items()
+    msg.ports_list = bench['port-list']
 
-    for host in bench['hosts-list']:
-        if nb_hosts == 0:
-            break
-        if host not in get_host_list(NETWORK_RUN).keys():
-            hosts_state[host] |= NETWORK_RUN
-            nb_hosts = nb_hosts - 1
-            lock_socket_list.acquire()
-            msg.my_peer_name = bench['ip-list'][host]
-            HP.send_hm_message(socket_list[host], msg)
-            lock_socket_list.release()
+    for hv in bench['hosts-list']:
+        for host in bench['hosts-list'][hv]:
+            if nb_hosts == 0:
+                break
+            if host not in get_host_list(NETWORK_RUN).keys():
+                hosts_state[host] |= NETWORK_RUN
+                nb_hosts = nb_hosts - 1
+                lock_socket_list.acquire()
+                msg.my_peer_name = bench['ip-list'][host]
+                HP.send_hm_message(socket_list[host], msg)
+                lock_socket_list.release()
 
     string_mode = ""
     if mode == HM.INIT:
@@ -366,18 +365,20 @@ def start_network_bench(bench):
     msg.network_test = bench['mode']
     msg.network_connection = bench['connection']
     msg.peer_servers = bench['ip-list'].items()
+    msg.ports_list = bench['port-list']
 
-    for host in bench['hosts-list']:
-        if nb_hosts == 0:
-            break
-        if host not in get_host_list(NETWORK_RUN).keys():
-            msg.my_peer_name = bench['ip-list'][host]
-            hosts_state[host] |= NETWORK_RUN
-            nb_hosts = nb_hosts - 1
-            lock_socket_list.acquire()
-            start_time(host)
-            HP.send_hm_message(socket_list[host], msg)
-            lock_socket_list.release()
+    for hv in bench['hosts-list']:
+        for host in bench['hosts-list'][hv]:
+            if nb_hosts == 0:
+                break
+            if host not in get_host_list(NETWORK_RUN).keys():
+                msg.my_peer_name = bench['ip-list'][host]
+                hosts_state[host] |= NETWORK_RUN
+                nb_hosts = nb_hosts - 1
+                lock_socket_list.acquire()
+                start_time(host)
+                HP.send_hm_message(socket_list[host], msg)
+                lock_socket_list.release()
 
 
 def disconnect_clients():
@@ -557,21 +558,30 @@ def parse_job_config(bench, job, component):
 
 
 def select_vms_from_networks(bench):
-    for host in bench['hosts-list']:
-        ipv4_list = get_multiple_values(hosts[host].hw, "network", "*", "ipv4")
-        match_network = False
-        # Let's check if one of the IP of a host match at least one network
-        # If so, let's save the resulting IP
-        for ip in ipv4_list:
-            for network in bench['network-hosts'].split(','):
-                if is_in_network(ip, network.strip()):
-                        hosts_selected_ip[host] = ip
-                        match_network = True
+    port_add = 0
+    port_list = {}
+    hosts_selected_ip = {}
+    for hv in bench['hosts-list']:
+        for host in bench['hosts-list'][hv]:
+            ipv4_list = get_multiple_values(hosts[host].hw, "network", "*", "ipv4")
+            match_network = False
+            # Let's check if one of the IP of a host match at least one network
+            # If so, let's save the resulting IP
+            for ip in ipv4_list:
+                for network in bench['network-hosts'].split(','):
+                    if is_in_network(ip, network.strip()):
+                            hosts_selected_ip[host] = ip
+                            port_list[host] = HM.port_base + port_add
+                            port_add += 1
+                            match_network = True
 
-        # If the host is not part of the network we look at
-        # Let's remove it from the possible host list
-        if match_network is False:
-            bench['hosts-list'].remove(host)
+            # If the host is not part of the network we look at
+            # Let's remove it from the possible host list
+            if match_network is False:
+                bench['hosts-list'][hv].remove(host)
+
+    bench['port-list'] = port_list
+    bench['ip-list'] = hosts_selected_ip
 
 
 def do_network_job(bench_all, current_job, log_dir, total_runtime):
@@ -606,9 +616,8 @@ def do_network_job(bench_all, current_job, log_dir, total_runtime):
             iter_bench['nb-hosts'] = nb_hosts
             total_runtime += iter_bench['runtime']
 
-            iter_bench['hosts-list'] = get_hosts_list_from_affinity(iter_bench)
+            iter_bench['hosts-list'] = get_hosts_list_from_affinity(iter_bench, True)
             select_vms_from_networks(iter_bench)
-            iter_bench['ip-list'] = hosts_selected_ip
 
             if (len(iter_bench['ip-list']) < iter_bench['nb-hosts']):
                 HP.logger.error("NETWORK: %d hosts expected while affinity only provides %d hosts available" % (iter_bench['nb-hosts'], len(iter_bench['ip-list'])))

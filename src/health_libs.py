@@ -124,10 +124,13 @@ def start_bench_server(port):
 
 def start_netservers(message):
     threads = {}
+    port_number = 0
     sys.stderr.write('Starting %d netservers\n' % (len(message.peer_servers) - 1))
     for server in message.peer_servers:
         if message.my_peer_name != server[1]:
-            port_number = message.port_base + message.peer_servers.index(server)
+            for host in message.peer_servers:
+                if host[1] == message.my_peer_name:
+                    port_number = message.ports_list[host[0]]
             threads[port_number] = threading.Thread(target=start_bench_server, args=tuple([port_number]))
             threads[port_number].start()
 
@@ -180,11 +183,12 @@ def run_network_bench(message):
 def run_netperf(message):
     threads = {}
     nb = 0
+    port_number = 0
     sys.stderr.write('Benchmarking %s @%s for %d seconds\n' % (message.network_test, message.block_size, message.running_time))
     for server in message.peer_servers:
         if message.my_peer_name == server[1]:
             continue
-        port_number = message.port_base + message.peer_servers.index(server)
+        port_number = message.ports_list[server[0]]
         threads[nb] = threading.Thread(
             target=start_bench_client, args=[server[1], port_number, message])
         threads[nb].start()

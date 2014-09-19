@@ -84,7 +84,7 @@ class Health_Message():
 
     network_test = BANDWIDTH
     network_connection = TCP
-    ports_list = []
+    ports_list = {}
     peer_servers = []
     my_peer_name = ""
     port_base = 10000

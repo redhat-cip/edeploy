@@ -17,11 +17,30 @@
 
 from health_messages import Health_Message as HM
 import health_protocol as HP
+import ipaddr
 import psutil
 import sys
 import subprocess
+import os
 import matcher
 import re
+import time
+
+
+def is_in_network(left, right):
+    'Helper for match_spec.'
+    return ipaddr.IPv4Address(left) in ipaddr.IPv4Network(right)
+
+
+def get_multiple_values(hw, level1, level2, level3):
+    result = []
+    temp_level2 = level2
+    for entry in hw:
+        if level2 == '*':
+            temp_level2 = entry[1]
+        if (level1 == entry[0] and temp_level2 == entry[1] and level3 == entry[2]):
+            result.append(entry[3])
+    return result
 
 
 def get_value(hw_, level1, level2, level3):
@@ -90,6 +109,20 @@ def check_mem_size(block_size, cpu_count):
         return False
 
     return True
+
+
+def stop_netservers(message):
+    sys.stderr.write('Stopping netservers\n')
+    os.system("pkill -9 netperf")
+
+
+def run_network_bench(message):
+    run_netperf(message)
+
+
+def run_netperf(message):
+    sys.stderr.write('Benchmarking %s @%s for %d seconds\n' % (message.network_test, message.block_size, message.running_time))
+    time.sleep(message.running_time)
 
 
 def run_sysbench_memory(message):

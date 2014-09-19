@@ -17,7 +17,7 @@
 
 
 class Health_Message():
-    protocol_version = 1
+    protocol_version = 2
 
     INVALID = 0
     NONE = 1 << 0
@@ -28,6 +28,8 @@ class Health_Message():
     COMPLETED = 1 << 3
     NOTCOMPLETED = 1 << 4
     STARTING = 1 << 5
+    INIT = 1 << 6
+    CLEAN = 1 << 7
 
     CONNECT = 1 << 1
     DISCONNECT = 1 << 2
@@ -42,6 +44,12 @@ class Health_Message():
 
     FORKED = "forked"
     THREADED = "threaded"
+
+    LATENCY = "latency"
+    BANDWIDTH = "bandwidth"
+
+    TCP = "tcp"
+    UDP = "udp"
 
     message_string = {NONE: 'NONE',
                       CONNECT: 'CONNECT',
@@ -59,7 +67,9 @@ class Health_Message():
                      START: 'START',
                      COMPLETED: 'COMPLETED',
                      NOTCOMPLETED: 'NOTCOMPLETED',
-                     STARTING: 'STARTING'}
+                     STARTING: 'STARTING',
+                     INIT: 'INITIALIZE',
+                     CLEAN: 'CLEAN'}
     message = NONE
     action = NONE
     module = NONE
@@ -71,6 +81,12 @@ class Health_Message():
     cpu_instances = 0
     block_size = ""
     parallel_mode = FORKED
+
+    network_test = BANDWIDTH
+    network_connection = TCP
+    ports_list = []
+    peer_servers = []
+    port_base = 10000
 
     def get_message_list(self):
         return [self.NONE, self.CONNECT, self.DISCONNECT, self.ACK, self.NACK,

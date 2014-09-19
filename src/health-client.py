@@ -20,6 +20,7 @@ from socket import socket, AF_INET, SOCK_STREAM
 from health_messages import Health_Message as HM
 from health_bench import Health_CPU as HCPU
 from health_bench import Health_MEMORY as HMEMORY
+from health_bench import Health_NETWORK as HNETWORK
 import atexit
 import health_protocol as HP
 import logging
@@ -43,6 +44,14 @@ def start(socket, msg):
 
 
 def stop(socket, msg):
+    return
+
+
+def clean(socket, msg):
+    return
+
+
+def initialize(socket, msg):
     return
 
 
@@ -84,6 +93,8 @@ def memory(socket, msg):
 
 
 def network(socket, msg):
+    HP.logger.info("Module Network (%d sec)" % msg.running_time)
+    action(socket, msg, HNETWORK(msg, socket, HP.logger))
     return
 
 
@@ -93,6 +104,8 @@ def action(socket, msg, hb):
                 HM.START: hb.start,
                 HM.COMPLETED: hb.completed,
                 HM.NOTCOMPLETED: hb.notcompleted,
+                HM.INIT: hb.initialize,
+                HM.CLEAN: hb.clean,
                 }
 
     HP.logger.info("Received action %s (%d)" %

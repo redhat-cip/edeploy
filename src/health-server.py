@@ -21,6 +21,7 @@ import ConfigParser
 import socket
 import struct
 from health_messages import Health_Message as HM
+from health_libs import *
 import health_libs as HL
 import health_protocol as HP
 import logging
@@ -37,8 +38,10 @@ lock_socket_list = threading.RLock()
 hosts = {}
 lock_host = threading.RLock()
 hosts_state = {}
+hosts_selected_ip = {}
 results_cpu = {}
 results_memory = {}
+results_network = {}
 serv = 0
 NOTHING_RUN = 0
 CPU_RUN = 1 << 0
@@ -119,6 +122,8 @@ class SocketHandler(BaseRequestHandler):
                     lock_host.acquire()
                     del hosts[self.client_address]
                     del hosts_state[self.client_address]
+                    if self.client_address in hosts_selected_ip:
+                        del hosts_selected_ip[self.client_address]
                     lock_host.release()
 
                     socket_list[self.client_address].close()
@@ -141,6 +146,8 @@ class SocketHandler(BaseRequestHandler):
                             cpu_completed(self.client_address, msg)
                         elif msg.module == HM.MEMORY:
                             memory_completed(self.client_address, msg)
+                        elif msg.module == HM.NETWORK:
+                            network_completed(self.client_address, msg)
 
 
 def createAndStartServer():
@@ -170,6 +177,13 @@ def memory_completed(host, msg):
     global results_memory
     hosts_state[host] &= ~MEMORY_RUN
     results_memory[host] = msg.hw
+
+
+def network_completed(host, msg):
+    global hosts_state
+    global results_network
+    hosts_state[host] &= ~NETWORK_RUN
+    results_network[host] = msg.hw
 
 
 def get_host_list(item):
@@ -224,12 +238,33 @@ def get_fair_hosts_list(affinity_hosts_list, nb_hosts):
     return hosts_list
 
 
-def get_hosts_list_from_affinity(bench):
+def get_fair_hosts_list_per_hv(affinity_hosts_list, nb_hosts):
+    hosts_list = {}
+    for hypervisor in affinity_hosts_list.keys():
+        hosts_list[hypervisor] = []
+
+    selected_hosts = 0
+    while (selected_hosts < nb_hosts):
+        for hypervisor in affinity_hosts_list.keys():
+            if (len(affinity_hosts_list[hypervisor]) == 0):
+                return hosts_list
+            hosts_list[hypervisor].append(affinity_hosts_list[hypervisor].pop())
+            selected_hosts = selected_hosts + 1
+            if (selected_hosts == nb_hosts):
+                break
+
+    return hosts_list
+
+
+def get_hosts_list_from_affinity(bench, sorted_list=False):
     affinity_hosts_list = compute_affinity(bench)
     hosts_list = []
 
     if bench['affinity'] == SCHED_FAIR:
-        hosts_list = get_fair_hosts_list(affinity_hosts_list, bench['nb-hosts'])
+        if sorted_list is False:
+            hosts_list = get_fair_hosts_list(affinity_hosts_list, bench['nb-hosts'])
+        else:
+            hosts_list = get_fair_hosts_list_per_hv(affinity_hosts_list, bench['nb-hosts'])
     else:
         HP.logger.error("Unsupported affinity : %s" % bench['affinity'])
 
@@ -290,14 +325,64 @@ def start_memory_bench(bench):
             lock_socket_list.release()
 
 
+def prepare_network_bench(bench, mode):
+    global hosts_state
+    nb_hosts = bench['nb-hosts']
+    msg = HM(HM.MODULE, HM.NETWORK, mode)
+    msg.network_test = bench['mode']
+    msg.network_connection = bench['connection']
+
+    for host in bench['hosts-list']:
+        if nb_hosts == 0:
+            break
+        if host not in get_host_list(NETWORK_RUN).keys():
+            hosts_state[host] |= NETWORK_RUN
+            nb_hosts = nb_hosts - 1
+            lock_socket_list.acquire()
+            HP.send_hm_message(socket_list[host], msg)
+            lock_socket_list.release()
+
+    string_mode = ""
+    if mode == HM.INIT:
+        string_mode = "initialisation"
+    else:
+        string_mode = "cleaning"
+
+    HP.logger.info("NETWORK: Waiting network %s to complete" % string_mode)
+    while (get_host_list(NETWORK_RUN).keys()):
+        time.sleep(1)
+
+    HP.logger.info("NETWORK: %s completed" % string_mode)
+
+
+def start_network_bench(bench):
+    global hosts_state
+    nb_hosts = bench['nb-hosts']
+    msg = HM(HM.MODULE, HM.NETWORK, HM.START)
+    msg.block_size = bench['block-size']
+    msg.running_time = bench['runtime']
+    msg.network_test = bench['mode']
+
+    for host in bench['hosts-list']:
+        if nb_hosts == 0:
+            break
+        if host not in get_host_list(NETWORK_RUN).keys():
+            hosts_state[host] |= NETWORK_RUN
+            nb_hosts = nb_hosts - 1
+            lock_socket_list.acquire()
+            start_time(host)
+            HP.send_hm_message(socket_list[host], msg)
+            lock_socket_list.release()
+
+
 def disconnect_clients():
     global serv
     msg = HM(HM.DISCONNECT)
     HP.logger.info("Asking %d hosts to disconnect" % len(hosts.keys()))
     for host in hosts.keys():
-            lock_socket_list.acquire()
-            HP.send_hm_message(socket_list[host], msg)
-            lock_socket_list.release()
+        lock_socket_list.acquire()
+        HP.send_hm_message(socket_list[host], msg)
+        lock_socket_list.release()
 
     while(hosts.keys()):
         time.sleep(1)
@@ -335,6 +420,9 @@ def compute_metrics(log_dir, bench, bench_type):
     elif bench_type == HM.MEMORY:
         results = results_memory
         dest_dir = dest_dir + "/memory"
+    elif bench_type == HM.NETWORK:
+        results = results_network
+        dest_dir = dest_dir + "/network"
 
     try:
         if not os.path.isdir(dest_dir):
@@ -445,13 +533,13 @@ def parse_job_config(bench, job, job_type):
 
     if max_hosts < 1:
         max_hosts = min_hosts
-        HP.logger.error("CPU: required-hosts shall be greater than"
+        HP.logger.error("ERROR: required-hosts shall be greater than"
                         " 0, defaulting to global required-hosts=%d"
                         % max_hosts)
         return False
 
     if max_hosts > bench['required-hosts']:
-        HP.logger.error("CPU: The maximum number of hosts to tests"
+        HP.logger.error("ERROR: The maximum number of hosts to tests"
                         " is greater than the amount of available"
                         " hosts.")
         return False
@@ -460,6 +548,90 @@ def parse_job_config(bench, job, job_type):
     bench['max_hosts'] = max_hosts
 
     return True
+
+
+def select_vms_from_networks(bench):
+    for host in bench['hosts-list']:
+        ipv4_list = get_multiple_values(hosts[host].hw, "network", "*", "ipv4")
+        match_network = False
+        # Let's check if one of the IP of a host match at least one network
+        # If so, let's save the resulting IP
+        for ip in ipv4_list:
+            for network in bench['network-hosts'].split(','):
+                if is_in_network(ip, network.strip()):
+                        hosts_selected_ip[host] = ip
+                        match_network = True
+
+        # If the host is not part of the network we look at
+        # Let's remove it from the possible host list
+        if match_network is False:
+            bench['hosts-list'].remove(host)
+
+
+def do_network_job(bench_all, current_job, log_dir, total_runtime):
+    bench = dict(bench_all)
+
+    # In the network bench, step-hosts shall be modulo 2
+    bench['step-hosts'] = get_default_value(current_job, 'step-hosts', 2)
+    bench['arity'] = get_default_value(current_job, 'arity', 2)
+
+    if parse_job_config(bench, current_job, HM.NETWORK) is True:
+        if ((int(bench['step-hosts']) % int(bench['arity'])) != 0):
+            HP.logger.error("NETWORK: step-hosts shall be modulo arity (%d)" % int(bench['arity']))
+            HP.logger.error("NETWORK: Canceling Test")
+            return False
+
+        if ((int(bench['min_hosts']) % int(bench['arity'])) != 0) or ((int(bench['max_hosts']) % int(bench['arity'])) != 0):
+            HP.logger.error("NETWORK: min and max-hosts shall be modulo arity %d" % int(bench['arity']))
+            HP.logger.error("NETWORK: Canceling Test")
+            return False
+
+        nb_loops = 0
+        hosts_series = compute_nb_hosts_series(bench)
+        for nb_hosts in hosts_series:
+            nb_loops = nb_loops + 1
+            iter_bench = dict(bench)
+            iter_bench['runtime'] = get_default_value(current_job, 'runtime', bench['runtime'])
+            iter_bench['cores'] = get_default_value(current_job, 'cores', 1)
+            iter_bench['block-size'] = get_default_value(current_job, 'block-size', "128k")
+            iter_bench['mode'] = get_default_value(current_job, 'mode', HM.BANDWIDTH)
+            iter_bench['network-hosts'] = get_default_value(current_job, 'network-hosts', "0.0.0.0/0")
+            iter_bench['connection'] = get_default_value(current_job, 'connection', HM.TCP)
+            iter_bench['nb-hosts'] = nb_hosts
+            total_runtime += iter_bench['runtime']
+
+            iter_bench['hosts-list'] = get_hosts_list_from_affinity(iter_bench)
+            select_vms_from_networks(iter_bench)
+
+            if (len(hosts_selected_ip) < iter_bench['nb-hosts']):
+                HP.logger.error("NETWORK: %d hosts expected while affinity only provides %d hosts available" % (iter_bench['nb-hosts'], len(hosts_selected_ip)))
+                HP.logger.error("NETWORK: Canceling test %d / %d" % ((iter_bench['nb-hosts'], iter_bench['max_hosts'])))
+                continue
+
+            prepare_network_bench(iter_bench, HM.INIT)
+
+            HP.logger.info("NETWORK: Waiting %s bench @%s %d / %d"
+                           " to finish on %d hosts (step = %d): should take"
+                           " %d seconds" % (iter_bench['mode'], iter_bench['block-size'], nb_loops, len(hosts_series),
+                                            iter_bench['nb-hosts'], iter_bench['step-hosts'],
+                                            iter_bench['runtime']))
+
+            init_jitter()
+
+            start_network_bench(iter_bench)
+
+            time.sleep(bench['runtime'])
+
+            while (get_host_list(NETWORK_RUN).keys()):
+                time.sleep(1)
+
+            disable_jitter()
+
+            compute_metrics(log_dir, iter_bench, HM.NETWORK)
+
+            prepare_network_bench(iter_bench, HM.CLEAN)
+    else:
+        HP.logger.error("NETWORK: Canceling Test")
 
 
 def do_memory_job(bench_all, current_job, log_dir, total_runtime):
@@ -599,6 +771,8 @@ def non_interactive_mode(filename):
                 do_cpu_job(bench_all, current_job, log_dir, total_runtime)
         if "memory" in next_job:
                 do_memory_job(bench_all, current_job, log_dir, total_runtime)
+        if "network" in next_job:
+                do_network_job(bench_all, current_job, log_dir, total_runtime)
 
     HP.logger.info("End of %s" % name)
     disconnect_clients()

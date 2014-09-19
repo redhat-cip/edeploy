@@ -26,6 +26,12 @@ class Health_Bench():
     message = HM()
     socket = 0
 
+    def initialize(self):
+        return
+
+    def clean(self):
+        return
+
     def start(self):
         return
 
@@ -70,6 +76,12 @@ class Health_CPU(Health_Bench):
                 self.message.cpu_instances)
         self.completed()
 
+    def initialize(self):
+        Health_Bench.initialize(self, HM.CPU)
+
+    def clean(self):
+        Health_Bench.clean(self, HM.CPU)
+
     def starting(self):
         Health_Bench.starting(self, HM.CPU)
 
@@ -92,6 +104,12 @@ class Health_MEMORY(Health_Bench):
         HL.run_sysbench_memory(self.message)
         self.completed()
 
+    def initialize(self):
+        Health_Bench.initialize(self, HM.MEMORY)
+
+    def clean(self):
+        Health_Bench.clean(self, HM.MEMORY)
+
     def starting(self):
         Health_Bench.starting(self, HM.MEMORY)
 
@@ -103,3 +121,36 @@ class Health_MEMORY(Health_Bench):
 
     def completed(self):
         Health_Bench.completed(self, HM.MEMORY)
+
+
+class Health_NETWORK(Health_Bench):
+
+    def initialize(self):
+        self.logger.info("Starting init for %s Network Bench " %
+                         (self.message.network_test))
+        self.completed()
+
+    def clean(self):
+        self.logger.info("Cleaning for %s Network Bench " %
+                         (self.message.network_test))
+        HL.stop_netservers(self.message)
+        self.completed()
+
+    def start(self):
+        self.logger.info("Starting Network Bench (%s mode) for %d seconds with blocksize=%s" %
+                         (self.message.network_test, self.message.running_time, self.message.block_size))
+        self.starting()
+        HL.run_network_bench(self.message)
+        self.completed()
+
+    def starting(self):
+        Health_Bench.starting(self, HM.NETWORK)
+
+    def stop(self):
+        self.logger.info("Stopping Network Bench")
+
+    def notcompleted(self):
+        Health_Bench.notcompleted(self, HM.NETWORK)
+
+    def completed(self):
+        Health_Bench.completed(self, HM.NETWORK)

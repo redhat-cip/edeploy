@@ -178,9 +178,9 @@ def start_bench_client(ip, port, message):
                 continue
             else:
                 if message.network_test == HM.BANDWIDTH:
-                    message.hw.append(('network', 'performance', '%s/%s' % (ip, port), str(line.split()[4])))
+                    message.hw.append(('network', 'bandwidth', '%s/%s' % (ip, port), str(line.split()[4])))
                 elif message.network_test == HM.LATENCY:
-                    message.hw.append(('network', 'performance', '%s/%s' % (ip, port), str(line.split()[5])))
+                    message.hw.append(('network', 'requests_per_sec', '%s/%s' % (ip, port), str(line.split()[5])))
     else:
         sys.stderr.write("Netperf failed (err:%d) with the following errors:\n" % cmd_netperf.returncode)
         for line in cmd_netperf.stdout:

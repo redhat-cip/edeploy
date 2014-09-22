@@ -818,6 +818,7 @@ def non_interactive_mode(filename):
                 do_network_job(bench_all, current_job, log_dir, total_runtime)
 
     HP.logger.info("End of %s" % name)
+    HP.logger.info("Results are available here : %s" % log_dir)
     disconnect_clients()
 
 

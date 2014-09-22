@@ -409,6 +409,7 @@ def start_network_bench(bench):
 
 def disconnect_clients():
     global serv
+    global hosts
     msg = HM(HM.DISCONNECT)
     HP.logger.info("Asking %d hosts to disconnect" % len(hosts.keys()))
     for host in hosts.keys():
@@ -435,6 +436,7 @@ def save_hw(items, name, hwdir):
 
 
 def dump_hosts(log_dir):
+    global hosts
     unique_hosts_list = []
     for host in hosts.keys():
         uuid = HL.get_value(hosts[host].hw, "system", "product", "serial")
@@ -771,6 +773,7 @@ def do_cpu_job(bench_all, current_job, log_dir, total_runtime):
 
 
 def non_interactive_mode(filename):
+    global hosts
     total_runtime = 0
     name = "undefined"
     bench_all = {}

@@ -347,11 +347,11 @@ filesystem_fix() {
 network_fix() {
     target=$1
     if [ "$(package_type)" = "rpm" ]; then
-	cat > ${target}/etc/sysconfig/network <<EOF
+        cat > ${target}/etc/sysconfig/network <<EOF
 NETWORKING=yes
 NOZEROCONF=yes
 EOF
-	chmod 644 ${target}/etc/sysconfig/network
+        chmod 644 ${target}/etc/sysconfig/network
     fi
 }
 

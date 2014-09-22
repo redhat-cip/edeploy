@@ -351,15 +351,13 @@ def prepare_network_bench(bench, mode):
 
     string_mode = ""
     if mode == HM.INIT:
-        string_mode = "initialisation"
+        string_mode = "Initialisation"
     else:
-        string_mode = "cleaning"
+        string_mode = "Cleaning"
 
-    HP.logger.info("NETWORK: Waiting network %s to complete" % string_mode)
+    HP.logger.info("NETWORK: %s in progress" % string_mode)
     while (get_host_list(NETWORK_RUN).keys()):
         time.sleep(1)
-
-    HP.logger.info("NETWORK: %s completed" % string_mode)
 
 
 def start_network_bench(bench):

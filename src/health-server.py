@@ -367,28 +367,38 @@ def start_network_bench(bench):
     msg.ports_list = bench['port-list']
     bench['arity_groups'] = []
     arity_group = []
+    used_hosts = []
     ip_list = {}
 
-    for hv in bench['hosts-list']:
-        for host in bench['hosts-list'][hv]:
-            if nb_hosts == 0:
+    while nb_hosts > 0:
+        for hv in bench['hosts-list']:
+            for host in bench['hosts-list'][hv]:
+                if nb_hosts == 0:
+                    break
+                # We shall not use the same host twice
+                if host in used_hosts:
+                    continue
+                used_hosts.append(host)
+                arity_group.append(host)
+                ip_list[host] = bench['ip-list'][host]
+                nb_hosts = nb_hosts - 1
+                if len(arity_group) == bench['arity']:
+                    bench['arity_groups'].append(arity_group)
+                    msg.peer_servers = ip_list.items()
+                    for peer_server in arity_group:
+                        if peer_server not in get_host_list(NETWORK_RUN).keys():
+                            msg.my_peer_name = bench['ip-list'][peer_server]
+                            hosts_state[peer_server] |= NETWORK_RUN
+                            lock_socket_list.acquire()
+                            start_time(peer_server)
+                            HP.send_hm_message(socket_list[peer_server], msg)
+                            lock_socket_list.release()
+                    arity_group = []
+                    ip_list = {}
+                # We shall break to switch to another hypervisor
                 break
-            arity_group.append(host)
-            ip_list[host] = bench['ip-list'][host]
-            nb_hosts = nb_hosts - 1
-            if len(arity_group) == bench['arity']:
-                bench['arity_groups'].append(arity_group)
-                msg.peer_servers = ip_list.items()
-                for peer_server in arity_group:
-                    if peer_server not in get_host_list(NETWORK_RUN).keys():
-                        msg.my_peer_name = bench['ip-list'][peer_server]
-                        hosts_state[peer_server] |= NETWORK_RUN
-                        lock_socket_list.acquire()
-                        start_time(peer_server)
-                        HP.send_hm_message(socket_list[peer_server], msg)
-                        lock_socket_list.release()
-                arity_group = []
-                ip_list = {}
+        if nb_hosts == 0:
+            break
 
 
 def disconnect_clients():

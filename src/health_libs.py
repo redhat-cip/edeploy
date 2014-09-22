@@ -141,6 +141,7 @@ def start_netservers(message):
     for server in message.peer_servers:
         if message.my_peer_name != server[1]:
             port_number = get_ip_port(message, server[1])
+            sys.stderr.write("-> %s : opening port %d for %s\n" % (message.my_peer_name, port_number, server[1]))
             threads[port_number] = threading.Thread(target=start_bench_server, args=tuple([message, port_number]))
             threads[port_number].start()
 

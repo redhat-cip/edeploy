@@ -194,8 +194,9 @@ def get_host_list(item):
     return selected_hosts
 
 
-def compute_affinity(bench):
+def compute_affinity(bench=[]):
     affinity = {}
+    global hosts
 
     def acceptable_host(host_list, host):
         if (len(host_list) == 0):
@@ -208,8 +209,9 @@ def compute_affinity(bench):
         hw = hosts[host].hw
         system_id = HL.get_value(hw, "system", "product", "serial")
 
-        if acceptable_host(bench['affinity-hosts'], system_id) is False:
-            continue
+        if len(bench) > 0:
+            if acceptable_host(bench['affinity-hosts'], system_id) is False:
+                continue
 
         if system_id not in affinity.keys():
             affinity[system_id] = [host]
@@ -439,6 +441,7 @@ def dump_hosts(log_dir):
         if uuid not in unique_hosts_list:
             unique_hosts_list.append(uuid)
     pprint.pprint(unique_hosts_list, stream=open(log_dir+"/hosts", 'w'))
+    pprint.pprint(compute_affinity(), stream=open(log_dir+"/affinity", 'w'))
 
 
 def compute_metrics(log_dir, bench, bench_type):

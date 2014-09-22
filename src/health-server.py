@@ -402,7 +402,7 @@ def start_network_bench(bench):
                 # We shall break to switch to another hypervisor
                 break
         if nb_hosts == 0:
-            break
+            return
 
 
 def disconnect_clients():

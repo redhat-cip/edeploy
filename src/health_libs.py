@@ -123,12 +123,7 @@ def start_bench_server(message, port_number):
 
 
 def get_my_ip_port(message):
-    port_number = 0
-    for host in message.peer_servers:
-        if host[1] == message.my_peer_name:
-            port_number = message.ports_list[host[0]]
-            break
-    return port_number
+    return get_ip_port(message, message.my_peer_name)
 
 
 def get_ip_port(message, ip):

@@ -792,6 +792,12 @@ def non_interactive_mode(filename):
     HP.logger.info("Starting %s" % name)
     for next_job in job['jobs']:
         HP.logger.info("Starting job %s" % next_job)
+        global results_network
+        global results_cpu
+        global results_memory
+        results_network = {}
+        results_cpu = {}
+        results_memory = {}
         current_job = job['jobs'][next_job]
         current_job['name'] = next_job
         if "cpu" in current_job['component']:

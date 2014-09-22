@@ -306,7 +306,7 @@ def plot_results(current_dir, rampup_values, job, metrics, bench_values):
                 extract_hw_info(bench_values[0], 'system', 'kernel', 'version')[0],
                 extract_hw_info(bench_values[0], 'system', 'kernel', 'arch')[0])
 
-        subtitle = "\\nBenchmark setup : %s, runtime=%d seconds, %d hypervisors with %s scheduling\\n%s" % (context, metrics["bench"]["runtime"], len(metrics["bench"]["affinity-hosts"]), metrics["bench"]["affinity"], system)
+        subtitle = "\\nBenchmark setup : %s, runtime=%d seconds, %d hypervisors with %s scheduling\\n%s" % (context, metrics["bench"]["runtime"], len(metrics["affinity"]), metrics["bench"]["affinity"], system)
 
         if kind in expected_value:
             do_plot(current_dir, gpm_dir, title, subtitle, kind, unit[kind], expected_value[kind])

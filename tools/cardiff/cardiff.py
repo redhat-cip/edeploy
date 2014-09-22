@@ -127,6 +127,10 @@ def compare_performance(bench_values, unique_id, systems_groups, detail, rampup_
         systems = utils.find_sub_element(bench_values, unique_id, 'cpu', group)
         check.memory_perf(systems, unique_id, systems_groups.index(group), detail, rampup_value, current_dir)
 
+    for group in systems_groups:
+        systems = utils.find_sub_element(bench_values, unique_id, 'network', group)
+        check.network_perf(systems, unique_id, systems_groups.index(group), detail, rampup_value, current_dir)
+
 
 def analyze_data(pattern, ignore_list, detail, rampup_value=0, max_rampup_value=0, current_dir=""):
     if rampup_value > 0:
@@ -273,6 +277,17 @@ def plot_results(current_dir, rampup_values, job, metrics, bench_values):
         unit["mean"] = unit["deviance"]
         unit["sum"] = unit["deviance"]
         bench_type = "%s bandwidth" % job
+        context = "%d %s threads per host, blocksize=%s" % (metrics["bench"]["cores"], metrics["bench"]["mode"], metrics["bench"]["block-size"])
+    if "network" in job:
+        if metrics["bench"]["mode"] == "bandwidth":
+            unit["deviance"] = "MB/sec"
+            bench_type = "%s %s bandwidth" % (job, metrics["bench"]["connection"])
+        elif metrics["bench"]["mode"] == "latency":
+            unit["deviance"] = "RRQ/sec"
+            bench_type = "%s %s latency" % (job, metrics["bench"]["connection"])
+        unit["deviance_percentage"] = "% of deviance (vs mean perf)"
+        unit["mean"] = unit["deviance"]
+        unit["sum"] = unit["deviance"]
         context = "%d %s threads per host, blocksize=%s" % (metrics["bench"]["cores"], metrics["bench"]["mode"], metrics["bench"]["block-size"])
     for kind in unit:
         title = "Study of %s %s from %d to %d hosts (step=%d)" % (bench_type, kind, min(rampup_values), max(rampup_values), metrics["bench"]["step-hosts"])

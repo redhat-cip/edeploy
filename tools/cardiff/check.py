@@ -98,6 +98,50 @@ def prepare_detail(detail_options, group_number, category, item, details, matche
     return ""
 
 
+def network_perf(systems, unique_id, group_number, detail_options, rampup_value=0, current_dir=""):
+    have_net_data = False
+    sets = search_item(systems, unique_id, "network", "(.*)", [], [])
+    modes = ['bandwidth', 'requests_per_sec']
+    for mode in modes:
+        results = {}
+        for system in sets:
+            net = []
+            series = []
+            for perf in sets[system]:
+                if (perf[1] == mode):
+                    if not perf[1] in net:
+                        net.append(perf[1])
+                    series.append(float(perf[3]))
+            results[system] = Series(series, index=net)
+
+        df = DataFrame(results)
+        details = []
+        matched_category = []
+        for net in df.transpose().columns:
+            if have_net_data is False:
+                print
+                print "Group %d : Checking network disks perf" % group_number
+                have_net_data = True
+            consistent = []
+            curious = []
+            unstable = []
+            # How much the variance could be far from the average (in %)
+            tolerance_max = 15
+            tolerance_min = 2
+
+            print_perf(tolerance_min, tolerance_max, df.transpose()[net], df, mode, net, consistent, curious, unstable, rampup_value, current_dir)
+            if mode == 'bandwidth':
+                unit = "MB/sec"
+            else:
+                unit = "RRQ/sec"
+            prepare_detail(detail_options, group_number, mode, net, details, matched_category)
+            print_summary("%-30s %s" % (mode, net), consistent, "consistent", unit, df)
+            print_summary("%-30s %s" % (mode, net), curious, "curious", unit, df)
+            print_summary("%-30s %s" % (mode, net), unstable, "unstable", unit, df)
+
+        print_detail(detail_options, details, df, matched_category)
+
+
 def logical_disks_perf(systems, unique_id, group_number, detail_options, rampup_value=0, current_dir=""):
     have_disk_data = False
     sets = search_item(systems, unique_id, "disk", "sd(\S+)", [], ['simultaneous', 'standalone'])

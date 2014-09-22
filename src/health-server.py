@@ -268,10 +268,14 @@ def get_hosts_list_from_affinity(bench, sorted_list=False):
     return hosts_list
 
 
-def dump_affinity(bench):
+def dump_affinity(bench, bench_type):
     HP.logger.debug("Using affinity %s on the following mapping :" % bench['affinity'])
     host_affinity = compute_affinity(bench)
     final_list = {}
+
+    if bench_type == HM.NETWORK:
+        return bench['hosts-list']
+
     for hypervisor in host_affinity.keys():
         for hostname in bench['hosts-list']:
             if hostname in host_affinity[hypervisor]:
@@ -481,7 +485,7 @@ def compute_metrics(log_dir, bench, bench_type):
     output = {}
     output['bench'] = bench
     output['hosts'] = results.keys()
-    output['affinity'] = dump_affinity(bench)
+    output['affinity'] = dump_affinity(bench, bench_type)
     output['start_time'] = real_start
     output['start_lag'] = delta_start_jitter
     output['duration'] = duration

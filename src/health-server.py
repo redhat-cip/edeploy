@@ -546,7 +546,7 @@ def compute_nb_hosts_series(bench):
     return nb_hosts_series
 
 
-def parse_job_config(bench, job, component):
+def parse_job_config(bench, job, component, log_dir):
     bench['component'] = component
     bench['step-hosts'] = get_default_value(job, 'step-hosts', 1)
     bench['name'] = get_default_value(job, 'name', '')
@@ -558,6 +558,12 @@ def parse_job_config(bench, job, component):
             affinity_hosts.append(manual_host.strip())
 
     bench['affinity-hosts'] = affinity_hosts
+    if len(bench['affinity-hosts']) != len(compute_affinity(bench)):
+        HP.logger.error("ERROR: Available hypervisors is different than affinity-hosts")
+        HP.logger.error("ERROR: %d hypervisors while we expect %d" % (len(compute_affinity(bench)), len(bench['affinity-hosts'])))
+        HP.logger.error("ERROR: Please check %s/affinity to see detected hypervisors" % log_dir)
+        return False
+
     required_cpu_hosts = get_default_value(job, 'required-hosts',
                                            bench['required-hosts'])
     if "-" in str(required_cpu_hosts):
@@ -620,7 +626,7 @@ def do_network_job(bench_all, current_job, log_dir, total_runtime):
     bench['step-hosts'] = get_default_value(current_job, 'step-hosts', 2)
     bench['arity'] = get_default_value(current_job, 'arity', 2)
 
-    if parse_job_config(bench, current_job, HM.NETWORK) is True:
+    if parse_job_config(bench, current_job, HM.NETWORK, log_dir) is True:
         if ((int(bench['step-hosts']) % int(bench['arity'])) != 0):
             HP.logger.error("NETWORK: step-hosts shall be modulo arity (%d)" % int(bench['arity']))
             HP.logger.error("NETWORK: Canceling Test")
@@ -687,7 +693,7 @@ def do_network_job(bench_all, current_job, log_dir, total_runtime):
 def do_memory_job(bench_all, current_job, log_dir, total_runtime):
     bench = dict(bench_all)
 
-    if parse_job_config(bench, current_job, HM.MEMORY) is True:
+    if parse_job_config(bench, current_job, HM.MEMORY, log_dir) is True:
         nb_loops = 0
         hosts_series = compute_nb_hosts_series(bench)
         for nb_hosts in hosts_series:
@@ -732,7 +738,7 @@ def do_memory_job(bench_all, current_job, log_dir, total_runtime):
 def do_cpu_job(bench_all, current_job, log_dir, total_runtime):
     bench = dict(bench_all)
 
-    if parse_job_config(bench, current_job, HM.CPU) is True:
+    if parse_job_config(bench, current_job, HM.CPU, log_dir) is True:
         nb_loops = 0
         hosts_series = compute_nb_hosts_series(bench)
         for nb_hosts in hosts_series:

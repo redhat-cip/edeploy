@@ -1,0 +1,25 @@
+name: all_load
+required-hosts: 81
+jobs:
+    bw:
+        component: network
+        affinity-hosts : 44454c4c-4b00-1039-8056-b9c04f573032, 44454c4c-4b00-1039-8058-c2c04f573032
+        required-hosts: 2-54
+        arity: 2
+        step-hosts: 4
+        runtime: 10
+        network-hosts: 192.168.254.0/24,192.168.24.0/24,1.2.3.4/24
+        mode: bandwidth
+        connection: tcp
+        block-size: 1310172
+    lat:
+        component: network
+        affinity-hosts : 44454c4c-4b00-1039-8056-b9c04f573032, 44454c4c-4b00-1039-8058-c2c04f573032
+        required-hosts: 2-54
+        arity: 2
+        step-hosts: 4
+        runtime: 10
+        network-hosts: 192.168.254.0/24,192.168.24.0/24,1.2.3.4/24
+        mode: latency
+        connection: tcp
+        block-size: 1310172

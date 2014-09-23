@@ -817,6 +817,7 @@ def non_interactive_mode(filename):
         if (hosts_count != previous_hosts_count):
             HP.logger.info("Still %d hosts to connect" % (bench_all['required-hosts'] - int(hosts_count)))
             previous_hosts_count = hosts_count
+            dump_hosts(log_dir)
         hosts_count = len(hosts.keys())
         time.sleep(1)
 

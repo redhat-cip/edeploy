@@ -557,11 +557,12 @@ def parse_job_config(bench, job, component, log_dir):
             affinity_hosts.append(manual_host.strip())
 
     bench['affinity-hosts'] = affinity_hosts
-    if len(bench['affinity-hosts']) != len(compute_affinity(bench)):
-        HP.logger.error("ERROR: Available hypervisors is different than affinity-hosts")
-        HP.logger.error("ERROR: %d hypervisors while we expect %d" % (len(compute_affinity(bench)), len(bench['affinity-hosts'])))
-        HP.logger.error("ERROR: Please check %s/affinity to see detected hypervisors" % log_dir)
-        return False
+    if len(bench['affinity-hosts']) > 0:
+        if len(bench['affinity-hosts']) != len(compute_affinity(bench)):
+            HP.logger.error("ERROR: Available hypervisors is different than affinity-hosts")
+            HP.logger.error("ERROR: %d hypervisors while we expect %d" % (len(compute_affinity(bench)), len(bench['affinity-hosts'])))
+            HP.logger.error("ERROR: Please check %s/affinity to see detected hypervisors" % log_dir)
+            return False
 
     required_cpu_hosts = get_default_value(job, 'required-hosts',
                                            bench['required-hosts'])

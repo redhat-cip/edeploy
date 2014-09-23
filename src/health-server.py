@@ -32,6 +32,7 @@ import threading
 import time
 import yaml
 import math
+import shutil
 
 socket_list = {}
 lock_socket_list = threading.RLock()
@@ -804,6 +805,9 @@ def non_interactive_mode(filename):
     bench_all['runtime'] = get_default_value(job, 'runtime', 10)
 
     log_dir = prepare_log_dir(name)
+
+    # Saving original yaml file
+    shutil.copy2(filename, log_dir)
 
     HP.logger.info("Expecting %d hosts to start job %s" %
                    (bench_all['required-hosts'], name))

@@ -869,7 +869,7 @@ if __name__ == '__main__':
     startup_date = time.strftime("%Y_%m_%d-%Hh%M", time.localtime())
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hf:t", ['file', 'title'])
+        opts, args = getopt.getopt(sys.argv[1:], "hf:t:", ['file', 'title'])
     except getopt.GetoptError:
         print "Error: One of the options passed to the cmdline was not supported"
         print "Please fix your command line or read the help (-h option)"

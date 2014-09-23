@@ -111,9 +111,9 @@ EOF
                 do_chroot ${chroot} mv /usr/bin/systemctl /usr/bin/systemctl.save
                 cat >> ${chroot}/usr/bin/systemctl << EOF
 #!/bin/bash
-if echo \$1 | egrep -q '^(enable|disable)$'; then
-    shift
-    systemctl.save disable \$* || exit 1
+if echo \$* | egrep -q '(enable|disable) '; then
+    new_arg_line=`echo \$* | sed 's/\(enable\|disable\) /disable /g'`
+    systemctl.save \$new_arg_line || exit 1
 fi
 EOF
                 chmod +x ${chroot}/usr/bin/systemctl

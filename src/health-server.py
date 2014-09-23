@@ -33,6 +33,8 @@ import time
 import yaml
 import math
 import shutil
+import getopt
+
 
 socket_list = {}
 lock_socket_list = threading.RLock()
@@ -43,6 +45,7 @@ results_cpu = {}
 results_memory = {}
 results_network = {}
 serv = 0
+startup_date = ""
 NOTHING_RUN = 0
 CPU_RUN = 1 << 0
 MEMORY_RUN = 1 << 1
@@ -57,6 +60,15 @@ running_jitter = False
 average = lambda x: sum(x) * 1.0 / len(x)
 variance = lambda x: map(lambda y: (y - average(x)) ** 2, x)
 stdev = lambda x: math.sqrt(average(variance(x)))
+
+
+def print_help():
+    print 'health-server help '
+    print
+    print '-h --help                     : Print this help'
+    print '-f <file>  or --file <file>   : Mandatory option to select the benchmark file'
+    print '-t <title> or --title <title> : Optinal option to define a title to this benchmark'
+    print '                                 This is useful to describe a temporary context'
 
 
 def init_jitter():
@@ -512,7 +524,7 @@ def prepare_log_dir(name):
             return default
 
     cfg_dir = os.path.normpath(config_get('SERVER', 'HEALTHDIR', '')) + '/'
-    dirname = time.strftime("%Y_%m_%d-%Hh%M", time.localtime())
+    dirname = startup_date
     dest_dir = cfg_dir + 'dahc/%s/' % name + dirname
 
     try:
@@ -778,11 +790,13 @@ def do_cpu_job(bench_all, current_job, log_dir, total_runtime):
         HP.logger.error("CPU: Canceling Test")
 
 
-def non_interactive_mode(filename):
+def non_interactive_mode(filename, title):
     global hosts
     total_runtime = 0
     name = "undefined"
     bench_all = {}
+
+    bench_all['title'] = title
 
     job = yaml.load(file(filename, 'r'))
     if job['name'] is None:
@@ -850,14 +864,37 @@ def non_interactive_mode(filename):
 if __name__ == '__main__':
 
     HP.start_log('/var/tmp/health-server.log', logging.INFO)
+    input_file = ""
+    title = ""
+    startup_date = time.strftime("%Y_%m_%d-%Hh%M", time.localtime())
 
-    if len(sys.argv) < 2:
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hf:t", ['file', 'title'])
+    except getopt.GetoptError:
+        print "Error: One of the options passed to the cmdline was not supported"
+        print "Please fix your command line or read the help (-h option)"
+        sys.exit(2)
+
+    for opt, arg in opts:
+        if opt in ("-h", "--help"):
+            print_help()
+            sys.exit(0)
+        elif opt in ("-f", "--file"):
+            input_file = arg
+        elif opt in ("-t", "--title"):
+            title = arg
+
+    if not input_file:
         HP.logger.error("You must provide a yaml file as argument")
         sys.exit(1)
+
+    if not title:
+        title = startup_date
+        HP.logger.info("No title provided, setup a default one to %s" % title)
 
     myThread = threading.Thread(target=createAndStartServer)
     myThread.start()
 
     non_interactive = threading.Thread(target=non_interactive_mode,
-                                       args=tuple([sys.argv[1]]))
+                                       args=tuple([input_file, title]))
     non_interactive.start()

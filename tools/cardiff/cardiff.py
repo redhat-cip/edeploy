@@ -459,8 +459,8 @@ def main(argv):
             titles = {}
             for rampup_dir in rampup_dirs:
                 result_dir = rampup_dir
-                if (len(rampup_dirs) > 0):
-                    result_dir = os.path.basename(rampup_dir) + "compared"
+                if (len(rampup_dirs) > 1):
+                    result_dir = "compared"
                 current_dir = "%s/results/%s/" % (result_dir, job)
                 try:
                     if not os.path.exists(current_dir):
@@ -484,6 +484,16 @@ def main(argv):
 
             plot_results(current_dir, rampup_values, job, metrics, bench_values, titles)
 
+        if len(titles.keys()) > 1:
+            final_directory_name = ""
+            for key in titles.keys():
+                if not final_directory_name:
+                    final_directory_name = "%s" % titles[key]
+                else:
+                    final_directory_name = "%s_vs_%s" %(final_directory_name, titles[key])
+
+            os.rename(result_dir, final_directory_name)
+            print "Output results can be found in directory '%s'" % final_directory_name
     else:
         analyze_data(pattern, ignore_list, detail)
 

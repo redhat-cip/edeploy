@@ -31,7 +31,7 @@ import numpy
 
 
 def print_help():
-    print 'cardiff -hp '
+    print 'cardiff'
     print
     print '-h --help                           : Print this help'
     print '-p <pattern> or --pattern <pattern> : A pattern in regexp to select input files'
@@ -44,8 +44,9 @@ def print_help():
     print '-i <item>  or --item <item>         : Select the item for select group with DETAIL level (supports regexp)'
     print '-I <list>  or --ignore <list>       : Disable the grouping segregration on the coma separated list of components :'
     print '                                        cpu, disk, firmware, memory, network, system '
-    print '-r <dir>   or --rampup <dir>        : Perform the rampup analysis on directory containing results from dahc'
+    print '-r <dir1>[,<dir2>,<dir3>, ...]      : Perform the rampup analysis on directory containing results from dahc'
     print '                                        In such mode, no need to provide a pattern'
+    print '                                        Print the compared results if several dirs are separated by a comma'
     print
     print 'Examples:'
     print "cardiff.py -p 'sample/*.hw' -l DETAIL -g '1' -c 'loops_per_sec' -i 'logical_1.*'"
@@ -215,13 +216,43 @@ def compute_metrics(current_dir, rampup_value, job, metrics):
     compute_metric(current_dir, rampup_value, start_lag, "jitter")
 
 
-def do_plot(current_dir, gpm_dir, title, subtitle, name, unit, expected_value=""):
+def do_plot(current_dir, gpm_dir, main_title, subtitle, name, unit, titles, expected_value=""):
     filename = current_dir+"/"+name+".gnuplot"
     with open(filename, "a") as f:
-        if expected_value:
-            f.write("call \'%s/graph2D_expected.gpm\' \'%s' \'%s\' \'%s\' \'%s\' \'%s\' \'%s\' \'%s\'\n" % (gpm_dir, title, subtitle, current_dir+"/"+name+".plot", name, current_dir+name, unit, expected_value))
-        else:
-            f.write("call \'%s/graph2D.gpm\' \'%s' \'%s\' \'%s\' \'%s\' \'%s\' \'%s\'\n" % (gpm_dir, title, subtitle, current_dir+"/"+name+".plot", name, current_dir+name, unit))
+        shutil.copyfile("%s/graph2D.gpm" % gpm_dir, "%s/graph2D.gpm" % current_dir)
+        with open("%s/graph2D.gpm" % current_dir, "a") as myfile:
+            column = 2
+            for title in titles.keys():
+                if column == 2:
+                    myfile.write("plot '$2' using %d with linespoints title '%s'" % (column, titles[title]))
+                else:
+                    myfile.write(",\\\n'$2' using %d with linespoints title '%s'" % (column, titles[title]))
+                column = column + 1
+            if expected_value:
+                myfile.write(",\\\n %.2f w l ls 1 ti 'Expected value (%.2f)'" % (expected_value, expected_value))
+            myfile.write("\nset output '$4-smooth.png'\n")
+            column = 2
+            for title in titles.keys():
+                if column == 2:
+                    myfile.write("plot '$2' using %d smooth csplines title '%s'" % (column,  titles[title]))
+                else:
+                    myfile.write(",\\\n'$2' using %d smooth csplines title '%s'" % (column,  titles[title]))
+                column = column + 1
+            if expected_value:
+                myfile.write(",\\\n %.2f w l ls 1 ti 'Expected value (%.2f)'" % (expected_value, expected_value))
+            column = 2
+            myfile.write("\nset output '$4-trend.png'\n")
+            for title in titles.keys():
+                if column == 2:
+                    myfile.write("plot '$2' using %d smooth bezier title '%s'" % (column, titles[title]))
+                else:
+                    myfile.write(",\\\n'$2' using %d smooth bezier title '%s'" % (column, titles[title]))
+                column = column + 1
+            if expected_value:
+                myfile.write(",\\\n %.2f w l ls 1 ti 'Expected value (%.2f)'" % (expected_value, expected_value))
+            myfile.write("\n")
+
+        f.write("call \'%s/graph2D.gpm\' \'%s' \'%s\' \'%s\' \'%s\' \'%s\' \'%s\'\n" % (current_dir, main_title, subtitle, current_dir+"/"+name+".plot", name, current_dir+name, unit))
     try:
         os.system("gnuplot %s" % filename)
     except:
@@ -245,7 +276,7 @@ def is_virtualized(bench_values):
     return ""
 
 
-def plot_results(current_dir, rampup_values, job, metrics, bench_values):
+def plot_results(current_dir, rampup_values, job, metrics, bench_values, titles):
     gpm_dir = "./"
     context = ""
     bench_type = job
@@ -284,33 +315,43 @@ def plot_results(current_dir, rampup_values, job, metrics, bench_values):
         unit["sum"] = unit["deviance"]
         context = "%d %s threads per host, blocksize=%s" % (metrics["bench"]["cores"], metrics["bench"]["mode"], metrics["bench"]["block-size"])
     for kind in unit:
-        title = "Study of %s %s from %d to %d hosts (step=%d) : %s" % (bench_type, kind, min(rampup_values), max(rampup_values), metrics["bench"]["step-hosts"], metrics["bench"]["title"])
+        title_appendix = ""
+        if len(titles.keys()) > 1:
+            for key in titles.keys():
+                if not title_appendix:
+                    title_appendix = "\\n %s" % titles[key]
+                else:
+                    title_appendix = "%s vs %s" %(title_appendix, titles[key])
+        else:
+            title_appendix = metrics["bench"]["title"]
+        title = "Study of %s %s from %d to %d hosts (step=%d) : %s" % (bench_type, kind, min(rampup_values), max(rampup_values), metrics["bench"]["step-hosts"], title_appendix)
         total_disk_size = 0
-        for disk_size in extract_hw_info(bench_values[0], 'disk', '*', 'size'):
+        for disk_size in extract_hw_info(bench_values[0][0], 'disk', '*', 'size'):
             total_disk_size = total_disk_size + int(disk_size)
         system = "HW per %s host: %s x %s CPUs, %d MB of RAM, %d disks : %d GB total, %d NICs\\n OS : %s running kernel %s, cpu_arch=%s" % \
-            (is_virtualized(bench_values),
-                extract_hw_info(bench_values[0], 'cpu', 'physical', 'number')[0],
-                extract_hw_info(bench_values[0], 'cpu', 'physical_0', 'product')[0],
-                int(extract_hw_info(bench_values[0], 'memory', 'total', 'size')[0]) / 1024 / 1024,
-                int(extract_hw_info(bench_values[0], 'disk', 'logical', 'count')[0]),
+            (is_virtualized(bench_values[0]),
+                extract_hw_info(bench_values[0][0], 'cpu', 'physical', 'number')[0],
+                extract_hw_info(bench_values[0][0], 'cpu', 'physical_0', 'product')[0],
+                int(extract_hw_info(bench_values[0][0], 'memory', 'total', 'size')[0]) / 1024 / 1024,
+                int(extract_hw_info(bench_values[0][0], 'disk', 'logical', 'count')[0]),
                 total_disk_size,
-                len(extract_hw_info(bench_values[0], 'network', '*', 'serial')),
-                extract_hw_info(bench_values[0], 'system', 'os', 'version')[0],
-                extract_hw_info(bench_values[0], 'system', 'kernel', 'version')[0],
-                extract_hw_info(bench_values[0], 'system', 'kernel', 'arch')[0])
+                len(extract_hw_info(bench_values[0][0], 'network', '*', 'serial')),
+                extract_hw_info(bench_values[0][0], 'system', 'os', 'version')[0],
+                extract_hw_info(bench_values[0][0], 'system', 'kernel', 'version')[0],
+                extract_hw_info(bench_values[0][0], 'system', 'kernel', 'arch')[0])
 
         subtitle = "\\nBenchmark setup : %s, runtime=%d seconds, %d hypervisors with %s scheduling\\n%s" % (context, metrics["bench"]["runtime"], len(metrics["affinity"]), metrics["bench"]["affinity"], system)
 
         if kind in expected_value:
-            do_plot(current_dir, gpm_dir, title, subtitle, kind, unit[kind], expected_value[kind])
+            do_plot(current_dir, gpm_dir, title, subtitle, kind, unit[kind], titles, expected_value[kind])
         else:
-            do_plot(current_dir, gpm_dir, title, subtitle, kind, unit[kind])
+            do_plot(current_dir, gpm_dir, title, subtitle, kind, unit[kind], titles)
 
 
 def main(argv):
     pattern = ''
-    rampup = ''
+    rampup = ""
+    rampup_dirs = []
     rampup_values = ''
     ignore_list = ''
     detail = {'category': '', 'group': '', 'item': ''}
@@ -372,58 +413,76 @@ def main(argv):
         sys.exit(2)
 
     if rampup:
-        if not os.path.isdir(rampup):
-            print "Rampup option shall point a directory"
-            print "Error: the path %s doesn't exists !" % rampup
-            sys.exit(2)
+        for rampup_subdir in rampup.split(','):
+            rampup_dir = rampup_subdir.strip()
+            rampup_dirs.append(rampup_dir)
 
-        if not os.path.isfile(rampup + "/hosts"):
-            print "A valid rampup directory shall have a 'hosts' file in it"
-            print "Exiting"
-            sys.exit(2)
-
-        current_dir = "%s/results/" % (rampup)
-        try:
-            if os.path.exists(current_dir):
-                shutil.rmtree(current_dir)
-        except IOError as e:
-            print "Unable to delete directory %s" % current_dir
-            print e
-            sys.exit(2)
-
-        rampup_values = [int(name) for name in os.listdir(rampup) if os.path.isdir(rampup+name)]
-        if len(rampup_values) < 2:
-            print "A valid rampup directory shall have more than 1 output in it"
-            print "Exiting"
-            sys.exit(2)
-
-        print "Found %d rampup tests to analyse (from %d host up to %d)" % (len(rampup_values), min(rampup_values), max(rampup_values))
-
-    if rampup_values:
-        for job in os.listdir("%s/%s" % (rampup, rampup_values[0])):
-            current_dir = "%s/results/%s/" % (rampup, job)
-            try:
-                if not os.path.exists(current_dir):
-                    os.makedirs(current_dir)
-            except:
-                print "Unable to create directory %s" % current_dir
+            if not os.path.isdir(rampup_dir):
+                print "Rampup option shall point a directory"
+                print "Error: the path %s doesn't exists !" % rampup_dir
                 sys.exit(2)
 
+            if not os.path.isfile(rampup_dir + "/hosts"):
+                print "A valid rampup directory (%s) shall have a 'hosts' file in it" % rampup_dir
+                print "Exiting"
+                sys.exit(2)
+
+            current_dir = "%s/results/" % (rampup_dir)
+            try:
+                if os.path.exists(current_dir):
+                    shutil.rmtree(current_dir)
+            except IOError as e:
+                print "Unable to delete directory %s" % current_dir
+                print e
+                sys.exit(2)
+
+            temp_rampup_values = [int(name) for name in os.listdir(rampup_dir) if os.path.isdir(rampup_dir+name)]
+            if not rampup_values:
+                rampup_values = temp_rampup_values
+                if len(rampup_values) < 2:
+                    print "A valid rampup directory (%s) shall have more than 1 output in it" % rampup_dir
+                    print "Exiting"
+                    sys.exit(2)
+
+                print "Found %d rampup tests to analyse (from %d host up to %d)" % (len(rampup_values), min(rampup_values), max(rampup_values))
+            else:
+                if rampup_values != temp_rampup_values:
+                    print "Directory %s doesn't have the same rampup values than the previous ones !" % (rampup_dir)
+                    print "Exiting"
+                    sys.exit(2)
+
+    if rampup_values:
+        bench_values = []
+        for job in os.listdir("%s/%s" % (rampup_dir, rampup_values[0])):
             print "Processing Job '%s'" % job
-            for rampup_value in sorted(rampup_values):
+            metrics = {}
+            titles = {}
+            for rampup_dir in rampup_dirs:
+                result_dir = rampup_dir
+                if (len(rampup_dirs) > 0):
+                    result_dir = os.path.basename(rampup_dir) + "compared"
+                current_dir = "%s/results/%s/" % (result_dir, job)
+                try:
+                    if not os.path.exists(current_dir):
+                        os.makedirs(current_dir)
+                except:
+                    print "Unable to create directory %s" % current_dir
+                    sys.exit(2)
 
-                metrics = {}
-                metrics_file = rampup + "/%d/%s/metrics" % (rampup_value, job)
-                if not os.path.isfile(metrics_file):
-                    print "Missing metric file for rampup=%d (%s)" % (rampup_value, metrics_file)
-                    print "Skipping %d" % rampup_value
-                    continue
-                metrics = eval(open(metrics_file).read())
-                compute_metrics(current_dir, rampup_value, job, metrics)
+                for rampup_value in sorted(rampup_values):
+                    metrics = {}
+                    metrics_file = rampup_dir + "/%d/%s/metrics" % (rampup_value, job)
+                    if not os.path.isfile(metrics_file):
+                        print "Missing metric file for rampup=%d (%s)" % (rampup_value, metrics_file)
+                        print "Skipping %d" % rampup_value
+                        continue
+                    metrics = eval(open(metrics_file).read())
+                    titles[rampup_dir] = metrics["bench"]["title"]
+                    compute_metrics(current_dir, rampup_value, job, metrics)
 
-                bench_values = analyze_data(rampup+'/'+str(rampup_value)+'/'+job+'/', ignore_list, detail, rampup_value, max(rampup_values), current_dir)
+                    bench_values.append(analyze_data(rampup_dir+'/'+str(rampup_value)+'/'+job+'/', ignore_list, detail, rampup_value, max(rampup_values), current_dir))
 
-            plot_results(current_dir, rampup_values, job, metrics, bench_values)
+            plot_results(current_dir, rampup_values, job, metrics, bench_values, titles)
 
     else:
         analyze_data(pattern, ignore_list, detail)

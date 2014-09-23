@@ -27,11 +27,11 @@ def write_gnuplot_file(filename, index, value):
             lines = (line.rstrip() for line in f)
             found = False
             for line in lines:
-                if (line.strip()[0] == index):
+                if (int(line.split()[0].strip()) == index):
                     found = True
-                    new_lines.append("%s %.2f" % (line, value))
+                    new_lines.append("%s %.2f" % (line.strip(), value))
                 else:
-                    new_lines.append("%s" % (line))
+                    new_lines.append("%s" % (line.strip()))
             if found is False:
                 new_lines.append("%d %.2f" % (index, value))
         with open(filename, "w") as f:

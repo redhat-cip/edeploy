@@ -280,7 +280,7 @@ def plot_results(current_dir, rampup_values, job, metrics, bench_values):
         context = "%d %s threads per host, blocksize=%s" % (metrics["bench"]["cores"], metrics["bench"]["mode"], metrics["bench"]["block-size"])
     if "network" in job:
         if metrics["bench"]["mode"] == "bandwidth":
-            unit["deviance"] = "MB/sec"
+            unit["deviance"] = "Mbit/sec"
             bench_type = "%s %s bandwidth" % (job, metrics["bench"]["connection"])
         elif metrics["bench"]["mode"] == "latency":
             unit["deviance"] = "RRQ/sec"

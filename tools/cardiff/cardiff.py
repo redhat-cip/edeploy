@@ -290,7 +290,7 @@ def plot_results(current_dir, rampup_values, job, metrics, bench_values):
         unit["sum"] = unit["deviance"]
         context = "%d %s threads per host, blocksize=%s" % (metrics["bench"]["cores"], metrics["bench"]["mode"], metrics["bench"]["block-size"])
     for kind in unit:
-        title = "Study of %s %s from %d to %d hosts (step=%d)" % (bench_type, kind, min(rampup_values), max(rampup_values), metrics["bench"]["step-hosts"])
+        title = "Study of %s %s from %d to %d hosts (step=%d) : %s" % (bench_type, kind, min(rampup_values), max(rampup_values), metrics["bench"]["step-hosts"], metrics["bench"]["title"])
         total_disk_size = 0
         for disk_size in extract_hw_info(bench_values[0], 'disk', '*', 'size'):
             total_disk_size = total_disk_size + int(disk_size)

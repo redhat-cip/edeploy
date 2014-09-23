@@ -198,15 +198,9 @@ def compute_metric(current_dir, rampup_value, metric, metric_name):
     mean_group = numpy.mean(metric)
     deviance_percentage = compute_deviance_percentage(metric)
     deviance = numpy.std(array)
-    with open(current_dir+"/%s-mean.plot" % metric_name, "a") as myfile:
-        if math.isnan(mean_group) is False:
-            myfile.write("%d %.2f\n" % (rampup_value, mean_group))
-    with open(current_dir+"/%s-deviance_percentage.plot" % metric_name, "a") as myfile:
-        if math.isnan(deviance_percentage) is False:
-            myfile.write("%d %.2f\n" % (rampup_value, deviance_percentage))
-    with open(current_dir+"/%s-deviance.plot" % metric_name, "a") as myfile:
-        if math.isnan(deviance) is False:
-            myfile.write("%d %.2f\n" % (rampup_value, deviance))
+    utils.write_gnuplot_file(current_dir+"/%s-mean.plot" % metric_name, rampup_value, mean_group)
+    utils.write_gnuplot_file(current_dir+"/%s-deviance_percentage.plot" % metric_name, rampup_value, deviance_percentage)
+    utils.write_gnuplot_file(current_dir+"/%s-deviance.plot" % metric_name, rampup_value, deviance)
 
 
 def compute_metrics(current_dir, rampup_value, job, metrics):

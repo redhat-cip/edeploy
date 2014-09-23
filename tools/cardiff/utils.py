@@ -1,4 +1,5 @@
 import fnmatch
+import math
 import os
 
 
@@ -13,6 +14,28 @@ class Levels:
 
 # Default level is to print everything
 print_level = Levels.INFO | Levels.WARNING | Levels.ERROR
+
+
+def write_gnuplot_file(filename, index, value):
+    if not os.path.isfile(filename):
+        with open(filename, "a") as myfile:
+            if math.isnan(value) is False:
+                myfile.write("%d %.2f\n" % (index, value))
+    else:
+        new_lines = []
+        with open(filename, "r") as f:
+            lines = (line.rstrip() for line in f)
+            found = False
+            for line in lines:
+                if (line.strip()[0] == index):
+                    found = True
+                    new_lines.append("%s %.2f" % (line, value))
+                else:
+                    new_lines.append("%s" % (line))
+            if found is False:
+                new_lines.append("%d %.2f" % (index, value))
+        with open(filename, "w") as f:
+            f.write('\n'.join(new_lines) + '\n')
 
 
 def do_print(mode, level, string, *args):

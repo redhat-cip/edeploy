@@ -245,18 +245,10 @@ def print_perf(tolerance_min, tolerance_max, item, df, mode, title, consistent=N
     variance_tolerance = compute_deviance_percentage(title, df.transpose())
 
     if (rampup_value > 0) and (current_dir):
-        with open(current_dir+"/deviance.plot", "a") as myfile:
-            if math.isnan(variance_group) is False:
-                myfile.write("%d %.2f\n" % (rampup_value, variance_group))
-        with open(current_dir+"/deviance_percentage.plot", "a") as myfile:
-            if math.isnan(variance_tolerance) is False:
-                myfile.write("%d %.2f\n" % (rampup_value, variance_tolerance))
-        with open(current_dir+"/mean.plot", "a") as myfile:
-            if math.isnan(mean_group) is False:
-                myfile.write("%d %.2f\n" % (rampup_value, mean_group))
-        with open(current_dir+"/sum.plot", "a") as myfile:
-            if math.isnan(sum_group) is False:
-                myfile.write("%d %.2f\n" % (rampup_value, sum_group))
+        utils.write_gnuplot_file(current_dir+"/deviance.plot", rampup_value, variance_group)
+        utils.write_gnuplot_file(current_dir+"/deviance_percentage.plot", rampup_value, variance_tolerance)
+        utils.write_gnuplot_file(current_dir+"/mean.plot", rampup_value, mean_group)
+        utils.write_gnuplot_file(current_dir+"/sum.plot", rampup_value, sum_group)
 
     if (variance_tolerance > tolerance_max):
         utils.do_print(mode, utils.Levels.ERROR, "%-12s : Group's variance is too important : %7.2f%% of %7.2f whereas limit is set to %3.2f%%", title, variance_tolerance, mean_group, tolerance_max)

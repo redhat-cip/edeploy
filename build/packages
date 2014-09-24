@@ -107,7 +107,7 @@ chkconfig.save \$service off || exit 0
 EOF
             chmod +x ${chroot}/sbin/chkconfig
 
-            if do_chroot ${chroot} which systemctl >/dev/null; then
+            if which systemctl >/dev/null; then
                 do_chroot ${chroot} mv /usr/bin/systemctl /usr/bin/systemctl.save
                 cat >> ${chroot}/usr/bin/systemctl << EOF
 #!/bin/bash
@@ -144,7 +144,7 @@ EOF
             do_chroot ${chroot} mv /sbin/chkconfig.save /sbin/chkconfig
 
             # systemd support starts from 7
-            if do_chroot ${chroot} which systemctl >/dev/null; then
+            if which systemctl >/dev/null; then
                 do_chroot ${chroot} mv /usr/bin/systemctl.save /usr/bin/systemctl
             fi
         ;;

@@ -26,11 +26,6 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . $ORIG/common
 
-# allow systemctl to do its job for base
-if [ -f ${dir}/usr/bin/systemctl.save ]; then
-    mv ${dir}/usr/bin/systemctl.save ${dir}/usr/bin/systemctl
-fi
-
 init_redhat_chroot() {
     local target=$1
     local release_rpm_url=$2

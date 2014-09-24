@@ -96,7 +96,7 @@ add_epel_repository() {
                 EPEL_RELEASE=6-8
                 install_packages $dir https://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-$EPEL_RELEASE.noarch.rpm
             else
-                EPEL_RELEASE=7-1
+                EPEL_RELEASE=7-2
                 install_packages $dir https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-$EPEL_RELEASE.noarch.rpm
             fi
             ;;

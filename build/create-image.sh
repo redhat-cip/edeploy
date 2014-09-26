@@ -283,7 +283,7 @@ EOF
     do_chroot "$MDIR" grub$V-mkconfig -o /boot/grub$V/grub.cfg || :
 
     # Fix generated grub.cfg
-    sed -i -e 's/\t*loopback.*//' -e 's/\t*set root=.*//' -e "s/\(--set=root \|UUID=\)[^ ]*/\1$UUID/" $MDIR/boot/grub$V/grub.cfg
+    sed -i -e 's/\t*loopback.*//' -e 's/\t*set root=.*//' -e "s/\(--set=root \|UUID=\)[^ ]?+/\1$UUID/" $MDIR/boot/grub$V/grub.cfg
     sed -i -e 's/msdos5/msdos1/g' $MDIR/boot/grub$V/grub.cfg
     
     # add / to fstab

@@ -504,6 +504,24 @@ def main():
             var2 = {}
             if matcher.match_all(hw_items, specs, var, var2):
                 log('Specs %s matches' % name)
+
+                forced = (var2 != {})
+
+                if var2 == {}:
+                    var2 = var
+
+                if times != '*':
+                    names[idx] = (name, int(times) - 1)
+                    log('Decrementing %s to %d' % (name, int(times) - 1))
+
+                cmdb = load_cmdb(cfg_dir, name)
+                if cmdb:
+                    if update_cmdb(cmdb, var, var2, forced):
+                        save_cmdb(cfg_dir, name, cmdb)
+                    else:
+                        idx += 1
+                        continue
+                var['edeploy-profile'] = name
                 break
         idx += 1
     else:
@@ -513,22 +531,6 @@ def main():
             fatal_error(
                 'Unable to match requirements on the following roles in %s: %s'
                 % (state_filename, ', '.join(valid_roles)))
-
-    forced = (var2 != {})
-
-    if var2 == {}:
-        var2 = var
-
-    if times != '*':
-        names[idx] = (name, int(times) - 1)
-        log('Decrementing %s to %d' % (name, int(times) - 1))
-
-    cmdb = load_cmdb(cfg_dir, name)
-    if cmdb:
-        if not update_cmdb(cmdb, var, var2, forced):
-            sys.exit(1)
-        save_cmdb(cfg_dir, name, cmdb)
-    var['edeploy-profile'] = name
 
     sys.stdout.write('''#!/usr/bin/env python
 #EDEPLOY_PROFILE = %s

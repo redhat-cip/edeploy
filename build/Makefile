@@ -50,13 +50,14 @@ META=$(TOP)/metadata/$(VERS)
 TEST_ROLE:=base
 
 DEPS = $(PYDIR)/detect.py $(PYDIR)/hpacucli.py $(PYDIR)/megacli.py $(PYSERVERDIR)/matcher.py $(PYDIR)/diskinfo.py $(PYDIR)/ipmi.py $(PYDIR)/infiniband.py
+HEALTH_DEPS = $(DEPS) $(PYDIR)/health_bench.py $(PYDIR)/health-check.py $(PYDIR)/health-client.py $(PYDIR)/health_libs.py $(PYDIR)/health_messages.py $(PYDIR)/health_protocol.py $(PYDIR)/health-server.py
 
 ROLES = base pxe health-check deploy
 
 all: $(ROLES)
 
 health-check: $(INST)/$(HEALTH_IMG)
-$(INST)/$(HEALTH_IMG): $(INST)/base.done  init.health init.common health-check.install $(DEPS)
+$(INST)/$(HEALTH_IMG): $(INST)/base.done  init.health init.common health-check.install $(HEALTH_DEPS)
 	DEPS="$(DEPS)" ENABLE_IB=y ENABLE_MELLANOX=n ./health-check.install $(INST)/base $(INST)/health-check $(HEALTH_IMG) $(VERS) $(DEBUG)
 
 health-img: $(INST)/$(HEALTH_IMG)

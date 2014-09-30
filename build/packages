@@ -107,14 +107,13 @@ chkconfig.save \$service off || exit 0
 EOF
             chmod +x ${chroot}/sbin/chkconfig
 
-            if which systemctl >/dev/null; then
+            if do_chroot ${chroot} which systemctl > /dev/null; then
                 do_chroot ${chroot} mv /usr/bin/systemctl /usr/bin/systemctl.save
                 cat >> ${chroot}/usr/bin/systemctl << EOF
 #!/bin/bash
-if echo \$* | egrep -q '(enable|disable) '; then
-    new_arg_line=`echo \$* | sed 's/\(enable\|disable\) /disable /g'`
-    systemctl.save \$new_arg_line || exit 1
-fi
+
+new_arg_line=\$(echo \$* | sed 's/\(enable\|disable\) /disable /g')
+exec /usr/bin/systemctl.save \$new_arg_line
 EOF
                 chmod +x ${chroot}/usr/bin/systemctl
             fi
@@ -123,6 +122,7 @@ EOF
             fatal_error "$OS is not supported yet by install_packages_disabled()"
         ;;
     esac
+
     install_packages $chroot $packages
 
     case "$OS" in
@@ -144,7 +144,7 @@ EOF
             do_chroot ${chroot} mv /sbin/chkconfig.save /sbin/chkconfig
 
             # systemd support starts from 7
-            if which systemctl >/dev/null; then
+            if do_chroot ${chroot} which systemctl > /dev/null; then
                 do_chroot ${chroot} mv /usr/bin/systemctl.save /usr/bin/systemctl
             fi
         ;;

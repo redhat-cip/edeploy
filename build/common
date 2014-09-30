@@ -280,6 +280,14 @@ cleanup() {
         cp ${dir}/root/ids.tables ${dir}/../ids.tables
     fi
 
+    # the wrong systemctl is copied in initrd files so regenerate them
+    if [ -f ${dir}/usr/bin/systemctl ]; then
+        for f in $(ls ${dir}/boot/vmlinuz-*); do
+            k=${f#${dir}/boot/vmlinuz-}
+            do_chroot ${dir} mkinitrd --force /boot/initramfs-$k.img $k
+        done
+    fi
+
     if [ "$ret" = "0" ]; then
         # store role information at the end for nested calls
         echo -e "\nRole ${ROLE}\nVersion ${version}\n" > ${dir}/etc/motd

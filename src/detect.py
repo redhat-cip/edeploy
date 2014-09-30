@@ -72,9 +72,13 @@ def detect_hpa(hw_lst):
         sys.stderr.write('Info: detect_hpa : %s\n' % expt.value)
         return False
 
+    hw_lst.append(('hpa', "slots", "count", len(controllers)))
     for controller in controllers:
         try:
             slot = 'slot=%d' % controller[0]
+            controllers_infos = cli.ctrl_show(slot)
+            for controller_info in controllers_infos.keys():
+                hw_lst.append(('hpa', slot.replace('=', '_'), controller_info, controllers_infos[controller_info]))
             for _, disks in cli.ctrl_pd_all_show(slot):
                 for disk in disks:
                     disk_count += 1

@@ -68,6 +68,21 @@ def _parse_ctrl_d_disk_show(output):
     return status
 
 
+def _parse_ctrl_show(output):
+    status = {}
+    for line in output.split('\n'):
+
+        items = line.split(':')
+        if len(items) > 1:
+            item = items[0].strip().lower().replace(' ', '_')
+            value = items[1].strip()
+            ignore_list = ["slot"]
+            if item not in ignore_list:
+                status[item] = ' '.join(value.split())
+
+    return status
+
+
 def _parse_ctrl_d_all_show(output, regexp):
     '''Parse lines like:
 
@@ -109,6 +124,11 @@ def parse_ctrl_ld_all_show(output):
 def parse_ctrl_pd_all_show(output):
     'Parse the output of the "ctrl <sel> pd all show" hpacucli sub-command.'
     return _parse_ctrl_d_all_show(output, PHYSICAL_REGEXP)
+
+
+def parse_ctrl_show(output):
+    'Parse the output of the "ctrl <sel> pd <disk> show" hpacucli sub-command.'
+    return _parse_ctrl_show(output)
 
 
 def parse_ctrl_pd_disk_show(output):
@@ -209,6 +229,12 @@ the prompt and return the output string.'''
 parsed in a structured data.'''
         return parse_ctrl_all_show(
             self._sendline('ctrl all show'))
+
+    def ctrl_show(self, ctrl):
+        '''Send the "ctrl all show" sub-command and return its output
+parsed in a structured data.'''
+        return parse_ctrl_show(
+            self._sendline('ctrl %s show' % ctrl))
 
     def ctrl_pd_all_show(self, selector):
         '''Send the "ctrl <selector> pd all show" sub-command and

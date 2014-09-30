@@ -50,6 +50,24 @@ PHYSICAL_REGEXP = re.compile(r'\s*physicaldrive (.*) \(.*, (.*), (.*), (.*)\)')
 LOGICAL_REGEXP = re.compile(r'\s*logicaldrive (.*) \((.*), (.*), (.*)\)')
 
 
+def _parse_ctrl_d_disk_show(output):
+    status = {}
+    for line in output.split('\n'):
+        text = line.split()
+        if "array" in text:
+            status["array"] = text[1]
+
+        items = line.split(':')
+        if len(items) > 1:
+            item = items[0].strip().lower().replace(' ', '_')
+            value = items[1].strip()
+            ignore_list = ["size", "port", "bay", "box"]
+            if item not in ignore_list:
+                status[item] = ' '.join(value.split())
+
+    return status
+
+
 def _parse_ctrl_d_all_show(output, regexp):
     '''Parse lines like:
 
@@ -91,6 +109,11 @@ def parse_ctrl_ld_all_show(output):
 def parse_ctrl_pd_all_show(output):
     'Parse the output of the "ctrl <sel> pd all show" hpacucli sub-command.'
     return _parse_ctrl_d_all_show(output, PHYSICAL_REGEXP)
+
+
+def parse_ctrl_pd_disk_show(output):
+    'Parse the output of the "ctrl <sel> pd <disk> show" hpacucli sub-command.'
+    return _parse_ctrl_d_disk_show(output)
 
 ERROR_REGEXP = re.compile('Error: (.*)', re.M)
 
@@ -192,6 +215,12 @@ parsed in a structured data.'''
 return its output parsed in a structured data.'''
         return parse_ctrl_pd_all_show(
             self._sendline('ctrl %s pd all show' % selector))
+
+    def ctrl_pd_disk_show(self, selector, disk):
+        '''Send the "ctrl <selector> pd <disk> show" sub-command and
+return its output parsed in a structured data.'''
+        return parse_ctrl_pd_disk_show(
+            self._sendline('ctrl %s pd %s show' % (selector, disk)))
 
     def ctrl_ld_all_show(self, selector):
         '''Send the "ctrl <selector> ld all show" sub-command and

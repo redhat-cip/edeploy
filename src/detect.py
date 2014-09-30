@@ -83,6 +83,9 @@ def detect_hpa(hw_lst):
                                    str(controller[0])))
                     hw_lst.append(('disk', disk[0], 'size',
                                    size_in_gb(disk[2])))
+                    disk_infos = cli.ctrl_pd_disk_show(slot, disk[0])
+                    for disk_info in disk_infos.keys():
+                        hw_lst.append(('disk', disk[0], disk_info, disk_infos[disk_info]))
         except hpacucli.Error as expt:
             sys.stderr.write('Info: detect_hpa : controller %d : %s\n'
                              % (controller[0], expt.value))

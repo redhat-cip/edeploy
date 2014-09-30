@@ -50,20 +50,22 @@ PHYSICAL_REGEXP = re.compile(r'\s*physicaldrive (.*) \(.*, (.*), (.*), (.*)\)')
 LOGICAL_REGEXP = re.compile(r'\s*logicaldrive (.*) \((.*), (.*), (.*)\)')
 
 
+def _generic_parsing(line, status, ignore_list):
+    items = line.split(':')
+    if len(items) > 1:
+        item = items[0].strip().lower().replace(' ', '_')
+        value = items[1].strip()
+        if item not in ignore_list:
+            status[item] = ' '.join(value.split())
+
+
 def _parse_ctrl_d_disk_show(output):
     status = {}
     for line in output.split('\n'):
         text = line.split()
         if "array" in text:
             status["array"] = text[1]
-
-        items = line.split(':')
-        if len(items) > 1:
-            item = items[0].strip().lower().replace(' ', '_')
-            value = items[1].strip()
-            ignore_list = ["size", "port", "bay", "box"]
-            if item not in ignore_list:
-                status[item] = ' '.join(value.split())
+        _generic_parsing(line, status, ["size", "port", "bay", "box"])
 
     return status
 
@@ -71,14 +73,7 @@ def _parse_ctrl_d_disk_show(output):
 def _parse_ctrl_show(output):
     status = {}
     for line in output.split('\n'):
-
-        items = line.split(':')
-        if len(items) > 1:
-            item = items[0].strip().lower().replace(' ', '_')
-            value = items[1].strip()
-            ignore_list = ["slot"]
-            if item not in ignore_list:
-                status[item] = ' '.join(value.split())
+        _generic_parsing(line, status, ["slot"])
 
     return status
 

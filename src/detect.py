@@ -111,6 +111,11 @@ def detect_megacli(hw_lst):
                     info = megacli.pdinfo(ctrl,
                                           enc['DeviceId'],
                                           disk_num)
+
+                    # If no PdType, it means that's not a disk
+                    if 'PdType' not in info.keys():
+                        continue
+
                     hw_lst.append(('pdisk',
                                    disk,
                                    'ctrl',

@@ -576,13 +576,13 @@ def parse_job_config(bench, job, component, log_dir):
             HP.logger.error("ERROR: Please check %s/affinity to see detected hypervisors" % log_dir)
             return False
 
-    required_cpu_hosts = get_default_value(job, 'required-hosts',
+    required_hosts = get_default_value(job, 'required-hosts',
                                            bench['required-hosts'])
-    if "-" in str(required_cpu_hosts):
-        min_hosts = int(str(required_cpu_hosts).split("-")[0])
-        max_hosts = int(str(required_cpu_hosts).split("-")[1])
+    if "-" in str(required_hosts):
+        min_hosts = int(str(required_hosts).split("-")[0])
+        max_hosts = int(str(required_hosts).split("-")[1])
     else:
-        min_hosts = required_cpu_hosts
+        min_hosts = required_hosts
         max_hosts = min_hosts
 
     if max_hosts < 1:

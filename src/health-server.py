@@ -851,7 +851,7 @@ def non_interactive_mode(filename, title):
         results_memory = {}
         current_job = job['jobs'][next_job]
         current_job['name'] = next_job
-        if not 'component' in current_job.keys():
+        if 'component' not in current_job.keys():
             HP.logger.error("Missing component in job %s, canceling job" % current_job['name'])
             continue
         if "cpu" in current_job['component']:

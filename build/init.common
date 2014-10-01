@@ -14,6 +14,24 @@ is_virtualized() {
 }
 
 
+start_udev() {
+# Start the udev daemon to process events
+    step "Start Udev"
+    if [ -x /sbin/udevd ]; then
+        /sbin/udevd --daemon --resolve-names=never
+    elif [ -x /usr/lib/systemd/systemd-udevd ]; then
+        /usr/lib/systemd/systemd-udevd --daemon --resolve-names=never
+    else
+        log "No udev daemon so hardware detection will be weird"
+    fi
+
+# Iterate sysfs and fire off everything; if we include a rule for it then
+# it'll get handled; otherwise it'll get handled later when we do this again
+# in the main boot sequence.
+    ( /sbin/udevadm trigger --action=add --subsystem-match=block; \
+        /sbin/udevadm trigger --action=add --subsystem-nomatch=block; ) &
+}
+
 get_config_from_cloudinit() {
     if is_virtualized; then
          #Let's try to get a user-data in the next minute (sometimes cloud-init is long to answer the initial request)

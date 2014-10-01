@@ -94,21 +94,7 @@ fi
 # It's all over netlink now
 echo "" > /proc/sys/kernel/hotplug
 
-step "Start Udev"
-# Start the udev daemon to process events
-if [ -x /sbin/udevd ]; then
-    /sbin/udevd --daemon --resolve-names=never
-elif [ -x /usr/lib/systemd/systemd-udevd ]; then
-    /usr/lib/systemd/systemd-udevd --daemon --resolve-names=never
-else
-    log "No udev daemon so hardware detection will be weird"
-fi
-
-# Iterate sysfs and fire off everything; if we include a rule for it then
-# it'll get handled; otherwise it'll get handled later when we do this again
-# in the main boot sequence.
-( /sbin/udevadm trigger --action=add --subsystem-match=block; \
-    /sbin/udevadm trigger --action=add --subsystem-nomatch=block; ) &
+start_udev
 
 ################################################################################
 # Hardware detection starts here

@@ -105,7 +105,7 @@ def detect_megacli(hw_lst):
     if ctrl_num > 0:
         for ctrl in range(ctrl_num):
             for enc in megacli.enc_info(ctrl):
-                for disk_num in range(enc['NumberOfPhysicalDrives']):
+                for disk_num in range(enc['NumberOfSlots']):
                     disk_count += 1
                     disk = 'disk%d' % disk_num
                     info = megacli.pdinfo(ctrl,

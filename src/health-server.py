@@ -639,10 +639,12 @@ def do_network_job(bench_all, current_job, log_dir, total_runtime):
     bench['arity'] = get_default_value(current_job, 'arity', 2)
 
     if parse_job_config(bench, current_job, HM.NETWORK, log_dir) is True:
-        if ((int(bench['step-hosts']) % int(bench['arity'])) != 0):
-            HP.logger.error("NETWORK: step-hosts shall be modulo arity (%d)" % int(bench['arity']))
-            HP.logger.error("NETWORK: Canceling Test")
-            return False
+        # Only consider to watch step-hosts vs arity if we have some rampup
+        if (int(bench['min_hosts']) != int(bench['max_hosts'])):
+            if ((int(bench['step-hosts']) % int(bench['arity'])) != 0):
+                HP.logger.error("NETWORK: step-hosts shall be modulo arity (%d)" % int(bench['arity']))
+                HP.logger.error("NETWORK: Canceling Test")
+                return False
 
         if ((int(bench['min_hosts']) % int(bench['arity'])) != 0) or ((int(bench['max_hosts']) % int(bench['arity'])) != 0):
             HP.logger.error("NETWORK: min and max-hosts shall be modulo arity %d" % int(bench['arity']))

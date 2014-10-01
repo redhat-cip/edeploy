@@ -666,15 +666,21 @@ def do_network_job(bench_all, current_job, log_dir, total_runtime):
             total_runtime += iter_bench['runtime']
 
             iter_bench['hosts-list'] = get_hosts_list_from_affinity(iter_bench, True)
-            select_vms_from_networks(iter_bench)
 
-            if (nb_hosts % iter_bench['arity'] != 0):
-                HP.logger.error("NETWORK: It's impossible to get an arity=%d with %d hosts" % (iter_bench['arity'], len(iter_bench['nb-hosts'])))
+            if (len(iter_bench['hosts-list']) < iter_bench['nb-hosts']):
+                HP.logger.error("NETWORK: %d hosts expected while affinity only provides %d hosts available" % (iter_bench['nb-hosts'], len(iter_bench['hosts-list'])))
                 HP.logger.error("NETWORK: Canceling test %d / %d" % ((iter_bench['nb-hosts'], iter_bench['max_hosts'])))
                 continue
 
+            select_vms_from_networks(iter_bench)
+
             if (len(iter_bench['ip-list']) < iter_bench['nb-hosts']):
-                HP.logger.error("NETWORK: %d hosts expected while affinity only provides %d hosts available" % (iter_bench['nb-hosts'], len(iter_bench['ip-list'])))
+                HP.logger.error("NETWORK: %d hosts expected while ip-based filtering only provides %d hosts available" % (iter_bench['nb-hosts'], len(iter_bench['ip-list'])))
+                HP.logger.error("NETWORK: Canceling test %d / %d" % ((iter_bench['nb-hosts'], iter_bench['max_hosts'])))
+                continue
+
+            if (nb_hosts % iter_bench['arity'] != 0):
+                HP.logger.error("NETWORK: It's impossible to get an arity=%d with %d hosts" % (iter_bench['arity'], len(iter_bench['nb-hosts'])))
                 HP.logger.error("NETWORK: Canceling test %d / %d" % ((iter_bench['nb-hosts'], iter_bench['max_hosts'])))
                 continue
 

@@ -63,6 +63,7 @@ eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^ONFAILURE=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^KEXEC_KERNEL=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^EMBEDDED=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^IP=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^UPLOAD_LOG=")
 
 #compatibilty module
 if [ "$NOREBOOT" = "1" ]; then

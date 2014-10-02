@@ -5,7 +5,7 @@ if [ "$VERBOSE" = 1 ]; then
 fi
 
 GIT_REV=""
-
+UPLOAD_LOG=1
 export PATH=/sbin:/usr/sbin:/bin:/usr/bin:$PATH
 
 is_virtualized() {

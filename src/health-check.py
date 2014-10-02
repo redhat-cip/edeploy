@@ -446,6 +446,8 @@ def _main():
     elif 'storage' in mode:
         storage_perf(hrdw, allow_destructive)
 
+    HL.check_mce_status(hrdw)
+
     # Saving result to stdout but also to a filename based on the hw properties
     output_filename = get_output_filename(hrdw)
     sys.stderr.write("Saving results in %s\n" % output_filename)

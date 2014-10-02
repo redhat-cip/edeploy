@@ -328,3 +328,15 @@ def generate_filename_and_macs(items):
         HP.logger.error('unable to detect network macs')
 
     return sysvars
+
+
+def check_mce_status(hw_):
+    cmd = subprocess.Popen('dmesg',
+                           shell=True, stdout=subprocess.PIPE)
+    for line in cmd.stdout:
+        if 'mce' in line and 'Hardware Error' in line:
+            hw_.append(('system', 'platform', 'mce', 'True'))
+            return
+
+    hw_.append(('system', 'mce', 'triggered', 'False'))
+    return

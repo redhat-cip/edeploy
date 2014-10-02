@@ -45,12 +45,14 @@ class Health_Bench():
         self.message.message = HM.MODULE
         self.message.module = module
         self.message.action = HM.NOTCOMPLETED
+        HL.check_mce_status(self.message.hw)
         HP.send_hm_message(self.socket, self.message)
 
     def completed(self, module):
         self.message.message = HM.MODULE
         self.message.module = module
         self.message.action = HM.COMPLETED
+        HL.check_mce_status(self.message.hw)
         HP.send_hm_message(self.socket, self.message)
 
     def starting(self, module):

@@ -171,6 +171,10 @@ upload_log() {
     dmesg >> /log
     echo "############################" >> /log
 
+    echo "#### Content of mcelog #####" >> /log
+    cat /mcelog >> /log
+    echo "############################" >> /log
+
     gzip -9 -c /log > /${log_file}
     if [ -n "$EMBEDDED" ]; then
         was_unmounted=0
@@ -611,5 +615,5 @@ set_path() {
 }
 
 start_mcelog(){
-    mcelog --daemon --ascii > /mcelog &
+    (mcelog --daemon --ascii > /mcelog) &
 }

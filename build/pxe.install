@@ -47,7 +47,7 @@ rsync -aH --delete-before --numeric-ids ${src}/ ${dir}/
 
 common_setup
 
-PACKAGES="python-netaddr python-ipaddr ethtool sdparm gzip xfsprogs hdparm"
+PACKAGES="python-netaddr python-ipaddr ethtool sdparm gzip xfsprogs hdparm mcelog"
 case "$DIST" in
     $supported_debian_dists | $supported_ubuntu_dists)
         PACKAGES="$PACKAGES libc6-i386 lshw"

@@ -609,3 +609,7 @@ set_path() {
     PATH=/sbin:/bin:/usr/bin:/usr/sbin
     export PATH
 }
+
+start_mcelog(){
+    mcelog --daemon --ascii > /mcelog &
+}

@@ -223,7 +223,7 @@ var is also augmented with the cmdb entry found.'''
         var['used'] = 1
         cmdb[idx] = var
 
-    #sys.stderr.write(str(cmdb))
+    # sys.stderr.write(str(cmdb))
     # First pass to lookup if the var is already in the database
     # and if this is the case, reuse the entry.
     idx = 0
@@ -238,7 +238,7 @@ var is also augmented with the cmdb entry found.'''
             # Second pass, find a not used entry.
             idx = 0
             for entry in cmdb:
-                if not 'used' in entry:
+                if 'used' not in entry:
                     update_entry(entry, cmdb, idx)
                     break
                 idx += 1
@@ -311,7 +311,7 @@ def generate_filename_and_macs(items):
     if matcher.match_multiple(hw_items,
                               ('network', '$eth', 'serial', '$serial'),
                               sysvars):
-        if not 'sysserial' in sysvars:
+        if 'sysserial' not in sysvars:
             sysvars['sysname'] += sysvars['serial'][0].replace(':', '-')
     else:
         log('unable to detect network macs')
@@ -430,7 +430,7 @@ def main():
             log('Log file %s saved' % logitem.filename)
             sys.exit(0)
 
-        if not 'file' in form:
+        if 'file' not in form:
             fatal_error('No file passed to the CGI')
 
         fileitem = form['file']

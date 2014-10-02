@@ -90,7 +90,7 @@ def generate_filename_and_macs(items):
     if matcher.match_multiple(hw_items,
                               ('network', '$eth', 'serial', '$serial'),
                               sysvars):
-        if not 'sysserial' in sysvars:
+        if 'sysserial' not in sysvars:
             sysvars['sysname'] += sysvars['serial'][0].replace(':', '-')
     else:
         log('unable to detect network macs')
@@ -136,7 +136,7 @@ def main():
 
         form = cgi.FieldStorage()
 
-        if not 'file' in form:
+        if 'file' not in form:
             fatal_error('No file passed to the CGI')
 
         fileitem = form['file']

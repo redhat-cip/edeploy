@@ -172,6 +172,7 @@ upload_log() {
     echo "############################" >> /log
 
     echo "#### Content of mcelog #####" >> /log
+    save_mcelog
     cat /mcelog >> /log
     echo "############################" >> /log
 
@@ -614,6 +615,6 @@ set_path() {
     export PATH
 }
 
-start_mcelog(){
-    (mcelog --daemon --ascii > /mcelog) &
+save_mcelog(){
+    mcelog --ignorenodev --filter >> /mcelog
 }

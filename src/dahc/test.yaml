@@ -1,5 +1,5 @@
 name: all_load
-required-hosts: 1-81
+required-hosts: 81
 runtime: 1
 jobs:
     mem:

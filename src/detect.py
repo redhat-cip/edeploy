@@ -105,12 +105,12 @@ def detect_megacli(hw_lst):
     if ctrl_num > 0:
         for ctrl in range(ctrl_num):
             for enc in megacli.enc_info(ctrl):
-                for disk_num in range(enc['NumberOfSlots']):
+                for slot_num in range(enc['NumberOfSlots']):
                     disk_count += 1
-                    disk = 'disk%d' % disk_num
+                    disk = 'disk%d' % slot_num
                     info = megacli.pdinfo(ctrl,
                                           enc['DeviceId'],
-                                          disk_num)
+                                          slot_num)
 
                     # If no PdType, it means that's not a disk
                     if 'PdType' not in info.keys():
@@ -128,7 +128,7 @@ def detect_megacli(hw_lst):
                                    disk,
                                    'id',
                                    '%s:%d' % (info['EnclosureDeviceId'],
-                                              disk_num)))
+                                              slot_num)))
                     hw_lst.append(('pdisk',
                                    disk,
                                    'size',

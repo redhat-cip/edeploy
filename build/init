@@ -50,6 +50,7 @@ get_system_info
 
 step "Booting environment"
 cat /proc/cmdline
+uname -a
 
 step "Spawing new shell on tty2"
 openvt /bin/bash

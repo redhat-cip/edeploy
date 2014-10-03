@@ -37,7 +37,7 @@ def search_item(systems, unique_id, item, regexp, exclude_list=[], include_list=
 
 
 def physical_disks(systems, unique_id):
-    sets = search_item(systems, unique_id, "disk", "(\d+)I:(\d+):(\d+)")
+    sets = search_item(systems, unique_id, "disk", "(\d+)I:(\d+):(\d+)", ['current_temperature_(c)', 'maximum_temperature_(c)', 'serial_number'])
     groups = compare_sets.compare(sets)
     compare_sets.print_groups(groups, "Physical Disks (HP Controllers)")
     return groups

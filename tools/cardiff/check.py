@@ -2,7 +2,6 @@ import re
 import compare_sets
 import utils
 import numpy
-import math
 from pandas import *
 import perf_cpu_tables
 

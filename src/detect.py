@@ -369,6 +369,17 @@ def detect_system(hw_lst, output=None):
         find_element(xml, "./node/version", 'version')
         uuid = get_uuid()
         if uuid:
+            # If we have an uuid, let's manage a quirk list of stupid serial numbers
+            # TYAN or Supermicro are known to provide dirty serial numbers
+            # In that case, let's use the uuid instead
+            for i in hw_lst:
+                if 'system' in i[0] and 'product' in i[1] and 'serial' in i[2]:
+                    # Does the current serial number is part of the quirk list
+                    if i[3] in ['0123456789']:
+                        # Let's delete the stupid SN and use the UUID instead
+                        hw_lst.remove(i)
+                        hw_lst.append(('system', 'product', 'serial', uuid))
+                        break
             hw_lst.append(('system', 'product', 'uuid', uuid))
 
         for elt in xml.findall(".//node[@id='core']"):

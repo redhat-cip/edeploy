@@ -188,6 +188,13 @@ def logical_disks_perf(systems, unique_id, group_number, detail_options, rampup_
         print_detail(detail_options, details, df, matched_category)
 
 
+def hpa(systems, unique_id):
+    sets = search_item(systems, unique_id, "hpa", "(.*)", ['cache_serial_number', 'serial_number'])
+    groups = compare_sets.compare(sets)
+    compare_sets.print_groups(groups, "HPA Controller")
+    return groups
+
+
 def systems(systems, unique_id):
     sets = search_item(systems, unique_id, "system", "(.*)", ['serial', 'uuid'])
     groups = compare_sets.compare(sets)

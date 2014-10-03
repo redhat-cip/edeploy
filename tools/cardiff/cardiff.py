@@ -43,7 +43,7 @@ def print_help():
     print '-c <cat>   or --category <cat>      : Select the target category for DETAIL level (supports regexp)'
     print '-i <item>  or --item <item>         : Select the item for select group with DETAIL level (supports regexp)'
     print '-I <list>  or --ignore <list>       : Disable the grouping segregration on the coma separated list of components :'
-    print '                                        cpu, disk, firmware, memory, network, system '
+    print '                                        cpu, hpa, disk, firmware, memory, network, system '
     print '-r <dir1>[,<dir2>,<dir3>, ...]      : Perform the rampup analysis on directory containing results from dahc'
     print '                                        In such mode, no need to provide a pattern'
     print '                                        Print the compared results if several dirs are separated by a comma'
@@ -61,6 +61,12 @@ def compare_disks(bench_values, unique_id, systems_groups):
     groups = check.physical_disks(systems, unique_id)
     compare_sets.compute_similar_hosts_list(systems_groups, compare_sets.get_hosts_list_from_result(groups))
     groups = check.logical_disks(systems, unique_id)
+    compare_sets.compute_similar_hosts_list(systems_groups, compare_sets.get_hosts_list_from_result(groups))
+
+
+def compare_hpa(bench_values, unique_id, systems_groups):
+    systems = utils.find_sub_element(bench_values, unique_id, 'hpa')
+    groups = check.hpa(systems, unique_id)
     compare_sets.compute_similar_hosts_list(systems_groups, compare_sets.get_hosts_list_from_result(groups))
 
 
@@ -96,6 +102,9 @@ def compare_cpu(bench_values, unique_id, systems_groups):
 
 
 def group_systems(bench_values, unique_id, systems_groups, ignore_list):
+    if "hpa" not in ignore_list:
+        compare_hpa(bench_values, unique_id, systems_groups)
+
     if "disk" not in ignore_list:
         compare_disks(bench_values, unique_id, systems_groups)
 

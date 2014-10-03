@@ -333,15 +333,10 @@ def generate_filename_and_macs(items):
 def check_mce_status(hw_):
     cmd = subprocess.Popen('dmesg',
                            shell=True, stdout=subprocess.PIPE)
+    for line in cmd.stdout:
+        if 'mce' in line and 'Hardware Error' in line:
+            hw_.append(('system', 'platform', 'mce', 'True'))
+            return
 
-    return_code = cmd.wait()
-    if return_code == 0:
-        for line in cmd.stdout:
-            if 'mce' in line and 'Hardware Error' in line:
-                hw_.append(('system', 'platform', 'mce', 'True'))
-                return
-
-        hw_.append(('system', 'mce', 'triggered', 'False'))
-    else:
-        hw_.append(('system', 'mce', 'triggered', 'Unknown'))
+    hw_.append(('system', 'mce', 'triggered', 'False'))
     return

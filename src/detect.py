@@ -35,6 +35,7 @@ from subprocess import Popen, PIPE
 import sys
 import xml.etree.ElementTree as ET
 import re
+import health_libs as HL
 
 SIOCGIFNETMASK = 0x891b
 
@@ -551,6 +552,7 @@ def _main():
     detect_system(hrdw)
     detect_ipmi(hrdw)
     detect_infiniband(hrdw)
+    HL.check_mce_status(hrdw)
     pprint.pprint(hrdw)
 
 if __name__ == "__main__":

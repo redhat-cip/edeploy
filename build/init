@@ -98,6 +98,10 @@ echo "" > /proc/sys/kernel/hotplug
 
 start_udev
 
+# On RHEL7, we need lvmetad to run to make {lv}* commands working
+if [ -x /usr/sbin/lvmetad ]; then
+    lvmetad
+fi
 ################################################################################
 # Hardware detection starts here
 ################################################################################

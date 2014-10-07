@@ -330,7 +330,7 @@ create_main_directories() {
     [ -d /proc ] || mkdir /proc
     [ -d /tmp ] || mkdir /tmp
     [ -d /var/lock/subsys ] || mkdir -p /var/lock/subsys
-    [ -d /run ] || mkdir -p /run
+    [ -d /run/lvm ] || mkdir -p /run/lvm
 }
 
 mount_virtual_fs() {

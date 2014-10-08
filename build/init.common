@@ -111,10 +111,12 @@ save_log() {
 
 do_reboot() {
     upload_log
+    umount -a
     reboot -f
 }
 
 do_halt() {
+    umount -a
     upload_log
     sync
     sleep 5
@@ -304,7 +306,6 @@ give_up() {
     case "$ONFAILURE" in
       "halt")
         log "Automatic poweroff as required by ONFAILURE"
-        umount -a
         do_halt
         ;;
       "console")
@@ -313,7 +314,6 @@ give_up() {
         ;;
       "reboot")
         log "Automatic poweroff as required by ONFAILURE"
-        umount -a
         do_reboot
         ;;
       *)

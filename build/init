@@ -433,12 +433,10 @@ if /configure; then
                     ;;
                 "reboot")
                     log "Automatic rebooting as required by ONSUCCESS"
-                    umount -a
                     do_reboot
                     ;;
                 "halt")
                     log "Automatic poweroff as required by ONSUCCESS"
-                    umount -a
                     do_halt
                     ;;
                 "console")

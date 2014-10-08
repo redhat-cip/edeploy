@@ -123,6 +123,7 @@ do_halt() {
 
 do_console() {
     upload_log
+    start_ssh_server
     exec /bin/bash -i
 }
 
@@ -308,7 +309,6 @@ give_up() {
         ;;
       "console")
         log "ONFAILURE=console, launching an interactive shell"
-        start_ssh_server
         do_console
         ;;
       "reboot")

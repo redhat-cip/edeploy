@@ -249,6 +249,7 @@ if /configure; then
             BOOT_ARG="$BOOT_ARG ds=nocloud-net\\\;s=${METADATA_URL}"
             BOOT_ARG1="$ORIGINAL_BOOT_ARG ds=nocloud-net;s=${METADATA_URL}"
         else
+            BOOT_ARG1="$ORIGINAL_BOOT_ARG"
             log "No METADATA_URL variable found, no cloud-init configuration done"
         fi
 

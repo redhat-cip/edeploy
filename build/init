@@ -274,6 +274,7 @@ if /configure; then
         VENDOR=$(cat /sys/block/$DISK_BASE/device/vendor)
         echo  "################################################################################################"
         echo  "# Installing grub on device ${DISK} which is a $MODEL from $VENDOR with SN=$SER"
+        echo  "# Additional boot arguments are : $BOOT_ARG"
         echo  "################################################################################################"
         # grub1 doesn't have /usr/sbin/grub-mkconfig
         if [ ! -x $d/usr/sbin/grub-mkconfig -a ! -x $d/usr/sbin/grub2-mkconfig ]; then

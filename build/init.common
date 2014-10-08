@@ -330,7 +330,7 @@ create_main_directories() {
     [ -d /proc ] || mkdir /proc
     [ -d /tmp ] || mkdir /tmp
     [ -d /var/lock/subsys ] || mkdir -p /var/lock/subsys
-    [ -d /run/lvm ] || mkdir -p /run/lvm
+    [ -d /run ] || mkdir -p /run
 }
 
 mount_virtual_fs() {
@@ -354,6 +354,7 @@ mount_virtual_fs() {
     # compatibility symlink for the pre-oneiric locations
     mkdir /run/initramfs
     ln -s /run/initramfs /dev/.initramfs
+    mkdir /run/lvm
 
 }
 

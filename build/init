@@ -256,6 +256,7 @@ if /configure; then
         mount -obind /dev $d/dev
         mount -obind /proc $d/proc
         mount -obind /sys $d/sys
+        mount -obind /run $d/run
 
         if [ -d $d/var/log ]; then
             mkdir -p $d/var/log/edeploy
@@ -368,6 +369,7 @@ if /configure; then
                 curl -s ${PXEMNGR_URL}localboot/
             fi
 
+            umount $d/run
             umount $d/sys
             umount $d/dev
             umount $d/proc

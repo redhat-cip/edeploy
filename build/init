@@ -356,6 +356,10 @@ if /configure; then
                 else
                     echo "GRUB_CMDLINE_LINUX_DEFAULT=\"${BOOT_ARG}\"" > $d/etc/default/grub
                 fi
+                # tell GRUB2 to preload its "lvm" module to gain LVM booting on direct-attached disks
+                if [ "$V" = "2" ]; then
+                    echo "GRUB_PRELOAD_MODULES=lvm" >> $d/etc/default/grub
+                fi
                 chroot $d /bin/sh -c "/usr/sbin/grub$V-mkconfig -o /boot/grub$V/grub.cfg"
                 ret=$?
             else

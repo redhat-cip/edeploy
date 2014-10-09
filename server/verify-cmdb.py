@@ -20,7 +20,7 @@ import sys
 
 
 def generate(g):
-    return ()
+    return []
 
 key = sys.argv[1]
 val = sys.argv[2]

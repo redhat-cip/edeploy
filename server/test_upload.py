@@ -137,16 +137,30 @@ class TestUpload(unittest.TestCase):
         self.assertEqual(result, [model])
 
     def test_update_cmdb_simple(self):
-        cmdb = [{}]
+        cmdb = [{'b': 1}]
         var = {'a': 1}
         result = upload.update_cmdb(cmdb, var, var, False)
         self.assertTrue(result, cmdb)
+        self.assertEqual(cmdb, [{'a': 1, 'b': 1, 'used': 1}])
+        self.assertEqual(var, {'a': 1, 'b': 1, 'used': 1})
 
     def test_update_cmdb_reuse(self):
         cmdb = [{'a': 1, 'used': 1}]
         var = {'a': 1}
         result = upload.update_cmdb(cmdb, var, var, False)
         self.assertTrue(result, cmdb)
+        self.assertEqual(cmdb, [{'a': 1, 'used': 1}])
+        self.assertEqual(var, {'a': 1, 'used': 1})
+
+    def test_update_cmdb_reuse2(self):
+        cmdb = [{'a': 1, 'b': 1, 'c': 1, 'used': 1}]
+        cmdb_result = [{'a': 1, 'b': 2, 'c': 1, 'used': 1}]
+        var = {'a': 1, 'b': 2}
+        pref = {'a': 1}
+        result = upload.update_cmdb(cmdb, var, pref, False)
+        self.assertTrue(result, cmdb_result)
+        self.assertEqual(cmdb, cmdb_result)
+        self.assertEqual(var, {'a': 1, 'b': 2, 'c': 1, 'used': 1})
 
     def test_update_cmdb_full(self):
         cmdb = [{'a': 2, 'used': 1}]

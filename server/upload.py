@@ -219,11 +219,11 @@ var is also augmented with the cmdb entry found.'''
 
     def update_entry(entry, cmdb, idx):
         'Update var using a cmdb entry and save the full cmdb on disk.'
+        entry.update(var)
         var.update(entry)
         var['used'] = 1
         cmdb[idx] = var
 
-    # sys.stderr.write(str(cmdb))
     # First pass to lookup if the var is already in the database
     # and if this is the case, reuse the entry.
     idx = 0

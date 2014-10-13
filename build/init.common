@@ -524,14 +524,14 @@ while true; do
             CARRIER_DEVICE_LIST="$CARRIER_DEVICE_LIST $iface"
             # Let's run all the dhclients in parallel
             config=$(get_network_configuration $iface)
-	    echo "$config for $iface"
+            echo "$config for $iface"
             case "$config" in
                 "dhcp")
                     DHCP_IFACES_COUNT=$(($DHCP_IFACES_COUNT + 1))
                     ( log "Waiting for $iface to get a DHCP answer."
-			if [ -r /var/run/dhclient-$iface.pid ]; then
-			    kill $(cat /var/run/dhclient-$iface.pid)
-			fi
+                        if [ -r /var/run/dhclient-$iface.pid ]; then
+                            kill $(cat /var/run/dhclient-$iface.pid)
+                        fi
                         dhclient -d -pf /var/run/dhclient-$iface.pid $iface >> /$iface.log 2>&1 &
                         count=$DHCP_GRACE_TIME
                         while [ $count -gt 0 ] && ! ifconfig $iface|grep -q 'inet addr'; do

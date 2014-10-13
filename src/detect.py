@@ -226,13 +226,14 @@ def detect_disks(hw_lst):
                 hw_lst.append(('disk', name, item_def.get(my_item),
                                line.rstrip('\n').strip()))
 
-        id_label = Popen("cd /dev/disk/by-id; for device in *;"
-                         " do readlink $device | grep -qw %s && echo $device;"
-                         " done;" % name,
-                         shell=True,
-                         stdout=PIPE)
-        for line in id_label.stdout:
-            hw_lst.append(('disk', name, 'id', line.rstrip('\n').strip()))
+        for entry in os.listdir('/dev/disk/by-id/'):
+            if (os.path.realpath('/dev/disk/by-id/' + entry).split('/')[-1] == name):
+                id_name = "id"
+                if entry.startswith('wwn'):
+                    id_name = "wwn-id"
+                elif entry.startswith('scsi'):
+                    id_name = "scsi-id"
+                hw_lst.append(('disk', name, id_name, entry))
 
 
 def modprobe(module):

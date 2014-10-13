@@ -502,6 +502,7 @@ else
     echo "timeout $DHCP_TIMEOUT;" > /etc/dhcp/dhclient.conf
 fi
 
+lldpad -d
 MAX_RUN=6
 RUN=0
 while true; do
@@ -522,6 +523,8 @@ while true; do
         if [ "$(cat /sys/class/net/$iface/carrier)" = "1" ]; then
             log "Adding Interface $iface : carrier detected"
             CARRIER_DEVICE_LIST="$CARRIER_DEVICE_LIST $iface"
+            log "Enabling LLDP rx on $iface"
+            lldptool set-lldp -i $iface adminstatus=rxtx
             # Let's run all the dhclients in parallel
             config=$(get_network_configuration $iface)
             echo "$config for $iface"
@@ -609,6 +612,30 @@ while true; do
         fi
     fi
 done
+
+# Let's wait up to 45 seconds to get all links getting their lldp status
+WAIT_LLDP_TIME=5
+NB_LLDP_LOOPS=9
+
+if [ -n "$CARRIER_DEVICE_LIST" ]; then
+    for loop in `seq 1 $NB_LLDP_LOOPS`; do
+        NB_DEVICES=$(echo "$CARRIER_DEVICE_LIST" | wc -w)
+        log "Searching for LLDP information on $NB_DEVICES interfaces (loop $loop / $NB_LLDP_LOOPS)"
+        for iface in $CARRIER_DEVICE_LIST; do
+            NB_PKTS=$(lldptool -S -i $iface | grep "Total Frames Received" | awk '{print $5}')
+            if [ "$NB_PKTS" != "0" ]; then
+                NB_DEVICES=$(( $NB_DEVICES - 1 ))
+            fi
+        done
+        # If all links had one LLDP packet at least, let's exit earlier
+        if [ $NB_DEVICES -eq 0 ]; then
+            log "Received at least one LLDP packet per valid interface"
+            log "End of LLDP discovery process"
+            return;
+        fi
+        sleep $WAIT_LLDP_TIME
+    done
+fi
 }
 
 set_path() {

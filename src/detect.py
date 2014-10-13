@@ -78,7 +78,9 @@ def detect_hpa(hw_lst):
             slot = 'slot=%d' % controller[0]
             controllers_infos = cli.ctrl_show(slot)
             for controller_info in controllers_infos.keys():
-                hw_lst.append(('hpa', slot.replace('=', '_'), controller_info, controllers_infos[controller_info]))
+                hw_lst.append(('hpa', slot.replace('=', '_'),
+                               controller_info,
+                               controllers_infos[controller_info]))
             for _, disks in cli.ctrl_pd_all_show(slot):
                 for disk in disks:
                     disk_count += 1
@@ -89,7 +91,8 @@ def detect_hpa(hw_lst):
                                    size_in_gb(disk[2])))
                     disk_infos = cli.ctrl_pd_disk_show(slot, disk[0])
                     for disk_info in disk_infos.keys():
-                        hw_lst.append(('disk', disk[0], disk_info, disk_infos[disk_info]))
+                        hw_lst.append(('disk', disk[0], disk_info,
+                                       disk_infos[disk_info]))
         except hpacucli.Error as expt:
             sys.stderr.write('Info: detect_hpa : controller %d : %s\n'
                              % (controller[0], expt.value))
@@ -158,14 +161,14 @@ def detect_megacli(hw_lst):
                                        'number_of_drives',
                                        str(info['NumberOfDrives'])))
                     except:
-                        True
+                        pass
                     try:
                         hw_lst.append(('ldisk',
                                        disk,
                                        'number_of_drives_per_span',
                                        str(info['NumberOfDrivesPerSpan'])))
                     except:
-                        True
+                        pass
                     hw_lst.append(('ldisk',
                                    disk,
                                    'raid_level',
@@ -227,7 +230,8 @@ def detect_disks(hw_lst):
                                line.rstrip('\n').strip()))
 
         for entry in os.listdir('/dev/disk/by-id/'):
-            if (os.path.realpath('/dev/disk/by-id/' + entry).split('/')[-1] == name):
+            if os.path.realpath('/dev/disk/by-id/' + entry).split('/')[-1] == \
+               name:
                 id_name = "id"
                 if entry.startswith('wwn'):
                     id_name = "wwn-id"
@@ -278,10 +282,11 @@ def get_cidr(netmask):
 
 
 def detect_infiniband(hw_lst):
-    'Detect Infiniband devinces.'
-    'To detect if an IB device is present, we search for a pci device'
-    'This pci device shall be from vendor Mellanox (15b3) form class 0280'
-    'Class 280 stands for a Network Controller while ethernet device are 0200'
+    '''Detect Infiniband devinces.
+
+To detect if an IB device is present, we search for a pci device.
+This pci device shall be from vendor Mellanox (15b3) form class 0280
+Class 280 stands for a Network Controller while ethernet device are 0200'''
     status, _ = cmd("lspci -d 15b3: -n|awk '{print $2}'|grep -q '0280'")
     if status == 0:
         ib_card = 0
@@ -369,9 +374,10 @@ def detect_system(hw_lst, output=None):
         find_element(xml, "./node/version", 'version')
         uuid = get_uuid()
         if uuid:
-            # If we have an uuid, let's manage a quirk list of stupid serial numbers
-            # TYAN or Supermicro are known to provide dirty serial numbers
-            # In that case, let's use the uuid instead
+            # If we have an uuid, let's manage a quirk list of stupid
+            # serial numbers TYAN or Supermicro are known to provide
+            # dirty serial numbers In that case, let's use the uuid
+            # instead
             for i in hw_lst:
                 if 'system' in i[0] and 'product' in i[1] and 'serial' in i[2]:
                     # Does the current serial number is part of the quirk list
@@ -409,7 +415,7 @@ def detect_system(hw_lst, output=None):
             if name is not None:
                 find_element(elt, 'size', 'size', 'total', 'memory')
                 for bank_list in elt.findall(".//node[@id]"):
-                    if ('bank:') in bank_list.get('id'):
+                    if 'bank:' in bank_list.get('id'):
                         bank_count = bank_count+1
                         for bank in elt.findall(".//node[@id='%s']" %
                                                 (bank_list.get('id'))):
@@ -483,10 +489,11 @@ def detect_system(hw_lst, output=None):
                 if name.text.startswith('ib'):
                     cmds = "ip addr show %s | grep link | awk '{print $2}'"
                     status_ip, output_ip = cmd(cmds % name.text)
-                    hw_lst.append(('network',
-                                   name.text,
-                                   'serial',
-                                   output_ip.split('\n')[0].lower()))
+                    if status_ip == 0:
+                        hw_lst.append(('network',
+                                       name.text,
+                                       'serial',
+                                       output_ip.split('\n')[0].lower()))
                 else:
                     find_element(elt, 'serial', 'serial', name.text, 'network',
                                  transform=string.lower)

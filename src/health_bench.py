@@ -157,3 +157,31 @@ class Health_NETWORK(Health_Bench):
 
     def completed(self):
         Health_Bench.completed(self, HM.NETWORK)
+
+
+class Health_STORAGE(Health_Bench):
+
+    def start(self):
+        self.logger.info("Starting Storage Bench for %d seconds with blocksize=%s" %
+                         (self.message.running_time, self.message.block_size))
+        self.starting()
+        HL.run_fio_job(self.message)
+        self.completed()
+
+    def initialize(self):
+        Health_Bench.initialize(self, HM.STORAGE)
+
+    def clean(self):
+        Health_Bench.clean(self, HM.STORAGE)
+
+    def starting(self):
+        Health_Bench.starting(self, HM.STORAGE)
+
+    def stop(self):
+        self.logger.info("Stopping Storage Bench")
+
+    def notcompleted(self):
+        Health_Bench.notcompleted(self, HM.STORAGE)
+
+    def completed(self):
+        Health_Bench.completed(self, HM.STORAGE)

@@ -21,6 +21,7 @@ from health_messages import Health_Message as HM
 from health_bench import Health_CPU as HCPU
 from health_bench import Health_MEMORY as HMEMORY
 from health_bench import Health_NETWORK as HNETWORK
+from health_bench import Health_STORAGE as HSTORAGE
 import atexit
 import health_protocol as HP
 import logging
@@ -83,6 +84,8 @@ def cpu(socket, msg):
 
 
 def storage(socket, msg):
+    HP.logger.info("Module Storage (%d sec)" % msg.running_time)
+    action(socket, msg, HSTORAGE(msg, socket, HP.logger))
     return
 
 

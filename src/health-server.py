@@ -21,7 +21,6 @@ import ConfigParser
 import socket
 import struct
 from health_messages import Health_Message as HM
-from health_libs import *
 import health_libs as HL
 import health_protocol as HP
 import logging
@@ -44,6 +43,7 @@ hosts_state = {}
 results_cpu = {}
 results_memory = {}
 results_network = {}
+results_storage = {}
 serv = 0
 startup_date = ""
 NOTHING_RUN = 0
@@ -158,6 +158,8 @@ class SocketHandler(BaseRequestHandler):
                             memory_completed(self.client_address, msg)
                         elif msg.module == HM.NETWORK:
                             network_completed(self.client_address, msg)
+                        elif msg.module == HM.STORAGE:
+                            storage_completed(self.client_address, msg)
 
 
 def createAndStartServer():
@@ -194,6 +196,13 @@ def network_completed(host, msg):
     global results_network
     hosts_state[host] &= ~NETWORK_RUN
     results_network[host] = msg.hw
+
+
+def storage_completed(host, msg):
+    global hosts_state
+    global results_storage
+    hosts_state[host] &= ~STORAGE_RUN
+    results_storage[host] = msg.hw
 
 
 def get_host_list(item):
@@ -327,13 +336,36 @@ def start_memory_bench(bench):
     msg.cpu_instances = bench['cores']
     msg.block_size = bench['block-size']
     msg.running_time = bench['runtime']
-    msg.parallel_mode = bench['mode']
+    msg.mode = bench['mode']
 
     for host in bench['hosts-list']:
         if nb_hosts == 0:
             break
         if host not in get_host_list(MEMORY_RUN).keys():
             hosts_state[host] |= MEMORY_RUN
+            nb_hosts = nb_hosts - 1
+            lock_socket_list.acquire()
+            start_time(host)
+            HP.send_hm_message(socket_list[host], msg)
+            lock_socket_list.release()
+
+
+def start_storage_bench(bench):
+    global hosts_state
+    nb_hosts = bench['nb-hosts']
+    msg = HM(HM.MODULE, HM.STORAGE, HM.START)
+    msg.block_size = bench['block-size']
+    msg.access = bench['access']
+    msg.running_time = bench['runtime']
+    msg.mode = bench['mode']
+    msg.device = bench['device']
+    msg.rampup_time = bench['rampup-time']
+
+    for host in bench['hosts-list']:
+        if nb_hosts == 0:
+            break
+        if host not in get_host_list(STORAGE_RUN).keys():
+            hosts_state[host] |= STORAGE_RUN
             nb_hosts = nb_hosts - 1
             lock_socket_list.acquire()
             start_time(host)
@@ -469,6 +501,11 @@ def compute_metrics(log_dir, bench, bench_type):
     elif bench_type == HM.NETWORK:
         results = results_network
         dest_dir = dest_dir + "/network-" + bench['name']
+    elif bench_type == HM.STORAGE:
+        results = results_storage
+        dest_dir = dest_dir + "/network-" + bench['name']
+    else:
+        HL.fatal_error("Unknown benchmark type in compute_metrics")
 
     try:
         if not os.path.isdir(dest_dir):
@@ -610,13 +647,13 @@ def select_vms_from_networks(bench):
     hosts_selected_ip = {}
     for hv in bench['hosts-list']:
         for host in bench['hosts-list'][hv]:
-            ipv4_list = get_multiple_values(hosts[host].hw, "network", "*", "ipv4")
+            ipv4_list = HL.get_multiple_values(hosts[host].hw, "network", "*", "ipv4")
             match_network = False
             # Let's check if one of the IP of a host match at least one network
             # If so, let's save the resulting IP
             for ip in ipv4_list:
                 for network in bench['network-hosts'].split(','):
-                    if is_in_network(ip, network.strip()):
+                    if HL.is_in_network(ip, network.strip()):
                             hosts_selected_ip[host] = ip
                             port_list[host] = HM.port_base + port_add
                             port_add += 1
@@ -708,6 +745,61 @@ def do_network_job(bench_all, current_job, log_dir, total_runtime):
             prepare_network_bench(iter_bench, HM.CLEAN)
     else:
         HP.logger.error("NETWORK: Canceling Test")
+
+
+def do_storage_job(bench_all, current_job, log_dir, total_runtime):
+    bench = dict(bench_all)
+
+    if parse_job_config(bench, current_job, HM.STORAGE, log_dir) is True:
+        nb_loops = 0
+        hosts_series = compute_nb_hosts_series(bench)
+        for nb_hosts in hosts_series:
+            nb_loops = nb_loops + 1
+            iter_bench = dict(bench)
+            iter_bench['runtime'] = get_default_value(current_job, 'runtime', bench['runtime'])
+            iter_bench['cores'] = get_default_value(current_job, 'cores', 1)
+            iter_bench['block-size'] = get_default_value(current_job, 'block-size', "4k")
+            iter_bench['mode'] = get_default_value(current_job, 'mode', HM.RANDOM)
+            iter_bench['access'] = get_default_value(current_job, 'access', HM.READ)
+            iter_bench['device'] = get_default_value(current_job, 'device', "vda")
+            iter_bench['rampup-time'] = get_default_value(current_job, 'rampup-time', "5")
+            iter_bench['nb-hosts'] = nb_hosts
+            total_runtime += iter_bench['runtime']
+
+            iter_bench['hosts-list'] = get_hosts_list_from_affinity(iter_bench)
+
+            if (iter_bench['rampup-time'] > iter_bench['runtime']):
+                HP.logger.error("STORAGE: Rampup time (%s) is bigger than runtime (%s" %
+                                (iter_bench['rampup-time'], iter_bench['runtime']))
+                HP.logger.error("STORAGE: Canceling Test")
+                return
+
+            if (len(iter_bench['hosts-list']) < iter_bench['nb-hosts']):
+                HP.logger.error("STORAGE: %d hosts expected while affinity only provides %d hosts available" % (iter_bench['nb-hosts'], len(iter_bench['hosts-list'])))
+                HP.logger.error("STORAGE: Canceling test %d / %d" % ((iter_bench['nb-hosts'], iter_bench['max_hosts'])))
+                continue
+
+            HP.logger.info("STORAGE: Waiting %s %s bench %s@%s %d / %d"
+                           " to finish on %d hosts (step = %d): should take"
+                           " %d seconds" % (iter_bench['mode'], iter_bench['access'], iter_bench['device'],
+                                            iter_bench['block-size'], nb_loops, len(hosts_series),
+                                            iter_bench['nb-hosts'], iter_bench['step-hosts'],
+                                            iter_bench['runtime']))
+
+            init_jitter()
+
+            start_storage_bench(iter_bench)
+
+            time.sleep(bench['runtime'])
+
+            while (get_host_list(STORAGE_RUN).keys()):
+                time.sleep(1)
+
+            disable_jitter()
+
+            compute_metrics(log_dir, iter_bench, HM.STORAGE)
+    else:
+        HP.logger.error("STORAGE: Canceling Test")
 
 
 def do_memory_job(bench_all, current_job, log_dir, total_runtime):
@@ -852,9 +944,11 @@ def non_interactive_mode(filename, title):
         global results_network
         global results_cpu
         global results_memory
+        global results_storage
         results_network = {}
         results_cpu = {}
         results_memory = {}
+        results_storage = {}
         current_job = job['jobs'][next_job]
         current_job['name'] = next_job
         if 'component' not in current_job.keys():
@@ -866,6 +960,8 @@ def non_interactive_mode(filename, title):
                 do_memory_job(bench_all, current_job, log_dir, total_runtime)
         if "network" in current_job['component']:
                 do_network_job(bench_all, current_job, log_dir, total_runtime)
+        if "storage" in current_job['component']:
+                do_storage_job(bench_all, current_job, log_dir, total_runtime)
 
     HP.logger.info("End of %s" % name)
     HP.logger.info("Results are available here : %s" % log_dir)

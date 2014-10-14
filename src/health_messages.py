@@ -17,7 +17,7 @@
 
 
 class Health_Message():
-    protocol_version = 2
+    protocol_version = 3
 
     INVALID = 0
     NONE = 1 << 0
@@ -44,6 +44,12 @@ class Health_Message():
 
     FORKED = "forked"
     THREADED = "threaded"
+
+    RANDOM = "random"
+    SEQUENTIAL = "sequential"
+
+    READ = "read"
+    WRITE = "write"
 
     LATENCY = "latency"
     BANDWIDTH = "bandwidth"
@@ -80,7 +86,11 @@ class Health_Message():
     running_time = 0
     cpu_instances = 0
     block_size = ""
-    parallel_mode = FORKED
+    mode = FORKED
+
+    access = READ
+    device = "sda"
+    rampup_time = 5
 
     network_test = BANDWIDTH
     network_connection = TCP

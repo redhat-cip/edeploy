@@ -35,6 +35,7 @@ from subprocess import Popen, PIPE
 import sys
 import xml.etree.ElementTree as ET
 import re
+import detect_utils
 
 SIOCGIFNETMASK = 0x891b
 
@@ -498,28 +499,7 @@ def detect_system(hw_lst, output=None):
                     find_element(elt, 'serial', 'serial', name.text, 'network',
                                  transform=string.lower)
 
-                lines = output_lines("lldptool -t -n -i %s" % name.text)
-                content = ""
-                header = ""
-                sub_header = ""
-                for line in lines:
-                    if line.startswith('\t'):
-                        content = line.strip().strip('\n').strip('\t').replace("/", "_")
-                    else:
-                        header = line
-                        header = line.strip().strip('\n').strip('\t').replace("/", "_").replace(" TLV", "")
-                        content = ""
-                        sub_header = ""
-                    if header and content:
-                        if ":" in content:
-                            left, right = content.split(": ")
-                            # If we never had this sub_header for this header
-                            # let's add one
-                            if (left != sub_header):
-                                sub_header = left
-                                header = header + "/" + sub_header
-                            content = right
-                        hw_lst.append(('lldp', name.text, header, content))
+                detect_utils.get_lld_status(hw_lst, name.text)
 
         for elt in xml.findall(".//node[@class='processor']"):
             name = elt.find('physid')

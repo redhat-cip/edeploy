@@ -21,6 +21,7 @@ import socket
 import unittest
 
 import detect
+import detect_utils
 
 
 class Keeper:
@@ -59,6 +60,7 @@ class TestDetect(unittest.TestCase):
         self.saved_ntoa = socket.inet_ntoa
         self.saved_ioctl = fcntl.ioctl
         self.saved_get_uuid = detect.get_uuid
+        self.saved_lld_status = detect_utils.get_lld_status
 
         def fake(x):
             return (0, nbproc)
@@ -72,6 +74,9 @@ class TestDetect(unittest.TestCase):
         def fake_get_uuid():
             return '83462C81-52BA-11CB-870F'
 
+        def fake_lld_status(arg, arg1):
+            return []
+
         detect.cmd = fake
         keeper = Keeper('detect.output_lines',
                         [('vmx', ) for idx in range(nbphys)] +
@@ -84,6 +89,7 @@ class TestDetect(unittest.TestCase):
         socket.inet_ntoa = fake_ntoa
         fcntl.ioctl = fake_ioctl
         detect.get_uuid = fake_get_uuid
+        detect_utils.get_lld_status = fake_lld_status
 
     def _restore_functions(self):
         detect.cmd = self.save
@@ -91,6 +97,8 @@ class TestDetect(unittest.TestCase):
         socket.inet_ntoa = self.saved_ntoa
         fcntl.ioctl = self.saved_ioctl
         detect.get_uuid = self.saved_get_uuid
+        detect_utils.get_lld_status = self.saved_lld_status
+
 
     def test_detect_system_3(self):
         l = []

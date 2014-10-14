@@ -71,8 +71,8 @@ def run_sysbench_cpu(hw_, max_time, cpu_count, processor_num=-1):
         taskset = 'taskset %s' % hex(1 << processor_num)
 
     cmds = '%s sysbench --max-time=%d --max-requests=10000000' \
-            ' --num-threads=%d --test=cpu --cpu-max-prime=15000 run' \
-            % (taskset, max_time, cpu_count)
+           ' --num-threads=%d --test=cpu --cpu-max-prime=15000 run' \
+           % (taskset, max_time, cpu_count)
     sysbench_cmd = subprocess.Popen(cmds, shell=True, stdout=subprocess.PIPE)
 
     for line in sysbench_cmd.stdout:

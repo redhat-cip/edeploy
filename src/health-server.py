@@ -614,7 +614,7 @@ def parse_job_config(bench, job, component, log_dir):
             return False
 
     required_hosts = get_default_value(job, 'required-hosts',
-                                           bench['required-hosts'])
+                                       bench['required-hosts'])
     if "-" in str(required_hosts):
         min_hosts = int(str(required_hosts).split("-")[0])
         max_hosts = int(str(required_hosts).split("-")[1])

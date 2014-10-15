@@ -57,7 +57,7 @@ do_python() {
 }
 
 run_detect() {
-    do_python /detect.py > /hw.py || fatal_error "Failed to detect hardware"
+    do_python /detect.py > /hw.py || give_up "Failed to detect hardware"
 }
 
 get_system_info() {

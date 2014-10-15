@@ -1,9 +1,12 @@
 #!/bin/bash
 # This script is about respawning /init
 # It will first clean the current environment and respawn /init
-exec >> /log 2>&1
 
 . /init.common
+
+do_log() {
+    log "RESPAWN: $@" | tee -a /log
+}
 
 clean_temp_files() {
 rm -f /user-data
@@ -19,8 +22,8 @@ echo > /mcelog
 
 kill_process() {
 for process in $@; do
-	log "Killing $process"
-	pkill -9 $process
+    do_log "Killing $process"
+    pkill -9 $process
 done
 }
 
@@ -37,17 +40,17 @@ for retry in `seq 1 5`; do
 	fi
 done
 
-log "Unable to umount $directory"
+do_log "Unable to umount $directory"
 exit 1
 }
 
-log "Initializing respawning"
+do_log "Initializing respawning"
 kill_process udevd systemd-udevd dhclient lldpad
 umount_dir "/chroot"
 umount_dir "/run"
 umount_dir "/sys"
 umount_dir "/proc"
 clean_temp_files
-log "About to respawn init"
 kill_process tail
-exec /init
+do_log "Starting init"
+LC_ALL=C exec /init

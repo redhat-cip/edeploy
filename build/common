@@ -429,3 +429,23 @@ common_setup() {
     add_rhn_repository $DIST
 
 }
+
+function iniset() {
+    local file=$1
+    local section=$2
+    local option=$3
+    local value=$4
+    if ! grep -q "^\[$section\]" "$file"; then
+        # Add section at the end
+        echo -e "\n[$section]" >>"$file"
+    fi
+    if ! ini_has_option "$file" "$section" "$option"; then
+        # Add it
+        sed -i -e "/^\[$section\]/ a\\
+$option = $value
+" "$file"
+    else
+        # Replace it
+        sed -i -e "/^\[$section\]/,/^\[.*\]/ s|^\($option[ \t]*=[ \t]*\).*$|\1$value|" "$file"
+    fi
+}

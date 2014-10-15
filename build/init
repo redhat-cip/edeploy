@@ -24,11 +24,11 @@ IP="all:dhcp"
 
 mknod /dev/null c 1 3
 
-. init.common
+. /init.common
 exec 3>&1
 exec 4>&2
 
-exec > /log 2>&1
+exec >> /log 2>&1
 
 tail -f /log > /dev/console &
 tpid=$!

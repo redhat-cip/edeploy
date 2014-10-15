@@ -1,0 +1,53 @@
+#!/bin/bash
+# This script is about respawning /init
+# It will first clean the current environment and respawn /init
+exec >> /log 2>&1
+
+. /init.common
+
+clean_temp_files() {
+rm -f /user-data
+rm -f /configure
+rm -f /vars
+rm -f /hw.py
+rm -rf /post_rsync
+rm -rf /*.log
+rm -rf /*.log.gz
+echo > /log
+echo > /mcelog
+}
+
+kill_process() {
+for process in $@; do
+	log "Killing $process"
+	pkill -9 $process
+done
+}
+
+umount_dir() {
+directory=$1
+fuser -k $directory/*
+for retry in `seq 1 5`; do
+	fail=0
+	for dir in $(grep $directory /proc/mounts | awk '{print $2}' | sort -r); do
+		umount $dir || fail=$(($fail + 1))
+	done
+	if [ $fail -eq 0 ]; then
+		return 0
+	fi
+done
+
+log "Unable to umount $directory"
+exit 1
+}
+
+log "Initializing respawning"
+kill_process udevd systemd-udevd dhclient lldpad
+umount_dir "/chroot"
+umount_dir "/run"
+umount_dir "/sys"
+umount_dir "/proc"
+clean_temp_files
+log "About to respawn init"
+kill_process tail
+exec /init

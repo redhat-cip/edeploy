@@ -353,7 +353,7 @@ mount_virtual_fs() {
     mount -t tmpfs -o "nosuid,size=20%,mode=0755" tmpfs /run
     # compatibility symlink for the pre-oneiric locations
     mkdir /run/initramfs
-    ln -s /run/initramfs /dev/.initramfs
+    ln -sf /run/initramfs /dev/.initramfs
     mkdir /run/lvm
 
 }

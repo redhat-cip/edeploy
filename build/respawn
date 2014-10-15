@@ -31,13 +31,13 @@ umount_dir() {
 directory=$1
 fuser -k $directory/*
 for retry in `seq 1 5`; do
-	fail=0
-	for dir in $(grep $directory /proc/mounts | awk '{print $2}' | sort -r); do
-		umount $dir || fail=$(($fail + 1))
-	done
-	if [ $fail -eq 0 ]; then
-		return 0
-	fi
+    fail=0
+    for dir in $(grep $directory /proc/mounts | awk '{print $2}' | sort -r); do
+        umount $dir || fail=$(($fail + 1))
+    done
+    if [ $fail -eq 0 ]; then
+        return 0
+    fi
 done
 
 do_log "Unable to umount $directory"

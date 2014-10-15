@@ -339,18 +339,23 @@ mount_virtual_fs() {
     # Some things don't work properly without /etc/mtab.
     ln -sf /proc/mounts /etc/mtab
 
-    # Note that this only becomes /dev on the real filesystem if udev's scripts
-    # are used; which they will be, but it's worth pointing out
-    if ! mount -t devtmpfs -o mode=0755 udev /dev; then
-        log "W: devtmpfs not available, falling back to tmpfs for /dev"
-        mount -t tmpfs -o mode=0755 udev /dev
-        [ -e /dev/console ] || mknod -m 0600 /dev/console c 5 1
-        [ -e /dev/null ] || mknod /dev/null c 1 3
-    fi
+    # Don't mount /dev/ if already mounted
+    # This is only occuring when doing respawn
+    grep -qw "/dev" /proc/mounts || (
+        # Note that this only becomes /dev on the real filesystem if udev's scripts
+        # are used; which they will be, but it's worth pointing out
+        if ! mount -t devtmpfs -o mode=0755 udev /dev; then
+            log "W: devtmpfs not available, falling back to tmpfs for /dev"
+            mount -t tmpfs -o mode=0755 udev /dev
+            [ -e /dev/console ] || mknod -m 0600 /dev/console c 5 1
+            [ -e /dev/null ] || mknod /dev/null c 1 3
+        fi
 
-    mkdir /dev/pts
-    mount -t devpts -o noexec,nosuid,gid=5,mode=0620 devpts /dev/pts || true
-    mount -t tmpfs -o "nosuid,size=20%,mode=0755" tmpfs /run
+        mkdir /dev/pts
+        mount -t devpts -o noexec,nosuid,gid=5,mode=0620 devpts /dev/pts || true
+        mount -t tmpfs -o "nosuid,size=20%,mode=0755" tmpfs /run
+    )
+
     # compatibility symlink for the pre-oneiric locations
     mkdir /run/initramfs
     ln -sf /run/initramfs /dev/.initramfs

@@ -204,13 +204,12 @@ def detect_disks(hw_lst):
     hw_lst.append(('disk', 'logical', 'count', str(len(disks))))
     for name in disks:
         hw_lst.append(('disk', name, 'size', str(sizes[name])))
-        item_list = ['vendor', 'model', 'rev']
+        item_list = ['device/vendor', 'device/model', 'device/rev',
+                     'queue/optimal_io_size', 'queue/physical_block_size']
         for my_item in item_list:
             try:
-                with open('/sys/block/%s/device/%s' % (name,
-                                                       my_item),
-                          'r') as dev:
-                    hw_lst.append(('disk', name, my_item,
+                with open('/sys/block/%s/%s' % (name, my_item), 'r') as dev:
+                    hw_lst.append(('disk', name, my_item.split('/')[1],
                                    dev.readline().rstrip('\n').strip()))
             except Exception, excpt:
                 sys.stderr.write(

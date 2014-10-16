@@ -230,15 +230,17 @@ def detect_disks(hw_lst):
                 hw_lst.append(('disk', name, item_def.get(my_item),
                                line.rstrip('\n').strip()))
 
-        for entry in os.listdir('/dev/disk/by-id/'):
-            if os.path.realpath('/dev/disk/by-id/' + entry).split('/')[-1] == \
-               name:
-                id_name = "id"
-                if entry.startswith('wwn'):
-                    id_name = "wwn-id"
-                elif entry.startswith('scsi'):
-                    id_name = "scsi-id"
-                hw_lst.append(('disk', name, id_name, entry))
+        # In some VMs, the disk-by id doesn't exists
+        if os.path.exists('/dev/disk/by-id/'):
+            for entry in os.listdir('/dev/disk/by-id/'):
+                if os.path.realpath('/dev/disk/by-id/' + entry).split('/')[-1] == \
+                   name:
+                    id_name = "id"
+                    if entry.startswith('wwn'):
+                        id_name = "wwn-id"
+                    elif entry.startswith('scsi'):
+                        id_name = "scsi-id"
+                    hw_lst.append(('disk', name, id_name, entry))
 
 
 def modprobe(module):

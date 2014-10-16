@@ -229,6 +229,8 @@ install_base_packages() {
             # don't rename net ifaces
             ln -s /dev/null $dir/etc/udev/rules.d/80-net-name-slot.rules
         fi
+        touch ${target}/.autorelabel
+        sed -i 's/SELINUX=.*/SELINUX=permissive/' ${target}/etc/selinux/config
     fi
 }
 

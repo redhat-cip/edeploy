@@ -43,7 +43,7 @@ def physical_disks(systems, unique_id):
 
 
 def logical_disks(systems, unique_id):
-    sets = search_item(systems, unique_id, "disk", "sd(\S+)", ['simultaneous', 'standalone', 'id'])
+    sets = search_item(systems, unique_id, "disk", "[a-z]d(\S+)", ['simultaneous', 'standalone', 'id'])
     groups = compare_sets.compare(sets)
     compare_sets.print_groups(groups, "Logical Disks")
     return groups
@@ -143,8 +143,19 @@ def network_perf(systems, unique_id, group_number, detail_options, rampup_value=
 
 def logical_disks_perf(systems, unique_id, group_number, detail_options, rampup_value=0, current_dir=""):
     have_disk_data = False
-    sets = search_item(systems, unique_id, "disk", "sd(\S+)", [], ['simultaneous', 'standalone'])
-    modes = ['standalone_randwrite_4k_IOps', 'standalone_randread_4k_IOps', 'standalone_read_1M_IOps', 'standalone_write_1M_IOps',  'simultaneous_randwrite_4k_IOps', 'simultaneous_randread_4k_IOps', 'simultaneous_read_1M_IOps', 'simultaneous_write_1M_IOps']
+    sets = search_item(systems, unique_id, "disk", "[a-z]d(\S+)", [], ['simultaneous', 'standalone'])
+    modes = []
+
+    # Searching for modes ran in this benchmark
+    for system in sets:
+        for perf in sets[system]:
+            if perf[2] not in modes:
+                modes.append(perf[2])
+
+    if len(modes) == 0:
+        print "No mode found in this benchmark, exiting"
+        return
+
     for mode in modes:
         results = {}
         for system in sets:

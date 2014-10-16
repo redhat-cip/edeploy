@@ -65,7 +65,7 @@ def _parse_ctrl_d_disk_show(output):
         text = line.split()
         if "array" in text:
             status["array"] = text[1]
-        _generic_parsing(line, status, ["size", "port", "bay", "box"])
+        _generic_parsing(line, status, ["port", "bay", "box"])
 
     return status
 

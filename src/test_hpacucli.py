@@ -48,6 +48,18 @@ class TestParsing(unittest.TestCase):
             hpacucli.parse_ctrl_pd_all_show(CTRL_PD_ALL_SHOW_OUTPUT_HPSSACLI),
             CTRL_PD_ALL_SHOW_RESULT_HPSSACLI)
 
+    def test_parse_ctrl_pd_show(self):
+        # => ctrl slot=0 pd all show
+        return self.assertEqual(
+            hpacucli.parse_ctrl_pd_disk_show(CTRL_PD_SHOW_OUTPUT),
+            CTRL_PD_SHOW_RESULT)
+
+    def test_parse_ctrl_pd_show_hpssacli(self):
+        # => ctrl slot=0 pd all show
+        return self.assertEqual(
+            hpacucli.parse_ctrl_pd_disk_show(CTRL_PD_SHOW_OUTPUT_HPSSACLI),
+            CTRL_PD_SHOW_RESULT_HPSSACLI)
+
     def test_parse_ctrl_pd_all_show_unassigned(self):
         # => ctrl slot=2 pd all show
         return self.assertEqual(
@@ -248,6 +260,50 @@ CTRL_PD_ALL_SHOW_RESULT_HPSSACLI = [
     ('array C', [('1I:1:2', 'SATA', '2 TB', 'OK')]),
     ('array D', [('1I:1:3', 'SATA', '2 TB', 'OK')]),
     ]
+
+CTRL_PD_SHOW_RESULT_HPSSACLI =  {'carrier_application_version': '11',
+                                 'carrier_bootloader_version': '6',
+                                 'current_temperature_(c)': '32',
+                                 'drive_authentication_status': 'OK',
+                                 'drive_type': 'Unassigned Drive',
+                                 'firmware_revision': 'MK7OHPG3',
+                                 'interface_type': 'SATA',
+                                 'maximum_temperature_(c)': '36',
+                                 'model': 'ATA MB2000GBUPB',
+                                 'native_block_size': '512',
+                                 'phy_count': '1',
+                                 'phy_transfer_rate': '6.0Gbps',
+                                 'physicaldrive_1i': '1',
+                                 'rotational_speed': '7200',
+                                 'sata_ncq_capable': 'True',
+                                 'sata_ncq_enabled': 'True',
+                                 'serial_number': 'YFK70EZA',
+                                 'size': '2 TB',
+                                 'status': 'OK'
+}
+
+CTRL_PD_SHOW_RESULT = {'status': 'OK',
+                        'phy_count': '1',
+                        'sata_ncq_capable': 'True',
+                        'ssd_smart_trip_wearout': 'False',
+                        'carrier_bootloader_version': '6',
+                        'firmware_revision': '5DV1HPG0',
+                        'carrier_application_version': '11',
+                        'interface_type': 'Solid State SATA',
+                        'drive_authentication_status': 'OK',
+                        'power_on_hours': '43',
+                        'sata_ncq_enabled': 'True',
+                        'usage_remaining': '100.00%',
+                        'phy_transfer_rate': '6.0Gbps',
+                        'drive_type': 'Data Drive',
+                        'current_temperature_(c)': '11',
+                        'physicaldrive_2i': '1',
+                        'serial_number': 'BTTV305001NZ100FGN',
+                        'array': 'A',
+                        'maximum_temperature_(c)': '22',
+                        'model': 'ATA MK0100GCTYU',
+                        'size': '100 GB'
+}
 
 CTRL_PD_ALL_SHOW_UNASSIGNED_OUTPUT = '''
 

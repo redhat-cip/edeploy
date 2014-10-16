@@ -1,0 +1,23 @@
+name: storage_load
+required-hosts: 81
+jobs:
+    read-seq:
+        component: storage
+        required-hosts: 1-81
+        step-hosts: 6
+        rampup-time: 5
+        runtime: 10
+        mode: sequential
+        access : read
+        block-size: 4k
+        device : vda
+    read-rand:
+        component: storage
+        required-hosts: 1-81
+        step-hosts: 6
+        rampup-time: 5
+        runtime: 10
+        mode: random
+        access : read
+        block-size: 4k
+        device: vda

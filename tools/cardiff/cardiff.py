@@ -323,6 +323,13 @@ def plot_results(current_dir, rampup_values, job, metrics, bench_values, titles)
         unit["mean"] = unit["deviance"]
         unit["sum"] = unit["deviance"]
         context = "%d %s threads per host, blocksize=%s" % (metrics["bench"]["cores"], metrics["bench"]["mode"], metrics["bench"]["block-size"])
+    if "storage" in job:
+        unit["deviance"] = "KB/sec"
+        unit["deviance_percentage"] = "% of deviance (vs mean perf)"
+        unit["mean"] = unit["deviance"]
+        unit["sum"] = unit["deviance"]
+        bench_type = "%s bandwidth" % job
+        context = "%d %s threads per host, blocksize=%s, mode=%s, access=%s" % (metrics["bench"]["cores"], metrics["bench"]["mode"], metrics["bench"]["block-size"], metrics["bench"]["mode"], metrics["bench"]["access"])
     for kind in unit:
         title_appendix = ""
         if len(titles.keys()) > 1:

@@ -233,9 +233,9 @@ def do_plot(current_dir, gpm_dir, main_title, subtitle, name, unit, titles, expe
             column = 2
             for title in titles.keys():
                 if column == 2:
-                    myfile.write("plot '$2' using %d with linespoints title '%s'" % (column, titles[title]))
+                    myfile.write("plot '$2' using %d:xtic(1) with linespoints title '%s'" % (column, titles[title]))
                 else:
-                    myfile.write(",\\\n'$2' using %d with linespoints title '%s'" % (column, titles[title]))
+                    myfile.write(",\\\n'$2' using %d:xtic(1) with linespoints title '%s'" % (column, titles[title]))
                 column = column + 1
             if expected_value:
                 myfile.write(",\\\n %.2f w l ls 1 ti 'Expected value (%.2f)'" % (expected_value, expected_value))
@@ -243,9 +243,9 @@ def do_plot(current_dir, gpm_dir, main_title, subtitle, name, unit, titles, expe
             column = 2
             for title in titles.keys():
                 if column == 2:
-                    myfile.write("plot '$2' using %d smooth csplines title '%s'" % (column,  titles[title]))
+                    myfile.write("plot '$2' using %d:xtic(1) smooth csplines title '%s'" % (column,  titles[title]))
                 else:
-                    myfile.write(",\\\n'$2' using %d smooth csplines title '%s'" % (column,  titles[title]))
+                    myfile.write(",\\\n'$2' using %d:xtic(1) smooth csplines title '%s'" % (column,  titles[title]))
                 column = column + 1
             if expected_value:
                 myfile.write(",\\\n %.2f w l ls 1 ti 'Expected value (%.2f)'" % (expected_value, expected_value))
@@ -253,9 +253,9 @@ def do_plot(current_dir, gpm_dir, main_title, subtitle, name, unit, titles, expe
             myfile.write("\nset output '$4-trend.png'\n")
             for title in titles.keys():
                 if column == 2:
-                    myfile.write("plot '$2' using %d smooth bezier title '%s'" % (column, titles[title]))
+                    myfile.write("plot '$2' using %d:xtic(1) smooth bezier title '%s'" % (column, titles[title]))
                 else:
-                    myfile.write(",\\\n'$2' using %d smooth bezier title '%s'" % (column, titles[title]))
+                    myfile.write(",\\\n'$2' using %d:xtic(1) smooth bezier title '%s'" % (column, titles[title]))
                 column = column + 1
             if expected_value:
                 myfile.write(",\\\n %.2f w l ls 1 ti 'Expected value (%.2f)'" % (expected_value, expected_value))

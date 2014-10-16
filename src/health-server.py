@@ -503,7 +503,7 @@ def compute_metrics(log_dir, bench, bench_type):
         dest_dir = dest_dir + "/network-" + bench['name']
     elif bench_type == HM.STORAGE:
         results = results_storage
-        dest_dir = dest_dir + "/network-" + bench['name']
+        dest_dir = dest_dir + "/storage-" + bench['name']
     else:
         HL.fatal_error("Unknown benchmark type in compute_metrics")
 

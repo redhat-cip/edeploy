@@ -103,8 +103,8 @@ Physical Devices  : 7
     Number of Slots               : 8'''
         self.assertEqual(megacli.enc_info(0),
                          [{'Enclosure': 0,
-                          'DeviceId': 32,
-                          'NumberOfSlots': 8}])
+                           'DeviceId': 32,
+                           'NumberOfSlots': 8}])
 
     def test_enc_info2(self):
         self.output = ENC_OUTPUT

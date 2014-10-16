@@ -99,7 +99,6 @@ class TestDetect(unittest.TestCase):
         detect.get_uuid = self.saved_get_uuid
         detect_utils.get_lld_status = self.saved_lld_status
 
-
     def test_detect_system_3(self):
         l = []
         self._save_functions("4", 2)

@@ -162,12 +162,12 @@ class TestController(unittest.TestCase):
     def test_ctrl_create_ld(self):
         self.cli.process.before = 'ctrl slot=2 ld 2 show' + CTRL_LD_ALL_SHOW_OUTPUT + CTRL_LD_SHOW_OUTPUT
         return self.assertEqual(
-            self.cli.ctrl_create_ld('slot=2', ('2I:1:7' ,'2I:1:8'), '1'),
+            self.cli.ctrl_create_ld('slot=2', ('2I:1:7', '2I:1:8'), '1'),
             '/dev/sda'
             )
 
     def test_timeout_expect(self):
-        self.cli.process.expect = mock.MagicMock(side_effect = pexpect.TIMEOUT(''))
+        self.cli.process.expect = mock.MagicMock(side_effect=pexpect.TIMEOUT(''))
         return self.assertRaises(hpacucli.Error, self.cli.ctrl_all_show)
 
 ##############################################################################
@@ -261,49 +261,47 @@ CTRL_PD_ALL_SHOW_RESULT_HPSSACLI = [
     ('array D', [('1I:1:3', 'SATA', '2 TB', 'OK')]),
     ]
 
-CTRL_PD_SHOW_RESULT_HPSSACLI =  {'carrier_application_version': '11',
-                                 'carrier_bootloader_version': '6',
-                                 'current_temperature_(c)': '32',
-                                 'drive_authentication_status': 'OK',
-                                 'drive_type': 'Unassigned Drive',
-                                 'firmware_revision': 'MK7OHPG3',
-                                 'interface_type': 'SATA',
-                                 'maximum_temperature_(c)': '36',
-                                 'model': 'ATA MB2000GBUPB',
-                                 'native_block_size': '512',
-                                 'phy_count': '1',
-                                 'phy_transfer_rate': '6.0Gbps',
-                                 'physicaldrive_1i': '1',
-                                 'rotational_speed': '7200',
-                                 'sata_ncq_capable': 'True',
-                                 'sata_ncq_enabled': 'True',
-                                 'serial_number': 'YFK70EZA',
-                                 'size': '2 TB',
-                                 'status': 'OK'
-}
+CTRL_PD_SHOW_RESULT_HPSSACLI = {'carrier_application_version': '11',
+                                'carrier_bootloader_version': '6',
+                                'current_temperature_(c)': '32',
+                                'drive_authentication_status': 'OK',
+                                'drive_type': 'Unassigned Drive',
+                                'firmware_revision': 'MK7OHPG3',
+                                'interface_type': 'SATA',
+                                'maximum_temperature_(c)': '36',
+                                'model': 'ATA MB2000GBUPB',
+                                'native_block_size': '512',
+                                'phy_count': '1',
+                                'phy_transfer_rate': '6.0Gbps',
+                                'physicaldrive_1i': '1',
+                                'rotational_speed': '7200',
+                                'sata_ncq_capable': 'True',
+                                'sata_ncq_enabled': 'True',
+                                'serial_number': 'YFK70EZA',
+                                'size': '2 TB',
+                                'status': 'OK'}
 
 CTRL_PD_SHOW_RESULT = {'status': 'OK',
-                        'phy_count': '1',
-                        'sata_ncq_capable': 'True',
-                        'ssd_smart_trip_wearout': 'False',
-                        'carrier_bootloader_version': '6',
-                        'firmware_revision': '5DV1HPG0',
-                        'carrier_application_version': '11',
-                        'interface_type': 'Solid State SATA',
-                        'drive_authentication_status': 'OK',
-                        'power_on_hours': '43',
-                        'sata_ncq_enabled': 'True',
-                        'usage_remaining': '100.00%',
-                        'phy_transfer_rate': '6.0Gbps',
-                        'drive_type': 'Data Drive',
-                        'current_temperature_(c)': '11',
-                        'physicaldrive_2i': '1',
-                        'serial_number': 'BTTV305001NZ100FGN',
-                        'array': 'A',
-                        'maximum_temperature_(c)': '22',
-                        'model': 'ATA MK0100GCTYU',
-                        'size': '100 GB'
-}
+                       'phy_count': '1',
+                       'sata_ncq_capable': 'True',
+                       'ssd_smart_trip_wearout': 'False',
+                       'carrier_bootloader_version': '6',
+                       'firmware_revision': '5DV1HPG0',
+                       'carrier_application_version': '11',
+                       'interface_type': 'Solid State SATA',
+                       'drive_authentication_status': 'OK',
+                       'power_on_hours': '43',
+                       'sata_ncq_enabled': 'True',
+                       'usage_remaining': '100.00%',
+                       'phy_transfer_rate': '6.0Gbps',
+                       'drive_type': 'Data Drive',
+                       'current_temperature_(c)': '11',
+                       'physicaldrive_2i': '1',
+                       'serial_number': 'BTTV305001NZ100FGN',
+                       'array': 'A',
+                       'maximum_temperature_(c)': '22',
+                       'model': 'ATA MK0100GCTYU',
+                       'size': '100 GB'}
 
 CTRL_PD_ALL_SHOW_UNASSIGNED_OUTPUT = '''
 
@@ -392,7 +390,7 @@ CTRL_LD_ALL_SHOW_RESULT_HPSSACLI = [
     ('array A', [('1', '93.1 GB', 'RAID 0', 'OK')]),
 ]
 
-#=> ctrl slot=2 pd 2I:1:8 show
+# => ctrl slot=2 pd 2I:1:8 show
 CTRL_PD_SHOW_OUTPUT = '''
 
 Smart Array P420 in Slot 2
@@ -408,8 +406,8 @@ Smart Array P420 in Slot 2
          Interface Type: Solid State SATA
          Size: 100 GB
          Firmware Revision: 5DV1HPG0
-         Serial Number: BTTV305001NZ100FGN  
-         Model: ATA     MK0100GCTYU     
+         Serial Number: BTTV305001NZ100FGN
+         Model: ATA     MK0100GCTYU
          SATA NCQ Capable: True
          SATA NCQ Enabled: True
          Current Temperature (C): 11
@@ -442,8 +440,8 @@ Smart Array P420i in Slot 0 (Embedded)
          Native Block Size: 512
          Rotational Speed: 7200
          Firmware Revision: MK7OHPG3
-         Serial Number: YFK70EZA            
-         Model: ATA     MB2000GBUPB     
+         Serial Number: YFK70EZA
+         Model: ATA     MB2000GBUPB
          SATA NCQ Capable: True
          SATA NCQ Enabled: True
          Current Temperature (C): 32
@@ -550,7 +548,7 @@ CTRL_LD_SHOW_RESULT_HPSSACLI = {
     'Unique Identifier': '600508B1001C32C501A237950F9370AB'
 }
 
-#=> ctrl slot=2 ld 2 show
+# => ctrl slot=2 ld 2 show
 
 CTRL_LD_SHOW_OUTPUT2 = '''
 

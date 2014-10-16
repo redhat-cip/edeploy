@@ -19,6 +19,7 @@ import unittest
 
 import diskinfo
 
+
 class TestDiskinfo(unittest.TestCase):
 
     def test_sizeingb(self):

@@ -57,19 +57,12 @@ openvt /bin/bash
 
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^DEBUG=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^VERBOSE=")
-eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^NOREBOOT=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^ONSUCCESS=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^ONFAILURE=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^KEXEC_KERNEL=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^EMBEDDED=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^IP=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^UPLOAD_LOG=")
-
-#compatibilty module
-if [ "$NOREBOOT" = "1" ]; then
-    log "NOREBOOT option is deprecated, please use ONSUCCESS='kexec'"
-    ONSUCCESS="kexec"
-fi
 
 if [[ "$DEBUG" = "1" ]]; then
   log "DEBUG param deprecated, please use ONFAILURE=console"

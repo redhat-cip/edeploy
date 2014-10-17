@@ -150,7 +150,7 @@ rsync -au --delete-excluded --delete --exclude /boot/ \
 
 rm -rf ${dir}
 
-cp -p init.common $DEPS ${PYDIR}/netdetect.py ${PYDIR}/health*.py  ${DST}/
+cp -p init.common $DEPS ${PYDIR}/health*.py  ${DST}/
 cp -p init.health ${DST}/init
 
 # RHEL6 do have an lshw that segfaults, so let's use a custom build.

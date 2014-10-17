@@ -111,7 +111,6 @@ eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^NOREBOOT=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^ONSUCCESS=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^ONFAILURE=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^IP=")
-eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^NONETWORKTEST=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^USBBOOT=")
 
 if [ "$VERBOSE" = 1 ]; then
@@ -206,12 +205,7 @@ if [ -n "$RBENCH" ]; then
     done
 else
     step "Benchmarking system"
-    if [ -z "$NONETWORKTEST" ]; then
-        do_python "/netdetect.py hw.py" > /net.py
-        do_python "/health-check.py /net.py" > /health.py || give_up "Failed to run health-check"
-    else
-        do_python "/health-check.py /hw.py" > /health.py || give_up "Failed to run health-check"
-    fi
+    do_python "/health-check.py /hw.py" > /health.py || give_up "Failed to run health-check"
 
     save_results
 

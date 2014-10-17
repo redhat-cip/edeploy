@@ -208,9 +208,7 @@ COMMON_ARGS="$KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG UPLOAD_LOG=${U
         if [ -n "$SESSION" ]; then
             COMMON_ARGS="$COMMON_ARGS SESSION=$SESSION"
         fi
-        if [ -n "$NONETWORKTEST" ]; then
-            COMMON_ARGS="$COMMON_ARGS NONETWORKTEST=1"
-        fi
+
         if [ -n "$RBENCH" ]; then
             COMMON_ARGS="$COMMON_ARGS RBENCH=$RBENCH"
         fi

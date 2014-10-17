@@ -863,6 +863,18 @@ Some typical IP invocations could be:
 
 By default, all intefaces make DHCP requests with 'IP=all:dhcp'
 
+
+**Note**: All this options can be overloaded by using cloud-init. If the host is running under an hypervisor, the boot process will try to find a cloud-init server.
+To consider the user-data as valid for eDeploy, it shall have the **#EDEPLOYMAGIC** keyword followed by a set of bash variables and their values.
+
+A typical configuration looks like:
+
+::
+
+      #EDEPLOYMAGIC
+      KEXEC_KERNEL=3.10.0-123.el7
+
+
 Preparing the eDeploy Server
 ----------------------------
 

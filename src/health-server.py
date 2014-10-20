@@ -599,6 +599,7 @@ def parse_job_config(bench, job, component, log_dir):
     bench['step-hosts'] = get_default_value(job, 'step-hosts', 1)
     bench['name'] = get_default_value(job, 'name', '')
     bench['affinity'] = get_default_value(job, 'affinity', SCHED_FAIR)
+    bench['runtime'] = get_default_value(job, 'runtime', bench['runtime'])
     affinity_list = get_default_value(job, 'affinity-hosts', '')
     affinity_hosts = []
     if affinity_list:
@@ -693,7 +694,6 @@ def do_network_job(bench_all, current_job, log_dir, total_runtime):
         for nb_hosts in hosts_series:
             nb_loops = nb_loops + 1
             iter_bench = dict(bench)
-            iter_bench['runtime'] = get_default_value(current_job, 'runtime', bench['runtime'])
             iter_bench['cores'] = get_default_value(current_job, 'cores', 1)
             iter_bench['block-size'] = get_default_value(current_job, 'block-size', "128k")
             iter_bench['mode'] = get_default_value(current_job, 'mode', HM.BANDWIDTH)
@@ -756,7 +756,6 @@ def do_storage_job(bench_all, current_job, log_dir, total_runtime):
         for nb_hosts in hosts_series:
             nb_loops = nb_loops + 1
             iter_bench = dict(bench)
-            iter_bench['runtime'] = get_default_value(current_job, 'runtime', bench['runtime'])
             iter_bench['cores'] = get_default_value(current_job, 'cores', 1)
             iter_bench['block-size'] = get_default_value(current_job, 'block-size', "4k")
             iter_bench['mode'] = get_default_value(current_job, 'mode', HM.RANDOM)
@@ -811,7 +810,6 @@ def do_memory_job(bench_all, current_job, log_dir, total_runtime):
         for nb_hosts in hosts_series:
             nb_loops = nb_loops + 1
             iter_bench = dict(bench)
-            iter_bench['runtime'] = get_default_value(current_job, 'runtime', bench['runtime'])
             iter_bench['cores'] = get_default_value(current_job, 'cores', 1)
             iter_bench['block-size'] = get_default_value(current_job, 'block-size', "128M")
             iter_bench['mode'] = get_default_value(current_job, 'mode', HM.FORKED)
@@ -856,7 +854,6 @@ def do_cpu_job(bench_all, current_job, log_dir, total_runtime):
         for nb_hosts in hosts_series:
             nb_loops = nb_loops + 1
             iter_bench = dict(bench)
-            iter_bench['runtime'] = get_default_value(current_job, 'runtime', bench['runtime'])
             iter_bench['cores'] = get_default_value(current_job, 'cores', 1)
             iter_bench['nb-hosts'] = nb_hosts
             total_runtime += iter_bench['runtime']

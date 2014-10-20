@@ -1,6 +1,6 @@
-=======================================
-Automatic Health Check (AHC) User Guide
-=======================================
+=========================================
+Automatic Health Check (AHC) - User Guide
+=========================================
 
 --------------------------------------
 Benchmarking infrastructures made easy
@@ -207,6 +207,9 @@ VERBOSE              Boolean. Enable the verbose mode
 DEBUG                Boolean. Enable debug mode (start a ssh_server for further access)
 IP                   A list of network device configuration (see below for details)
 SESSION              Define a session name to name subdirectories when uploading results
+                     into the HEALTHDIR directory (see below)
+DESTRUCTIVE_MODE     Requires a write test to the local disks.
+                     Be warned, that will **DESTROY ANY DATA ON DISKS**
 ===================  ============================================================
 
 **Note**: The IP= option is composed of a coma separated list of interfaces and
@@ -229,13 +232,144 @@ Some typical IP invocations could be:
 
 By default, all intefaces make DHCP requests with 'IP=all:dhcp'
 
+Configuration of server side
+----------------------------
+If SERV variable is defined, the pointed host have to provide a cgi-bin script called **upload-health.py**. It requires the same **/etc/edeploy.conf**  as per eDeploy and will use the following variables:
+
+===================  ============================================================
+Variable Name                         Role
+===================  ============================================================
+HEALTHDIR            A directory where performance results are uploaded
+===================  ============================================================
+
+Benchmark definition
+--------------------
+In the standalone mode, the benchmark definition is static and works like the following :
+
+
+CPU
+```
+Test consist of computing prime numbers in 10 seconds by using Sysbench.
+
+* First, testing the cpu power of one core per socket
+* Then, testing the cpu power of all cores 
+
+The overall cpu computing power compared with the raw power of a single core provides a good indicator of CPU's scalability.
+
+Memory bandwidth
+````````````````
+Test consist of writing 0s with a given block size to compute the memory bandwidth in 5 seconds by using Sysbench.
+
+* First, testing the memory bandwidth of a single core per socket
+* Then, testing all the cores at the same time (once by forking the process, once by threading sysbench)
+
+This procedure is repeted for the given list of block sizes : 1K, 4K, 1M, 16M, 128M, 1G, 2G
+
+The overall cpu computing power compared with the raw power of a single core provides a good indicator of CPU's scalability.
+
+Storage
+```````
+Test consist of accessing data on the block device in 10 seconds by using fio.
+
+* First, testing each disk individually
+* Then, testing all disks at the same time
+
+The overall storage performance compared with disk's tested alone provides a good indicator of controller's ability to sustain a full load.
+
+Tests are run for 10 seconds first in sequential mode with a 1MB blocksize then with random mode with a 4K blocksize.
+
+By default, tests are not destructive and only perform read access. If write tests are expected, please use the **DESTRUCTIVE_MODE** setting.
+Be warned, that using **DESTRUCTIVE_MODE** will really **DESTROY ANY DATA** on your disks.
+
+
+Getting the results
+-------------------
+Once the benchmark is completed, the resulting file is uploaded in the *HEALTH_DIR/SESSION* of your *SERV* server. The file is named with the product name and serial number of the associated server.
+
+The output file is featuring the complete description of the host in addition of the performance results.
+
+
+Analyzing the results
+---------------------
+The cardiff tool is part of the eDeploy repository and manage to analyze a series of result files. 
+
+Selecting files to analyze
+``````````````````````````
+Cardiff is using a pattern matching to select files to analyze. The *-p* option is used to define the pattern. *Note that pattern have to be protected by single quotes*
+
+::
+
+  cardiff -p 'results/test1/HP*.hw'
+
+Grouping hosts
+``````````````
+To avoid comparing apple and pears, it will first group identical servers. Performance will be analyzed on a group basis to insure coherency and consistency.
+
+i.e similar servers with a different bios version will be put in two different groups. If user want to ignore such different it can use the *-I* option.
+It is possible to ignore differences on multiple components by using a comma separeted list. Available components are *"cpu, hpa, disk, firmware, memory, network, system"*
+
+::
+
+ cardiff -p 'results/test1/HP*.hw' - I firmware
+  or
+ cardiff -p 'results/test1/Dell*.hw' - I firmware,disk
+
+
+Using the SUMMARY view (default)
+````````````````````````````````
+Cardiff implements multiple views, the default one is called *summary*.
+
+This view reports for every tested component a synthetic view to provide the following information :
+
+* name of the test
+* name of the tested device
+* name of the view
+* status of the subgroup {consistent|curious|unstable}
+* average performance
+* standard deviation
+
+A typical output looks like :
+
+::
+
+    cardiff.py -p 'results/test1/Dell*.hw'
+    [...]
+    Group 1 : Checking logical disks perf
+    standalone_read_1M_KBps        sda: SUMMARY :  11 consistent hosts with 144869.45 IOps as average value and   882.93 standard deviation
+    standalone_randread_4k_IOps    sda: SUMMARY :  11 consistent hosts with    661.73 IOps as average value and     4.29 standard deviation
+    standalone_read_1M_IOps        sda: SUMMARY :  11 consistent hosts with    138.09 IOps as average value and     1.00 standard deviation
+    standalone_randread_4k_KBps    sda: SUMMARY :  11 consistent hosts with   2660.82 IOps as average value and    17.36 standard deviation
+
+If the standard deviation is lower than the expected value for such component, the group is said to be **consistent**
+If the standard deviation is higher than the expected value for such component, the group is said to be **unstable**
+If a few hosts are too far from the mean while the group is having an acceptable standard deviation, they are said as **curious**.
+
+
+Using DETAIL view to analyse the raw performance
+````````````````````````````````````````````````
+If some results have to be analyzed to understand how every single host performs, the *DETAIL* view have to be used.
+Performance numbers are then printed in a row/column format where every column is a host, every row a test.
+
+Typical usage of the DETAIL view to study the raw storage performance in random mode for hosts part of the group 1 :
+
+::
+
+  cardiff.py -p 'results/test1/Dell*.hw' -l DETAIL -g '1' -c 'standalone_rand.*_4k_IOps' -i 'sd.*'
+  [...]
+  Group 1 : Checking logical disks perf
+  standalone_randread_4k_IOps       : DETAIL  : sd.*
+       4Z8CQ3J  5ZXDQ3J  9Z8CQ3J  9Z8CQ3J  9ZBCQ3J  CZBCQ3J  FZTCQ3J  GZTCQ3J  HZ8CQ3J  JZ9CQ3J  JZXDQ3J
+  sda      656      665      653      667      662      663      657      662      665      666      663
+
 
 Distributed benchmarking
 ========================
 
 Concept
 -------
-Testing network performance requires cooperation from multiple hosts to gain a simultaneous load on the network interconnect. Measuring the impact of the CPU load from virtual machines on hypervisors requires the same kind of cooperation. The distributed mode of AHC (DAHC) can describe and orchestrate such benchmarks.
+Testing network performance requires cooperation from multiple hosts to gain a simultaneous load on the network interconnect.
+Measuring the impact of the CPU load from virtual machines on hypervisors requires the same kind of cooperation.
+The distributed mode of AHC (DAHC) can describe and orchestrate such benchmarks.
 
 Building DAHC
 -------------
@@ -299,3 +433,291 @@ A typical configuration looks like:
       #EDEPLOYMAGIC
       RBENCH=<ip_of_bench_server>
 
+
+Configuration of server side
+----------------------------
+The server pointed by the **RBENCH** variable have to run the **health-server.py** script with the following options :
+
+===================  ========== =================================================
+Option Name          Mandatory               Role
+===================  ========== =================================================
+-f <yaml>            Yes        Selects the job description file as input
+-t <title>           No         Defines the title associated to this run.
+                                By default, it's the current date/time
+===================  ========== =================================================
+
+
+Benchmark definition
+--------------------
+In the distributed mode, the benchmark definition is performed on the server side by using a yaml file format.
+
+
+Global settings
+```````````````
+The first part of the yaml file defines the global settings like the following :
+
+===================  ============ ==========  ============================================================
+Variable Name        Type         Mandatory   Role
+===================  ============ ==========  ============================================================
+name                 String       Yes         A name that defines this benchmark
+required-hosts       Integer      Yes         Number of connected host before starting the benchmark series
+runtime              Integer      No          The default runtime for any benchmark job
+jobs                 List         Yes         Defines the jobs to be ran
+===================  ============ ==========  ============================================================
+
+
+Common variables for jobs
+`````````````````````````
+When defining a job to be performed, the following variable could be defined:
+
+===================  ============ ==========  ======== =====================================================================================
+Variable Name        Type         Mandatory   Default  Role
+===================  ============ ==========  ======== =====================================================================================
+component            String       Yes                  Defines which component have to be tested {cpu|memory|storage|network}
+required-hosts       Range        Yes                  Defines number of hosts required for this test
+                                                       A single integer or a range in the <min-max> format.
+                                                       If range is used, this benchmark will be run mulitple times
+step-hosts           Integer      No          1        Defines the step increment when *required-hosts* is a range.
+                                                       It works like a modulo and insure than *min* and *max* of range are always included.
+                                                       A range 1-7 with step-hosts = 2 will provide the following serie: 1,2,4,6,7
+affinity-hosts       String       No                   A coma-separated list of UUIDs where hosts are considered
+                                                       When running VMs on top of openstack, this option is useful to
+                                                       select which hypervisors have to be used to search 'hosts'
+                                                       If not defined, all hosts are considered
+runtime              Integer      Yes         10       The default runtime for any benchmark job (in seconds)
+===================  ============ ==========  ======== =====================================================================================
+
+Specific options for CPU jobs
+`````````````````````````````
+
+===================  ============ ==========  ======== ====================================================
+Variable Name        Type         Mandatory   Default  Role
+===================  ============ ==========  ======== ====================================================
+cores                Integer      No          1        Number of cores to test simultaneously
+===================  ============ ==========  ======== ====================================================
+
+Specific options for Memory jobs
+````````````````````````````````
+
+===================  ============ ==========  ======== ====================================================
+Variable Name        Type         Mandatory   Default  Role
+===================  ============ ==========  ======== ====================================================
+cores                Integer      No          1        Number of cores to test simultaneously
+block-size           String       No          128M     Block size to test in the following format: <size>{K|M|G}
+mode                 String       No          forked   Defines if tests are run in forked process or threads.
+                                                       Possible values are : forked, threaded
+===================  ============ ==========  ======== ====================================================
+
+Specific options for Storage jobs
+`````````````````````````````````
+
+===================  ============ ==========  ======== ====================================================
+Variable Name        Type         Mandatory   Default  Role
+===================  ============ ==========  ======== ====================================================
+rampup-time          Integer      No          5        Defines the amount of time where performances are not measured
+                                                       this is part of the *runtime*
+block-size           String       No          4k       Block size to test in the following format: <size>{k|m}
+access               String       No          read     Defines if reads or writes are performed to the disk
+                                                       Possible values are : read, write
+
+                                                       **WRITE MODE DESTROY ANY DATA WITHOUT CONFIRMATION**
+mode                 String       No          random   Defines if random or sequentials patterns are used
+                                                       Possible values are : random, sequential
+device               String       No          sda      Defines which block device is tested
+                                                       Any node name available in /dev/
+===================  ============ ==========  ======== ====================================================
+
+Specific options for Network jobs
+`````````````````````````````````
+
+===================  ============ ==========  ==========   ==========================================================
+Variable Name        Type         Mandatory   Default      Role
+===================  ============ ==========  ==========   ==========================================================
+arity                Integer      No          2            Size of a subgroup of VMs to be tested :
+                                                           arity have to be modulo the step-hosts.
+                                                           That implies that *required-hosts* have to start at 2
+                                                           for the network tests
+network-hosts        String       No          0.0.0.0/32   A comma separated list of valid networks to test,
+                                                           example: 192.168.1.0/24,10.0.0.0/8
+mode                 String       No          bandwidth    Select bandwidth vs latency testing
+                                                           Possible values are : bandwidth, latency
+connection           String       No          tcp          Selecting between tcp and udp streams
+                                                           Possible values are : tcp, udp
+===================  ============ ==========  ==========   ==========================================================
+
+Sample job file
+```````````````
+
+Please find below a typical job file.
+
+::
+
+ name: sample_benchmark
+ required-hosts: 81
+ jobs:
+     my_mem_test:
+        component: memory
+        required-hosts: 1-81
+        step-hosts: 6
+        runtime: 10
+        cores : 2
+        block-size: 16M
+        mode: forked
+     my_cpu_test:
+        component: cpu
+        required-hosts: 1-81
+        step-hosts: 6
+        runtime: 10
+        cores : 2
+     my_read_seq_test:
+        component: storage
+        required-hosts: 1-81
+        step-hosts: 6 
+        rampup-time: 5
+        runtime: 60
+        mode: sequential
+        access : read
+        block-size: 4k
+        device : vda
+     my_read_rand_test:
+        component: storage
+        required-hosts: 1-81
+        step-hosts: 6
+        rampup-time: 5
+        runtime: 60
+        mode: random
+        access : read
+        block-size: 4k
+        device: vda
+     my_net_bandwidth_test:
+        component: network
+        required-hosts: 2-80
+        arity: 3
+        step-hosts: 6
+        runtime: 10
+        network-hosts: 192.168.254.0/24,192.168.24.0/24,1.2.3.4/24
+        mode: bandwidth
+        connection: tcp
+     my_net_latency_test:
+        component: network
+        required-hosts: 2-80
+        arity: 3
+        step-hosts: 6
+        runtime: 10
+        network-hosts: 192.168.254.0/24,192.168.24.0/24,1.2.3.4/24
+        mode: latency
+        connection: tcp
+     my_udp_latency_test:
+        component: network
+        required-hosts: 2-20
+        arity: 2
+        step-hosts: 2
+        runtime: 10
+        network-hosts: 192.168.254.0/24,192.168.24.0/24,1.2.3.4/24
+        mode: latency
+        connection: udp
+        affinity-hosts : 44454c4c-4b00-1039-8050-b9c04f573032, 44454c4c-4b00-1039-8058-c2c04f573032
+
+Getting the results
+-------------------
+At the end of the benchmark, results are stored in **<HEALTHDIR>/dahc/<benchmark_name>/<title>** directory.
+This directory is made of a series of subdirectories representing every *step-hosts* value and a couple of file like the yaml used for this benchmark.
+
+Every subdirectory owns directories named with the job name (like my_net_latency_test or my_udp_latency_test in the sample yaml file), i.e : */var/lib/edeploy/health/dahc/storage_load/2014_10_16-13h22/42/my_net_latency_test/*
+
+This is where results file are stored in addition of some metadata called *metrics* about the job duration, hosts information etc...
+
+
+Analyzing the results
+---------------------
+The cardiff tool is part of the eDeploy repository and manage to analyze a series of result files.
+
+Selecting files to analyze
+``````````````````````````
+Cardiff uses the *-r* option to select a result directory. It wil analyze automatically the stucture and metadata to perform sanity checks and computation.
+
+::
+
+  cardiff -r '/var/lib/edeploy/health/dahc/sample_benchmark/2014_10_16-13h22/'
+
+
+Reading the results
+```````````````````
+Cardiff will use gnuplot to render every single job into a series of graphics including performance and metadata metrics.
+Every plot is rendered into a *raw*, *smooth* and *trend* versions.
+
+The **raw** version plots the results as they are. It could be very noisy to read.
+
+The **smooth** version plots the same results but with a *csplines* rendering. This kind of plotting hides peaks and provide an easier to read version of the raw data.
+
+The **trend** version plots the same data series but with a *bezier* rendering. This view is clearly removing hills & falls to provide a global trend.
+
+Every single output graphic will feature an automatically generated header providing the following information :
+
+* Title
+* Benchmark setup
+* Hardware setup
+* Software setup
+
+Mean performance
+~~~~~~~~~~~~~~~~
+This plot represent the *mean* performance of hosts that we used during a *step* inside the *step-hosts* value.
+It is usually decreasing when the number of hosts is increasing as the finite performance of the platform have to divided by the number of hosts (VMs).
+
+.. image:: images/mean-raw.png
+
+Sum performance
+~~~~~~~~~~~~~~~
+This plot represent the sum of performance that hosts generated during a *step* inside the *step-hosts* value.
+It is usually increasing when the number of hosts is increasing then stabilize before sometimes collapsing.
+
+.. image:: images/sum-raw.png
+
+
+Standard Deviation
+~~~~~~~~~~~~~~~~~~
+The standard deviation measures the amount of variation or dispersion from the average.
+A low standard deviation indicates that the data points tend to be very close to the mean (also called expected value); a high standard deviation indicates that the data points are spread out over a large range of values. (Source Wikipedia).
+
+Lower is clearly better.
+
+
+.. image:: images/deviance-raw.png
+
+Jitter
+~~~~~~
+Measure the time between the *start* event sent by the server and the *ack* message received to inform that benchmark started.
+
+Lower is clearly better, usually a couple of milliseconds.
+
+.. image:: images/jitter-mean-raw.png
+
+Job duration
+~~~~~~~~~~~~
+Plots the time taken by hosts to execute a particular job versus the expected time defined by the benchmark definition.
+
+Closer to expected value is better.
+
+.. image:: images/job_duration-mean-raw.png
+
+Simultaneous plotting
+`````````````````````
+When debugging or developping, it is useful to compare several benchmarks ran in different conditions.
+To insure not comparing apple & pears, it is mandatory reusing the exact same benchmark definition.
+If this condition is not matched, the simultaneous plotting will be refused.
+
+* Define your benchmark job into a yaml file
+* Run it by using the **-t** option of *health-server* to define the current condition like in **health-server.py -f job.yaml -t mtu=1500**
+* Apply your tuning/changes on the platform
+* Run the same benchmark again by using the **-t** option of *health-server* to define the current condition like in **health-server.py -f job.yaml -t mtu=1600**
+* Compare the traces with **cardiff -r 'results/mtu1500/,mtu1600/'**
+
+*Note* that if you lost the yaml file, you can find a backup copy of it into the result directory of the first run (without_tuning in this example).
+
+It is so possible to compare multiple traces by defining a coma-separated list of directories providing benchmark results ran in different conditions with the same benchmark definition.
+
+In this simultaneous plotting, each data serie will be plotted with associated *title* defined at runtime (mtu=1500 and mtu=1600 in this example). This is why having a well defined title is import for further reading.
+
+The following image represent the simultaneous plotting of the job duration when comparing the **mtu=1500** and **mtu=1600** traces.
+
+.. image:: images/compared-job_duration-mean-raw.png

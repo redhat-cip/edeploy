@@ -61,18 +61,18 @@ What we don't want to benchmark :
 
 - caching effects
 
-  The memory is usually used on every system to speed-up the access time to a given ressource. Using memory turns milliseconds or even seconds to reach an information into {micro|nano}seconds.
+  The memory is usually used on every system to speed-up the access time to a given resource. Using memory turns milliseconds or even seconds to reach an information into {micro|nano}seconds.
   It will be so mandatory to ask tools to avoid explicit caching.
 - software optimization to hide hardware defects
 
-  To optimize the usuage of a ressource, operating systems are providing software layers to optimize the acces to the ressource by aggregating requests or rescheduling IOs.
+  To optimize the usage of a resource, operating systems are providing software layers to optimize the access to the resource by aggregating requests or rescheduling IOs.
   Filesystems are known to do this kind of work. As we want to measure the state of every single device of the infrastructure, testing it through a filesystem hides part of the reality of this device.
   Storage benchmarking will have so to test the block device directly instead.
 
 
 Constant time benchmarking
 --------------------------
-It’s a common mistake to use tools that try to see how long it takes to process a given amount of data. Benchmark results are usually expressed in ‘unit per time‘ like MegaBytes per seconds, GigaBit per seconds. If time is not a fixed element, the benchmark aren’t really comparable : processing 1GB of data on a system that consumes them at 100MB/sec last 10 seconds while it will take 100 seconds on another that performs at 10MB/sec.
+It’s a common mistake to use tools that try to see how long it takes to process a given amount of data. Benchmark results are usually expressed in ‘unit per time‘ like Megabytes per seconds, Gigabit per seconds. If time is not a fixed element, the benchmark aren’t really comparable : processing 1GB of data on a system that consumes them at 100MB/sec last 10 seconds while it will take 100 seconds on another that performs at 10MB/sec.
 
 Comparing both results when comparing a 10sec run versus a 100sec run. This huge difference of running time can hide or reveal various unexpected events like a crontab running in background. Another annoyance is the unpredictability of the required time to run a particular test on a set of non-similar servers.
 
@@ -87,7 +87,7 @@ Automation is a key element on the success of a good benchmark suite. Benchmark 
 Selecting or missing a particular option could totally change the meaning of a test.
 
 In some storage testing tools, if you forget to disable the use of the Linux cache, you have a great chance of testing more your memory than your disk.
-If you are not aware of this behaviour or if you missed the setting, the interpretation of results could be very misleading.
+If you are not aware of this behavior or if you missed the setting, the interpretation of results could be very misleading.
 
 Humans are weak machines, even if you read something wrong, your brain with make you read what you expected to read more than the mistake.
 
@@ -106,7 +106,7 @@ Mastering your software configuration is required to get consistency over time a
 
 It’s pretty obvious that performing some rsync/logrotate/database IOs while trying to estimate disk’s performance isn’t a good way to get a coherent result. Those example are pretty obvious, but at the time you run your benchmark, it could be a pretty complicated being 100% sure that not a single non-expected task ran. On an infrastructure which is in production, this could turn into a complex task disabling all possible sources of annoyance.
 
-The way to go is embedding all required tools and automation scripts into your own live operating system. The easiest way to get a clean operating system for a benchmark, is to generate one with the minimum dependencies. It’s almost like creating a minimal system (like debootstrap on debian), install the benchmarking tools you need, no graphic server and for sure, no crontab at all. Once this minimal system is setup, create a ramfs with it and boot on it with your favourite bootloader (pxelinux, extlinux, grub, …). This steps are done automatically by edeploy.
+The way to go is embedding all required tools and automation scripts into your own live operating system. The easiest way to get a clean operating system for a benchmark, is to generate one with the minimum dependencies. It’s almost like creating a minimal system (like debootstrap on debian), install the benchmarking tools you need, no graphic server and for sure, no crontab at all. Once this minimal system is setup, create a ramfs with it and boot on it with your favourite bootloader (pxelinux, extlinux, grub, …). This steps are done automatically by eDeploy.
 
 Having an under-control operating system that will be the same over servers and time remove any possible doubt of a background process running at the same time as your benchmark. It become possible running the benchmark in a controlled fashion on an already installed server. If you have any doubt of a particular hardware, reboot the server in this under-control operating system, perform the benchmark and voilà.
 
@@ -134,14 +134,14 @@ Storage Benchmarking
 --------------------
 When thinking about storage benchmarking tools, fio comes immediately in mind. Mainly developed under the GPL license by Jens Axboe (Linux Kernel Maintainer of the Block Layer) , this tool is by far the most versatile tool I’m aware of. As we try to estimate the performance of the hardware by itself, removing the filesystem layer is mandatory.
 
-Filesystems are complex beasts that have various optimization and behaviours that are useful for users but could hide some defects or introduced non desired latencies. The more software on the data path, the more complex is the analysis of the results. Making the same test on two different filesystems would lead to pretty different results. As we want to be as clause a possible to the hardware, it’s important to remove this source of possible annoyance.
+Filesystems are complex beasts that have various optimization and behaviors that are useful for users but could hide some defects or introduced non desired latencies. The more software on the data path, the more complex is the analysis of the results. Making the same test on two different filesystems would lead to pretty different results. As we want to be as clause a possible to the hardware, it’s important to remove this source of possible annoyance.
 
 Fio’s ability to perform IOs at the block level is a very interesting feature here. Fio can be scripted to perform the exact IO pattern you need while keeping under control the time you spend on your run and ensuring that it runs without any cache Layer from the Linux Kernel (O_DIRECT).
 
 
 Network Benchmarking
 --------------------
-The Netperf project, under a BSD-like license, is clearly one of the most known and used tool over the Linux world. It provides a very simple command line, a port based pairing, TCP and UDP support and up to 20 different scenario. This tool is used to report the network bandwidth or latencies that a set of servers can generated simultaneously. The performance is expressed in Gbit/sec or messages per seconds.
+The Netperf project, under a BSD-like license, is clearly one of the most known and used tool over the Linux world. It provides a very simple command line, a port based pairing, TCP and UDP support and up to 20 different scenario. This tool is used to report the network bandwidth or latencies that a set of servers can generated simultaneously. The performance is expressed in Gigabit/sec or messages per seconds.
 
 
 Standalone benchmarking
@@ -206,7 +206,7 @@ UPLOAD_LOG           Boolean. Upload log file on eDeploy server
 VERBOSE              Boolean. Enable the verbose mode
 DEBUG                Boolean. Enable debug mode (start a ssh_server for further access)
 IP                   A list of network device configuration (see below for details)
-SESSION              Define a session name to name subdirectories when uploading results
+SESSION              Define a session name to name sub-directories when uploading results
                      into the HEALTHDIR directory (see below)
 DESTRUCTIVE_MODE     Requires a write test to the local disks.
                      Be warned, that will **DESTROY ANY DATA ON DISKS**
@@ -219,8 +219,8 @@ Two special values exists :
 - other : to match all interfaces not listed in this list
 - all : to match all interfaces
 
-The config options are:
-- none (no IP configurtion at all)
+The configuration options are:
+- none (no IP configuration at all)
 - dhcp
 - <CIDR address>
 
@@ -230,7 +230,7 @@ Some typical IP invocations could be:
 - IP=eth1:192.168.1.1/24,other:none
 - IP=all:none
 
-By default, all intefaces make DHCP requests with 'IP=all:dhcp'
+By default, all interfaces make DHCP requests like with 'IP=all:dhcp'
 
 Configuration of server side
 ----------------------------
@@ -263,7 +263,7 @@ Test consist of writing 0s with a given block size to compute the memory bandwid
 * First, testing the memory bandwidth of a single core per socket
 * Then, testing all the cores at the same time (once by forking the process, once by threading sysbench)
 
-This procedure is repeted for the given list of block sizes : 1K, 4K, 1M, 16M, 128M, 1G, 2G
+This procedure is repeated for the given list of block sizes : 1K, 4K, 1M, 16M, 128M, 1G, 2G
 
 The overall cpu computing power compared with the raw power of a single core provides a good indicator of CPU's scalability.
 
@@ -276,7 +276,7 @@ Test consist of accessing data on the block device in 10 seconds by using fio.
 
 The overall storage performance compared with disk's tested alone provides a good indicator of controller's ability to sustain a full load.
 
-Tests are run for 10 seconds first in sequential mode with a 1MB blocksize then with random mode with a 4K blocksize.
+Tests are run for 10 seconds first in sequential mode with a 1MB block-size then with random mode with a 4K block-size.
 
 By default, tests are not destructive and only perform read access. If write tests are expected, please use the **DESTRUCTIVE_MODE** setting.
 Be warned, that using **DESTRUCTIVE_MODE** will really **DESTROY ANY DATA** on your disks.
@@ -306,7 +306,7 @@ Grouping hosts
 To avoid comparing apple and pears, it will first group identical servers. Performance will be analyzed on a group basis to insure coherency and consistency.
 
 i.e similar servers with a different bios version will be put in two different groups. If user want to ignore such different it can use the *-I* option.
-It is possible to ignore differences on multiple components by using a comma separeted list. Available components are *"cpu, hpa, disk, firmware, memory, network, system"*
+It is possible to ignore differences on multiple components by using a comma separated list. Available components are *"cpu, hpa, disk, firmware, memory, network, system"*
 
 ::
 
@@ -345,7 +345,7 @@ If the standard deviation is higher than the expected value for such component, 
 If a few hosts are too far from the mean while the group is having an acceptable standard deviation, they are said as **curious**.
 
 
-Using DETAIL view to analyse the raw performance
+Using DETAIL view to analyze the raw performance
 ````````````````````````````````````````````````
 If some results have to be analyzed to understand how every single host performs, the *DETAIL* view have to be used.
 Performance numbers are then printed in a row/column format where every column is a host, every row a test.
@@ -476,12 +476,12 @@ Variable Name        Type         Mandatory   Default  Role
 component            String       Yes                  Defines which component have to be tested {cpu|memory|storage|network}
 required-hosts       Range        Yes                  Defines number of hosts required for this test
                                                        A single integer or a range in the <min-max> format.
-                                                       If range is used, this benchmark will be run mulitple times
+                                                       If range is used, this benchmark will be run multiple times
 step-hosts           Integer      No          1        Defines the step increment when *required-hosts* is a range.
                                                        It works like a modulo and insure than *min* and *max* of range are always included.
                                                        A range 1-7 with step-hosts = 2 will provide the following serie: 1,2,4,6,7
 affinity-hosts       String       No                   A coma-separated list of UUIDs where hosts are considered
-                                                       When running VMs on top of openstack, this option is useful to
+                                                       When running VMs on top of Openstack, this option is useful to
                                                        select which hypervisors have to be used to search 'hosts'
                                                        If not defined, all hosts are considered
 runtime              Integer      Yes         10       The default runtime for any benchmark job (in seconds)
@@ -521,7 +521,7 @@ access               String       No          read     Defines if reads or write
                                                        Possible values are : read, write
 
                                                        **WRITE MODE DESTROY ANY DATA WITHOUT CONFIRMATION**
-mode                 String       No          random   Defines if random or sequentials patterns are used
+mode                 String       No          random   Defines if random or sequential patterns are used
                                                        Possible values are : random, sequential
 device               String       No          sda      Defines which block device is tested
                                                        Any node name available in /dev/
@@ -621,9 +621,9 @@ Please find below a typical job file.
 Getting the results
 -------------------
 At the end of the benchmark, results are stored in **<HEALTHDIR>/dahc/<benchmark_name>/<title>** directory.
-This directory is made of a series of subdirectories representing every *step-hosts* value and a couple of file like the yaml used for this benchmark.
+This directory is made of a series of sub-directories representing every *step-hosts* value and a couple of file like the yaml used for this benchmark.
 
-Every subdirectory owns directories named with the job name (like my_net_latency_test or my_udp_latency_test in the sample yaml file), i.e : */var/lib/edeploy/health/dahc/storage_load/2014_10_16-13h22/42/my_net_latency_test/*
+Every sub-directory owns directories named with the job name (like my_net_latency_test or my_udp_latency_test in the sample yaml file), i.e : */var/lib/edeploy/health/dahc/storage_load/2014_10_16-13h22/42/my_net_latency_test/*
 
 This is where results file are stored in addition of some metadata called *metrics* about the job duration, hosts information etc...
 
@@ -634,7 +634,7 @@ The cardiff tool is part of the eDeploy repository and manage to analyze a serie
 
 Selecting files to analyze
 ``````````````````````````
-Cardiff uses the *-r* option to select a result directory. It wil analyze automatically the stucture and metadata to perform sanity checks and computation.
+Cardiff uses the *-r* option to select a result directory. It wil analyze automatically the structure and metadata to perform sanity checks and computation.
 
 ::
 
@@ -702,7 +702,7 @@ Closer to expected value is better.
 
 Simultaneous plotting
 `````````````````````
-When debugging or developping, it is useful to compare several benchmarks ran in different conditions.
+When debugging or developing, it is useful to compare several benchmarks ran in different conditions.
 To insure not comparing apple & pears, it is mandatory reusing the exact same benchmark definition.
 If this condition is not matched, the simultaneous plotting will be refused.
 
@@ -716,7 +716,7 @@ If this condition is not matched, the simultaneous plotting will be refused.
 
 It is so possible to compare multiple traces by defining a coma-separated list of directories providing benchmark results ran in different conditions with the same benchmark definition.
 
-In this simultaneous plotting, each data serie will be plotted with associated *title* defined at runtime (mtu=1500 and mtu=1600 in this example). This is why having a well defined title is import for further reading.
+In this simultaneous plotting, each data series will be plotted with associated *title* defined at runtime (mtu=1500 and mtu=1600 in this example). This is why having a well defined title is import for further reading.
 
 The following image represent the simultaneous plotting of the job duration when comparing the **mtu=1500** and **mtu=1600** traces.
 

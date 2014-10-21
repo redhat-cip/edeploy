@@ -456,14 +456,16 @@ Global settings
 ```````````````
 The first part of the yaml file defines the global settings like the following :
 
-===================  ============ ==========  ============================================================
-Variable Name        Type         Mandatory   Role
-===================  ============ ==========  ============================================================
-name                 String       Yes         A name that defines this benchmark
-required-hosts       Integer      Yes         Number of connected host before starting the benchmark series
-runtime              Integer      No          The default runtime for any benchmark job
-jobs                 List         Yes         Defines the jobs to be ran
-===================  ============ ==========  ============================================================
+====================  ============ ==========  ============================================================
+Variable Name         Type         Mandatory   Role
+====================  ============ ==========  ============================================================
+name                 String        Yes         A name that defines this benchmark
+required-hosts       Integer       Yes         Number of connected host before starting the benchmark series
+required-hypervisors Integer       No          Number of expected hypervisors if running in a VM context
+                                               Disabled by default
+runtime              Integer       No          The default runtime for any benchmark job
+jobs                 List          Yes         Defines the jobs to be ran
+====================  ============ ==========  ============================================================
 
 
 Common variables for jobs
@@ -557,6 +559,7 @@ Please find below a typical job file.
 
  name: sample_benchmark
  required-hosts: 81
+ required-hypervisors: 3
  jobs:
      my_mem_test:
         component: memory

@@ -915,14 +915,19 @@ def non_interactive_mode(filename, title):
         return
 
     bench_all['runtime'] = get_default_value(job, 'runtime', 10)
+    bench_all['required-hypervisors'] = get_default_value(job, 'required-hypervisors', 0)
 
     log_dir = prepare_log_dir(name)
 
     # Saving original yaml file
     shutil.copy2(filename, log_dir)
-
-    HP.logger.info("Expecting %d hosts to start job %s" %
-                   (bench_all['required-hosts'], name))
+    if (int(bench_all['required-hypervisors']) > 0):
+        HP.logger.info("Expecting %d hosts on %d hypervisors to start job %s" %
+                       (bench_all['required-hosts'], int(bench_all['required-hypervisors']),
+                           name))
+    else:
+        HP.logger.info("Expecting %d hosts to start job %s" %
+                       (bench_all['required-hosts'], name))
     hosts_count = len(hosts.keys())
     previous_hosts_count = hosts_count
     while (int(hosts_count) < bench_all['required-hosts']):
@@ -934,6 +939,13 @@ def non_interactive_mode(filename, title):
         time.sleep(1)
 
     dump_hosts(log_dir)
+
+    if len(compute_affinity()) < int(bench_all['required-hypervisors']):
+        HP.logger.error("%d hypervisors expected but only %d found" % (bench_all['required-hypervisors'], len(compute_affinity())))
+        HP.logger.error("Please adjust 'required-hypervisors' option")
+        HP.logger.error("Exiting")
+        disconnect_clients()
+        return
 
     HP.logger.info("Starting %s" % name)
     for next_job in job['jobs']:

@@ -580,7 +580,7 @@ Please find below a typical job file.
         runtime: 60
         mode: sequential
         access : read
-        block-size: 4k
+        block-size: 1M
         device : vda
      my_read_rand_test:
         component: storage

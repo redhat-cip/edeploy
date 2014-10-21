@@ -508,6 +508,8 @@ def main(argv):
                 else:
                     final_directory_name = "%s_vs_%s" %(final_directory_name, titles[key])
 
+            if (os.path.exists(final_directory_name)):
+                shutil.rmtree(final_directory_name)
             os.rename(result_dir, final_directory_name)
             print "Output results can be found in directory '%s'" % final_directory_name
     else:

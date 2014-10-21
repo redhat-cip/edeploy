@@ -158,21 +158,18 @@ def start_bench_client(ip, port, message):
     netperf_mode = "TCP_STREAM"
     unit = ""
     sub_options = ""
-    if message.network_connection == HM.TCP:
-        if message.network_test == HM.BANDWIDTH:
-            netperf_mode = "TCP_STREAM"
-            unit = "-f m"
-        elif message.network_test == HM.LATENCY:
-            netperf_mode = "TCP_RR"
-    if message.network_connection == HM.UDP:
-        if message.network_test == HM.BANDWIDTH:
-            netperf_mode = "UDP_STREAM"
-            unit = "-f m"
-        elif message.network_test == HM.LATENCY:
-            netperf_mode = "UDP_RR"
 
-    if message.block_size != "0":
-        sub_options = add_netperf_suboption(sub_options, "-m %s -M %s" % (message.block_size, message.block_size))
+    if message.network_test == HM.BANDWIDTH:
+        netperf_mode = "TCP_STREAM"
+        unit = "-f m"
+        if message.block_size != "0":
+            sub_options = add_netperf_suboption(sub_options, "-m %s -M %s" % (message.block_size, message.block_size))
+        if message.network_connection == HM.UDP:
+            netperf_mode = "UDP_STREAM"
+    elif message.network_test == HM.LATENCY:
+            netperf_mode = "TCP_RR"
+            if message.network_connection == HM.UDP:
+                netperf_mode = "UDP_RR"
 
     sys.stderr.write("Starting bench client (%s) from %s to %s:%s\n" % (netperf_mode, message.my_peer_name, ip, port))
     cmd_netperf = subprocess.Popen(

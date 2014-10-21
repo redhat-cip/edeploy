@@ -544,7 +544,8 @@ mode                 String       No          bandwidth    Select bandwidth vs l
 connection           String       No          tcp          Selecting between tcp and udp streams
                                                            Possible values are : tcp, udp
 block-size           String       No          16K          Block size to test in the following format: <size>{k|m|K|M}.
-                                                           {k|m} are {kilo|mega}bytes while {K|M} are in {kibi|mebi}bytes
+                                                           {k|m} are {kilo|mega}bytes while {K|M} are in {kibi|mebi}bytes.
+                                                           **Only available for bandwidth tests**
 ===================  ============ ==========  ==========   ==========================================================
 
 Sample job file

@@ -147,9 +147,17 @@ def start_netservers(message):
             threads[port_number].start()
 
 
+def add_netperf_suboption(sub_options, value):
+    if len(sub_options) == 0:
+        sub_options = "--"
+
+    return "%s %s" % (sub_options, value)
+
+
 def start_bench_client(ip, port, message):
     netperf_mode = "TCP_STREAM"
     unit = ""
+    sub_options = ""
     if message.network_connection == HM.TCP:
         if message.network_test == HM.BANDWIDTH:
             netperf_mode = "TCP_STREAM"
@@ -163,9 +171,12 @@ def start_bench_client(ip, port, message):
         elif message.network_test == HM.LATENCY:
             netperf_mode = "UDP_RR"
 
+    if message.block_size != "0":
+        sub_options = add_netperf_suboption(sub_options, "-m %s -M %s" % (message.block_size, message.block_size))
+
     sys.stderr.write("Starting bench client (%s) from %s to %s:%s\n" % (netperf_mode, message.my_peer_name, ip, port))
     cmd_netperf = subprocess.Popen(
-        'netperf -l %d -H %s -p %s -t %s %s' % (message.running_time, ip, port, netperf_mode, unit),
+        'netperf -l %d -H %s -p %s -t %s %s %s ' % (message.running_time, ip, port, netperf_mode, unit, sub_options),
         shell=True, stdout=subprocess.PIPE)
 
     return_code = cmd_netperf.wait()

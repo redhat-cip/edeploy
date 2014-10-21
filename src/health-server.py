@@ -695,7 +695,7 @@ def do_network_job(bench_all, current_job, log_dir, total_runtime):
             nb_loops = nb_loops + 1
             iter_bench = dict(bench)
             iter_bench['cores'] = get_default_value(current_job, 'cores', 1)
-            iter_bench['block-size'] = get_default_value(current_job, 'block-size', "128k")
+            iter_bench['block-size'] = get_default_value(current_job, 'block-size', "0")
             iter_bench['mode'] = get_default_value(current_job, 'mode', HM.BANDWIDTH)
             iter_bench['network-hosts'] = get_default_value(current_job, 'network-hosts', "0.0.0.0/0")
             iter_bench['connection'] = get_default_value(current_job, 'connection', HM.TCP)

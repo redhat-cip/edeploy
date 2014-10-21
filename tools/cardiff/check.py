@@ -153,7 +153,6 @@ def logical_disks_perf(systems, unique_id, group_number, detail_options, rampup_
                 modes.append(perf[2])
 
     if len(modes) == 0:
-        print "No mode found in this benchmark, exiting"
         return
 
     for mode in modes:

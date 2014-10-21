@@ -594,7 +594,7 @@ Please find below a typical job file.
         device: vda
      my_net_bandwidth_test:
         component: network
-        required-hosts: 2-80
+        required-hosts: 3-81
         arity: 3
         step-hosts: 6
         runtime: 10
@@ -603,7 +603,7 @@ Please find below a typical job file.
         connection: tcp
      my_net_latency_test:
         component: network
-        required-hosts: 2-80
+        required-hosts: 3-81
         arity: 3
         step-hosts: 6
         runtime: 10

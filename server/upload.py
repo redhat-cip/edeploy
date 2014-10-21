@@ -37,6 +37,7 @@ import cgitb
 import commands
 from datetime import datetime
 import errno
+import json
 import os
 import pprint
 import re
@@ -443,9 +444,14 @@ def main():
             section, 'HWDIR', cfg_dir)) + '/'
 
     try:
-        hw_items = eval(hw_file.read(-1), {"__builtins__": None}, {})
+        json_hw_items = json.loads(hw_file.read(-1))
     except Exception, excpt:
         fatal_error("'Invalid hardware file: %s'" % str(excpt))
+
+    hw_items = []
+    for info in json_hw_items:
+        hw_items.append(tuple(map(lambda x: x.encode('ascii', 'ignore'),
+                                  info)))
 
     # avoid concurrent accesses
     lock_filename = config_get(section, 'LOCKFILE',

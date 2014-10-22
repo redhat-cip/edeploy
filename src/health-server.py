@@ -401,8 +401,15 @@ def prepare_network_bench(bench, mode):
         string_mode = "Cleaning"
 
     HP.logger.info("NETWORK: %s in progress" % string_mode)
+    max_timeout = 45
+    timeout = 0
     while (get_host_list(NETWORK_RUN).keys()):
+        timeout = timeout + 1
         time.sleep(1)
+        if timeout == max_timeout:
+            HP.logger.error("NETWORK: Failed to %s the following hosts : " % string_mode + str(get_host_list(NETWORK_RUN).keys()))
+            return False
+    return True
 
 
 def start_network_bench(bench):
@@ -489,29 +496,43 @@ def dump_hosts(log_dir):
     pprint.pprint(compute_affinity(), stream=open(log_dir+"/affinity", 'w'))
 
 
-def compute_metrics(log_dir, bench, bench_type):
+def prepare_metrics(log_dir, bench, bench_type):
     dest_dir = log_dir + '/%d/' % bench['nb-hosts']
-
     if bench_type == HM.CPU:
-        results = results_cpu
         dest_dir = dest_dir + "/cpu-" + bench['name']
     elif bench_type == HM.MEMORY:
-        results = results_memory
         dest_dir = dest_dir + "/memory-" + bench['name']
     elif bench_type == HM.NETWORK:
-        results = results_network
         dest_dir = dest_dir + "/network-" + bench['name']
     elif bench_type == HM.STORAGE:
-        results = results_storage
         dest_dir = dest_dir + "/storage-" + bench['name']
     else:
-        HL.fatal_error("Unknown benchmark type in compute_metrics")
+        HL.fatal_error("Unknown benchmark type in prepare_metrics")
 
     try:
         if not os.path.isdir(dest_dir):
             os.makedirs(dest_dir)
     except OSError, e:
         HL.fatal_error("Cannot create %s directory (%s)" % (dest_dir, e.errno))
+
+    output = {}
+    output['bench'] = bench
+    output['affinity'] = dump_affinity(bench, bench_type)
+    pprint.pprint(output, stream=open(dest_dir+"/metrics", 'w'))
+    return dest_dir
+
+
+def compute_metrics(dest_dir, bench, bench_type):
+    if bench_type == HM.CPU:
+        results = results_cpu
+    elif bench_type == HM.MEMORY:
+        results = results_memory
+    elif bench_type == HM.NETWORK:
+        results = results_network
+    elif bench_type == HM.STORAGE:
+        results = results_storage
+    else:
+        HL.fatal_error("Unknown benchmark type in compute_metrics")
 
     delta_start_jitter = {}
     duration = {}
@@ -721,7 +742,13 @@ def do_network_job(bench_all, current_job, log_dir, total_runtime):
                 HP.logger.error("NETWORK: Canceling test %d / %d" % ((iter_bench['nb-hosts'], iter_bench['max_hosts'])))
                 continue
 
-            prepare_network_bench(iter_bench, HM.INIT)
+            metrics_log_dir = prepare_metrics(log_dir, iter_bench, HM.NETWORK)
+
+            if prepare_network_bench(iter_bench, HM.INIT) is False:
+                HP.logger.error("NETWORK: Unable to complete initialisation")
+                HP.logger.error("NETWORK: Canceling test %d / %d" % ((iter_bench['nb-hosts'], iter_bench['max_hosts'])))
+                prepare_network_bench(iter_bench, HM.CLEAN)
+                continue
 
             if iter_bench['block-size'] != 0:
                 HP.logger.info("NETWORK: Waiting %s bench @%s %d / %d"
@@ -747,7 +774,7 @@ def do_network_job(bench_all, current_job, log_dir, total_runtime):
 
             disable_jitter()
 
-            compute_metrics(log_dir, iter_bench, HM.NETWORK)
+            compute_metrics(metrics_log_dir, iter_bench, HM.NETWORK)
 
             prepare_network_bench(iter_bench, HM.CLEAN)
     else:
@@ -792,6 +819,8 @@ def do_storage_job(bench_all, current_job, log_dir, total_runtime):
                                             iter_bench['nb-hosts'], iter_bench['step-hosts'],
                                             iter_bench['runtime']))
 
+            metrics_log_dir = prepare_metrics(log_dir, iter_bench, HM.STORAGE)
+
             init_jitter()
 
             start_storage_bench(iter_bench)
@@ -803,7 +832,7 @@ def do_storage_job(bench_all, current_job, log_dir, total_runtime):
 
             disable_jitter()
 
-            compute_metrics(log_dir, iter_bench, HM.STORAGE)
+            compute_metrics(metrics_log_dir, iter_bench, HM.STORAGE)
     else:
         HP.logger.error("STORAGE: Canceling Test")
 
@@ -836,6 +865,8 @@ def do_memory_job(bench_all, current_job, log_dir, total_runtime):
                                             iter_bench['nb-hosts'], iter_bench['step-hosts'],
                                             iter_bench['runtime']))
 
+            metrics_log_dir = prepare_metrics(log_dir, iter_bench, HM.MEMORY)
+
             init_jitter()
 
             start_memory_bench(iter_bench)
@@ -847,7 +878,7 @@ def do_memory_job(bench_all, current_job, log_dir, total_runtime):
 
             disable_jitter()
 
-            compute_metrics(log_dir, iter_bench, HM.MEMORY)
+            compute_metrics(metrics_log_dir, iter_bench, HM.MEMORY)
     else:
         HP.logger.error("MEMORY: Canceling Test")
 
@@ -878,6 +909,8 @@ def do_cpu_job(bench_all, current_job, log_dir, total_runtime):
                                             iter_bench['nb-hosts'], iter_bench['step-hosts'],
                                             iter_bench['runtime']))
 
+            metrics_log_dir = prepare_metrics(log_dir, iter_bench, HM.CPU)
+
             init_jitter()
 
             start_cpu_bench(iter_bench)
@@ -889,7 +922,7 @@ def do_cpu_job(bench_all, current_job, log_dir, total_runtime):
 
             disable_jitter()
 
-            compute_metrics(log_dir, iter_bench, HM.CPU)
+            compute_metrics(metrics_log_dir, iter_bench, HM.CPU)
     else:
         HP.logger.error("CPU: Canceling Test")
 

@@ -724,9 +724,10 @@ def do_network_job(bench_all, current_job, log_dir, total_runtime):
             total_runtime += iter_bench['runtime']
 
             iter_bench['hosts-list'] = get_hosts_list_from_affinity(iter_bench, True)
+            unsorted_list = get_hosts_list_from_affinity(iter_bench)
 
-            if (len(iter_bench['hosts-list']) < iter_bench['nb-hosts']):
-                HP.logger.error("NETWORK: %d hosts expected while affinity only provides %d hosts available" % (iter_bench['nb-hosts'], len(iter_bench['hosts-list'])))
+            if (len(unsorted_list) < iter_bench['nb-hosts']):
+                HP.logger.error("NETWORK: %d hosts expected while affinity only provides %d hosts available" % (iter_bench['nb-hosts'], len(unsorted_list)))
                 HP.logger.error("NETWORK: Canceling test %d / %d" % ((iter_bench['nb-hosts'], iter_bench['max_hosts'])))
                 continue
 
@@ -750,7 +751,7 @@ def do_network_job(bench_all, current_job, log_dir, total_runtime):
                 prepare_network_bench(iter_bench, HM.CLEAN)
                 continue
 
-            if iter_bench['block-size'] != 0:
+            if iter_bench['block-size'] != "0":
                 HP.logger.info("NETWORK: Waiting %s bench @%s %d / %d"
                                " to finish on %d hosts (step = %d): should take"
                                " %d seconds" % (iter_bench['mode'], iter_bench['block-size'], nb_loops, len(hosts_series),

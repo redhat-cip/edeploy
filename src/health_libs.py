@@ -340,17 +340,10 @@ def generate_filename_and_macs(items):
 
 
 def check_mce_status(hw_):
-    cmd = subprocess.Popen('dmesg',
-                           bufsize=4096, stdout=subprocess.PIPE)
-    for line in cmd.stdout:
-        if 'mce' in line and 'Hardware Error' in line:
-            hw_.append(('system', 'platform', 'mce', 'True'))
-            cmd.communicate("\n")[0]
-            return
-
-    hw_.append(('system', 'mce', 'triggered', 'False'))
-    cmd.communicate("\n")[0]
-    return
+    if os.stat('/mcelog').st_size > 0:
+        hw_.append(('system', 'platform', 'mce', 'True'))
+    else:
+        hw_.append(('system', 'platform', 'mce', 'False'))
 
 
 def run_fio_job(message):

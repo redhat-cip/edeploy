@@ -91,6 +91,8 @@ echo "" > /proc/sys/kernel/hotplug
 
 start_udev
 
+start_mcelog
+
 # On RHEL7, we need lvmetad to run to make {lv}* commands working
 if [ -x /sbin/lvmetad ]; then
     lvmetad

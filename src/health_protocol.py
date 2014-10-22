@@ -75,9 +75,9 @@ def recv_hm_message(sock):
     try:
         lengthbuf = recvall(sock, 4)
     except socket.error, e:
-        if e[0] in [errno.ECONNRESET, errno.EBADF, errno.ESHUTDOWN, errno.ENOTCONN]:
+        if e[0] in [errno.ECONNRESET, errno.EBADF, errno.ESHUTDOWN, errno.ENOTCONN, errno.EHOSTUNREACH, errno.ECONNREFUSED]:
             return HM(HM.DISCONNECTED)
-        logger.error(e[1])
+        logger.error("recv_hm_message :" + e[1])
         return HM(HM.INVALID)
 
     try:

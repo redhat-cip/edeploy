@@ -723,11 +723,18 @@ def do_network_job(bench_all, current_job, log_dir, total_runtime):
 
             prepare_network_bench(iter_bench, HM.INIT)
 
-            HP.logger.info("NETWORK: Waiting %s bench @%s %d / %d"
-                           " to finish on %d hosts (step = %d): should take"
-                           " %d seconds" % (iter_bench['mode'], iter_bench['block-size'], nb_loops, len(hosts_series),
-                                            iter_bench['nb-hosts'], iter_bench['step-hosts'],
-                                            iter_bench['runtime']))
+            if iter_bench['block-size'] != 0:
+                HP.logger.info("NETWORK: Waiting %s bench @%s %d / %d"
+                               " to finish on %d hosts (step = %d): should take"
+                               " %d seconds" % (iter_bench['mode'], iter_bench['block-size'], nb_loops, len(hosts_series),
+                                                iter_bench['nb-hosts'], iter_bench['step-hosts'],
+                                                iter_bench['runtime']))
+            else:
+                HP.logger.info("NETWORK: Waiting %s bench %d / %d"
+                               " to finish on %d hosts (step = %d): should take"
+                               " %d seconds" % (iter_bench['mode'], nb_loops, len(hosts_series),
+                                                iter_bench['nb-hosts'], iter_bench['step-hosts'],
+                                                iter_bench['runtime']))
 
             init_jitter()
 

@@ -565,6 +565,24 @@ def detect_system(hw_lst, output=None):
                        line.rstrip('\n').strip()))
 
 
+def detect_temperatures(hw):
+    for entry in os.listdir("/sys/devices/platform/"):
+        if entry.startswith("coretemp."):
+            processor_num = int(entry.split(".")[1])
+            for label in os.listdir("/sys/devices/platform/%s" % entry):
+                if label.startswith("temp") and label.endswith("_label"):
+                    sensor = label.split("_")[0]
+                    label_name = open("/sys/devices/platform/%s/%s_label" % (entry, sensor), 'r').readline().strip().replace(" ", "_")
+                    temp = open("/sys/devices/platform/%s/%s_input" % (entry, sensor), 'r').readline().strip()
+                    max_temp = open("/sys/devices/platform/%s/%s_max" % (entry, sensor), 'r').readline().strip()
+                    crit = open("/sys/devices/platform/%s/%s_crit" % (entry, sensor), 'r').readline().strip()
+                    crit_alarm = open("/sys/devices/platform/%s/%s_crit_alarm" % (entry, sensor), 'r').readline().strip()
+                    hw.append(('cpu', 'physical_%d' % processor_num, "%s/temperature" % label_name, temp))
+                    hw.append(('cpu', 'physical_%d' % processor_num, "%s/max" % label_name, max_temp))
+                    hw.append(('cpu', 'physical_%d' % processor_num, "%s/critical" % label_name, crit))
+                    hw.append(('cpu', 'physical_%d' % processor_num, "%s/critical_alarm" % label_name, crit_alarm))
+
+
 def _main():
     'Command line entry point.'
     hrdw = []
@@ -575,6 +593,7 @@ def _main():
     detect_system(hrdw)
     detect_ipmi(hrdw)
     detect_infiniband(hrdw)
+    detect_temperatures(hrdw)
     pprint.pprint(hrdw)
 
 if __name__ == "__main__":

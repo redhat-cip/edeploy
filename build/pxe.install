@@ -92,7 +92,6 @@ rsync -au --delete-excluded --delete --exclude /boot/ \
     --exclude 'initrd*' \
     --exclude 'lib/modules/*/kernel/drivers/bluetooth' \
     --exclude 'lib/modules/*/kernel/drivers/gpu/' \
-    --exclude 'lib/modules/*/kernel/drivers/hwmon/' \
     --exclude 'lib/modules/*/kernel/drivers/isdn/' \
     --exclude 'lib/modules/*/kernel/drivers/media' \
     --exclude 'lib/modules/*/kernel/drivers/net/mac80211' \

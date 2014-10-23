@@ -531,7 +531,6 @@ while true; do
             lldptool set-lldp -i $iface adminstatus=rxtx &>/dev/null
             # Let's run all the dhclients in parallel
             config=$(get_network_configuration $iface)
-            echo "$config for $iface"
             case "$config" in
                 "dhcp")
                     DHCP_IFACES_COUNT=$(($DHCP_IFACES_COUNT + 1))

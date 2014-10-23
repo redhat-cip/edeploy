@@ -143,7 +143,11 @@ def connect_to_server(hostname):
     connected = True
 
     msg = HM(HM.CONNECT)
-    msg.hw = json.loads(open(sys.argv[1]).read(-1))
+    hrdw_json = json.loads(open(sys.argv[1]).read(-1))
+    msg.hw = []
+    for info in hrdw_json:
+        msg.hw.append(tuple(map(lambda x: x.encode('ascii', 'ignore'),
+                                info)))
 
     HP.send_hm_message(s, msg, True)
     while True:

@@ -528,7 +528,7 @@ while true; do
             log "Adding Interface $iface : carrier detected"
             CARRIER_DEVICE_LIST="$CARRIER_DEVICE_LIST $iface"
             log "Enabling LLDP rx on $iface"
-            lldptool set-lldp -i $iface adminstatus=rxtx
+            lldptool set-lldp -i $iface adminstatus=rxtx &>/dev/null
             # Let's run all the dhclients in parallel
             config=$(get_network_configuration $iface)
             echo "$config for $iface"

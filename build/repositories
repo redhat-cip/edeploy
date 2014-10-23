@@ -240,7 +240,7 @@ add_rhn_repository() {
                 return
             fi
 
-            if [ ! -f "$target/etc/sysconfig/rhn/systemid" ]; then
+            if [ ! -f "$dir/etc/sysconfig/rhn/systemid" ]; then
                 case "$CODENAME_MAJOR" in
                     6)
                         install_packages $dir rhn-setup

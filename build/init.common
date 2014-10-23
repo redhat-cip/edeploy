@@ -533,7 +533,6 @@ while true; do
         # Let's check if the network interface reports some carrier
         # If so, let's try to get a DHCP answer from here
         if [ "$(cat /sys/class/net/$iface/carrier)" = "1" ]; then
-            log "Adding Interface $iface : carrier detected"
             CARRIER_DEVICE_LIST="$CARRIER_DEVICE_LIST $iface"
             log "Enabling LLDP rx on $iface"
             lldptool set-lldp -i $iface adminstatus=rxtx &>/dev/null

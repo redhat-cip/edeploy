@@ -394,7 +394,9 @@ probe_virtio_devices() {
 
 probe_pci_devices() {
     step "Probing PCI devices"
+    BLACK_LIST="snd_hda_intel mgag200"
     for module in $(get_pci_modules|sort -u); do
+        echo "$BLACK_LIST" | grep -qw "$module" && log "Skipping $module" && continue
         log_n "Loading $module "
         modprobe $module && log "done" || log "error"
         if [ $module = virtio_pci ]; then

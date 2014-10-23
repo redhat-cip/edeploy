@@ -551,7 +551,6 @@ while true; do
                             sleep 1
                             count=$(($count - 1))
                         done
-                        ifconfig $iface|grep -q 'inet addr' && log "$iface configuration done" || log "No DHCP answer received on $iface"
                     ) &
                     PIDS="$PIDS $!"
                     sleep $DHCP_NO_RACETIMING # Don't race dhcp clients too much

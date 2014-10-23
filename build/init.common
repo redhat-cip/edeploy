@@ -356,9 +356,15 @@ mount_virtual_fs() {
     )
 
     # compatibility symlink for the pre-oneiric locations
-    mkdir /run/initramfs
+    if [ ! -d /run/initramfs ]; then
+        mkdir /run/initramfs
+    fi
+
     ln -sf /run/initramfs /dev/.initramfs
-    mkdir /run/lvm
+
+    if [ ! -d /run/lvm ]; then
+        mkdir /run/lvm
+    fi
 
 }
 

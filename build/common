@@ -370,7 +370,7 @@ mount_fs() {
         if [ ! -d ${dir}/repo ]; then
             mkdir -p ${dir}/repo
         fi
-        mount -o loop $ISO_PATH "${dir}/repo"
+        mountpoint -q ${dir}/repo || mount -o loop $ISO_PATH "${dir}/repo"
     fi
 }
 

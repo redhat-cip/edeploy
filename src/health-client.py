@@ -131,6 +131,21 @@ def module(socket, msg):
     handlers[msg.module](socket, msg)
 
 
+def encode_hardware(hrdw_json, msg):
+    'Init the hw part of a message from a json object'
+
+    def encode(elt):
+        'Encode unicode strings as strings else return the object'
+        try:
+            return elt.encode('ascii', 'ignore')
+        except AttributeError:
+            return elt
+
+    msg.hw = []
+    for info in hrdw_json:
+        msg.hw.append(tuple(map(encode, info)))
+
+
 def connect_to_server(hostname):
     global s
     global connected
@@ -143,11 +158,9 @@ def connect_to_server(hostname):
     connected = True
 
     msg = HM(HM.CONNECT)
+
     hrdw_json = json.loads(open(sys.argv[1]).read(-1))
-    msg.hw = []
-    for info in hrdw_json:
-        msg.hw.append(tuple(map(lambda x: x.encode('ascii', 'ignore'),
-                                info)))
+    encode_hardware(hrdw_json, msg)
 
     HP.send_hm_message(s, msg, True)
     while True:
@@ -171,10 +184,7 @@ def connect_to_server(hostname):
             break
 
         hrdw_json = json.loads(open(sys.argv[1]).read(-1))
-        msg.hw = []
-        for info in hrdw_json:
-            msg.hw.append(tuple(map(lambda x: x.encode('ascii', 'ignore'),
-                                    info)))
+        encode_hardware(hrdw_json, msg)
 
         handlers = {HM.NONE: none,
                     HM.CONNECT: connect,

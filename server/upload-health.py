@@ -144,9 +144,20 @@ def main():
         hw_file = fileitem.file
 
     try:
-        hw_items = json.loads(hw_file.read(-1))
+        json_hw_items = json.loads(hw_file.read(-1))
     except Exception, excpt:
         fatal_error("'Invalid hardware file: %s'" % str(excpt))
+
+    def encode(elt):
+        'Encode unicode strings as strings else return the object'
+        try:
+            return elt.encode('ascii', 'ignore')
+        except AttributeError:
+            return elt
+
+    hw_items = []
+    for info in json_hw_items:
+        hw_items.append(tuple(map(encode, info)))
 
     filename_and_macs = generate_filename_and_macs(hw_items)
     dirname = time.strftime("%Y_%m_%d-%Hh%M", time.localtime())

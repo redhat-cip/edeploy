@@ -354,10 +354,17 @@ def _main():
         True
 
     hrdw_json = json.loads(open(sys.argv[1]).read(-1))
+
+    def encode(elt):
+        'Encode unicode strings as strings else return the object'
+        try:
+            return elt.encode('ascii', 'ignore')
+        except AttributeError:
+            return elt
+
     hrdw = []
     for info in hrdw_json:
-        hrdw.append(tuple(map(lambda x: x.encode('ascii', 'ignore'),
-                              info)))
+        hrdw.append(tuple(map(encode, info)))
 
     sys.stderr.write("Available memory before run = %s\n" % HL.get_available_memory())
 

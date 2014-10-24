@@ -448,10 +448,16 @@ def main():
     except Exception, excpt:
         fatal_error("'Invalid hardware file: %s'" % str(excpt))
 
+    def encode(elt):
+        'Encode unicode strings as strings else return the object'
+        try:
+            return elt.encode('ascii', 'ignore')
+        except AttributeError:
+            return elt
+
     hw_items = []
     for info in json_hw_items:
-        hw_items.append(tuple(map(lambda x: x.encode('ascii', 'ignore'),
-                                  info)))
+        hw_items.append(tuple(map(encode, info)))
 
     # avoid concurrent accesses
     lock_filename = config_get(section, 'LOCKFILE',

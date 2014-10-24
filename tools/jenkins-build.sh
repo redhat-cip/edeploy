@@ -37,9 +37,9 @@ for role in $ROLES; do
 	if [ -d "$ARCH" ]; then
 	    VERS=$(sudo make TOP="$DIR" "$@" version)
 	    mkdir -p "$ARCH"/$VERS/
-	    sudo rsync -a "$DIR"/install/$VERS/*.* "$ARCH"/$VERS/
+	    rsync -a "$DIR"/install/$VERS/*.* "$ARCH"/$VERS/
             if [ -d "$DIR"/install/$VERS/base/boot ]; then
-                sudo rsync -a "$DIR"/install/$VERS/base/boot/vmlinuz* "$ARCH"/$VERS/vmlinuz
+                rsync -a "$DIR"/install/$VERS/base/boot/vmlinuz* "$ARCH"/$VERS/vmlinuz
                 (cd "$ARCH"/$VERS; md5sum vmlinuz > vmlinuz.md5)
             fi
 	    git rev-parse HEAD > "$ARCH"/$VERS/$role.rev

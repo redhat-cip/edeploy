@@ -78,7 +78,7 @@ init_redhat_chroot() {
     rebuild_db_with_local $target
     rpm --root="$target" --import $(ls $target/etc/pki/rpm-gpg/RPM-GPG-KEY-* | fgrep -v Debug)
     # We cannot use install_packages since the basesystem isn't yet setup
-    yum --installroot $target install -y basesystem yum
+    yum --disableplugin=* --installroot $target install -y basesystem yum
 
     case "$dist" in
         redhat)

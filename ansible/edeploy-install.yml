@@ -21,6 +21,10 @@
       - python-pip
       - git
       - rsync
+      - unzip
+      - gcc
+      - glibc.i686
+      - glibc-static
     when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
   - name: extract eDeploy git repo
     git: repo=https://github.com/enovance/edeploy.git

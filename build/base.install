@@ -121,6 +121,7 @@ bootstrap() {
     mount_fs
     # Use debootstrap for debian based distribution
     if [ "$(package_type)" = "deb" ]; then
+        check_binary debootstrap
         debootstrap --arch ${ARCH:=amd64} --variant=minbase $dist "$target" $repository
         # workaround no signature downloaded
         rm -f "$target"/var/lib/apt/lists/*[es]
@@ -405,7 +406,6 @@ fi
 check_variables
 
 check_binary wget
-check_binary debootstrap
 check_binary chroot
 check_binary sed
 check_binary curl

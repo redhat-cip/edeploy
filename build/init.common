@@ -178,6 +178,18 @@ upload_log() {
     cat /mcelog >> /log
     echo "############################" >> /log
 
+    echo "######## lspci -tv #########" >> /log
+    lspci -tv >> /log
+    echo "############################" >> /log
+
+    echo "######## lspci -tvn ########" >> /log
+    lspci -tvn >> /log
+    echo "############################" >> /log
+
+    echo "######## lspci -vv #########" >> /log
+    lspci -vv >> /log
+    echo "############################" >> /log
+
     gzip -9 -c /log > /${log_file}
     if [ -n "$EMBEDDED" ]; then
         was_unmounted=0

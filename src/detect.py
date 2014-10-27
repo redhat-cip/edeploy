@@ -565,6 +565,29 @@ def detect_system(hw_lst, output=None):
                        line.rstrip('\n').strip()))
 
 
+def read_hwmon(hw, entry, sensor, label_name, appendix, processor_num, entry_name):
+    try:
+        hwmon = "%s_%s" % (sensor, appendix)
+        filename = "/sys/devices/platform/%s/%s" % (entry, hwmon)
+        if not os.path.isfile(filename):
+            if len(hwmon) > 16:
+                # Some kernels are shortening the filename to 17 chars
+                # Let's try to find if we are in this case
+                filename = "/sys/devices/platform/%s/%s" % (entry, hwmon[:16])
+                print filename
+                if not os.path.isfile(filename):
+                    sys.stderr.write("read_hwmon: No entry found for %s/%s\n" % (label_name, entry_name))
+                    return
+            else:
+                sys.stderr.write("read_hwmon: No entry found for %s/%s\n" % (label_name, entry_name))
+                return
+
+        value = open(filename, 'r').readline().strip()
+        hw.append(('cpu', 'physical_%d' % processor_num, "%s/%s" % (label_name, entry_name), value))
+    except:
+        pass
+
+
 def detect_temperatures(hw):
     for entry in os.listdir("/sys/devices/platform/"):
         if entry.startswith("coretemp."):
@@ -572,15 +595,16 @@ def detect_temperatures(hw):
             for label in os.listdir("/sys/devices/platform/%s" % entry):
                 if label.startswith("temp") and label.endswith("_label"):
                     sensor = label.split("_")[0]
-                    label_name = open("/sys/devices/platform/%s/%s_label" % (entry, sensor), 'r').readline().strip().replace(" ", "_")
-                    temp = open("/sys/devices/platform/%s/%s_input" % (entry, sensor), 'r').readline().strip()
-                    max_temp = open("/sys/devices/platform/%s/%s_max" % (entry, sensor), 'r').readline().strip()
-                    crit = open("/sys/devices/platform/%s/%s_crit" % (entry, sensor), 'r').readline().strip()
-                    crit_alarm = open("/sys/devices/platform/%s/%s_crit_alarm" % (entry, sensor), 'r').readline().strip()
-                    hw.append(('cpu', 'physical_%d' % processor_num, "%s/temperature" % label_name, temp))
-                    hw.append(('cpu', 'physical_%d' % processor_num, "%s/max" % label_name, max_temp))
-                    hw.append(('cpu', 'physical_%d' % processor_num, "%s/critical" % label_name, crit))
-                    hw.append(('cpu', 'physical_%d' % processor_num, "%s/critical_alarm" % label_name, crit_alarm))
+                    try:
+                        label_name = open("/sys/devices/platform/%s/%s_label" % (entry, sensor), 'r').readline().strip().replace(" ", "_")
+                    except:
+                        sys.stderr.write("detect_temperatures: Cannot open label on %s/%s\n" % (entry, sensor))
+                        continue
+
+                    read_hwmon(hw, entry, sensor, label_name, "input", processor_num, "temperature")
+                    read_hwmon(hw, entry, sensor, label_name, "max", processor_num, "max")
+                    read_hwmon(hw, entry, sensor, label_name, "crit", processor_num, "critical")
+                    read_hwmon(hw, entry, sensor, label_name, "crit_alarm", processor_num, "critical_alarm")
 
 
 def _main():

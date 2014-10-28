@@ -576,7 +576,6 @@ def read_hwmon(hw, entry, sensor, label_name, appendix, processor_num, entry_nam
                 # Some kernels are shortening the filename to 17 chars
                 # Let's try to find if we are in this case
                 filename = "/sys/devices/platform/%s/%s" % (entry, hwmon[:16])
-                print filename
                 if not os.path.isfile(filename):
                     sys.stderr.write("read_hwmon: No entry found for %s/%s\n" % (label_name, entry_name))
                     return

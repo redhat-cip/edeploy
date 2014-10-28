@@ -190,6 +190,10 @@ upload_log() {
     lspci -vv >> /log
     echo "############################" >> /log
 
+    echo "######## lshw -xml #########" >> /log
+    lshw -xml >> /log
+    echo "############################" >> /log
+
     gzip -9 -c /log > /${log_file}
     if [ -n "$EMBEDDED" ]; then
         was_unmounted=0

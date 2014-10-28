@@ -242,6 +242,8 @@ def detect_disks(hw_lst):
                         id_name = "scsi-id"
                     hw_lst.append(('disk', name, id_name, entry))
 
+        detect_utils.read_SMART(hw_lst, "/dev/%s" % name)
+
 
 def modprobe(module):
     'Load a kernel module using modprobe.'

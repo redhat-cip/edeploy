@@ -58,7 +58,7 @@ deb $repository precise-updates multiverse
 EOF
 fi
 
-PACKAGES="sdparm gzip sysbench mcelog"
+PACKAGES="sdparm gzip sysbench mcelog smartmontools"
 case "$DIST" in
     $supported_centos_dists | $supported_redhat_dists)
         add_epel_repository $DIST

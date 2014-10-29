@@ -154,6 +154,8 @@ rm -rf ${dir}
 
 cp -p init init.common $DEPS ${DST}/
 
+gcc -static -Os sources/timings.c -o ${DST}/usr/sbin/ddr-timings-$(uname -m)
+
 get_extlinux extlinux
 cp extlinux/mbr.bin ${DST}/
 cp extlinux/extlinux ${DST}/sbin

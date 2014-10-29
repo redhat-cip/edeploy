@@ -619,6 +619,7 @@ def _main():
     detect_ipmi(hrdw)
     detect_infiniband(hrdw)
     detect_temperatures(hrdw)
+    detect_utils.get_ddr_timing(hrdw)
     print(json.dumps(hrdw))
 
 if __name__ == "__main__":

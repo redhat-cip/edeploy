@@ -1,7 +1,8 @@
 import detect
 import os
 import subprocess
-
+import platform
+import sys
 
 def parse_lldtool(hw_lst, interface_name, lines):
     content = ""
@@ -240,3 +241,51 @@ def read_SMART(hw, device, optional_flag=""):
     else:
         print "read_smart: no device %s" % device
         return
+
+
+def get_ddr_timing(hw_):
+    'Report the DDR timings'
+    sys.stderr.write('Reporting DDR Timings\n')
+    found = False
+    cmd = subprocess.Popen('ddr-timings-%s' % platform.machine(),
+                           shell=True, stdout=subprocess.PIPE)
+# DDR   tCL   tRCD  tRP   tRAS  tRRD  tRFC  tWR   tWTPr tRTPr tFAW  B2B
+# 0 |  11    15    15    31     7   511    11    31    15    63    31
+
+    for line in cmd.stdout:
+        if 'is a Triple' in line:
+            hw_.append(('memory', 'DDR', 'type', '3'))
+            continue
+
+        if 'is a Dual' in line:
+            hw_.append(('memory', 'DDR', 'type', '2'))
+            continue
+
+        if 'is a Single' in line:
+            hw_.append(('memory', 'DDR', 'type', '1'))
+            continue
+
+        if 'is a Zero' in line:
+            hw_.append(('memory', 'DDR', 'type', '0'))
+            continue
+
+        if "DDR" in line:
+            found = True
+            continue
+
+        if (found is True):
+            (ddr_channel, tCL, tRCD, tRP, tRAS,
+             tRRD, tRFC, tWR, tWTPr,
+             tRTPr, tFAW, B2B) = line.rstrip('\n').replace('|', ' ').split()
+            ddr_channel = ddr_channel.replace('#', '')
+            hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tCL', tCL))
+            hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tRCD', tRCD))
+            hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tRP', tRP))
+            hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tRAS', tRAS))
+            hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tRRD', tRRD))
+            hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tRFC', tRFC))
+            hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tWR', tWR))
+            hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tWTPr', tWTPr))
+            hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tRTPr', tRTPr))
+            hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tFAW', tFAW))
+            hw_.append(('memory', 'DDR_%s' % ddr_channel, 'B2B', B2B))

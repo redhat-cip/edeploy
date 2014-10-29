@@ -1,4 +1,5 @@
 import collections
+import pprint
 
 
 class Machine:
@@ -49,8 +50,8 @@ def print_groups(result, title):
         group = result[element]
         print "%d identical systems :" % (len(group))
         print group
-        for stuff in sorted(eval(element)):
-            print stuff
+        if len(eval(element)) > 0:
+            pprint.pprint(sorted(eval(element)))
         print
     print "#####"*2 + "#"*len(title)
 

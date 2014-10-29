@@ -60,7 +60,7 @@ def compute_similar_hosts_list(systems_groups, new_groups):
         for systems_group in systems_groups:
             intersection = set.intersection(systems_group, group)
             if (len(intersection) < len(systems_group)) and (len(intersection) > 0):
-#                print "%d vs %d" % (len(intersection), len(systems_group))
+                # print "%d vs %d" % (len(intersection), len(systems_group))
                 # We do have a partial match meaning we shall break the existing
                 # group in pieces
                 difference = set.difference(systems_group, group)

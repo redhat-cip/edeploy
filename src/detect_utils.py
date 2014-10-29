@@ -4,6 +4,7 @@ import subprocess
 import platform
 import sys
 
+
 def parse_lldtool(hw_lst, interface_name, lines):
     content = ""
     header = ""
@@ -48,7 +49,7 @@ def read_smart_field(hw, line, device, item, title):
                 hw.append(("disk", device, "SMART/%s" % (title), line.split(item)[1].strip().split()[0]))
                 hw.append(("disk", device, "SMART/%s_unit" % (title), line.split(item)[1].strip().split()[1]))
             except:
-                print "read_smart_field: Error while searching for %s in %s" % (item, line)
+                sys.stderr.write("read_smart_field: Error while searching for %s in %s\n" % (item, line))
         else:
             value = ""
             for result in line.split(item)[1:]:
@@ -90,7 +91,7 @@ def read_SMART_SCSI(hw, device, optional_flag="", mode=""):
 
         temp = read_smart_field(hw, line, device_name, "Vendor:", "vendor")
         if temp:
-            print "read_smart_scsi: Found S.M.A.R.T information on %s%s" % (device, optional_string)
+            sys.stderr.write("read_smart_scsi: Found S.M.A.R.T information on %s%s\n" % (device, optional_string))
             vendor = temp
             continue
 
@@ -147,7 +148,7 @@ def read_SMART_ata(hw, device, optional_flag="", mode=""):
         line = line.strip()
 
         if read_smart_field(hw, line, device_name, "Device Model:", "device_model"):
-            print "read_smart_ata: Found S.M.A.R.T information on %s%s" % (device, optional_string)
+            sys.stderr.write("read_smart_ata: Found S.M.A.R.T information on %s%s\n" % (device, optional_string))
             continue
 
         if read_smart_field(hw, line, device_name, "Serial Number:", "serial_number"):
@@ -188,7 +189,7 @@ def read_SMART_ata(hw, device, optional_flag="", mode=""):
                 hw.append(("disk", device_name, "SMART/%s(%s)/%s" % (values["name"], values["id"], title), values[title]))
 
         except:
-            print "read_smart: failed to read line : %s" % line
+            sys.stderr.write("read_smart: failed to read line : %s\n" % line)
             continue
 
 
@@ -214,7 +215,7 @@ def which(program):
 
 def read_SMART(hw, device, optional_flag=""):
     if not which("smartctl"):
-        print "Cannot find smartctl, exiting"
+        sys.stderr.write("Cannot find smartctl, exiting\n")
         return
 
     optional_string = ""
@@ -222,7 +223,7 @@ def read_SMART(hw, device, optional_flag=""):
         optional_string = " with %s" % optional_flag
 
     if (os.path.exists(device)):
-        print "read_smart: Reading S.M.A.R.T information on %s%s" % (device, optional_string)
+        sys.stderr.write("read_smart: Reading S.M.A.R.T information on %s%s\n" % (device, optional_string))
         sdparm_cmd = subprocess.Popen("smartctl -a %s %s" % (device, optional_flag), shell=True, stdout=subprocess.PIPE)
         for line in sdparm_cmd.stdout:
             line = line.strip()
@@ -239,7 +240,7 @@ def read_SMART(hw, device, optional_flag=""):
             return read_SMART(hw, device, "-d ata")
 
     else:
-        print "read_smart: no device %s" % device
+        sys.stderr.write("read_smart: no device %s\n" % device)
         return
 
 

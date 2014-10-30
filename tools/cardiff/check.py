@@ -57,7 +57,7 @@ def physical_megaraid_disks(global_params, systems, unique_id):
 
 
 def logical_disks(global_params, systems, unique_id):
-    sets = search_item(systems, unique_id, "disk", "[a-z]d(\S+)", ['simultaneous', 'standalone', 'id'])
+    sets = search_item(systems, unique_id, "disk", "[a-z]d(\S+)", ['simultaneous', 'standalone', 'id', 'serial_number', 'SMART/'], [], ['when_failed'])
     groups = compare_sets.compare(sets)
     compare_sets.print_groups(global_params, groups, "Logical Disks")
     return groups

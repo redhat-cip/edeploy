@@ -64,9 +64,7 @@ def print_groups(global_params, result, title):
         print "%d identical systems :" % (len(group))
         print group
 
-        # Don't print to users if element is empty
-        if len(eval(element)) > 0:
-            pprint.pprint(sorted(eval(element)))
+        pprint.pprint(sorted(eval(element)))
 
         # But always save it to a file for diffing
         if ("output_dir" in global_params.keys()):

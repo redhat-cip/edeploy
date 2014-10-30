@@ -240,7 +240,7 @@ def network_interfaces(global_params, systems, unique_id):
 
 
 def cpu(global_params, systems, unique_id):
-    sets = search_item(systems, unique_id, "cpu", "(.*)", ['bogomips', 'loops_per_sec', 'bandwidth', 'cache_size', 'temperature'])
+    sets = search_item(systems, unique_id, "cpu", "(.*)", ['bogomips', 'loops_per_sec', 'bandwidth', 'cache_size', '/temperature'])
     groups = compare_sets.compare(sets)
     compare_sets.print_groups(global_params, groups, "Processors")
     return groups

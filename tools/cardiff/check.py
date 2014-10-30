@@ -6,7 +6,7 @@ from pandas import *
 import perf_cpu_tables
 
 
-def search_item(systems, unique_id, item, regexp, exclude_list=[], include_list=[]):
+def search_item(systems, unique_id, item, regexp, exclude_list=[], include_list=[], override_list=[]):
     sets = {}
     for system in systems:
         sets[system[unique_id]] = set()
@@ -14,6 +14,8 @@ def search_item(systems, unique_id, item, regexp, exclude_list=[], include_list=
         for stuff in system[item]:
             m = re.match(regexp, stuff[1])
             if m:
+                shall_be_added = False
+
                 # If we have an include_list, only those shall be used
                 # So everything is exclude by default
                 if len(include_list) > 0:
@@ -30,7 +32,12 @@ def search_item(systems, unique_id, item, regexp, exclude_list=[], include_list=
                 for exclude in exclude_list:
                     if exclude in stuff[2]:
                         shall_be_excluded = True
-                if shall_be_excluded is False:
+
+                for override in override_list:
+                    if override in stuff[2]:
+                        shall_be_added = True
+
+                if (shall_be_excluded is False) or (shall_be_added is True):
                     current_set.add(stuff)
     return sets
 

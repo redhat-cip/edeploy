@@ -60,8 +60,11 @@ def print_help():
 
 
 def compare_disks(global_params, bench_values, unique_id, systems_groups):
+    systems = utils.find_sub_element(bench_values, unique_id, 'pdisk')
+    groups = check.physical_megaraid_disks(global_params, systems, unique_id)
+    compare_sets.compute_similar_hosts_list(systems_groups, compare_sets.get_hosts_list_from_result(groups))
     systems = utils.find_sub_element(bench_values, unique_id, 'disk')
-    groups = check.physical_disks(global_params, systems, unique_id)
+    groups = check.physical_hpa_disks(global_params, systems, unique_id)
     compare_sets.compute_similar_hosts_list(systems_groups, compare_sets.get_hosts_list_from_result(groups))
     groups = check.logical_disks(global_params, systems, unique_id)
     compare_sets.compute_similar_hosts_list(systems_groups, compare_sets.get_hosts_list_from_result(groups))

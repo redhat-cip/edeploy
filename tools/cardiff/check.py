@@ -35,10 +35,17 @@ def search_item(systems, unique_id, item, regexp, exclude_list=[], include_list=
     return sets
 
 
-def physical_disks(global_params, systems, unique_id):
+def physical_hpa_disks(global_params, systems, unique_id):
     sets = search_item(systems, unique_id, "disk", "(\d+)I:(\d+):(\d+)", ['current_temperature_(c)', 'maximum_temperature_(c)', 'serial_number'])
     groups = compare_sets.compare(sets)
     compare_sets.print_groups(global_params, groups, "Physical Disks (HP Controllers)")
+    return groups
+
+
+def physical_megaraid_disks(global_params, systems, unique_id):
+    sets = search_item(systems, unique_id, "pdisk", "disk(\d+)", [])
+    groups = compare_sets.compare(sets)
+    compare_sets.print_groups(global_params, groups, "Physical Disks (Megaraid Controllers)")
     return groups
 
 

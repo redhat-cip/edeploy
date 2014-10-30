@@ -1,6 +1,7 @@
 import collections
 import pprint
 import os
+import glob
 
 
 class Machine:
@@ -73,9 +74,14 @@ def print_groups(global_params, result, title):
                 pprint.pprint(sorted(eval(element)), fout)
         print
 
-    if (len(result) > 1) and ("output_dir" in global_params.keys()):
-        output_file = "%s/%s.diff" % (global_params["output_dir"], title.strip().replace(" ", "_"))
-        os.system("diff -ub --from-file %s > %s" % (groups_name, output_file))
+    if ("output_dir" in global_params.keys()):
+        if (len(result) > 1):
+            output_file = "%s/%s.diff" % (global_params["output_dir"], title.strip().replace(" ", "_"))
+            os.system("diff -ub --from-file %s > %s" % (groups_name, output_file))
+        else:
+            # If no difference exists, we can kill the def files
+            for filename in glob.glob("%s/%s*.def" % (global_params["output_dir"], title.strip().replace(" ", "_"))):
+                os.remove(filename)
 
     print "#####"*2 + "#"*len(title)
 

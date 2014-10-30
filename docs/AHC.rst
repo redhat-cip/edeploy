@@ -315,6 +315,8 @@ It is possible to ignore differences on multiple components by using a comma sep
  cardiff -p 'results/test1/Dell*.hw' - I firmware,disk
 
 
+By using the *-o <directory>* option, cardiff will save the differences between groups in the selected *directory*. This is an helper to easily understand the differences between groups.
+
 Using the SUMMARY view (default)
 ````````````````````````````````
 Cardiff implements multiple views, the default one is called *summary*.

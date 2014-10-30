@@ -1,5 +1,6 @@
 import collections
 import pprint
+import os
 
 
 class Machine:
@@ -44,15 +45,38 @@ def print_systems_groups(systems_groups):
         print
 
 
-def print_groups(result, title):
+def print_groups(global_params, result, title):
     print "##### %s #####" % title
+    groups_name = ""
+
     for element in result:
         group = result[element]
+        group_name = title.strip().replace(" ", "_")
+
+        if ("output_dir" in global_params.keys()):
+            group_name = "%s/%s" % (global_params["output_dir"], group_name)
+
+        for host in group:
+            group_name = "%s_%s" % (group_name, host.strip())
+
+        groups_name = "%s %s.def" % (groups_name, group_name)
         print "%d identical systems :" % (len(group))
         print group
+
+        # Don't print to users if element is empty
         if len(eval(element)) > 0:
             pprint.pprint(sorted(eval(element)))
+
+        # But always save it to a file for diffing
+        if ("output_dir" in global_params.keys()):
+            with open("%s.def" % group_name, "w") as fout:
+                pprint.pprint(sorted(eval(element)), fout)
         print
+
+    if (len(result) > 1) and ("output_dir" in global_params.keys()):
+        output_file = "%s/%s.diff" % (global_params["output_dir"], title.strip().replace(" ", "_"))
+        os.system("diff -ub --from-file %s > %s" % (groups_name, output_file))
+
     print "#####"*2 + "#"*len(title)
 
 

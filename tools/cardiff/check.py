@@ -35,17 +35,17 @@ def search_item(systems, unique_id, item, regexp, exclude_list=[], include_list=
     return sets
 
 
-def physical_disks(systems, unique_id):
+def physical_disks(global_params, systems, unique_id):
     sets = search_item(systems, unique_id, "disk", "(\d+)I:(\d+):(\d+)", ['current_temperature_(c)', 'maximum_temperature_(c)', 'serial_number'])
     groups = compare_sets.compare(sets)
-    compare_sets.print_groups(groups, "Physical Disks (HP Controllers)")
+    compare_sets.print_groups(global_params, groups, "Physical Disks (HP Controllers)")
     return groups
 
 
-def logical_disks(systems, unique_id):
+def logical_disks(global_params, systems, unique_id):
     sets = search_item(systems, unique_id, "disk", "[a-z]d(\S+)", ['simultaneous', 'standalone', 'id'])
     groups = compare_sets.compare(sets)
-    compare_sets.print_groups(groups, "Logical Disks")
+    compare_sets.print_groups(global_params, groups, "Logical Disks")
     return groups
 
 
@@ -197,52 +197,52 @@ def logical_disks_perf(systems, unique_id, group_number, detail_options, rampup_
         print_detail(detail_options, details, df, matched_category)
 
 
-def hpa(systems, unique_id):
+def hpa(global_params, systems, unique_id):
     sets = search_item(systems, unique_id, "hpa", "(.*)", ['cache_serial_number', 'serial_number'])
     groups = compare_sets.compare(sets)
-    compare_sets.print_groups(groups, "HPA Controller")
+    compare_sets.print_groups(global_params, groups, "HPA Controller")
     return groups
 
 
-def systems(systems, unique_id):
+def systems(global_params, systems, unique_id):
     sets = search_item(systems, unique_id, "system", "(.*)", ['serial', 'uuid'])
     groups = compare_sets.compare(sets)
-    compare_sets.print_groups(groups, "System")
+    compare_sets.print_groups(global_params, groups, "System")
     return groups
 
 
-def firmware(systems, unique_id):
+def firmware(global_params, systems, unique_id):
     sets = search_item(systems, unique_id, "firmware", "(.*)")
     groups = compare_sets.compare(sets)
-    compare_sets.print_groups(groups, "Firmware")
+    compare_sets.print_groups(global_params, groups, "Firmware")
     return groups
 
 
-def memory_timing(systems, unique_id):
+def memory_timing(global_params, systems, unique_id):
     sets = search_item(systems, unique_id, "memory", "DDR(.*)")
     groups = compare_sets.compare(sets)
-    compare_sets.print_groups(groups, "Memory Timing(RAM)")
+    compare_sets.print_groups(global_params, groups, "Memory Timing(RAM)")
     return groups
 
 
-def memory_banks(systems, unique_id):
+def memory_banks(global_params, systems, unique_id):
     sets = search_item(systems, unique_id, "memory", "bank(.*)", ['serial'])
     groups = compare_sets.compare(sets)
-    compare_sets.print_groups(groups, "Memory Banks(RAM)")
+    compare_sets.print_groups(global_params, groups, "Memory Banks(RAM)")
     return groups
 
 
-def network_interfaces(systems, unique_id):
+def network_interfaces(global_params, systems, unique_id):
     sets = search_item(systems, unique_id, "network", "(.*)", ['serial', 'ipv4'])
     groups = compare_sets.compare(sets)
-    compare_sets.print_groups(groups, "Network Interfaces")
+    compare_sets.print_groups(global_params, groups, "Network Interfaces")
     return groups
 
 
-def cpu(systems, unique_id):
+def cpu(global_params, systems, unique_id):
     sets = search_item(systems, unique_id, "cpu", "(.*)", ['bogomips', 'loops_per_sec', 'bandwidth', 'cache_size'])
     groups = compare_sets.compare(sets)
-    compare_sets.print_groups(groups, "Processors")
+    compare_sets.print_groups(global_params, groups, "Processors")
     return groups
 
 

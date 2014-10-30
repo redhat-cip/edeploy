@@ -28,6 +28,7 @@ import compare_sets
 import math
 import shutil
 import numpy
+import glob
 
 
 def print_help():
@@ -35,6 +36,8 @@ def print_help():
     print
     print '-h --help                           : Print this help'
     print '-p <pattern> or --pattern <pattern> : A pattern in regexp to select input files'
+    print '-o <dir>     or --output_dir <dir>  : Output directory if pattern is defined'
+    print '                                       this directory will report the diff files if systems does not match'
     print '-l <level>   or --log-level <level> : Show only the log levels selected'
     print '                                    :   level is a comma separated list of the following levels'
     print '                                    :   INFO, ERROR, WARNING, SUMMARY, DETAIL'
@@ -52,76 +55,76 @@ def print_help():
     print "cardiff.py -p 'sample/*.hw' -l DETAIL -g '1' -c 'loops_per_sec' -i 'logical_1.*'"
     print "cardiff.py -p 'sample/*.hw' -l DETAIL -g '1' -c 'standalone_rand.*_4k_IOps' -i 'sd.*'"
     print "cardiff.py -p 'sample/*.hw' -l DETAIL -g '0' -c '1G' -i '.*'"
-    print "cardiff.py -p '*hw' -I disk,cpu"
+    print "cardiff.py -p '*hw' -I disk,cpu -o plop"
     print "cardiff.py -r '/var/lib/edeploy/health/dahc/cpu_load/2014_09_15-12h17'"
 
 
-def compare_disks(bench_values, unique_id, systems_groups):
+def compare_disks(global_params, bench_values, unique_id, systems_groups):
     systems = utils.find_sub_element(bench_values, unique_id, 'disk')
-    groups = check.physical_disks(systems, unique_id)
+    groups = check.physical_disks(global_params, systems, unique_id)
     compare_sets.compute_similar_hosts_list(systems_groups, compare_sets.get_hosts_list_from_result(groups))
-    groups = check.logical_disks(systems, unique_id)
+    groups = check.logical_disks(global_params, systems, unique_id)
     compare_sets.compute_similar_hosts_list(systems_groups, compare_sets.get_hosts_list_from_result(groups))
 
 
-def compare_hpa(bench_values, unique_id, systems_groups):
+def compare_hpa(global_params, bench_values, unique_id, systems_groups):
     systems = utils.find_sub_element(bench_values, unique_id, 'hpa')
-    groups = check.hpa(systems, unique_id)
+    groups = check.hpa(global_params, systems, unique_id)
     compare_sets.compute_similar_hosts_list(systems_groups, compare_sets.get_hosts_list_from_result(groups))
 
 
-def compare_systems(bench_values, unique_id, systems_groups):
+def compare_systems(global_params, bench_values, unique_id, systems_groups):
     systems = utils.find_sub_element(bench_values, unique_id, 'system')
-    groups = check.systems(systems, unique_id)
+    groups = check.systems(global_params, systems, unique_id)
     compare_sets.compute_similar_hosts_list(systems_groups, compare_sets.get_hosts_list_from_result(groups))
 
 
-def compare_firmware(bench_values, unique_id, systems_groups):
+def compare_firmware(global_params, bench_values, unique_id, systems_groups):
     systems = utils.find_sub_element(bench_values, unique_id, 'firmware')
-    groups = check.firmware(systems, unique_id)
+    groups = check.firmware(global_params, systems, unique_id)
     compare_sets.compute_similar_hosts_list(systems_groups, compare_sets.get_hosts_list_from_result(groups))
 
 
-def compare_memory(bench_values, unique_id, systems_groups):
+def compare_memory(global_params, bench_values, unique_id, systems_groups):
     systems = utils.find_sub_element(bench_values, unique_id, 'memory')
-    check.memory_timing(systems, unique_id)
-    groups = check.memory_banks(systems, unique_id)
+    check.memory_timing(global_params, systems, unique_id)
+    groups = check.memory_banks(global_params, systems, unique_id)
     compare_sets.compute_similar_hosts_list(systems_groups, compare_sets.get_hosts_list_from_result(groups))
 
 
-def compare_network(bench_values, unique_id, systems_groups):
+def compare_network(global_params, bench_values, unique_id, systems_groups):
     systems = utils.find_sub_element(bench_values, unique_id, 'network')
-    groups = check.network_interfaces(systems, unique_id)
+    groups = check.network_interfaces(global_params, systems, unique_id)
     compare_sets.compute_similar_hosts_list(systems_groups, compare_sets.get_hosts_list_from_result(groups))
 
 
-def compare_cpu(bench_values, unique_id, systems_groups):
+def compare_cpu(global_params, bench_values, unique_id, systems_groups):
     systems = utils.find_sub_element(bench_values, unique_id, 'cpu')
-    groups = check.cpu(systems, unique_id)
+    groups = check.cpu(global_params, systems, unique_id)
     compare_sets.compute_similar_hosts_list(systems_groups, compare_sets.get_hosts_list_from_result(groups))
 
 
-def group_systems(bench_values, unique_id, systems_groups, ignore_list):
+def group_systems(global_params, bench_values, unique_id, systems_groups, ignore_list):
     if "hpa" not in ignore_list:
-        compare_hpa(bench_values, unique_id, systems_groups)
+        compare_hpa(global_params, bench_values, unique_id, systems_groups)
 
     if "disk" not in ignore_list:
-        compare_disks(bench_values, unique_id, systems_groups)
+        compare_disks(global_params, bench_values, unique_id, systems_groups)
 
     if "system" not in ignore_list:
-        compare_systems(bench_values, unique_id, systems_groups)
+        compare_systems(global_params, bench_values, unique_id, systems_groups)
 
     if "firmware" not in ignore_list:
-        compare_firmware(bench_values, unique_id, systems_groups)
+        compare_firmware(global_params, bench_values, unique_id, systems_groups)
 
     if "memory" not in ignore_list:
-        compare_memory(bench_values, unique_id, systems_groups)
+        compare_memory(global_params, bench_values, unique_id, systems_groups)
 
     if "network" not in ignore_list:
-        compare_network(bench_values, unique_id, systems_groups)
+        compare_network(global_params, bench_values, unique_id, systems_groups)
 
     if "cpu" not in ignore_list:
-        compare_cpu(bench_values, unique_id, systems_groups)
+        compare_cpu(global_params, bench_values, unique_id, systems_groups)
 
 
 def compare_performance(bench_values, unique_id, systems_groups, detail, rampup_value=0, current_dir=""):
@@ -142,7 +145,7 @@ def compare_performance(bench_values, unique_id, systems_groups, detail, rampup_
         check.network_perf(systems, unique_id, systems_groups.index(group), detail, rampup_value, current_dir)
 
 
-def analyze_data(pattern, ignore_list, detail, rampup_value=0, max_rampup_value=0, current_dir=""):
+def analyze_data(global_params, pattern, ignore_list, detail, rampup_value=0, max_rampup_value=0, current_dir=""):
     if rampup_value > 0:
         pattern = pattern + "*.hw"
 
@@ -184,7 +187,7 @@ def analyze_data(pattern, ignore_list, detail, rampup_value=0, max_rampup_value=
 
     # Let's create groups of similar servers
     if (rampup_value == 0):
-        group_systems(bench_values, unique_id, systems_groups, ignore_list)
+        group_systems(global_params, bench_values, unique_id, systems_groups, ignore_list)
         compare_sets.print_systems_groups(systems_groups)
 
     # It's time to compare performance in each group
@@ -337,7 +340,7 @@ def plot_results(current_dir, rampup_values, job, metrics, bench_values, titles)
                 if not title_appendix:
                     title_appendix = "\\n %s" % titles[key]
                 else:
-                    title_appendix = "%s vs %s" %(title_appendix, titles[key])
+                    title_appendix = "%s vs %s" % (title_appendix, titles[key])
         else:
             title_appendix = metrics["bench"]["title"]
         title = "Study of %s %s from %d to %d hosts (step=%d) : %s" % (bench_type, kind, min(rampup_values), max(rampup_values), metrics["bench"]["step-hosts"], title_appendix)
@@ -371,8 +374,9 @@ def main(argv):
     rampup_values = ''
     ignore_list = ''
     detail = {'category': '', 'group': '', 'item': ''}
+    global_params = {}
     try:
-        opts, args = getopt.getopt(argv[1:], "hp:l:g:c:i:I:r:", ['pattern', 'log-level', 'group', 'category', 'item', "ignore", "rampup"])
+        opts, args = getopt.getopt(argv[1:], "hp:l:g:c:i:I:r:o:", ['pattern', 'log-level', 'group', 'category', 'item', "ignore", "rampup", "output_dir"])
     except getopt.GetoptError:
         print "Error: One of the options passed to the cmdline was not supported"
         print "Please fix your command line or read the help (-h option)"
@@ -417,6 +421,15 @@ def main(argv):
             detail['item'] = arg
         elif opt in ("-I", "--ignore"):
             ignore_list = arg
+        elif opt in ("-o", "--ouptut_dir"):
+            if os.path.exists(arg):
+                for filename in glob.glob("%s/*.diff" % arg):
+                    os.remove(filename)
+                for filename in glob.glob("%s/*.def" % arg):
+                    os.remove(filename)
+            else:
+                os.mkdir(arg)
+            global_params["output_dir"] = arg
 
     if ((utils.print_level & utils.Levels.DETAIL) == utils.Levels.DETAIL):
         if (len(detail['group']) == 0) or (len(detail['category']) == 0) or (len(detail['item']) == 0):
@@ -496,7 +509,7 @@ def main(argv):
                     titles[rampup_dir] = metrics["bench"]["title"]
                     compute_metrics(current_dir, rampup_value, job, metrics)
 
-                    bench_values.append(analyze_data(rampup_dir+'/'+str(rampup_value)+'/'+job+'/', ignore_list, detail, rampup_value, max(rampup_values), current_dir))
+                    bench_values.append(analyze_data(global_params, rampup_dir+'/'+str(rampup_value)+'/'+job+'/', ignore_list, detail, rampup_value, max(rampup_values), current_dir))
 
             plot_results(current_dir, rampup_values, job, metrics, bench_values, titles)
 
@@ -506,14 +519,14 @@ def main(argv):
                 if not final_directory_name:
                     final_directory_name = "%s" % titles[key]
                 else:
-                    final_directory_name = "%s_vs_%s" %(final_directory_name, titles[key])
+                    final_directory_name = "%s_vs_%s" % (final_directory_name, titles[key])
 
             if (os.path.exists(final_directory_name)):
                 shutil.rmtree(final_directory_name)
             os.rename(result_dir, final_directory_name)
             print "Output results can be found in directory '%s'" % final_directory_name
     else:
-        analyze_data(pattern, ignore_list, detail)
+        analyze_data(global_params, pattern, ignore_list, detail)
 
 
 # Main

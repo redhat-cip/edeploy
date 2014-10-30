@@ -180,11 +180,31 @@ attach_pool_rh_cdn() {
 
     check_usage $# 2 "attach_pool_rh_cdn <dir> <pool-id>"
 
-    do_chroot $target subscription-manager attach --pool $pool
-    if [ "$?" != "0" ]; then
-        echo "Failed at attaching to the pool."
-        echo "You have to select a valid pool from this list:"
-        do_chroot $target subscription-manager list --available
+    pool_match=$(do_chroot $target bash -c "subscription-manager list --consumed | grep $pool" || true)
+    if [ -z "$pool_match" ]; then
+        do_chroot $target subscription-manager attach --pool $pool
+        if [ "$?" != "0" ]; then
+            echo "Failed at attaching to the pool."
+            echo "You have to select a valid pool from this list:"
+            do_chroot $target subscription-manager list --available
+        fi
+    fi
+}
+
+detach_pool_rh_cdn() {
+    local target=$1
+    local pool=$2
+
+    check_usage $# 2 "detach_pool_rh_cdn <dir> <pool-id>"
+
+    serial=$(do_chroot $target bash -c "subscription-manager list --consumed | grep -B1 $pool | grep Serial | sed 's/.*:\s*\(.*\)/\1/g'" || true)
+    if [ -n "$serial" ]; then
+        do_chroot $target subscription-manager remove --serial=$serial
+        if [ "$?" != "0" ]; then
+            echo "Failed at removing the pool."
+            echo "You have to specify a valid serial from this list:"
+            do_chroot $target subscription-manager list --consumed
+        fi
     fi
 }
 

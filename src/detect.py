@@ -78,6 +78,7 @@ def detect_hpa(hw_lst):
         return False
 
     hw_lst.append(('hpa', "slots", "count", len(controllers)))
+    global_pdisk_size = 0
     for controller in controllers:
         try:
             slot = 'slot=%d' % controller[0]
@@ -97,11 +98,15 @@ def detect_hpa(hw_lst):
                         value = disk_infos[disk_info]
                         if disk_info == "size":
                             value = size_in_gb(disk_infos[disk_info])
+                            global_pdisk_size = global_pdisk_size + float(value)
                         hw_lst.append(('disk', disk[0], disk_info,
                                        value))
         except hpacucli.Error as expt:
             sys.stderr.write('Info: detect_hpa : controller %d : %s\n'
                              % (controller[0], expt.value))
+
+    if global_pdisk_size > 0:
+        hw_lst.append(('disk', 'all', 'size', global_pdisk_size))
 
     hw_lst.append(('disk', 'hpa', 'count', str(disk_count)))
     return True
@@ -111,6 +116,7 @@ def detect_megacli(hw_lst):
     'Detect LSI MegaRAID controller configuration.'
     ctrl_num = megacli.adp_count()
     disk_count = 0
+    global_pdisk_size = 0
     if ctrl_num > 0:
         for ctrl in range(ctrl_num):
             for enc in megacli.enc_info(ctrl):
@@ -138,10 +144,19 @@ def detect_megacli(hw_lst):
                                    'id',
                                    '%s:%d' % (info['EnclosureDeviceId'],
                                               slot_num)))
+                    disk_size = size_in_gb("%s %s" % (info['CoercedSize'].split()[0], info['CoercedSize'].split()[1]))
+                    global_pdisk_size = global_pdisk_size + float(disk_size)
                     hw_lst.append(('pdisk',
                                    disk,
                                    'size',
-                                   size_in_gb("%s %s" % (info['CoercedSize'].split()[0], info['CoercedSize'].split()[1]))))
+                                   disk_size))
+
+                if global_pdisk_size > 0:
+                    hw_lst.append(('pdisk',
+                                   'all',
+                                   'size',
+                                   global_pdisk_size))
+
                 for ld_num in range(megacli.ld_get_num(ctrl)):
                     disk = 'disk%d' % ld_num
                     info = megacli.ld_get_info(ctrl, ld_num)

@@ -106,7 +106,7 @@ def detect_hpa(hw_lst):
                              % (controller[0], expt.value))
 
     if global_pdisk_size > 0:
-        hw_lst.append(('disk', 'all', 'size', global_pdisk_size))
+        hw_lst.append(('disk', 'hpa', 'size', "%.2f" % global_pdisk_size))
 
     hw_lst.append(('disk', 'hpa', 'count', str(disk_count)))
     return True
@@ -155,7 +155,7 @@ def detect_megacli(hw_lst):
                     hw_lst.append(('pdisk',
                                    'all',
                                    'size',
-                                   global_pdisk_size))
+                                   "%.2f" % global_pdisk_size))
 
                 for ld_num in range(megacli.ld_get_num(ctrl)):
                     disk = 'disk%d' % ld_num

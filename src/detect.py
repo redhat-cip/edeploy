@@ -137,7 +137,7 @@ def detect_megacli(hw_lst):
                     hw_lst.append(('pdisk',
                                    disk,
                                    'size',
-                                   info['CoercedSize'].split()[0]))
+                                   size_in_gb("%s %s" % (info['CoercedSize'].split()[0], info['CoercedSize'].split()[1]))))
                 for ld_num in range(megacli.ld_get_num(ctrl)):
                     disk = 'disk%d' % ld_num
                     info = megacli.ld_get_info(ctrl, ld_num)

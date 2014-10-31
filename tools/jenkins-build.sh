@@ -35,12 +35,21 @@ BROKEN=
 for role in $ROLES; do
     if sudo env VIRTUALIZED=$VIRTUALIZED make TOP="$DIR" ARCHIVE="$ARCH" "$@" $role; then
 	if [ -d "$ARCH" ]; then
+	    BVERS=$(sudo make TOP="$DIR" "$@" bversion || :)
 	    VERS=$(sudo make TOP="$DIR" "$@" version)
-	    mkdir -p "$ARCH"/$VERS/
-	    rsync -a "$DIR"/install/$VERS/*.* "$ARCH"/$VERS/
-            if [ -d "$DIR"/install/$VERS/base/boot ]; then
-                rsync -a "$DIR"/install/$VERS/base/boot/vmlinuz* "$ARCH"/$VERS/vmlinuz
-                (cd "$ARCH"/$VERS; md5sum vmlinuz > vmlinuz.md5)
+            if [ -n "$BVERS" ]; then
+                for f in vmlinuz health.pxe initrd.pxe; do
+                    if [ -r "$ARCH"/$BVERS/${f} ]; then
+                        cp "$ARCH"/$BVERS/${f}* "$ARCH"/$VERS/
+                    fi
+                done
+            else
+	        mkdir -p "$ARCH"/$VERS/
+	        rsync -a "$DIR"/install/$VERS/*.* "$ARCH"/$VERS/
+                if [ -d "$DIR"/install/$VERS/base/boot ]; then
+                    rsync -a "$DIR"/install/$VERS/base/boot/vmlinuz* "$ARCH"/$VERS/vmlinuz
+                    (cd "$ARCH"/$VERS; md5sum vmlinuz > vmlinuz.md5)
+                fi
             fi
 	    git rev-parse HEAD > "$ARCH"/$VERS/$role.rev
 	fi

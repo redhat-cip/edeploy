@@ -52,7 +52,11 @@ def size_in_gb(size):
     if ret[-2:] == 'GB':
         return ret[:-2]
     elif ret[-2:] == 'TB':
-        return ret[:-2] + '000'
+        # some size are provided in x.yGB
+        # we need to compute the size in TB by
+        # considering the input as a float to be
+        # multiplied by 1000
+        return str(int(float(ret[:-2])*1000))
     else:
         return ret
 

@@ -8,9 +8,9 @@ localboot -1
 
 LABEL eDeploy
 KERNEL vmlinuz
-APPEND initrd=initrd.pxe SERV={{ ansible_default_ipv4["address"] }} HSERV={{ ansible_default_ipv4["address"] }} UPLOAD_LOG=1 ONSUCCESS=halt ONFAILURE=console IP=all:dhcp
+APPEND initrd=initrd.pxe SERV={{ ansible_default_ipv4["address"] }} HSERV={{ ansible_default_ipv4["address"] }} UPLOAD_LOG=1 ONSUCCESS=halt ONFAILURE=console IP=all:dhcp pci=bfsort
 
 LABEL health
 KERNEL vmlinuz
-APPEND initrd=health.pxe SERV={{ ansible_default_ipv4["address"] }} IP=all:dhcp SESSION=install NONETWORKTEST=1 ONSUCCESS=halt ONFAILURE=console
+APPEND initrd=health.pxe SERV={{ ansible_default_ipv4["address"] }} IP=all:dhcp SESSION=install NONETWORKTEST=1 ONSUCCESS=halt ONFAILURE=console pci=bfsort
 #SMOKE=60

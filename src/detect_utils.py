@@ -2,7 +2,7 @@ import detect
 import os
 import subprocess
 import platform
-import Popen
+from subprocess import Popen, PIPE
 import sys
 
 
@@ -311,5 +311,5 @@ def parse_ipmi_sdr(hrdw, output):
 def ipmi_sdr(hrdw):
     ipmi_cmd = Popen("ipmitool -I open sdr",
                      shell=True,
-                     stdout=Popen.PIPE)
+                     stdout=PIPE)
     parse_ipmi_sdr(ipmi_cmd.stdout)

@@ -2,6 +2,7 @@ import detect
 import os
 import subprocess
 import platform
+import Popen
 import sys
 
 
@@ -290,3 +291,25 @@ def get_ddr_timing(hw_):
             hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tRTPr', tRTPr))
             hw_.append(('memory', 'DDR_%s' % ddr_channel, 'tFAW', tFAW))
             hw_.append(('memory', 'DDR_%s' % ddr_channel, 'B2B', B2B))
+
+
+def parse_ipmi_sdr(hrdw, output):
+    for line in output:
+        items = line.split("|")
+        if len(items) < 3:
+            continue
+
+        hrdw.append(('ipmi', items[0].strip(), 'value', '%s' % items[1].split()[0].strip()))
+        units = ""
+        for unit in items[1].split()[1:]:
+            units = "%s %s" % (units, unit.strip())
+        units = units.strip()
+        if units:
+            hrdw.append(('ipmi', items[0].strip(), 'unit', units))
+
+
+def ipmi_sdr(hrdw):
+    ipmi_cmd = Popen("ipmitool -I open sdr",
+                     shell=True,
+                     stdout=Popen.PIPE)
+    parse_ipmi_sdr(ipmi_cmd.stdout)

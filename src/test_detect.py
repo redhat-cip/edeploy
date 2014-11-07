@@ -94,6 +94,99 @@ class TestDetect(unittest.TestCase):
         detect.get_uuid = fake_get_uuid
         detect_utils.get_lld_status = fake_lld_status
 
+    def test_ipmi_sdr(self):
+        hw = []
+        detect_utils.parse_ipmi_sdr(hw, IPMI_SDR.split("\n"))
+        self.assertEqual(hw, [('ipmi', 'UID Light', 'value', '0x00'),
+                              ('ipmi', 'Sys. Health LED', 'value', '0x00'),
+                              ('ipmi', 'Power Supply 1', 'value', '90'),
+                              ('ipmi', 'Power Supply 1', 'unit', 'Watts'),
+                              ('ipmi', 'Power Supply 2', 'value', '65'),
+                              ('ipmi', 'Power Supply 2', 'unit', 'Watts'),
+                              ('ipmi', 'Power Supplies', 'value', '0x00'),
+                              ('ipmi', 'Fan 1', 'value', '33.32'),
+                              ('ipmi', 'Fan 1', 'unit', 'percent'),
+                              ('ipmi', 'Fan 2', 'value', '39.20'),
+                              ('ipmi', 'Fan 2', 'unit', 'percent'),
+                              ('ipmi', 'Fan 3', 'value', '39.20'),
+                              ('ipmi', 'Fan 3', 'unit', 'percent'),
+                              ('ipmi', 'Fan 4', 'value', '29.40'),
+                              ('ipmi', 'Fan 4', 'unit', 'percent'),
+                              ('ipmi', 'Fan 5', 'value', '24.70'),
+                              ('ipmi', 'Fan 5', 'unit', 'percent'),
+                              ('ipmi', 'Fan 6', 'value', '13.72'),
+                              ('ipmi', 'Fan 6', 'unit', 'percent'),
+                              ('ipmi', 'Fans', 'value', '0x00'),
+                              ('ipmi', 'Temp 1', 'value', '20'),
+                              ('ipmi', 'Temp 1', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 2', 'value', '40'),
+                              ('ipmi', 'Temp 2', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 3', 'value', '40'),
+                              ('ipmi', 'Temp 3', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 4', 'value', '28'),
+                              ('ipmi', 'Temp 4', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 5', 'value', '28'),
+                              ('ipmi', 'Temp 5', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 6', 'value', '34'),
+                              ('ipmi', 'Temp 6', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 7', 'value', '33'),
+                              ('ipmi', 'Temp 7', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 8', 'value', '39'),
+                              ('ipmi', 'Temp 8', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 9', 'value', '33'),
+                              ('ipmi', 'Temp 9', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 10', 'value', '39'),
+                              ('ipmi', 'Temp 10', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 11', 'value', '29'),
+                              ('ipmi', 'Temp 11', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 12', 'value', '40'),
+                              ('ipmi', 'Temp 12', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 13', 'value', '28'),
+                              ('ipmi', 'Temp 13', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 14', 'value', '31'),
+                              ('ipmi', 'Temp 14', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 15', 'value', '29'),
+                              ('ipmi', 'Temp 15', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 16', 'value', '25'),
+                              ('ipmi', 'Temp 16', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 17', 'value', '27'),
+                              ('ipmi', 'Temp 17', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 18', 'value', 'disabled'),
+                              ('ipmi', 'Temp 19', 'value', '22'),
+                              ('ipmi', 'Temp 19', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 20', 'value', '28'),
+                              ('ipmi', 'Temp 20', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 21', 'value', '28'),
+                              ('ipmi', 'Temp 21', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 22', 'value', '28'),
+                              ('ipmi', 'Temp 22', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 23', 'value', '33'),
+                              ('ipmi', 'Temp 23', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 24', 'value', '30'),
+                              ('ipmi', 'Temp 24', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 25', 'value', '30'),
+                              ('ipmi', 'Temp 25', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 26', 'value', '31'),
+                              ('ipmi', 'Temp 26', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 27', 'value', 'disabled'),
+                              ('ipmi', 'Temp 28', 'value', '26'),
+                              ('ipmi', 'Temp 28', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 29', 'value', '35'),
+                              ('ipmi', 'Temp 29', 'unit', 'degrees C'),
+                              ('ipmi', 'Temp 30', 'value', '58'),
+                              ('ipmi', 'Temp 30', 'unit', 'degrees C'),
+                              ('ipmi', 'Memory', 'value', '0x00'),
+                              ('ipmi', 'Power Meter', 'value', '170'),
+                              ('ipmi', 'Power Meter', 'unit', 'Watts'),
+                              ('ipmi', 'Cntlr 1 Bay 1', 'value', '0x01'),
+                              ('ipmi', 'Cntlr 1 Bay 2', 'value', '0x01'),
+                              ('ipmi', 'Cntlr 1 Bay 3', 'value', '0x00'),
+                              ('ipmi', 'Cntlr 1 Bay 4', 'value', '0x01'),
+                              ('ipmi', 'Cntlr 2 Bay 5', 'value', '0x00'),
+                              ('ipmi', 'Cntlr 2 Bay 6', 'value', '0x00'),
+                              ('ipmi', 'Cntlr 2 Bay 7', 'value', '0x01'),
+                              ('ipmi', 'Cntlr 2 Bay 8', 'value', '0x01')])
+
     def test_parse_dmesg(self):
         hw = []
         detect.parse_dmesg(hw, "src/sample_dmesg")
@@ -3326,4 +3419,59 @@ XML3 = '''<?xml version="1.0" standalone="yes" ?>
     </node>
   </node>
 </node>
+'''
+
+
+IPMI_SDR = '''UID Light        | 0x00              | ok
+Sys. Health LED  | 0x00              | ok
+Power Supply 1   | 90 Watts          | ok
+Power Supply 2   | 65 Watts          | ok
+Power Supplies   | 0x00              | ok
+Fan 1            | 33.32 percent     | ok
+Fan 2            | 39.20 percent     | ok
+Fan 3            | 39.20 percent     | ok
+Fan 4            | 29.40 percent     | ok
+Fan 5            | 24.70 percent     | ok
+Fan 6            | 13.72 percent     | ok
+Fans             | 0x00              | ok
+Temp 1           | 20 degrees C      | ok
+Temp 2           | 40 degrees C      | ok
+Temp 3           | 40 degrees C      | ok
+Temp 4           | 28 degrees C      | ok
+Temp 5           | 28 degrees C      | ok
+Temp 6           | 34 degrees C      | ok
+Temp 7           | 33 degrees C      | ok
+Temp 8           | 39 degrees C      | ok
+Temp 9           | 33 degrees C      | ok
+Temp 10          | 39 degrees C      | ok
+Temp 11          | 29 degrees C      | ok
+Temp 12          | 40 degrees C      | ok
+Temp 13          | 28 degrees C      | ok
+Temp 14          | 31 degrees C      | ok
+Temp 15          | 29 degrees C      | ok
+Temp 16          | 25 degrees C      | ok
+Temp 17          | 27 degrees C      | ok
+Temp 18          | disabled          | ns
+Temp 19          | 22 degrees C      | ok
+Temp 20          | 28 degrees C      | ok
+Temp 21          | 28 degrees C      | ok
+Temp 22          | 28 degrees C      | ok
+Temp 23          | 33 degrees C      | ok
+Temp 24          | 30 degrees C      | ok
+Temp 25          | 30 degrees C      | ok
+Temp 26          | 31 degrees C      | ok
+Temp 27          | disabled          | ns
+Temp 28          | 26 degrees C      | ok
+Temp 29          | 35 degrees C      | ok
+Temp 30          | 58 degrees C      | ok
+Memory           | 0x00              | ok
+Power Meter      | 170 Watts         | ok
+Cntlr 1 Bay 1    | 0x01              | ok
+Cntlr 1 Bay 2    | 0x01              | ok
+Cntlr 1 Bay 3    | 0x00              | ok
+Cntlr 1 Bay 4    | 0x01              | ok
+Cntlr 2 Bay 5    | 0x00              | ok
+Cntlr 2 Bay 6    | 0x00              | ok
+Cntlr 2 Bay 7    | 0x01              | ok
+Cntlr 2 Bay 8    | 0x01              | ok
 '''

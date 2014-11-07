@@ -627,10 +627,30 @@ def detect_temperatures(hw):
                     read_hwmon(hw, entry, sensor, label_name, "crit_alarm", processor_num, "critical_alarm")
 
 
+def parse_ahci(hrdw, words):
+    if len(words) < 4:
+        return
+    if "flags" in words[2]:
+        flags = ""
+        for flag in sorted(words[3:]):
+            flags = "%s %s" % (flags, flag)
+        hrdw.append(('ahci', words[1], "flags", flags.strip()))
+
+
+def parse_dmesg(hrdw, filename):
+    with open(filename) as f:
+            content = f.readlines()
+            for line in content:
+                words = line.strip().split(" ")
+                if not words:
+                    continue
+                if "ahci" in words[0]:
+                    parse_ahci(hrdw, words)
+
+
 def _main():
     'Command line entry point.'
     hrdw = []
-
     detect_hpa(hrdw)
     detect_megacli(hrdw)
     detect_disks(hrdw)
@@ -639,6 +659,8 @@ def _main():
     detect_infiniband(hrdw)
     detect_temperatures(hrdw)
     detect_utils.get_ddr_timing(hrdw)
+    os.system("dmesg > /tmp/dmesg")
+    parse_dmesg(hrdw, "/tmp/dmesg")
     print(json.dumps(hrdw))
 
 if __name__ == "__main__":

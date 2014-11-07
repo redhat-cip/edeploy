@@ -91,6 +91,11 @@ class TestDetect(unittest.TestCase):
         detect.get_uuid = fake_get_uuid
         detect_utils.get_lld_status = fake_lld_status
 
+    def test_parse_dmesg(self):
+        hw = []
+        detect.parse_dmesg(hw, "src/sample_dmesg")
+        self.assertEqual(hw, [('ahci', '0000:00:1f.2:', 'flags', '64bit apst clo ems led ncq part pio slum sntf')])
+
     def _restore_functions(self):
         detect.cmd = self.save
         detect.output_lines = self.output_lines

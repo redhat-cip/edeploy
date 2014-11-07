@@ -47,6 +47,9 @@ class TestDetect(unittest.TestCase):
     def test_size_in_tb(self):
         self.assertEqual(detect.size_in_gb('100TB'), '100000')
 
+    def test_size_in_dottb(self):
+        self.assertEqual(detect.size_in_gb('3.4601 TB'), '3460')
+
     def test_size_in_nothing(self):
         self.assertEqual(detect.size_in_gb('100'), '100')
 

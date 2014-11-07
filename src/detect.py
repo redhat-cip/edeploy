@@ -664,6 +664,7 @@ def _main():
     detect_infiniband(hrdw)
     detect_temperatures(hrdw)
     detect_utils.get_ddr_timing(hrdw)
+    detect_utils.ipmi_sdr(hrdw)
     os.system("dmesg > /tmp/dmesg")
     parse_dmesg(hrdw, "/tmp/dmesg")
     print(json.dumps(hrdw))

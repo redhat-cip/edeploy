@@ -644,6 +644,10 @@ def parse_dmesg(hrdw, filename):
                 words = line.strip().split(" ")
                 if not words:
                     continue
+
+                if words[0].startswith("["):
+                    words = words[1:]
+
                 if "ahci" in words[0]:
                     parse_ahci(hrdw, words)
 

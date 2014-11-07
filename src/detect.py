@@ -77,7 +77,7 @@ def detect_hpa(hw_lst):
         sys.stderr.write('Info: detect_hpa : %s\n' % expt.value)
         return False
 
-    hw_lst.append(('hpa', "slots", "count", len(controllers)))
+    hw_lst.append(('hpa', "slots", "count", str(len(controllers))))
     global_pdisk_size = 0
     for controller in controllers:
         try:

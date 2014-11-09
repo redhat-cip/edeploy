@@ -25,6 +25,10 @@ if [ -z "$ROLES" ]; then
     ROLES="base pxe health-check deploy"
 fi
 
+if [ -z "$COMPRESSED_ROLES" ]; then
+    COMPRESSED_ROLES="cloud openstack-full install-server install-server-vm mysql slave softwarefactory"
+fi
+
 set -x
 
 cd $SRC
@@ -33,7 +37,14 @@ RC=0
 BROKEN=
 
 for role in $ROLES; do
-    if sudo env VIRTUALIZED=$VIRTUALIZED make TOP="$DIR" ARCHIVE="$ARCH" "$@" $role; then
+    NO_COMPRESSED_FILE=1
+    for compr in $COMPRESSED_ROLES; do
+        if [ $role = $comp ]; then
+            NO_COMPRESSED_FILE=
+            break
+        fi
+    done
+    if sudo env NO_COMPRESSED_FILE=$NO_COMPRESSED_FILE VIRTUALIZED=$VIRTUALIZED make TOP="$DIR" ARCHIVE="$ARCH" "$@" $role; then
 	if [ -d "$ARCH" ]; then
 	    BVERS=$(sudo make TOP="$DIR" "$@" bversion || :)
 	    VERS=$(sudo make TOP="$DIR" "$@" version)

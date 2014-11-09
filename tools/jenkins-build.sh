@@ -39,7 +39,7 @@ BROKEN=
 for role in $ROLES; do
     NO_COMPRESSED_FILE=1
     for compr in $COMPRESSED_ROLES; do
-        if [ $role = $comp ]; then
+        if [ "$role" = "$compr" ]; then
             NO_COMPRESSED_FILE=
             break
         fi

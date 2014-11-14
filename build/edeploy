@@ -19,10 +19,15 @@
 progname="$0"
 TEST_UPGRADE=0
 EDEPLOY_DIR=/var/lib/edeploy
+EDEPLOY_LOG=/var/log/edeploy
 RPATH=install
 
 if [ -r ${EDEPLOY_DIR}/conf ]; then
     . ${EDEPLOY_DIR}/conf
+fi
+
+if [ -r ${EDEPLOY_LOG}/vars ]; then
+    . ${EDEPLOY_LOG}/vars
 fi
 
 function test-upgrade() {
@@ -128,12 +133,19 @@ function role() {
     echo $ROLE
 }
 
+function profile() {
+    echo $PROFILE
+}
+
 function check_args() {
     if [ -z "$VERS" -o -z "$ROLE" -o -z "$RSERV" -o -z "$RSERV_PORT" ]; then
         echo "${EDEPLOY_DIR}/conf must contain RSERV, VERS, ROLE and RSERV_PORT" 1>&2
         exit 1
     fi
-
+    if [ -z "$PROFILE" ]; then
+        echo "${EDEPLOY_LOG}/vars must contain PROFILE" 1>&2
+        exit 1
+    fi
 }
 
 function activate-pkgmngr() {
@@ -177,6 +189,8 @@ function help() {
 
     role: show the role the guest has been setup as.
 
+    profile: show the profile the guest has been setup as.
+
     activate-pkgmngr: activate the package manager
 
     deactivate-pkgmngr: deactivate the package manager
@@ -186,7 +200,7 @@ EOF
 }
 
 function usage() {
-    echo "Usage: $progname ({test-}upgrade <target version>|list|verify|help|version|role|activate-pkgmngr|deactivate-pkgmngr)"
+    echo "Usage: $progname ({test-}upgrade <target version>|list|verify|help|version|role|profile|activate-pkgmngr|deactivate-pkgmngr)"
 }
 
 command="$1"
@@ -196,7 +210,7 @@ case "$command" in
     help)
         help
         ;;
-    test-upgrade|upgrade|list|verify|version|role)
+    test-upgrade|upgrade|list|verify|version|role|profile)
         check_args
         "$command" "$@"
         ;;

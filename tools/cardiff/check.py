@@ -120,11 +120,14 @@ def network_perf(systems, unique_id, group_number, detail_options, rampup_value=
         for system in sets:
             net = []
             series = []
+            global_perf = 0.0
             for perf in sets[system]:
                 if (perf[1] == mode):
                     if not perf[1] in net:
                         net.append(perf[1])
-                    series.append(float(perf[3]))
+                    global_perf = global_perf + float(perf[3])
+
+            series.append(global_perf)
             results[system] = Series(series, index=net)
 
         df = DataFrame(results)

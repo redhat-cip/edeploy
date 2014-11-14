@@ -50,7 +50,20 @@ for role in $ROLES; do
 	    VERS=$(sudo make TOP="$DIR" "$@" version)
             if [ -n "$BVERS" ]; then
                 for f in vmlinuz health.pxe initrd.pxe; do
-                    if [ -r "$ARCH"/$BVERS/${f} ]; then
+                    case $f in
+                        vmlinuz)
+                            dirname=base
+                            ;;
+                        health.pxe)
+                            dirname=health-check
+                            ;;
+                        initrd.pxe)
+                            dirname=pxe
+                            ;;
+                    esac
+                    # Only copy the file when there is no support in the current
+                    # version (could happen in upgrades)
+                    if [ ! -d "$DIR"/$VERS/$dirname -a -r "$ARCH"/$BVERS/${f} ]; then
                         cp "$ARCH"/$BVERS/${f}* "$ARCH"/$VERS/
                     fi
                 done

@@ -59,7 +59,7 @@ for role in $ROLES; do
                             dirname=base
                             ;;
                         health.pxe)
-                            dirname=health-check
+                            dirname=health
                             ;;
                         initrd.pxe)
                             dirname=pxe

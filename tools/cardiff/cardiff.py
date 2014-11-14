@@ -231,13 +231,13 @@ def compute_metrics(current_dir, rampup_value, job, metrics):
     compute_metric(current_dir, rampup_value, start_lag, "jitter")
 
 
-def do_plot(current_dir, gpm_dir, main_title, subtitle, name, unit, titles, expected_value=""):
+def do_plot(current_dir, gpm_dir, main_title, subtitle, name, unit, titles, titles_order, expected_value=""):
     filename = current_dir+"/"+name+".gnuplot"
     with open(filename, "a") as f:
         shutil.copyfile("%s/graph2D.gpm" % gpm_dir, "%s/graph2D.gpm" % current_dir)
         with open("%s/graph2D.gpm" % current_dir, "a") as myfile:
             column = 2
-            for title in titles.keys():
+            for title in titles_order:
                 if column == 2:
                     myfile.write("plot '$2' using %d:xtic(1) with linespoints title '%s'" % (column, titles[title]))
                 else:
@@ -247,7 +247,7 @@ def do_plot(current_dir, gpm_dir, main_title, subtitle, name, unit, titles, expe
                 myfile.write(",\\\n %.2f w l ls 1 ti 'Expected value (%.2f)'" % (expected_value, expected_value))
             myfile.write("\nset output '$4-smooth.png'\n")
             column = 2
-            for title in titles.keys():
+            for title in titles_order:
                 if column == 2:
                     myfile.write("plot '$2' using %d:xtic(1) smooth csplines title '%s'" % (column,  titles[title]))
                 else:
@@ -257,7 +257,7 @@ def do_plot(current_dir, gpm_dir, main_title, subtitle, name, unit, titles, expe
                 myfile.write(",\\\n %.2f w l ls 1 ti 'Expected value (%.2f)'" % (expected_value, expected_value))
             column = 2
             myfile.write("\nset output '$4-trend.png'\n")
-            for title in titles.keys():
+            for title in titles_order:
                 if column == 2:
                     myfile.write("plot '$2' using %d:xtic(1) smooth bezier title '%s'" % (column, titles[title]))
                 else:
@@ -291,7 +291,7 @@ def is_virtualized(bench_values):
     return ""
 
 
-def plot_results(current_dir, rampup_values, job, metrics, bench_values, titles):
+def plot_results(current_dir, rampup_values, job, metrics, bench_values, titles, titles_order):
     gpm_dir = "./"
     context = ""
     bench_type = job
@@ -339,7 +339,7 @@ def plot_results(current_dir, rampup_values, job, metrics, bench_values, titles)
     for kind in unit:
         title_appendix = ""
         if len(titles.keys()) > 1:
-            for key in titles.keys():
+            for key in titles_order:
                 if not title_appendix:
                     title_appendix = "\\n %s" % titles[key]
                 else:
@@ -365,9 +365,9 @@ def plot_results(current_dir, rampup_values, job, metrics, bench_values, titles)
         subtitle = "\\nBenchmark setup : %s, runtime=%d seconds, %d hypervisors with %s scheduling\\n%s" % (context, metrics["bench"]["runtime"], len(metrics["affinity"]), metrics["bench"]["affinity"], system)
 
         if kind in expected_value:
-            do_plot(current_dir, gpm_dir, title, subtitle, kind, unit[kind], titles, expected_value[kind])
+            do_plot(current_dir, gpm_dir, title, subtitle, kind, unit[kind], titles, titles_order, expected_value[kind])
         else:
-            do_plot(current_dir, gpm_dir, title, subtitle, kind, unit[kind], titles)
+            do_plot(current_dir, gpm_dir, title, subtitle, kind, unit[kind], titles, titles_order)
 
 
 def main(argv):
@@ -514,7 +514,7 @@ def main(argv):
 
                     bench_values.append(analyze_data(global_params, rampup_dir+'/'+str(rampup_value)+'/'+job+'/', ignore_list, detail, rampup_value, max(rampup_values), current_dir))
 
-            plot_results(current_dir, rampup_values, job, metrics, bench_values, titles)
+            plot_results(current_dir, rampup_values, job, metrics, bench_values, titles, rampup_dirs)
 
         if len(titles.keys()) > 1:
             final_directory_name = ""

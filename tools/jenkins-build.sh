@@ -63,7 +63,7 @@ for role in $ROLES; do
                     esac
                     # Only copy the file when there is no support in the current
                     # version (could happen in upgrades)
-                    if [ ! -d "$DIR"/$VERS/$dirname -a -r "$ARCH"/$BVERS/${f} ]; then
+                    if [ ! -d "$DIR"/install/$VERS/$dirname -a -r "$ARCH"/$BVERS/${f} ]; then
                         cp "$ARCH"/$BVERS/${f}* "$ARCH"/$VERS/
                     fi
                 done

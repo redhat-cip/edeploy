@@ -48,6 +48,10 @@ for role in $ROLES; do
 	if [ -d "$ARCH" ]; then
 	    BVERS=$(sudo make TOP="$DIR" "$@" bversion || :)
 	    VERS=$(sudo make TOP="$DIR" "$@" version)
+
+	    mkdir -p "$ARCH"/$VERS/
+	    rsync -a "$DIR"/install/$VERS/*.* "$ARCH"/$VERS/
+
             if [ -n "$BVERS" ]; then
                 for f in vmlinuz health.pxe initrd.pxe; do
                     case $f in
@@ -68,8 +72,6 @@ for role in $ROLES; do
                     fi
                 done
             else
-	        mkdir -p "$ARCH"/$VERS/
-	        rsync -a "$DIR"/install/$VERS/*.* "$ARCH"/$VERS/
                 if [ -d "$DIR"/install/$VERS/base/boot ]; then
                     rsync -a "$DIR"/install/$VERS/base/boot/vmlinuz* "$ARCH"/$VERS/vmlinuz
                     (cd "$ARCH"/$VERS; md5sum vmlinuz > vmlinuz.md5)

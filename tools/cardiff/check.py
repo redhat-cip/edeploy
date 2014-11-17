@@ -70,6 +70,13 @@ def ahci(global_params, systems, unique_id):
     return groups
 
 
+def ipmi(global_params, systems, unique_id):
+    sets = search_item(systems, unique_id, "ipmi", ".*")
+    groups = compare_sets.compare(sets)
+    compare_sets.print_groups(global_params, groups, "IPMI SDR")
+    return groups
+
+
 def compute_deviance_percentage(item, df):
     # If we have a single item
     # checking the variance is useless

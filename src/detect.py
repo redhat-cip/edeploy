@@ -122,6 +122,13 @@ def detect_megacli(hw_lst):
     if ctrl_num > 0:
         for ctrl in range(ctrl_num):
             for enc in megacli.enc_info(ctrl):
+                if "Enclosure" in enc.keys():
+                    for key in enc.keys():
+                        if "ExitCode" in key or "Enclosure" in key:
+                            continue
+                        hw_lst.append(('megaraid', 'Controller_%d/Enclosure_%s' % (ctrl, enc["Enclosure"]),
+                                       '%s' % key, '%s' % enc[key]))
+
                 for slot_num in range(enc['NumberOfSlots']):
                     disk_count += 1
                     disk = 'disk%d' % slot_num

@@ -331,6 +331,10 @@ def parse_ipmi_sdr(hrdw, output):
         if len(items) < 3:
             continue
 
+        if "Not Readable" in line:
+            hrdw.append(('ipmi', items[0].strip(), 'value', 'Not Readable'))
+            continue
+
         hrdw.append(('ipmi', items[0].strip(), 'value', '%s' % items[1].split()[0].strip()))
         units = ""
         for unit in items[1].split()[1:]:

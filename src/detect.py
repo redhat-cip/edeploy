@@ -173,6 +173,13 @@ def detect_megacli(hw_lst):
                                     hw_lst.append(('pdisk', disk, "%s_units" % key, "Celsius"))
                                 else:
                                     hw_lst.append(('pdisk', disk, key, str(info[key]).strip()))
+
+                            if "InquiryData" in key:
+                                count = 0
+                                for mystring in info[key].split():
+                                    hw_lst.append(('pdisk', disk, "%s[%d]" % (key, count), str(mystring.strip())))
+                                    count = count + 1
+
                             else:
                                 hw_lst.append(('pdisk', disk, key, str(info[key]).strip()))
 

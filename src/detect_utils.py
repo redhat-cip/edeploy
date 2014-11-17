@@ -43,6 +43,38 @@ def get_lld_status(hw_lst, interface_name):
     return parse_lldtool(hw_lst, interface_name, detect.output_lines("lldptool -t -n -i %s" % interface_name))
 
 
+def parse_ethtool(hw_lst, interface_name, lines):
+    content = ""
+    header = ""
+    sub_header = ""
+    original_header = ""
+    for line in lines:
+        if interface_name in line:
+            continue
+        data = line.split(":")
+        line = line.strip('\n')
+        if line.startswith('\t'):
+            sub_header = data[0].replace('\t', '').strip()
+            header = "%s/%s" % (original_header, sub_header)
+        else:
+            sub_header = ""
+            header = data[0]
+            original_header = header
+
+        header = header.replace('\t', '').strip()
+        content = ''.join(data[1:]).replace('\t', '').strip()
+        if not content:
+            continue
+        hw_lst.append(('network', interface_name, header, content))
+
+    return hw_lst
+
+
+def get_ethtool_status(hw_lst, interface_name):
+    parse_ethtool(hw_lst, interface_name, detect.output_lines("ethtool -a %s" % interface_name))
+    parse_ethtool(hw_lst, interface_name, detect.output_lines("ethtool -k %s" % interface_name))
+
+
 def read_smart_field(hw, line, device, item, title):
     if item in line:
         if "temperature" in title:

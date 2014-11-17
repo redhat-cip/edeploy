@@ -221,6 +221,13 @@ def hpa(global_params, systems, unique_id):
     return groups
 
 
+def megaraid(global_params, systems, unique_id):
+    sets = search_item(systems, unique_id, "megaraid", "(.*)", ['SerialNo', 'SasAddress', 'ControllerTemperature', 'VendorSpecific'])
+    groups = compare_sets.compare(sets)
+    compare_sets.print_groups(global_params, groups, "Megaraid Controller")
+    return groups
+
+
 def systems(global_params, systems, unique_id):
     sets = search_item(systems, unique_id, "system", "(.*)", ['serial', 'uuid'])
     groups = compare_sets.compare(sets)

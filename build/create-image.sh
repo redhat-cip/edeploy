@@ -132,8 +132,18 @@ fi
 
 # QCOW2 as default image format
 IMAGE_FORMAT=${IMAGE_FORMAT:-qcow2}
+COMPRESSED=${COMPRESSED:-no}
 ROOT_FS_SIZE=${ROOT_FS_SIZE:-auto}
 NETWORK_CONFIG=${NETWORK_CONFIG:-auto}
+
+if [ "$COMPRESSED" = "yes" ]; then
+    if [ "$IMAGE_FORMAT" != "qcow2" ]; then
+        do_fatal_error "Error: The compressed option is only available for qcow2 format"
+    fi
+    COMP_OPT="-c"
+elif
+    COMP_OPT=""
+fi
 
 if [ "$REPLACE" != 1 -a -f "$IMG" ]; then
     do_fatal_error "Error: $IMG already exists"
@@ -161,7 +171,6 @@ set -e
 set -x
 
 # Compute the size of the directory or the role
-    
 if [ -d "$DIR" ]; then
     SIZE=$(du -s -BM "$DIR" | cut -f1 | sed -s 's/.$//')
 else
@@ -285,7 +294,7 @@ EOF
     # Fix generated grub.cfg
     sed -i -e 's/\t*loopback.*//' -e 's/\t*set root=.*//' -e "s/\(--set=root \|UUID=\)[^ ]?+/\1$UUID/" $MDIR/boot/grub$V/grub.cfg
     sed -i -e 's/msdos5/msdos1/g' $MDIR/boot/grub$V/grub.cfg
-    
+
     # add / to fstab
     echo "UUID=$UUID / ext4 errors=remount-ro 0 1" >> $MDIR/etc/fstab
 else
@@ -344,7 +353,7 @@ EOF
  vagrant box add ${IMG} ${IMG}.box --provider=${VAGRANT_PROVIDER}"
 else
     if [ -n "$IMAGE_FORMAT" -a "$IMAGE_FORMAT" != raw ]; then
-        qemu-img convert -O $IMAGE_FORMAT "$IMG" "$IMG".$IMAGE_FORMAT
+        qemu-img convert $COMP_OPT -O $IMAGE_FORMAT "$IMG" "$IMG".$IMAGE_FORMAT
     fi
 fi
 

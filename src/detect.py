@@ -160,6 +160,18 @@ def detect_megacli(hw_lst):
                                    'size',
                                    disk_size))
 
+                    for key in info.keys():
+                        ignore_list = ['PdType', 'EnclosureDeviceId', 'CoercedSize', 'ExitCode']
+                        if key not in ignore_list:
+                            if "DriveTemperature" in key:
+                                if "C" in str(info[key].split()[0]):
+                                    hw_lst.append(('pdisk', disk, key, str(info[key].split()[0].split("C")[0]).strip()))
+                                    hw_lst.append(('pdisk', disk, "%s_units" % key, "Celsius"))
+                                else:
+                                    hw_lst.append(('pdisk', disk, key, str(info[key]).strip()))
+                            else:
+                                hw_lst.append(('pdisk', disk, key, str(info[key]).strip()))
+
                 if global_pdisk_size > 0:
                     hw_lst.append(('pdisk',
                                    'all',

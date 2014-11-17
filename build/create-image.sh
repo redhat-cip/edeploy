@@ -141,7 +141,7 @@ if [ "$COMPRESSED" = "yes" ]; then
         do_fatal_error "Error: The compressed option is only available for qcow2 format"
     fi
     COMP_OPT="-c"
-elif
+else
     COMP_OPT=""
 fi
 

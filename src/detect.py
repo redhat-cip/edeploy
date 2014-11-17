@@ -36,6 +36,8 @@ import sys
 import xml.etree.ElementTree as ET
 import re
 import detect_utils
+import pprint
+import getopt
 
 SIOCGIFNETMASK = 0x891b
 
@@ -654,7 +656,7 @@ def parse_dmesg(hrdw, filename):
                     parse_ahci(hrdw, words)
 
 
-def _main():
+def _main(options):
     'Command line entry point.'
     hrdw = []
     detect_hpa(hrdw)
@@ -668,7 +670,35 @@ def _main():
     detect_utils.ipmi_sdr(hrdw)
     os.system("dmesg > /tmp/dmesg")
     parse_dmesg(hrdw, "/tmp/dmesg")
-    print(json.dumps(hrdw))
+    if "human" in options.keys():
+        pprint.pprint(hrdw)
+    else:
+        print(json.dumps(hrdw))
+
+
+def print_help():
+    print 'detect.py help page'
+    print
+    print '-h or --help    : Print this help'
+    print '-H or --human   : Print output in human readable format'
+    print
+
 
 if __name__ == "__main__":
-    _main()
+    options = {}
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hH", ['help', 'human'])
+    except getopt.GetoptError:
+        print "Error: One of the options passed to the cmdline was not supported"
+        print "Please fix your command line or read the help (-h option)"
+        sys.exit(2)
+
+    for opt, arg in opts:
+        if opt in ("-h", "--help"):
+            print_help()
+            sys.exit(0)
+        elif opt in ("-H", "--human"):
+            options["human"] = True
+
+    _main(options)

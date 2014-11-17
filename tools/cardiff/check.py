@@ -63,6 +63,13 @@ def logical_disks(global_params, systems, unique_id):
     return groups
 
 
+def ahci(global_params, systems, unique_id):
+    sets = search_item(systems, unique_id, "ahci", ".*")
+    groups = compare_sets.compare(sets)
+    compare_sets.print_groups(global_params, groups, "AHCI Controller")
+    return groups
+
+
 def compute_deviance_percentage(item, df):
     # If we have a single item
     # checking the variance is useless

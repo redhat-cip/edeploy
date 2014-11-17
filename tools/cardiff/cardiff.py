@@ -46,7 +46,7 @@ def print_help():
     print '-c <cat>   or --category <cat>      : Select the target category for DETAIL level (supports regexp)'
     print '-i <item>  or --item <item>         : Select the item for select group with DETAIL level (supports regexp)'
     print '-I <list>  or --ignore <list>       : Disable the grouping segregration on the coma separated list of components :'
-    print '                                        cpu, hpa, disk, firmware, memory, network, system, megaraid'
+    print '                                        cpu, hpa, disk, firmware, memory, network, system, megaraid, ahci'
     print '-r <dir1>[,<dir2>,<dir3>, ...]      : Perform the rampup analysis on directory containing results from dahc'
     print '                                        In such mode, no need to provide a pattern'
     print '                                        Print the compared results if several dirs are separated by a comma'
@@ -82,6 +82,12 @@ def compare_megaraid(global_params, bench_values, unique_id, systems_groups):
     compare_sets.compute_similar_hosts_list(systems_groups, compare_sets.get_hosts_list_from_result(groups))
 
 
+def compare_ahci(global_params, bench_values, unique_id, systems_groups):
+    systems = utils.find_sub_element(bench_values, unique_id, 'ahci')
+    groups = check.ahci(global_params, systems, unique_id)
+    compare_sets.compute_similar_hosts_list(systems_groups, compare_sets.get_hosts_list_from_result(groups))
+
+
 def compare_systems(global_params, bench_values, unique_id, systems_groups):
     systems = utils.find_sub_element(bench_values, unique_id, 'system')
     groups = check.systems(global_params, systems, unique_id)
@@ -114,6 +120,9 @@ def compare_cpu(global_params, bench_values, unique_id, systems_groups):
 
 
 def group_systems(global_params, bench_values, unique_id, systems_groups, ignore_list):
+    if "ahci" not in ignore_list:
+        compare_ahci(global_params, bench_values, unique_id, systems_groups)
+
     if "megaraid" not in ignore_list:
         compare_megaraid(global_params, bench_values, unique_id, systems_groups)
 

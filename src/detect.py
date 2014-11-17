@@ -121,6 +121,10 @@ def detect_megacli(hw_lst):
     global_pdisk_size = 0
     if ctrl_num > 0:
         for ctrl in range(ctrl_num):
+            ctrl_info = megacli.adp_all_info(ctrl)
+            for entry in ctrl_info.keys():
+                hw_lst.append(('megaraid', 'Controller_%d' % (ctrl), '%s' % entry, '%s' % ctrl_info[entry]))
+
             for enc in megacli.enc_info(ctrl):
                 if "Enclosure" in enc.keys():
                     for key in enc.keys():

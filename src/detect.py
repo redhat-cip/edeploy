@@ -554,8 +554,8 @@ def detect_system(hw_lst, output=None):
                     find_element(elt, 'serial', 'serial', name.text, 'network',
                                  transform=string.lower)
 
-                detect_utils.get_lld_status(hw_lst, name.text)
                 detect_utils.get_ethtool_status(hw_lst, name.text)
+                detect_utils.get_lld_status(hw_lst, name.text)
 
         for elt in xml.findall(".//node[@class='processor']"):
             name = elt.find('physid')

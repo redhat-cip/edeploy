@@ -93,6 +93,17 @@ install_edeploy() {
     generate_ansible_host $t edeployservers $dir
     rsync -avP $ORIG/../ansible $dir/tmp/
 
+    case "$OS" in
+        "RedHatEnterpriseServer")
+            case "$CODENAME_MAJOR" in
+                7)
+                    attach_pool_rh_cdn $dir $RHN_CDN_POOL_ID
+                    add_rh_cdn_repo $dir rhel-7-server-optional-rpms
+                    ;;
+            esac
+            ;;
+    esac
+
     # do not start rsync in the chroot
     pushd $dir/tmp/ansible
     sed -e 's/notify: start rsync daemon/#/' < edeploy-install.yml > edeploy-install2.yml

@@ -64,6 +64,7 @@ class TestDetect(unittest.TestCase):
         self.saved_ioctl = fcntl.ioctl
         self.saved_get_uuid = detect.get_uuid
         self.saved_lld_status = detect_utils.get_lld_status
+        self.saved_ethtool_status = detect_utils.get_ethtool_status
 
         def fake(x):
             return (0, nbproc)
@@ -80,6 +81,9 @@ class TestDetect(unittest.TestCase):
         def fake_lld_status(arg, arg1):
             return []
 
+        def fake_ethtool_status(arg, arg1):
+            return []
+
         detect.cmd = fake
         keeper = Keeper('detect.output_lines',
                         [('vmx', ) for idx in range(nbphys)] +
@@ -93,6 +97,7 @@ class TestDetect(unittest.TestCase):
         fcntl.ioctl = fake_ioctl
         detect.get_uuid = fake_get_uuid
         detect_utils.get_lld_status = fake_lld_status
+        detect_utils.get_ethtool_status = fake_ethtool_status
 
     def test_ipmi_sdr(self):
         hw = []
@@ -199,6 +204,7 @@ class TestDetect(unittest.TestCase):
         fcntl.ioctl = self.saved_ioctl
         detect.get_uuid = self.saved_get_uuid
         detect_utils.get_lld_status = self.saved_lld_status
+        detect_utils.get_ethtool_status = self.saved_ethtool_status
 
     def test_detect_system_3(self):
         l = []

@@ -581,11 +581,15 @@ def detect_system(hw_lst, output=None):
                 find_element(elt, "configuration/setting[@id='threads']",
                              'threads', 'physical_%s' % socket_count, 'cpu',
                              'value')
-                cpuinfo_cmd = output_lines("grep flags /proc/cpuinfo |"
-                                           "uniq | cut -d ':' -f 2")
-                for line in cpuinfo_cmd:
-                    hw_lst.append(('cpu', 'physical_%s' % (socket_count),
-                                   'flags', line.rstrip('\n').strip()))
+
+                elt_cap = elt.findall("capabilities/capability")
+                cpu_flags = ""
+                for cap in elt_cap:
+                    for element in cap.items():
+                        cpu_flags = "%s %s" % (cpu_flags, element[1].strip())
+
+                hw_lst.append(('cpu', 'physical_%s' % (socket_count),
+                               'flags', cpu_flags.strip()))
 
                 socket_count = socket_count+1
     else:

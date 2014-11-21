@@ -37,6 +37,9 @@
   - name: create eDeploy config dir (rhel)
     file: path=/etc/edeploy state=directory owner=apache group=apache
     when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
+  - name: create eDeploy lock dir (rhel)
+    file: path=/var/run/edeploy state=directory owner=apache group=apache
+    when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
   - name: copy config files
     cp: src=/srv/edeploy/config/* dest=/etc/edeploy
   - name: create edeploy CGI config
@@ -54,7 +57,7 @@
     ini_file: dest=/etc/edeploy.conf section=SERVER option=LOCKFILE value=/var/lock/apache2/edeploy.lock mode=0644
     when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
   - name: set lock file in CGI config (rhel)
-    ini_file: dest=/etc/edeploy.conf section=SERVER option=LOCKFILE value=/var/run/httpd/edeploy.lock mode=0644
+    ini_file: dest=/etc/edeploy.conf section=SERVER option=LOCKFILE value=/var/run/edeploy/edeploy.lock mode=0644
     when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
   - name: set pxemngr URL in CGI config
     ini_file: dest=/etc/edeploy.conf section=SERVER option=PXEMNGRURL value=http://{{ ansible_default_ipv4["address"] }}/ mode=0644
@@ -125,6 +128,9 @@
     template: src=health-check.prof dest=/var/lib/tftpboot/pxelinux.cfg/profiles/health-check.prof mode=0644
     notify: sync bootnames
     when: pxemngr
+  - name: add tmpfile configuration (rhel 7+)
+    template: src=tmpfiles-edeploy.conf dest=/etc/tmpfiles.d/edeploy.conf mode=0644
+    when: (ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat') and ansible_lsb.major_release|int >= 7
   handlers:
     - name: sync bootnames
       command: pxemngr syncbootnames

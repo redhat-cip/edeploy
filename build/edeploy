@@ -73,8 +73,8 @@ function upgrade() {
 
     # If we run a test upgrade, let's just show what the rsync would have change on the server
     if [ "$TEST_UPGRADE" = "1" ]; then
-        rsync --dry-run -av --numeric-ids --delete-after --exclude-from=exclude rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${TARGET}/${ROLE}/ /
-        rsync --dry-run -av --numeric-ids --ignore-existing --include-from=add_only rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${TARGET}/${ROLE}/ /
+        rsync --dry-run -avi --numeric-ids --delete-after --exclude-from=exclude rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${TARGET}/${ROLE}/ /
+        rsync --dry-run -avi --numeric-ids --ignore-existing --include-from=add_only rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${TARGET}/${ROLE}/ /
         return 0
     fi
 
@@ -122,7 +122,7 @@ function verify() {
         EXCLUDE=--exclude-from=${EDEPLOY_DIR}/$VERS/exclude
     fi
 
-    rsync --dry-run -av --delete-after $EXCLUDE rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${VERS}/${ROLE}/ /
+    rsync --dry-run -avi --delete-after $EXCLUDE rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${VERS}/${ROLE}/ /
 }
 
 function version() {

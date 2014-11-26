@@ -24,6 +24,7 @@ import diskinfo
 import fcntl
 import hpacucli
 import infiniband as ib
+import ipmi
 import json
 import megacli
 from netaddr import IPNetwork
@@ -316,6 +317,9 @@ def detect_ipmi(hw_lst):
             if status == 0:
                 hw_lst.append(('system', 'ipmi', 'channel', '%s' % channel))
                 break
+        status, output = cmd('ipmitool lan print')
+        if status == 0:
+            ipmi.parse_lan_info(output, hw_lst)
     else:
         # do we need a fake ipmi device for testing purpose ?
         status, _ = cmd('grep -qi FAKEIPMI /proc/cmdline')

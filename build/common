@@ -316,6 +316,7 @@ cleanup() {
         # Did we completed the build (aka no more dependencies) ?
         # It's useless creating virtualized images on dependencies, it takes space & time for nothing.
         if [ "$MAKEFILE_TARGET" = "$CLEAN_CURRENT_TARGET" ]; then
+            clean_base_repository $DIST
             echo "No more dependencies, considering Virtualized output"
             if [ ! -z "$VIRTUALIZED" ]; then
                 if [ ! -f "$VIRTUALIZED" ]; then

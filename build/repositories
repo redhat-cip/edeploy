@@ -314,3 +314,18 @@ disable_repository() {
         ;;
     esac
 }
+
+clean_base_repository() {
+    local dist=$1
+
+    case "$dist" in
+        $supported_debian_dists)
+        ;;
+        $supported_redhat_dists)
+            do_chroot $dir rm /etc/yum.repos.d/rhel-source.repo
+        ;;
+        *)
+            fatal_error "$(dist) isn't supported in clean_base_repository()"
+        ;;
+    esac
+}

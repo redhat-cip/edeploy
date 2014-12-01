@@ -36,6 +36,7 @@
 /etc/rc.local
 /etc/rc.local.REAL
 /etc/resolv.conf
+/etc/sensu/
 /etc/services
 /etc/ssh/ssh_host_dsa_key
 /etc/ssh/ssh_host_dsa_key.pub

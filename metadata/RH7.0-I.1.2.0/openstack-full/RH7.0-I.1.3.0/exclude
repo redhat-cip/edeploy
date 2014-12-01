@@ -28,6 +28,7 @@
 /etc/motd
 /etc/mtab
 /etc/mysql/
+/etc/sensu/
 /etc/sysconfig/
 /etc/neutron/api-paste.ini
 /etc/neutron/dhcp_agent.ini

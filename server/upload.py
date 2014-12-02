@@ -40,105 +40,12 @@ import errno
 import json
 import os
 import pprint
-import re
 import sys
-import shutil
 import time
 import traceback
 
-import matcher
-
-
-def _generate_range(num_range):
-    'Generate number for range specified like 10-12:20-30.'
-    for rang in num_range.split(':'):
-        boundaries = rang.split('-')
-        if len(boundaries) == 2:
-            try:
-                if boundaries[0][0] == '0':
-                    fmt = '%%0%dd' % len(boundaries[0])
-                else:
-                    fmt = '%d'
-                start = int(boundaries[0])
-                stop = int(boundaries[1]) + 1
-                if stop > start:
-                    step = 1
-                else:
-                    step = -1
-                    stop = stop - 2
-                for res in range(start, stop, step):
-                    yield fmt % res
-            except ValueError:
-                yield num_range
-        else:
-            yield num_range
-
-
-_RANGE_REGEXP = re.compile(r'^(.*?)([0-9]+-[0-9]+(:([0-9]+-[0-9]+))*)(.*)$')
-_IPV4_RANGE_REGEXP = re.compile(r'^[0-9:\-.]+$')
-
-
-def _generate_values(pattern):
-    '''Create a generator for ranges of IPv4 or names with ranges
-defined like 10-12:15-18 or from a list of entries.'''
-    if isinstance(pattern, list) or isinstance(pattern, tuple):
-        for elt in pattern:
-            yield elt
-    else:
-        parts = pattern.split('.')
-        if _IPV4_RANGE_REGEXP.search(pattern) and \
-                len(parts) == 4 and (pattern.find(':') != -1 or
-                                     pattern.find('-') != -1):
-            gens = [_generate_range(part) for part in parts]
-            for part0 in gens[0]:
-                for part1 in gens[1]:
-                    for part2 in gens[2]:
-                        for part3 in gens[3]:
-                            yield '.'.join((part0, part1, part2, part3))
-                        gens[3] = _generate_range(parts[3])
-                    gens[2] = _generate_range(parts[2])
-                gens[1] = _generate_range(parts[1])
-        else:
-            res = _RANGE_REGEXP.search(pattern)
-            if res:
-                head = res.group(1)
-                foot = res.group(res.lastindex)
-                for num in _generate_range(res.group(2)):
-                    yield head + num + foot
-            else:
-                for _ in xrange(16387064):
-                    yield pattern
-
-
-STRING_TYPE = type('')
-
-
-def generate(model):
-    '''Generate a list of dict according to a model. Ipv4 ranges are
-handled by _generate_ip.'''
-    # Safe guard for models without ranges
-    for value in model.values():
-        if type(value) != STRING_TYPE:
-            break
-        elif _RANGE_REGEXP.search(value):
-            break
-    else:
-        return [model]
-    # The model has a range starting from here
-    result = []
-    copy = {}
-    copy.update(model)
-    for key, value in copy.items():
-        copy[key] = _generate_values(value)
-    while True:
-        try:
-            entry = {}
-            for key in copy:
-                entry[key] = copy[key].next()
-            result.append(entry)
-        except StopIteration:
-            break
-    return result
+from hardware import matcher
+from hardware.cmdb import update_cmdb, set_warning_error, save_cmdb, load_cmdb
 
 
 def lock(filename):
@@ -176,82 +83,6 @@ def log(msg, prefix='eDeploy', module='upload.py'):
                                                  msg))
 
 
-def is_included(dict1, dict2):
-    'Test if dict1 is included in dict2.'
-    for key, value in dict1.items():
-        try:
-            if dict2[key] != value:
-                return False
-        except KeyError:
-            return False
-    return True
-
-
-def cmdb_filename(cfg_dir, name):
-    'Return the cmdb filename.'
-    return cfg_dir + name + '.cmdb'
-
-
-def load_cmdb(cfg_dir, name):
-    'Load the cmdb.'
-    filename = cmdb_filename(cfg_dir, name)
-    try:
-        if "generate(" in open(filename).read(20):
-            shutil.copy2(filename, filename + ".orig")
-        return eval(open(filename).read(-1))
-    except IOError, xcpt:
-        if xcpt.errno != errno.ENOENT:
-            log("exception while processing CMDB %s" % str(xcpt))
-        return None
-
-
-def save_cmdb(cfg_dir, name, cmdb):
-    'Save the cmdb.'
-    filename = cmdb_filename(cfg_dir, name)
-    try:
-        pprint.pprint(cmdb, stream=open(filename, 'w'))
-    except IOError, xcpt:
-        log("exception while saving CMDB %s" % str(xcpt))
-
-
-def update_cmdb(cmdb, var, pref, forced_find):
-    '''Handle CMDB settings if present. CMDB is updated with var.
-var is also augmented with the cmdb entry found.'''
-
-    def update_entry(entry, cmdb, idx):
-        'Update var using a cmdb entry and save the full cmdb on disk.'
-        entry.update(var)
-        var.update(entry)
-        var['used'] = 1
-        cmdb[idx] = var
-
-    # First pass to lookup if the var is already in the database
-    # and if this is the case, reuse the entry.
-    idx = 0
-    for entry in cmdb:
-        if is_included(pref, entry):
-            update_entry(entry, cmdb, idx)
-            break
-        idx += 1
-    else:
-        # not looking for $$ type matches
-        if not forced_find:
-            # Second pass, find a not used entry.
-            idx = 0
-            for entry in cmdb:
-                if 'used' not in entry:
-                    update_entry(entry, cmdb, idx)
-                    break
-                idx += 1
-            else:
-                warning_error("No more entry in the CMDB, aborting.")
-                return False
-        else:
-            warning_error("No entry matched in the CMDB, aborting.")
-            return False
-    return True
-
-
 def save_hw(items, name, hwdir):
     'Save hw items for inspection on the server.'
     try:
@@ -273,51 +104,6 @@ def register_pxemngr(sysvars):
     else:
         log('added %s under pxemngr for MAC addresses %s'
             % (sysvars['sysname'], macs))
-
-
-def generate_filename_and_macs(items):
-    '''Generate a file name for a hardware using DMI information
-    (product name and version) then if the DMI serial number is
-    available we use it unless we lookup the first mac address.
-    As a result, we do have a filename like :
-
-    <dmi_product_name>-<dmi_product_version>-{dmi_serial_num|mac_address}'''
-
-    # Duplicate items as it will be modified by match_* functions
-    hw_items = list(items)
-    sysvars = {}
-    sysvars['sysname'] = ''
-
-    matcher.match_spec(('system', 'product', 'vendor', '$sysprodvendor'),
-                       hw_items, sysvars)
-
-    if 'sysprodvendor' in sysvars:
-        sysvars['sysname'] += re.sub(r'\W+', '', sysvars['sysprodvendor']) + \
-            '-'
-
-    matcher.match_spec(('system', 'product', 'name', '$sysprodname'),
-                       hw_items, sysvars)
-
-    if 'sysprodname' in sysvars:
-        sysvars['sysname'] = re.sub(r'\W+', '', sysvars['sysprodname']) + '-'
-
-    matcher.match_spec(('system', 'product', 'serial', '$sysserial'),
-                       hw_items, sysvars)
-
-    # Let's use any existing DMI serial number or take the first mac address
-    if 'sysserial' in sysvars:
-        sysvars['sysname'] += re.sub(r'\W+', '', sysvars['sysserial'])
-
-    # we always need to have the mac addresses for pxemngr
-    if matcher.match_multiple(hw_items,
-                              ('network', '$eth', 'serial', '$serial'),
-                              sysvars):
-        if 'sysserial' not in sysvars:
-            sysvars['sysname'] += sysvars['serial'][0].replace(':', '-')
-    else:
-        log('unable to detect network macs')
-
-    return sysvars
 
 
 def warning_error(error):
@@ -383,6 +169,9 @@ def main():
 
         print "Content-Type: text/x-python"     # HTML is following
         print                                   # blank line, end of headers
+
+        # setup the hook to report the error to the returned script
+        set_warning_error(warning_error)
 
         # Log form fields
         for key in form:
@@ -473,7 +262,7 @@ def main():
 
     atexit.register(cleanup)
 
-    filename_and_macs = generate_filename_and_macs(hw_items)
+    filename_and_macs = matcher.generate_filename_and_macs(hw_items)
     save_hw(hw_items, filename_and_macs['sysname'], hw_dir)
 
     use_pxemngr = (config_get(section, 'USEPXEMNGR', False) == 'True')

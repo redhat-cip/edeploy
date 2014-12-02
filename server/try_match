@@ -17,7 +17,7 @@
 # under the License.
 
 import sys
-import matcher
+from hardware import matcher
 
 if len(sys.argv) != 3:
     print "try_match help"

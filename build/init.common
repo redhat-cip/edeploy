@@ -6,7 +6,7 @@ fi
 
 GIT_REV=""
 UPLOAD_LOG=1
-export PATH=/sbin:/usr/sbin:/bin:/usr/bin:$PATH
+export PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin:$PATH
 
 is_virtualized() {
     grep -qw hypervisor /proc/cpuinfo
@@ -57,7 +57,7 @@ do_python() {
 }
 
 run_detect() {
-    do_python /detect.py > /hw.json || give_up "Failed to detect hardware"
+    do_python hardware-detect > /hw.json || give_up "Failed to detect hardware"
 }
 
 get_system_info() {

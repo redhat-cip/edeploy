@@ -40,7 +40,7 @@ import re
 import sys
 import time
 
-import matcher
+from hardware import matcher
 
 
 def log(msg):

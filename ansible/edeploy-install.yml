@@ -28,6 +28,8 @@
       - qemu-img
       - patch
     when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
+  - name: install the hardware python module
+    pip: name=hardware
   - name: extract eDeploy git repo
     git: repo=https://github.com/enovance/edeploy.git
          dest=/srv/edeploy force=no

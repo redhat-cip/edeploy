@@ -49,7 +49,7 @@ META=$(TOP)/metadata/$(VERS)
 
 TEST_ROLE:=base
 
-DEPS = $(PYDIR)/detect.py $(PYDIR)/hpacucli.py $(PYDIR)/megacli.py $(PYSERVERDIR)/matcher.py $(PYDIR)/diskinfo.py $(PYDIR)/ipmi.py $(PYDIR)/infiniband.py $(PYDIR)/detect_utils.py respawn
+DEPS = respawn
 HEALTH_DEPS = $(DEPS) $(PYDIR)/health_bench.py $(PYDIR)/health-check.py $(PYDIR)/health-client.py $(PYDIR)/health_libs.py $(PYDIR)/health_messages.py $(PYDIR)/health_protocol.py $(PYDIR)/health-server.py
 
 ROLES = base pxe health-check deploy

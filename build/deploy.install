@@ -60,6 +60,13 @@ install_edeploy() {
     add_epel_repository $DIST
     # Install the packages needed by the local transport of ansible
     # on the host and git to checkout pxemngr for its ansible playbook
+    # TODO (spredzy) : DEBUG
+    do_chroot $dir yum repolist
+    do_chroot $dir yum info git
+    do_chroot $dir yum info python-pip
+    do_chroot $dir yum info python-crypto
+    do_chroot $dir yum info python-setuptools
+    # END
     install_packages $dir ca-certificates git python-pip python-crypto
     case "$OS" in
         "Debian"|"Ubuntu")

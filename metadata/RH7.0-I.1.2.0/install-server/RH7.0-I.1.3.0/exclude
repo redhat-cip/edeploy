@@ -51,6 +51,7 @@
 /sys/
 /tmp/
 /usr/share/elasticsearch/
+/var/cache/jenkins/
 /var/lib/debootstrap/
 /var/lib/dhclient/
 /var/lib/dnsmasq/

@@ -6,7 +6,6 @@ fi
 
 GIT_REV=""
 UPLOAD_LOG=1
-export PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin:$PATH
 
 is_virtualized() {
     grep -qw hypervisor /proc/cpuinfo
@@ -664,7 +663,7 @@ fi
 }
 
 set_path() {
-    PATH=/sbin:/bin:/usr/bin:/usr/sbin
+    PATH=/sbin:/bin:/usr/bin:/usr/sbin:/usr/local/bin
     export PATH
 }
 

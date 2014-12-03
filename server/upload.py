@@ -343,10 +343,10 @@ def main():
 import commands
 import os
 import sys
-
-import hpacucli
-import ipmi
 import time
+
+from hardware import hpacucli
+from hardware import ipmi
 
 def run(cmd):
     sys.stderr.write('+ ' + cmd + '\\n')

@@ -124,6 +124,8 @@ HTTP_PATH=/cgi-bin/
 HPATH=install
 RPATH=install
 SECTION=SERVER
+DISCO=
+NO_CLOUD_INIT=
 
 # Unless you override one or the other via the cmdline
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^[HR]?SERV=")
@@ -132,6 +134,8 @@ eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^HTTP_PORT=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^HTTP_PATH=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^[HR]PATH=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^SECTION=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^DISCO=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^NO_CLOUD_INIT=")
 
 if [ -z "$RSERV" ]; then
     RSERV="$SERV"
@@ -162,6 +166,11 @@ if [ -n "$EMBEDDED" ]; then
     mkdir -p /etc/
     cp -a $EMBEDDED_MOUNT/etc/* /etc
     do_python "/upload.py -f /hw.json" > /configure
+elif [ -n "$DISCO" ]; then
+    step "Sending data to discoverd using ${DISCO}"
+    # discoverd expect the data to be in a dictionary
+    echo "{\"data\": $(cat /hw.json)}" > /discoverd.json
+    discoverd_request POST "${DISCO}" @/discoverd.json
 else
     step "Configuring system via server ${SERV}"
     curl -s -S -o/configure -F section=${SECTION} -F file=@/hw.json http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py &
@@ -184,7 +193,27 @@ else
 fi
 
 if [ ! -f /configure ]; then
-    give_up "edeploy server ${SERV} didn't provide any answer, looks like something is wrong on server side !"
+    if [ -n "$DISCO" ]; then
+        case "$ONSUCCESS" in
+            "reboot")
+                log "Automatic rebooting as required by ONSUCCESS"
+                do_reboot
+                ;;
+            "halt")
+                log "Automatic poweroff as required by ONSUCCESS"
+                do_halt
+                ;;
+            "console")
+                log "ONSUCCESS=console, launching an interactive shell"
+                do_console
+                ;;
+            *)
+                give_up "Unsupported ONSUCCESS=$ONSUCCESS value"
+                ;;
+        esac
+    else
+        give_up "edeploy server ${SERV} didn't provide any answer, looks like something is wrong on server side !"
+    fi
 fi
 
 # If the configure features a PROFILE then we can report to the edeploy server a failure

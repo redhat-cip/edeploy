@@ -32,7 +32,7 @@ start_udev() {
 }
 
 get_config_from_cloudinit() {
-    if is_virtualized; then
+    if is_virtualized && [ -z "$NO_CLOUD_INIT" ]; then
          #Let's try to get a user-data in the next minute (sometimes cloud-init is long to answer the initial request)
          curl http://169.254.169.254/2009-04-04/user-data -fso /user-data -m 5 --retry 10 --retry-delay 2
          if [ -f /user-data ]; then
@@ -669,4 +669,25 @@ set_path() {
 
 start_mcelog(){
     mcelog --ignorenodev --filter --daemon --logfile /mcelog
+}
+
+discoverd_request(){
+    HTTP_METHOD=$1
+    URL=$2
+    DATA=$3
+
+    if [ -z "$DATA" ]; then
+        give_up "no data passed to discoverd_request"
+    fi
+
+    RESULT=$(eval curl -i -X "$HTTP_METHOD" \
+           "-H 'Accept: application/json'" \
+           "-H 'Content-Type: application/json'" \
+           -d "$DATA" \
+           "$URL") || give_up "Failed to send data to $URL"
+    # CURL can't return error code on 4xx error
+    if echo $RESULT | grep "HTTP/1.0 4"; then
+        give_up "Ironic API returned error: $RESULT"
+    fi
+    log "discoverd_request $URL: $RESULT"
 }

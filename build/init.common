@@ -33,6 +33,7 @@ start_udev() {
 
 get_config_from_cloudinit() {
     if is_virtualized && [ -z "$NO_CLOUD_INIT" ]; then
+         step "Getting config from cloud init"
          #Let's try to get a user-data in the next minute (sometimes cloud-init is long to answer the initial request)
          curl http://169.254.169.254/2009-04-04/user-data -fso /user-data -m 5 --retry 10 --retry-delay 2
          if [ -f /user-data ]; then

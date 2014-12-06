@@ -45,7 +45,7 @@ import time
 import traceback
 
 from hardware import matcher
-from hardware.cmdb import update_cmdb, set_warning_error, save_cmdb, load_cmdb
+from hardware import state
 
 
 def lock(filename):
@@ -142,7 +142,7 @@ def main():
         except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
             return default
 
-    failure_role = ''
+    failure_role = None
     section = 'SERVER'
 
     # parse hw file given in argument or passed to cgi script
@@ -169,9 +169,6 @@ def main():
 
         print "Content-Type: text/x-python"     # HTML is following
         print                                   # blank line, end of headers
-
-        # setup the hook to report the error to the returned script
-        set_warning_error(warning_error)
 
         # Log form fields
         for key in form:
@@ -234,7 +231,7 @@ def main():
 
     try:
         json_hw_items = json.loads(hw_file.read(-1))
-    except Exception, excpt:
+    except Exception as excpt:
         fatal_error("'Invalid hardware file: %s'" % str(excpt))
 
     def encode(elt):
@@ -272,66 +269,19 @@ def main():
     if use_pxemngr:
         register_pxemngr(filename_and_macs)
 
-    state_filename = cfg_dir + 'state'
-    log('Reading state from %s' % state_filename)
-    names = eval(open(state_filename).read(-1))
+    state_obj = state.State()
+    state_obj.load(cfg_dir)
 
     if failure_role:
-        # If we get a failure report, let's reincrement the counter
-        log("Received failure for role %s" % failure_role)
-        idx = 0
-        times = '*'
-        name = None
-        for name, times in names:
-            if name == failure_role:
-                # Only consider if time in a numeric entry
-                if times != '*':
-                    names[idx] = (name, int(times) + 1)
-                    with open(state_filename, 'w') as state_file:
-                        pprint.pprint(names, stream=state_file)
-                    break
-            idx += 1
-        sys.exit(0)
+        if state_obj.failed_profile(failure_role):
+            state_obj.save()
+            sys.exit(0)
 
-    idx = 0
-    times = '*'
-    name = None
-    valid_roles = []
-    for name, times in names:
-        if times == '*' or int(times) > 0:
-            valid_roles.append(name)
-            specs = eval(open(cfg_dir + name + '.specs', 'r').read(-1))
-            var = {}
-            var2 = {}
-            if matcher.match_all(hw_items, specs, var, var2):
-                log('Specs %s matches' % name)
-
-                forced = (var2 != {})
-
-                if var2 == {}:
-                    var2 = var
-
-                if times != '*':
-                    names[idx] = (name, int(times) - 1)
-                    log('Decrementing %s to %d' % (name, int(times) - 1))
-
-                cmdb = load_cmdb(cfg_dir, name)
-                if cmdb:
-                    if update_cmdb(cmdb, var, var2, forced):
-                        save_cmdb(cfg_dir, name, cmdb)
-                    else:
-                        idx += 1
-                        continue
-                var['edeploy-profile'] = name
-                break
-        idx += 1
-    else:
-        if len(valid_roles) == 0:
-            fatal_error('No more role available in %s' % (state_filename,))
-        else:
-            fatal_error(
-                'Unable to match requirements on the following roles in %s: %s'
-                % (state_filename, ', '.join(valid_roles)))
+    try:
+        name, var = state_obj.find_match(hw_items)
+        var['edeploy-profile'] = name
+    except Exception as excpt:
+        fatal_error(str(excpt))
 
     sys.stdout.write('''#!/usr/bin/env python
 #EDEPLOY_PROFILE = %s
@@ -395,8 +345,7 @@ run('echo "METADATA_URL=%s" >> /vars')
 ''' % metadata_url
 
     log('Sending configure script')
-    with open(state_filename, 'w') as state_file:
-        pprint.pprint(names, stream=state_file)
+    state_obj.save()
 
 if __name__ == "__main__":
     try:

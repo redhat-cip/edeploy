@@ -51,6 +51,7 @@
 /sys/
 /tmp/
 /usr/share/elasticsearch/
+/usr/share/ansible/
 /var/cache/jenkins/
 /var/lib/debootstrap/
 /var/lib/dhclient/

@@ -59,6 +59,7 @@
 /run/
 /sys/
 /tmp/
+/usr/share/ansible/
 /usr/share/elasticsearch/
 /var/backups/
 /var/cache/debconf/

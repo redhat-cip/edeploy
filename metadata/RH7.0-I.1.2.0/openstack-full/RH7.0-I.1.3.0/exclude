@@ -28,6 +28,8 @@
 /etc/motd
 /etc/mtab
 /etc/mysql/
+/etc/my.cnf
+/etc/my.cnf.d/
 /etc/sensu/
 /etc/sysconfig/
 /etc/neutron/api-paste.ini

@@ -248,14 +248,12 @@ def main():
     # avoid concurrent accesses
     lock_filename = config_get(section, 'LOCKFILE',
                                '/var/run/httpd/edeploy.lock')
-    try:
-        lockfd = lock(lock_filename)
-    except Exception, excpt:
-        fatal_error("'Error on server's lock file : %s'" % str(excpt))
+    state_obj = state.State(lockname=lock_filename)
+    state_obj.load(cfg_dir)
 
     def cleanup():
         'Remove lock.'
-        unlock(lockfd, lock_filename)
+        state_obj.unlock()
 
     atexit.register(cleanup)
 
@@ -268,9 +266,6 @@ def main():
 
     if use_pxemngr:
         register_pxemngr(filename_and_macs)
-
-    state_obj = state.State()
-    state_obj.load(cfg_dir)
 
     if failure_role:
         if state_obj.failed_profile(failure_role):

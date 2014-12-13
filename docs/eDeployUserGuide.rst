@@ -1068,7 +1068,7 @@ file looks like this :
    [
     ('disk', '$disk', 'size', 'gt(4)'),
     ('network', '$eth', 'ipv4', 'network(192.168.122.0/24)'),
-    ('network', '$eth', 'serial', '$mac'),
+    ('network', '$eth', 'serial', '$mac=regexp(^28:d2:)'),
    ]
 
 To match the 'vm-debian' profile, a hardware system must match the
@@ -1076,7 +1076,7 @@ following criterias :
 
 -  have a hard drive bigger than 4GB
 -  have one network interface on the 192.168.122.0/24 IPV4 network
--  have a MAC address
+-  have a MAC address starting by 28:d2:
 
 The more discriminant criterias are, the more accurate the matching is.
 For example, the most discriminant criteria is the serial number of a
@@ -1092,6 +1092,7 @@ helper functions.
 -  gt(), ge(), lt(), le() : greater than (or equal), lower than (or
    equal)
 -  in() : the item to match shall be in a specified set
+-  regexp() : match a regular expression
 
    
 

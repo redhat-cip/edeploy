@@ -76,6 +76,7 @@ case "$DIST" in
 esac
 
 install_packages $dir $PACKAGES
+do_chroot $dir pip install pbr==0.10.2
 do_chroot $dir pip install hardware
 clear_packages_cache $dir
 

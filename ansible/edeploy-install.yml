@@ -29,7 +29,7 @@
       - patch
     when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
   - name: install the pbr python module
-    pip: name=hardware version=0.10.2
+    pip: name=pbr version=0.10.2
   - name: install the hardware python module
     pip: name=hardware
   - name: extract eDeploy git repo

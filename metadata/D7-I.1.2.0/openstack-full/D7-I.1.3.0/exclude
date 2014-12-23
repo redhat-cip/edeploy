@@ -293,6 +293,7 @@
 /etc/ssh/ssh_host_ecdsa_key.pub
 /etc/ssh/ssh_host_rsa_key
 /etc/ssh/ssh_host_rsa_key.pub
+/etc/ssl/certs/
 /etc/sudoers.d/90-cloud-init-users
 /etc/sudoers.d/999-jenkins-cloud-init-requiretty
 /etc/sysconfig/

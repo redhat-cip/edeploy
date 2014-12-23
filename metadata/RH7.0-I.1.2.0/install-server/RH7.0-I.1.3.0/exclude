@@ -24,6 +24,9 @@
 /etc/hosts-ci
 /etc/motd
 /etc/mtab
+/etc/passwd
+/etc/shadow
+/etc/group
 /etc/sysconfig
 /etc/networks
 /etc/ntp.conf

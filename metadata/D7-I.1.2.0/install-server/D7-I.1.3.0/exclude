@@ -5,7 +5,11 @@
 /etc/apache2/site-enabled/puppetboard
 /etc/apache2/site-enabled/puppetmaster
 /etc/config-tools/
+/etc/dnsmasq.d/
+/etc/edeploy/
+/etc/edeploy.conf
 /etc/elasticsearch/
+/etc/ethers
 /etc/serverspec/
 /etc/jenkins_jobs/
 /etc/puppet/
@@ -20,6 +24,7 @@
 /etc/fstab
 /etc/hostname
 /etc/hosts
+/etc/hosts-ci
 /etc/init.d/.depend.*
 /etc/motd
 /etc/mtab
@@ -61,6 +66,13 @@
 /tmp/
 /usr/share/ansible/
 /usr/share/elasticsearch/
+/usr/bin/configure.sh
+/usr/bin/edeploy-nodes.sh
+/usr/bin/extract.py
+/usr/bin/generate.py
+/usr/bin/health-check.sh
+/usr/bin/merge.py
+/usr/bin/verify-servers.sh
 /var/backups/
 /var/cache/debconf/
 /var/cache/jenkins/
@@ -97,4 +109,6 @@
 /var/spool/cron/crontabs/
 /var/spool/cron/crontabs/
 /var/tmp/
+/var/www/cloud-init/
+/var/www/install/
 lost+found

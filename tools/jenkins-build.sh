@@ -26,7 +26,7 @@ if [ -z "$ROLES" ]; then
 fi
 
 if [ -z "$COMPRESSED_ROLES" ]; then
-    COMPRESSED_ROLES="cloud openstack-full install-server install-server-vm mysql slave softwarefactory"
+    COMPRESSED_ROLES="base cloud openstack-full install-server install-server-vm mysql slave softwarefactory"
 fi
 
 set -x

@@ -27,7 +27,7 @@ if [ -r ${EDEPLOY_DIR}/conf ]; then
 fi
 
 if [ -r ${EDEPLOY_LOG}/vars ]; then
-    . ${EDEPLOY_LOG}/vars
+    eval "$(grep '^PROFILE=' ${EDEPLOY_LOG}/vars)"
 fi
 
 function test-upgrade() {

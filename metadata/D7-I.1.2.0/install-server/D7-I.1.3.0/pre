@@ -1,2 +1,2 @@
-groupadd postgres
-useradd -G postgres -s /bin/bash postgres
+groupadd -g 180 postgres
+useradd -u 180 -g 180 -G postgres -s /bin/bash postgres

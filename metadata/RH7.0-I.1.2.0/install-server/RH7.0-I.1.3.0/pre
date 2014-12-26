@@ -1,2 +1,0 @@
-groupadd postgres
-useradd -G postgres -s /bin/bash postgres

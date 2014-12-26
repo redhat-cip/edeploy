@@ -1,2 +1,2 @@
-groupadd -g 139 postgres
-useradd -u 139 -G postgres -s /bin/bash postgres
+groupadd -g 26 postgres
+useradd -u 26 -G postgres -s /bin/bash postgres

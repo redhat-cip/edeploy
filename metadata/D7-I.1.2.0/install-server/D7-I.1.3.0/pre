@@ -1,2 +1,2 @@
 groupadd -g 139 postgres
-useradd -u 139 -G postgres -s /bin/bash postgres
+useradd -u 129 -g postgres -G ssl-cert -d /var/lib/postgresql -s /bin/bash postgres

@@ -1,2 +1,3 @@
 groupadd -g 26 postgres
 useradd -u 26 -G postgres -d /var/lib/postgresql -s /bin/bash postgres
+mkdir /var/log/postgresql

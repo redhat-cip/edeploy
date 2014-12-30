@@ -142,10 +142,9 @@ function check_args() {
         echo "${EDEPLOY_DIR}/conf must contain RSERV, VERS, ROLE and RSERV_PORT" 1>&2
         exit 1
     fi
-    if [ -z "$PROFILE" ]; then
-        echo "${EDEPLOY_LOG}/vars must contain PROFILE" 1>&2
-        exit 1
-    fi
+    # Do not add a test for PROFILE because we don't want to fail: some cases
+    # don't need PROFILE.
+    # ex: when booting an image directly from LXC or OpenStack Heat.
 }
 
 function activate-pkgmngr() {

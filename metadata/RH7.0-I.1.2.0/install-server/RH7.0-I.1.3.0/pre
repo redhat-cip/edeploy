@@ -1,3 +1,5 @@
 groupadd -g 26 postgres
 useradd -u 26 -g postgres -d /var/lib/postgresql -s /bin/bash postgres
 mkdir /var/log/postgresql
+mkdir /var/run/postgresql
+chown postgres:postgres /var/run/postgresql

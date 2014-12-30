@@ -59,6 +59,7 @@
 /etc/udev/rules.d/
 /home/jenkins/
 /lib/init/rw
+/opt/tempest-scripts/
 /proc/
 /root/
 /run/

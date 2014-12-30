@@ -50,6 +50,7 @@
 /etc/td-agent/
 /etc/udev/rules.d/
 /home/jenkins/
+/opt/tempest-scripts/
 /proc/
 /root/
 /run/

@@ -138,6 +138,8 @@ bootstrap() {
             sed -i -e 's/netdev:x:102:/netdev:x:127:/' "${target}"/etc/group
             find "${target}" -gid 102|xargs chgrp 127
         fi
+        # required for useradd/groupadd wrapper tool
+        install_packages ${target} python-minimal
     else if [ "$(package_type)" = "rpm" ]; then
             if [ "$(package_tool)" = "yum" ]; then
                 check_binary yum
@@ -160,7 +162,6 @@ bootstrap() {
 
     # Control the ids created by useradd and groupadd by wrapping
     # the commands with mngids.py
-    install_packages ${target} python-minimal
     cp -p ${ORIG}/mngids.py ${target}/usr/sbin/
     for cmd in useradd groupadd; do
         if [ ! -f ${target}/usr/sbin/${cmd}.real ]; then

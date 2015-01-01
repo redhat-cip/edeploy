@@ -7,6 +7,7 @@
 /etc/ceph/ceph.client.glance.keyring
 /etc/ceph/ceph.conf
 /etc/ceph/keyring
+/etc/ceph/secret.xml
 /etc/cinder/api-paste.ini
 /etc/cinder/cinder.conf
 /etc/corosync/

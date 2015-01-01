@@ -296,15 +296,7 @@
 /etc/ssl/certs/
 /etc/sudoers.d/90-cloud-init-users
 /etc/sudoers.d/999-jenkins-cloud-init-requiretty
-/etc/swift/account-server/
-/etc/swift/account-server.conf
-/etc/swift/container-server/
-/etc/swift/container-server.conf
-/etc/swift/object-expirer/
-/etc/swift/object-expirer.conf
-/etc/swift/proxy-server/
-/etc/swift/proxy-server.conf
-/etc/swift/swift.conf
+/etc/swift/
 /etc/sysconfig/
 /etc/sysconfig/network
 /etc/sysconfig/network-scripts/

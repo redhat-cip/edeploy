@@ -1,6 +1,10 @@
+userdel redis
 groupadd -g 26 postgres
 groupadd -g 997 polkitd
 groupadd -g 32 rpc
+groupddd -g 800 redis
+useradd -r -u 800 -g redis -d /var/lib/redis -s /sbin/nologin redis
+chown -R redis:redis /var/log/redis
 useradd -u 26 -g postgres -d /var/lib/postgresql -s /bin/bash postgres
 useradd -u 996 -g polkitd -d / -s /sbin/nologin polkitd
 useradd -u 32 -g rpc -d /var/lib/rpcbind -s /sbin/nologin rpc

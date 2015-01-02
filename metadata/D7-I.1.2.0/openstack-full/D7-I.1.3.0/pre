@@ -1,0 +1,3 @@
+userdel trove
+groupadd -g 141 trove
+useradd -u 131 -g trove -d /var/lib/trove -s /bin/bash trove

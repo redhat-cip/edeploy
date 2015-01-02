@@ -100,7 +100,7 @@ def parse_cmdline(args, uids, gids, first=100, last=999, last_user=29999):
             arg1 = args[ai]
             break
     if not arg1:
-        raise KeyError('Unable to find the fullname user or group in %s' str(args))
+        raise KeyError('Unable to find the fullname user or group in %s' % str(args))
     if args0 == 'adduser' or args0 == 'useradd':
         # lookup group argument
         idx = get_index(args, '-g') or get_index(args, '--gid')

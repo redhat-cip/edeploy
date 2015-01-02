@@ -1,4 +1,7 @@
 groupadd -g 139 postgres
 groupadd -g 119 ssl-cert
-useradd -u 130 -g postgres -G ssl-cert -d /var/lib/postgresql -s /bin/bash postgres
+userdel
+groupadd -g 141 trove
+useradd -u 131 -g trove -d /var/lib/trove -s /bin/bash trove
+useradd -u 131 -g postgres -G ssl-cert -d /var/lib/postgresql -s /bin/bash postgres
 mkdir /var/log/postgresql

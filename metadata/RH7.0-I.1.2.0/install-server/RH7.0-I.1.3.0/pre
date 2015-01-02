@@ -1,7 +1,9 @@
 groupadd -g 26 postgres
 groupadd -g 997 polkitd
+groupadd -g 32 rpc
 useradd -u 26 -g postgres -d /var/lib/postgresql -s /bin/bash postgres
 useradd -u 996 -g polkitd -d / -s /sbin/nologin polkitd
+useradd -u 32 -g rpc -d /var/lib/rpcbind -s /sbin/nologin rpc
 mkdir /var/log/postgresql
 mkdir /var/run/postgresql
 chown postgres:postgres /var/run/postgresql

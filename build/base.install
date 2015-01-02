@@ -167,7 +167,7 @@ bootstrap() {
         if [ ! -f ${target}/usr/sbin/${cmd}.real ]; then
             mv ${target}/usr/sbin/${cmd} ${target}/usr/sbin/${cmd}.real
         fi
-        ln -sf /usr/sbin/mngids.py ${target}/usr/sbin/${cmd}
+        ln -sf ${target}/usr/sbin/mngids.py ${target}/usr/sbin/${cmd}
     done
     # copy the tables of uids and gids
     cp ${dir}/../ids.tables ${dir}/root/

@@ -27,6 +27,21 @@ import sys
 
 _DEBUG = os.getenv('MNGIDS_DEBUG', None) is not None
 
+# adduser and addgroup option taking an argument
+args_opts = ('-g', '--gid',
+             '-K', '--key',
+             '-p', '--password',
+             '-R', '--root',
+             '-b', '--base-dir',
+             '-c', '--comment',
+             '-d', '--home-dir',
+             '-e', '--expiredate',
+             '-f', '--inactive',
+             '-G', '--groups',
+             '-k', '--skel',
+             '-s', '--shell',
+             '-u', '--uid',
+             '-Z', '--selinux-user')
 
 def debug(output):
     if _DEBUG:
@@ -78,12 +93,14 @@ def parse_cmdline(args, uids, gids, first=100, last=999, last_user=29999):
             args.insert(1, val)
             args.insert(1, opt)
 
-    # support to have the user or group name as the first argument instead
-    # of the last
-    if args[1][0] != '-':
-        arg1 = args[1]
-    else:
-        arg1 = args[-1]
+    # support to have the user or group name at all position
+    arg1 = None
+    for ai in range(1, len(args)):
+        if args[ai][0] != '-' and (args[ai-1] not in args_opts or args[ai-1] == args[0]):
+            arg1 = args[ai]
+            break
+    if not arg1:
+        raise KeyError('Unable to find the fullname user or group in %s' str(args))
     if args0 == 'adduser' or args0 == 'useradd':
         # lookup group argument
         idx = get_index(args, '-g') or get_index(args, '--gid')

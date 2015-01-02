@@ -64,28 +64,8 @@ def parse_cmdline(args, uids, gids, first=100, last=999, last_user=29999):
         index = get_index(args, opt) or get_index(args, '-' + opt[2])
 
         if not key in ids:
-            debug('mngids.py: %s not found (%s) in %s' % (key, opt, str(ids)))
-            if index:
-                try:
-                    ival = int(args[index + 1])
-                except:
-                    ival = None
-            else:
-                ival = None
-            if '-s' in args or '--system' in args or ival and ival < last:
-                f = first
-                l = last
-            else:
-                f = last + 1
-                l = last_user
-            vals = [ids[k][idx] for k in ids]
-            for loop in range(f, l):
-                if not str(loop) in vals:
-                    val = str(loop)
-                    break
-            else:
-                debug('no more id for %s in %s' % (key, ids))
-                return args
+            raise KeyError('mngids.py: %s not found (%s) in %s' %
+                           (key, opt, str(ids)))
         else:
             val = ids[key][idx]
 

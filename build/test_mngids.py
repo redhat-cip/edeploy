@@ -131,11 +131,10 @@ class TestMngids(unittest.TestCase):
         cmd = 'addgroup root'.split(' ')
         content = 'user:x:1000:'
         gids = {}
-        mngids.parse(content, gids)
-        mngids.parse_cmdline(cmd, {}, gids)
-        self.assertEquals(cmd[1], '--gid')
-        self.assertEquals(cmd[2], '1001')
- 
+        with self.assertRaises(KeyError):
+            mngids.parse(content, gids)
+            mngids.parse_cmdline(cmd, {}, gids)
+
     def test_parsecmdline_wrong_order(self):
         cmd = ['useradd', 'jenkins', '--shell', '/bin/bash',
                '--gid', 'cloud-users',

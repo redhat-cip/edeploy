@@ -12,6 +12,10 @@ useradd -u 32 -g rpc -d /var/lib/rpcbind -s /sbin/nologin rpc
 usermod -u 802 elasticsearch
 groupod -g 802 elasticsearch
 /etc/init.d/elasticsearch-fluentd start
+service memcached stop
+usermod -u 804 memcached
+groupod -g 804 memcached
+service memcached start
 mkdir /var/log/postgresql
 mkdir /var/run/postgresql
 chown postgres:postgres /var/run/postgresql

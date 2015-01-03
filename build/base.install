@@ -26,6 +26,15 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . $ORIG/common
 
+fake_shadow_utils() {
+    for cmd in useradd groupadd; do
+        if [ ! -f ${target}/usr/sbin/${cmd}.real ]; then
+            mv ${target}/usr/sbin/${cmd} ${target}/usr/sbin/${cmd}.real
+        fi
+        do_chroot ${target} ln -sf /usr/sbin/mngids.py /usr/sbin/${cmd}
+    done
+}
+
 init_redhat_chroot() {
     local target=$1
     local release_rpm_url=$2
@@ -163,13 +172,7 @@ bootstrap() {
     # Control the ids created by useradd and groupadd by wrapping
     # the commands with mngids.py
     cp -p ${ORIG}/mngids.py ${target}/usr/sbin/
-    for cmd in useradd groupadd; do
-        if [ ! -f ${target}/usr/sbin/${cmd}.real ]; then
-            mv ${target}/usr/sbin/${cmd} ${target}/usr/sbin/${cmd}.real
-        fi
-        do_chroot ${target} ln -sf /usr/sbin/mngids.py /usr/sbin/${cmd}
-    done
-    # copy the tables of uids and gids
+    fake_shadow_utils
     cp ${dir}/../ids.tables ${dir}/root/
 
     clean_mount_points
@@ -227,6 +230,14 @@ install_base_packages() {
         do_chroot "$target" locale-gen
         rm -f "${target}"/etc/default/grub.d/edeploy.cfg
     elif [ "$(package_type)" = "rpm" ]; then
+
+        # shadow-utils contains real commands for useradd and groupadd
+        # so first install shadow-utils before all to ensure
+        # that when installing other packages, we will track new users/groups.
+        #
+        install_packages $target "shadow-utils"
+        fake_shadow_utils
+
         install_packages $target "$packages"
         echo  'LANG=en_US.UTF-8' > $target/etc/locale.conf
         if [ "$CODENAME_MAJOR" = '7' ]; then

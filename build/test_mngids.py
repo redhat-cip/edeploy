@@ -135,6 +135,22 @@ class TestMngids(unittest.TestCase):
             mngids.parse(content, gids)
             mngids.parse_cmdline(cmd, {}, gids)
 
+    def test_parsecmdline_addgroup_without_name(self):
+        cmd = 'addgroup -g 1000 -b /root'.split(' ')
+        content = 'root:x:1:'
+        gids = {}
+        with self.assertRaises(KeyError):
+            mngids.parse(content, gids)
+            mngids.parse_cmdline(cmd, {}, gids)
+
+    def test_parsecmdline_addgroup_with_missing_arg_value(self):
+        cmd = 'groupadd --gid root'.split(' ')
+        content = 'root:x:1:'
+        gids = {}
+        with self.assertRaises(KeyError):
+            mngids.parse(content, gids)
+            mngids.parse_cmdline(cmd, {}, gids)
+
     def test_parsecmdline_wrong_order(self):
         cmd = ['useradd', 'jenkins', '--shell', '/bin/bash',
                '--gid', 'cloud-users',

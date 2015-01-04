@@ -6,3 +6,5 @@ groumod -g 804 memcached
 service memcached start
 groupmod -g 998 polkitd
 usermod -u 996 -g polkitd
+groupmod -g 993 jenkins
+usermod -u 994 -g jenkins

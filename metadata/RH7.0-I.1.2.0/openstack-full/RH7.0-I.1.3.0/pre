@@ -4,5 +4,5 @@ service memcached stop
 usermod -u 804 memcached
 groumod -g 804 memcached
 service memcached start
-groupmod -g 997 polkitd
+groupmod -g 998 polkitd
 usermod -u 996 -g polkitd

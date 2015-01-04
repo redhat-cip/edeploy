@@ -77,11 +77,14 @@ def parse_cmdline(args, uids, gids, first=100, last=999, last_user=29999):
     def insert(ids, key, idx, opt):
         index = get_index(args, opt) or get_index(args, '-' + opt[2])
 
+        # to match a group/user name
         if key in ids:
             val = ids[key][idx]
+        # to match a group/user ID
         elif key in [x for v in ids.values() for x in v]:
             val = key
         else:
+            # we try to create a user/group not in ids.tables, we fail.
             raise KeyError('mngids.py: %s not found (%s) in %s' %
                            (key, opt, str(ids.values())))
 

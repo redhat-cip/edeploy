@@ -77,11 +77,13 @@ def parse_cmdline(args, uids, gids, first=100, last=999, last_user=29999):
     def insert(ids, key, idx, opt):
         index = get_index(args, opt) or get_index(args, '-' + opt[2])
 
-        if not key in ids:
-            raise KeyError('mngids.py: %s not found (%s) in %s' %
-                           (key, opt, str(ids)))
-        else:
+        if key in ids:
             val = ids[key][idx]
+        elif key in [x for v in ids.values() for x in v]:
+            val = key
+        else:
+            raise KeyError('mngids.py: %s not found (%s) in %s' %
+                           (key, opt, str(ids.values())))
 
         debug('mngids.py: found %s at %s for val[%s]=%s' %
               (opt, str(index), key, val))

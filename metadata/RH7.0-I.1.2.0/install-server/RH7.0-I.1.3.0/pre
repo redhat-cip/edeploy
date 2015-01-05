@@ -5,12 +5,12 @@ groupmod -g 499 cgred
 groupadd -g 26 postgres
 groupadd -g 998 polkitd
 groupadd -g 32 rpc
-groupadd -g 800 redis
-groupadd -g 990 rabbitmq
+groupmod -g 800 redis
+usermod -u 800 redis
+groupmod -g 990 rabbitmq
+usermod -u 991 rabbitmq
 usermod -u 805 saslauth
 groupmod -g 805 saslauth
-useradd -r -u 800 -g redis -d /var/lib/redis -s /sbin/nologin redis
-useradd -r -u 991 -g rabbitmq -d /var/lib/rabbitmq -s /bin/bash rabbitmq
 chown -R redis:redis /var/log/redis
 chown -R rabbitmq:rabbitmq /var/log/rabbitmq
 useradd -u 26 -g postgres -d /var/lib/postgresql -s /bin/bash postgres

@@ -1,8 +1,8 @@
 usermod -u 805 saslauth
-groumod -g 805 saslauth
+groupmod -g 805 saslauth
 service memcached stop
 usermod -u 804 memcached
-groumod -g 804 memcached
+groupmod -g 804 memcached
 service memcached start
 groupmod -g 998 polkitd
 usermod -u 996 -g polkitd

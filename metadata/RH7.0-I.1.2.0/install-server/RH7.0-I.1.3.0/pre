@@ -14,10 +14,10 @@ useradd -u 996 -g polkitd -d / -s /sbin/nologin polkitd
 useradd -u 32 -g rpc -d /var/lib/rpcbind -s /sbin/nologin rpc
 /etc/init.d/elasticsearch-fluentd stop
 usermod -u 802 elasticsearch
-groumod -g 802 elasticsearch
+groupmod -g 802 elasticsearch
 /etc/init.d/elasticsearch-fluentd start
 usermod -u 805 saslauth
-groumod -g 805 saslauth
+groupmod -g 805 saslauth
 mkdir /var/log/postgresql
 mkdir /var/run/postgresql
 chown postgres:postgres /var/run/postgresql

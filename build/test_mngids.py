@@ -49,14 +49,12 @@ class TestMngids(unittest.TestCase):
 
     def test_parsecmdline(self):
         cmd = 'adduser root'.split(' ')
-        content = 'root:x:0:1:root:/root:/bin/bash'
+        content = 'root:x:0:0:root:/root:/bin/bash'
         uids = {}
         mngids.parse(content, uids)
         mngids.parse_cmdline(cmd, uids, {})
         self.assertEquals(cmd[1], '--uid')
         self.assertEquals(cmd[2], '0')
-        self.assertEquals(cmd[3], '--gid')
-        self.assertEquals(cmd[4], '1')
 
     def test_parsecmdline_group(self):
         cmd = 'adduser --gid nogroup root'.split(' ')
@@ -121,11 +119,8 @@ class TestMngids(unittest.TestCase):
         content = 'root:x:0:1:root:/root:/bin/bash'
         uids = {}
         mngids.parse(content, uids)
-        mngids.parse_cmdline(cmd, uids, {})
-        self.assertEquals(cmd[1], '--gid')
-        self.assertEquals(cmd[2], '1')
-        self.assertEquals(cmd[4], '0')
-        self.assertEquals(len(cmd), l + 2)
+        with self.assertRaises(KeyError):
+            mngids.parse_cmdline(cmd, uids, {})
 
     def test_parsecmdline_addgroup_non_exist(self):
         cmd = 'addgroup root'.split(' ')
@@ -207,6 +202,48 @@ class TestMngids(unittest.TestCase):
         self.assertEquals(cmd[1], '--uid')
         self.assertEquals(cmd[2], '1000')
         self.assertEquals(cmd[6], '1000')
+
+    def test_calls(self):
+        passwd = 'jenkins:x:1000:1000::/home/jenkins:/bin/bash'
+        group = 'jenkins:x:1000:'
+        uids = {'john': ('1001', '1001')}
+        gids = {'john': ('1001', '')}
+        mngids.parse(passwd, uids)
+        mngids.parse(group, gids, True)
+
+        cmd = ['useradd', 'john']
+        mngids.parse_cmdline(cmd, uids, gids)
+        self.assertEquals(cmd[1], '--uid')
+        self.assertEquals(cmd[2], '1001')
+
+        cmd = ['useradd', 'john', '-u', '1001']
+        mngids.parse_cmdline(cmd, uids, gids)
+        self.assertEquals(cmd[2], '-u')
+        self.assertEquals(cmd[3], '1001')
+
+        cmd = ['useradd', 'john', '-u', '1001', '-g', '1001']
+        mngids.parse_cmdline(cmd, uids, gids)
+        self.assertEquals(cmd[2], '-u')
+        self.assertEquals(cmd[3], '1001')
+        self.assertEquals(cmd[4], '-g')
+        self.assertEquals(cmd[5], '1001')
+
+        cmd = ['useradd', 'john', '-u', '1001', '-g', '1002']
+        with self.assertRaises(KeyError):
+            # KeyError: "mngids.py: 1002 not found (--gid) in [('1000', ''), ('1001', '')]"
+            mngids.parse_cmdline(cmd, uids, gids)
+
+        uids = {'john': ('1001', '1002')}
+        gids = {'john': ('1002', '')}
+        mngids.parse(passwd, uids)
+        mngids.parse(group, gids, True)
+        cmd = ['useradd', 'john', '-u', '1001']
+        with self.assertRaises(KeyError):
+            # KeyError: 'adduser has been called without the argument -g or --gid
+            # in order to create (john) so adduser.real will create a group with
+            # the same gid as the user id (uid: 1001). BUT a different gid is
+            # provided in ids.tables (1002). Please fix ids.tables.'
+            mngids.parse_cmdline(cmd, uids, gids)
 
 GROUP = '''root:x:0:
 daemon:x:1:

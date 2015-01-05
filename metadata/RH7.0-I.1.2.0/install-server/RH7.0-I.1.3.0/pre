@@ -1,17 +1,14 @@
 #!/bin/bash
 set -e
 
-usermod -u 499 cgred
 groupmod -g 499 cgred
-usermod -u 803 unbound
-groupmod -g 803 unbound
-userdel redis
-userdel rabbitmq
 groupadd -g 26 postgres
-groupadd -g 997 polkitd
+groupadd -g 998 polkitd
 groupadd -g 32 rpc
 groupadd -g 800 redis
 groupadd -g 990 rabbitmq
+usermod -u 805 saslauth
+groupmod -g 805 saslauth
 useradd -r -u 800 -g redis -d /var/lib/redis -s /sbin/nologin redis
 useradd -r -u 991 -g rabbitmq -d /var/lib/rabbitmq -s /bin/bash rabbitmq
 chown -R redis:redis /var/log/redis
@@ -23,8 +20,6 @@ useradd -u 32 -g rpc -d /var/lib/rpcbind -s /sbin/nologin rpc
 usermod -u 802 elasticsearch
 groupmod -g 802 elasticsearch
 /etc/init.d/elasticsearch-fluentd start
-usermod -u 805 saslauth
-groupmod -g 805 saslauth
 mkdir /var/log/postgresql
 mkdir /var/run/postgresql
 chown postgres:postgres /var/run/postgresql

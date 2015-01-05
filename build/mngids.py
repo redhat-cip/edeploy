@@ -111,7 +111,8 @@ def parse_cmdline(args, uids, gids, first=100, last=999, last_user=29999):
 
         if idx:
             insert(gids, args[idx + 1], 0, '--gid')
-
+        else:
+            insert(uids, arg1, 1, '--gid')
         insert(uids, arg1, 0, '--uid')
     elif args0 == 'addgroup' or args0 == 'groupadd':
         insert(gids, arg1, 0, '--gid')

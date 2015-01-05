@@ -55,6 +55,8 @@ class TestMngids(unittest.TestCase):
         mngids.parse_cmdline(cmd, uids, {})
         self.assertEquals(cmd[1], '--uid')
         self.assertEquals(cmd[2], '0')
+        self.assertEquals(cmd[3], '--gid')
+        self.assertEquals(cmd[4], '1')
 
     def test_parsecmdline_group(self):
         cmd = 'adduser --gid nogroup root'.split(' ')
@@ -120,7 +122,10 @@ class TestMngids(unittest.TestCase):
         uids = {}
         mngids.parse(content, uids)
         mngids.parse_cmdline(cmd, uids, {})
-        self.assertEquals(len(cmd), l)
+        self.assertEquals(cmd[1], '--gid')
+        self.assertEquals(cmd[2], '1')
+        self.assertEquals(cmd[4], '0')
+        self.assertEquals(len(cmd), l + 2)
 
     def test_parsecmdline_addgroup_non_exist(self):
         cmd = 'addgroup root'.split(' ')

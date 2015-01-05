@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+usermod -u 499 cgred
+groupmod -g 499 cgred
+usermod -u 803 unbound
+groupmod -g 803 unbound
 userdel redis
 userdel rabbitmq
 groupadd -g 26 postgres

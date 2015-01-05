@@ -1,3 +1,6 @@
+#!/bin/bash
+set -e
+
 groupadd -g 139 postgres
 groupadd -g 119 ssl-cert
 userdel trove

@@ -139,32 +139,74 @@ class TestMngids(unittest.TestCase):
         cmd = 'addgroup -g 1000 -b /root'.split(' ')
         content = 'root:x:1:'
         gids = {}
+        mngids.parse(content, gids)
         with self.assertRaises(KeyError):
-            mngids.parse(content, gids)
             mngids.parse_cmdline(cmd, {}, gids)
 
     def test_parsecmdline_addgroup_with_missing_arg_value(self):
         cmd = 'groupadd --gid root'.split(' ')
         content = 'root:x:1:'
         gids = {}
+        mngids.parse(content, gids)
         with self.assertRaises(KeyError):
-            mngids.parse(content, gids)
             mngids.parse_cmdline(cmd, {}, gids)
 
-    def test_parsecmdline_wrong_order(self):
-        cmd = ['useradd', 'jenkins', '--shell', '/bin/bash',
-               '--gid', 'cloud-users',
-               '--comment', 'eNovance Jenkins User', '-m']
+    def test_parsecmdline_find_gu_name(self):
+        # Be sure parse_cmdline is able to find username or groupname
         passwd = 'jenkins:x:1000:1000::/home/jenkins:/bin/bash'
         group = 'cloud-users:x:1000:'
         uids = {}
         gids = {}
         mngids.parse(passwd, uids)
         mngids.parse(group, gids, True)
+
+        cmd = ['useradd', 'jenkins', '--shell', '/bin/bash',
+               '--gid', 'cloud-users',
+               '--comment', 'eNovance Jenkins User', '-m']
         mngids.parse_cmdline(cmd, uids, gids)
         self.assertEquals(cmd[1], '--uid')
         self.assertEquals(cmd[2], '1000')
         self.assertEquals(cmd[7], '1000')
+
+        cmd = ['useradd', '--shell', '/bin/bash',
+               '--gid', 'cloud-users',
+               '--comment', 'eNovance Jenkins User', '-m', 'jenkins']
+        mngids.parse_cmdline(cmd, uids, gids)
+        self.assertEquals(cmd[1], '--uid')
+        self.assertEquals(cmd[2], '1000')
+        self.assertEquals(cmd[6], '1000')
+
+        cmd = ['useradd', '--shell', '/bin/bash',
+               '--gid', 'cloud-users', 'jenkins',
+               '--comment', 'eNovance Jenkins User', '-m']
+        mngids.parse_cmdline(cmd, uids, gids)
+        self.assertEquals(cmd[1], '--uid')
+        self.assertEquals(cmd[2], '1000')
+        self.assertEquals(cmd[6], '1000')
+
+        cmd = ['groupadd', 'cloud-users']
+        mngids.parse_cmdline(cmd, uids, gids)
+        self.assertEquals(cmd[1], '--gid')
+        self.assertEquals(cmd[2], '1000')
+
+        # 1010 is replaced by what we have in gids (usually provided in ids.tables
+        cmd = ['groupadd', '--gid', '1010', 'cloud-users', '-o']
+        mngids.parse_cmdline(cmd, uids, gids)
+        self.assertEquals(cmd[1], '--gid')
+        self.assertEquals(cmd[2], '1000')
+
+        cmd = ['groupadd', '--gid', '1010', '-f', 'cloud-users', '-o']
+        mngids.parse_cmdline(cmd, uids, gids)
+        self.assertEquals(cmd[1], '--gid')
+        self.assertEquals(cmd[2], '1000')
+
+        cmd = ['useradd', '--shell', '/bin/bash',
+               '--gid', 'cloud-users', '-f', '10', 'jenkins',
+               '--comment', 'eNovance Jenkins User', '-m']
+        mngids.parse_cmdline(cmd, uids, gids)
+        self.assertEquals(cmd[1], '--uid')
+        self.assertEquals(cmd[2], '1000')
+        self.assertEquals(cmd[6], '1000')
 
 GROUP = '''root:x:0:
 daemon:x:1:

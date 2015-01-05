@@ -21,6 +21,7 @@
 from __future__ import print_function
 
 import os
+import copy
 import pprint
 import subprocess
 import sys
@@ -28,7 +29,7 @@ import sys
 _DEBUG = os.getenv('MNGIDS_DEBUG', None) is not None
 
 # adduser and addgroup option taking an argument
-args_opts = ('-g', '--gid',
+ARGS_OPTS = ['-g', '--gid',
              '-K', '--key',
              '-p', '--password',
              '-R', '--root',
@@ -36,11 +37,12 @@ args_opts = ('-g', '--gid',
              '-c', '--comment',
              '-d', '--home-dir',
              '-e', '--expiredate',
+             '-f', '--inactive',
              '-G', '--groups',
              '-k', '--skel',
              '-s', '--shell',
              '-u', '--uid',
-             '-Z', '--selinux-user')
+             '-Z', '--selinux-user']
 
 def debug(output):
     if _DEBUG:
@@ -98,6 +100,10 @@ def parse_cmdline(args, uids, gids, first=100, last=999, last_user=29999):
             args.insert(1, opt)
 
     # support to have the user or group name at all position
+    args_opts = copy.deepcopy(ARGS_OPTS)
+    if args0 == 'groupadd':
+        # Unfortunatly the -f option is not consistent between useradd and groupadd
+        args_opts.remove('-f')
     arg1 = None
     for ai in range(1, len(args)):
         if args[ai][0] != '-' and (args[ai-1] not in args_opts or args[ai-1] == args[0]):

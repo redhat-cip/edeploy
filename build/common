@@ -281,12 +281,12 @@ cleanup() {
     fi
 
     # Verify the IDS are correct
-    case "$package_type" in
-        rpm)
+    case "$OS" in
+        "CentOS"|"RedHatEnterpriseServer")
             [ -f "${dir}/usr/sbin/check-ug.py" ] && do_chroot ${dir} /usr/sbin/check-ug.py
             ;;
         *)
-            echo "check-ug.py is not compatible with ${package_type} package type."
+            echo "check-ug.py is not compatible with ${OS} operating system."
             ;;
     esac
 

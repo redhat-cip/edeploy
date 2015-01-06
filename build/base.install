@@ -150,7 +150,6 @@ bootstrap() {
         # required for useradd/groupadd wrapper tool
         install_packages ${target} python-minimal
     else if [ "$(package_type)" = "rpm" ]; then
-            cp -p ${ORIG}/check-ug.py ${target}/usr/sbin/
             if [ "$(package_tool)" = "yum" ]; then
                 check_binary yum
                 check_binary rpm
@@ -164,6 +163,7 @@ bootstrap() {
                 esac
                 cp ${target}/etc/skel/.bashrc ${target}/root
                 cp ${target}/etc/skel/.bash_profile ${target}/root
+                cp -p ${ORIG}/check-ug.py ${target}/usr/sbin/
             else
                 fatal_error "$(package_tool) is not supported for $DIST distro"
             fi

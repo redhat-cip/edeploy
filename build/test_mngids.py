@@ -52,7 +52,10 @@ class TestMngids(unittest.TestCase):
         content = 'root:x:0:0:root:/root:/bin/bash'
         uids = {}
         mngids.parse(content, uids)
+        orig = mngids.call_addgroup
+        mngids.call_addgroup = lambda x: x
         mngids.parse_cmdline(cmd, uids, {})
+        mngids.call_addgroup = orig
         self.assertEquals(cmd[1], '--uid')
         self.assertEquals(cmd[2], '0')
 
@@ -119,15 +122,21 @@ class TestMngids(unittest.TestCase):
         content = 'root:x:0:1:root:/root:/bin/bash'
         uids = {}
         mngids.parse(content, uids)
-        with self.assertRaises(KeyError):
-            mngids.parse_cmdline(cmd, uids, {})
+        orig = mngids.call_addgroup
+        mngids.call_addgroup = lambda x: x
+        mngids.parse_cmdline(cmd, uids, {})
+        mngids.call_addgroup = orig
+        self.assertEquals(cmd[1], '--gid')
+        self.assertEquals(cmd[2], '1')
+        self.assertEquals(cmd[4], '0')
+        self.assertEquals(len(cmd), l + 2)
 
     def test_parsecmdline_addgroup_non_exist(self):
         cmd = 'addgroup root'.split(' ')
         content = 'user:x:1000:'
         gids = {}
+        mngids.parse(content, gids)
         with self.assertRaises(KeyError):
-            mngids.parse(content, gids)
             mngids.parse_cmdline(cmd, {}, gids)
 
     def test_parsecmdline_addgroup_without_name(self):
@@ -212,14 +221,22 @@ class TestMngids(unittest.TestCase):
         mngids.parse(group, gids, True)
 
         cmd = ['useradd', 'john']
+        orig = mngids.call_addgroup
+        mngids.call_addgroup = lambda x: x
         mngids.parse_cmdline(cmd, uids, gids)
+        mngids.call_addgroup = orig
         self.assertEquals(cmd[1], '--uid')
         self.assertEquals(cmd[2], '1001')
 
         cmd = ['useradd', 'john', '-u', '1001']
+        orig = mngids.call_addgroup
+        mngids.call_addgroup = lambda x: x
         mngids.parse_cmdline(cmd, uids, gids)
-        self.assertEquals(cmd[2], '-u')
-        self.assertEquals(cmd[3], '1001')
+        mngids.call_addgroup = orig
+        self.assertEquals(cmd[1], '--gid')
+        self.assertEquals(cmd[2], '1001')
+        self.assertEquals(cmd[4], '-u')
+        self.assertEquals(cmd[5], '1001')
 
         cmd = ['useradd', 'john', '-u', '1001', '-g', '1001']
         mngids.parse_cmdline(cmd, uids, gids)
@@ -238,12 +255,15 @@ class TestMngids(unittest.TestCase):
         mngids.parse(passwd, uids)
         mngids.parse(group, gids, True)
         cmd = ['useradd', 'john', '-u', '1001']
-        with self.assertRaises(KeyError):
-            # KeyError: 'adduser has been called without the argument -g or --gid
-            # in order to create (john) so adduser.real will create a group with
-            # the same gid as the user id (uid: 1001). BUT a different gid is
-            # provided in ids.tables (1002). Please fix ids.tables.'
-            mngids.parse_cmdline(cmd, uids, gids)
+        orig = mngids.call_addgroup
+        mngids.call_addgroup = lambda x: x
+        mngids.parse_cmdline(cmd, uids, gids)
+        mngids.call_addgroup = orig
+        self.assertEquals(cmd[1], '--gid')
+        self.assertEquals(cmd[2], '1002')
+        self.assertEquals(cmd[4], '-u')
+        self.assertEquals(cmd[5], '1001')
+
 
 GROUP = '''root:x:0:
 daemon:x:1:

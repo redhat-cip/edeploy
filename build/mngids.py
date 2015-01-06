@@ -72,6 +72,9 @@ def get_index(array, key, default=None):
     except ValueError:
         return default
 
+def call_addgroup(name):
+    subprocess.call(['groupadd', name])
+
 
 def parse_cmdline(args, uids, gids, first=100, last=999, last_user=29999):
     args0 = args[0].split('/')[-1]
@@ -118,19 +121,13 @@ def parse_cmdline(args, uids, gids, first=100, last=999, last_user=29999):
         if idx:
             insert(gids, args[idx + 1], 0, '--gid')
         else:
-            # useradd can be called without a -g or --gid argument
-            # and in that case the useradd will create a group with
-            # the same id as the user id. So we only force --gid argument
-            # for groupadd.
-            idx2 = get_index(args, '-u') or get_index(args, '--uid')
-            if idx2:
-                uid = args[idx2 + 1]
-            else:
-                uid = uids[arg1][0]
-            if uids[arg1][1] != uid:
-                raise KeyError("adduser has been called without the argument -g or --gid in order to create (%s) " \
-                               "so adduser.real will create a group with the same gid as the user id (uid: %s). " \
-                               "BUT a different gid is provided in ids.tables (%s). Please fix ids.tables." % (arg1, uid, uids[arg1][1]))
+            # useradd can be called without a -g or --gid argument and in
+            # that case a group is created with the same name as the username by the
+            # useradd command. So if we want to specify a specific gid (according to
+            # ids.tables) we need to create the group here. Plus this mimic
+            # the useradd command.
+            call_addgroup(arg1)
+            insert(uids, arg1, 1, '--gid')
         insert(uids, arg1, 0, '--uid')
     elif args0 == 'addgroup' or args0 == 'groupadd':
         insert(gids, arg1, 0, '--gid')

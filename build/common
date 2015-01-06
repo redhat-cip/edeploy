@@ -280,6 +280,16 @@ cleanup() {
         cp ${dir}/root/ids.tables ${dir}/../ids.tables
     fi
 
+    # Verify the IDS are correct
+    case "$dist" in
+        centos|redhat)
+            [ -f "${dir}/usr/sbin/check-ug.py" ] && do_chroot ${dir} /usr/sbin/check-ug.py
+            ;;
+        *)
+            echo "check-ug.py is not compatible with $dist"
+            ;;
+    esac
+
     # the wrong systemctl is copied in initrd files so regenerate them
     if [ -f ${dir}/usr/bin/systemctl ]; then
         for f in $(ls ${dir}/boot/vmlinuz-*); do

@@ -281,12 +281,12 @@ cleanup() {
     fi
 
     # Verify the IDS are correct
-    case "$dist" in
-        centos|redhat)
+    case "$package_type" in
+        rpm)
             [ -f "${dir}/usr/sbin/check-ug.py" ] && do_chroot ${dir} /usr/sbin/check-ug.py
             ;;
         *)
-            echo "check-ug.py is not compatible with $dist"
+            echo "check-ug.py is not compatible with ${package_type} package type."
             ;;
     esac
 

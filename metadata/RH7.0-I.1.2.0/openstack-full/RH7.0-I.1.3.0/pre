@@ -7,9 +7,6 @@ groupmod -g 803 unbound
 usermod -u 805 saslauth
 groupmod -g 805 saslauth
 groupmod -g 998 polkitd
-userdel  -f jenkins || true
-groupadd -g 993 jenkins
-useradd -u 994 -g jenkins -d /home/jenkins -s /bin/bash jenkins
 service memcached stop
 usermod -u 804 memcached
 groupmod -g 804 memcached

@@ -150,6 +150,7 @@ bootstrap() {
         # required for useradd/groupadd wrapper tool
         install_packages ${target} python-minimal
     else if [ "$(package_type)" = "rpm" ]; then
+            cp -p ${ORIG}/check-ug.py ${target}/usr/sbin/
             if [ "$(package_tool)" = "yum" ]; then
                 check_binary yum
                 check_binary rpm
@@ -174,7 +175,6 @@ bootstrap() {
     cp -p ${ORIG}/mngids.py ${target}/usr/sbin/
     fake_shadow_utils
     cp ${dir}/../ids.tables ${dir}/root/
-    cp -p ${ORIG}/check-ug.py ${target}/usr/sbin/
 
     clean_mount_points
 }

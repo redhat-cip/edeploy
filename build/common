@@ -281,14 +281,7 @@ cleanup() {
     fi
 
     # Verify the IDS are correct
-    case "$OS" in
-        "CentOS"|"RedHatEnterpriseServer")
-            [ -f "${dir}/usr/sbin/check-ug.py" ] && do_chroot ${dir} /usr/sbin/check-ug.py
-            ;;
-        *)
-            echo "check-ug.py is not compatible with ${OS} operating system."
-            ;;
-    esac
+    [ -f "${dir}/usr/sbin/check-ug.py" ] && do_chroot ${dir} /usr/sbin/check-ug.py
 
     # the wrong systemctl is copied in initrd files so regenerate them
     if [ -f ${dir}/usr/bin/systemctl ]; then

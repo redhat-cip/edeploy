@@ -23,6 +23,7 @@
 /etc/hosts
 /etc/keepalived/keepalived.conf
 /etc/keystone/keystone.conf
+/etc/libvirt/
 /etc/logrotate.d/haproxy
 /etc/sysconfig/memcached
 /etc/mongodb.conf

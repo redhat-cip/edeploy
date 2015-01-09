@@ -34,15 +34,7 @@
 /etc/my.cnf.d/
 /etc/sensu/
 /etc/sysconfig/
-/etc/neutron/api-paste.ini
-/etc/neutron/dhcp_agent.ini
-/etc/neutron/dnsmasq-neutron.conf
-/etc/neutron/lbaas_agent.ini
-/etc/neutron/metadata_agent.ini
-/etc/neutron/neutron.conf
-/etc/neutron/plugin.ini
-/etc/neutron/plugins/ml2/ml2_conf.ini
-/etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
+/etc/neutron/
 /etc/nologin
 /etc/nova/api-paste.ini
 /etc/nova/nova.conf

@@ -78,6 +78,7 @@
 /tmp/
 /usr/bin/clustercheck
 /usr/lib/ocf/resource.d/heartbeat/ceilometer-agent-central
+/usr/lib/systemd/system/mysql-bootstrap.service
 /usr/share/openstack-dashboard/openstack_dashboard/local/local_settings.pyc
 /usr/share/openstack-dashboard/static/dashboard/manifest.json
 /var/lib/ceilometer/

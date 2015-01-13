@@ -1,0 +1,15 @@
+---
+# THE FOLLOWING VARIABLES WILL BE APPLIED ON A DEBIAN BASED SYSTEM
+#
+edeploy_needed_packages:
+  - apache2
+  - python-ipaddr
+  - python-pip
+  - git
+  - rsync
+
+edeploy_dir_owner: www-data
+edeploy_dir_group: www-data
+edeploy_lock_file: /var/lock/apache2/edeploy.lock
+edeploy_cgi_script_path: /usr/lib/cgi-bin/upload.py
+edeploy_health_cgi_script_path: /usr/lib/cgi-bin/upload-health.py

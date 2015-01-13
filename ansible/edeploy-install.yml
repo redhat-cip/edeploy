@@ -1,140 +1,185 @@
 ---
 - hosts: edeployservers
+
   vars:
     - pxemngr: false
+    - edeploy_config_path: /etc/edeploy
+    - edeploy_config_file: /etc/edeploy.conf
+    - cgi_config:
+      - { name: CONFIGDIR, value: "{{ edeploy_config_path }}" }
+      - { name: USEPXEMNGR, value: "True" }
+      - { name: HWDIR, value: /var/lib/edeploy/hw }
+      - { name: LOGDIR, value: /var/lib/edeploy/logs }
+      - { name: HEALTHDIR, value: /var/lib/edeploy/health }
+      - { name: LOCKFILE, value: "{{ edeploy_lock_file }}" }
+    - edeploy_cgi_scripts:
+      - { name: /srv/edeploy/server/upload-health.py, value: "{{ edeploy_health_cgi_script_path }}" }
+      - { name: /srv/edeploy/server/upload.py, value: "{{ edeploy_cgi_script_path }}" }
+    - edeploy_directories:
+      - "{{ edeploy_config_path }}"
+      - /var/lib/debootstrap/install
+      - /var/lib/edeploy/hw
+      - /var/lib/edeploy/logs
+      - /var/lib/edeploy/health
+    - pip_modules:
+      - { name: pbr, value: 0.10.2 }
+      - { name: hardware, value: 0.7 }
+
   user: root
+
   tasks:
+
+  - name: include OS specific variables
+    include_vars: "{{ ansible_os_family }}.yml"
+
   - name: ensure needed packages for eDeploy are installed (apt)
-    apt: pkg={{ item }} state=present
-    with_items:
-      - apache2
-      - python-ipaddr
-      - python-pip
-      - git
-      - rsync
-    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+    apt: >
+      pkg={{ item }}
+      state=present
+    with_items: edeploy_needed_packages
+    when: ansible_os_family == 'Debian'
+
   - name: ensure needed packages for eDeploy are installed (yum)
-    yum: pkg={{ item }} state=present
-    with_items:
-      - httpd
-      - python-ipaddr
-      - python-pip
-      - git
-      - rsync
-      - unzip
-      - gcc
-      - glibc.i686
-      - glibc-static
-      - qemu-img
-      - patch
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
-  - name: install the pbr python module
-    pip: name=pbr version=0.10.2
-  - name: install the hardware python module
-    pip: name=hardware
+    yum: >
+      pkg={{ item }}
+      state=present
+    with_items: edeploy_needed_packages
+    when: ansible_os_family == 'RedHat'
+
+  - name: install python modules
+    pip: >
+      name={{ item.name }}
+      version={{ item.value }}
+    with_items: pip_modules
+
   - name: extract eDeploy git repo
-    git: repo=https://github.com/enovance/edeploy.git
-         dest=/srv/edeploy force=no
-  - name: create eDeploy config dir (deb)
-    file: path=/etc/edeploy state=directory owner=www-data group=www-data
-    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
-  - name: create eDeploy config dir (rhel)
-    file: path=/etc/edeploy state=directory owner=apache group=apache
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
+    git: >
+      repo=https://github.com/enovance/edeploy.git
+      dest=/srv/edeploy force=no
+
+  - name: create eDeploy config dir
+    file: >
+      path={{ edeploy_config_path }}
+      state=directory
+      owner={{ edeploy_dir_owner }}
+      group={{ edeploy_dir_group }}
+
   - name: create eDeploy lock dir (rhel)
-    file: path=/var/run/edeploy state=directory owner=apache group=apache
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
+    file: >
+      path=/var/run/edeploy
+      state=directory
+      owner={{ edeploy_dir_owner }}
+      group={{ edeploy_dir_group }}
+    when: ansible_os_family == 'RedHat'
+
   - name: copy config files
-    cp: src=/srv/edeploy/config/* dest=/etc/edeploy
-  - name: create edeploy CGI config
-    ini_file: dest=/etc/edeploy.conf section=SERVER option=CONFIGDIR value=/etc/edeploy mode=0644
+    cp: >
+      src=/srv/edeploy/config/*
+      dest=/etc/edeploy
+
   - name: enable pxemngr support in CGI config
-    ini_file: dest=/etc/edeploy.conf section=SERVER option=USEPXEMNGR value=True mode=0644
+    ini_file: >
+      dest={{ edeploy_config_file }}
+      section=SERVER
+      option=USEPXEMNGR
+      value=True
+      mode=0644
     when: pxemngr
-  - name: set hw profiles dir in CGI config
-    ini_file: dest=/etc/edeploy.conf section=SERVER option=HWDIR value=/var/lib/edeploy/hw mode=0644
-  - name: set log dir in CGI config
-    ini_file: dest=/etc/edeploy.conf section=SERVER option=LOGDIR value=/var/lib/edeploy/logs mode=0644
-  - name: set health dir in CGI config
-    ini_file: dest=/etc/edeploy.conf section=SERVER option=HEALTHDIR value=/var/lib/edeploy/health mode=0644
-  - name: set lock file in CGI config (deb)
-    ini_file: dest=/etc/edeploy.conf section=SERVER option=LOCKFILE value=/var/lock/apache2/edeploy.lock mode=0644
-    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
-  - name: set lock file in CGI config (rhel)
-    ini_file: dest=/etc/edeploy.conf section=SERVER option=LOCKFILE value=/var/run/edeploy/edeploy.lock mode=0644
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
+
+  - name: set stuff in CGI config
+    ini_file: >
+      dest={{ edeploy_config_file }}
+      section=SERVER
+      option={{ item.name }}
+      value={{ item.value }}
+    with_items: cgi_config
+
   - name: set pxemngr URL in CGI config
-    ini_file: dest=/etc/edeploy.conf section=SERVER option=PXEMNGRURL value=http://{{ ansible_default_ipv4["address"] }}/ mode=0644
+    ini_file: >
+      dest=/etc/edeploy.conf
+      section=SERVER
+      option=PXEMNGRURL
+      value=http://{{ ansible_default_ipv4["address"] }}/
+      mode=0644
     when: pxemngr
-  - name: install eDeploy CGI script and set permissions for it (deb)
-    file: src=/srv/edeploy/server/upload.py dest=/usr/lib/cgi-bin/upload.py state=link
-    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
-  - name: install eDeploy CGI script and set permissions for it
-    file: src=/srv/edeploy/server/upload.py dest=/var/www/cgi-bin/upload.py state=link
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
-  - name: install eDeploy health CGI script and set permissions for it (deb)
-    file: src=/srv/edeploy/server/upload-health.py dest=/usr/lib/cgi-bin/upload-health.py state=link
-    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
-  - name: install eDeploy health CGI script and set permissions for it
-    file: src=/srv/edeploy/server/upload-health.py dest=/var/www/cgi-bin/upload-health.py state=link
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
-  - name: owner of state file (deb)
-    file: path=/etc/edeploy/state owner=www-data group=www-data
-    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
-  - name: owner of state file (rhel)
-    file: path=/etc/edeploy/state owner=apache group=apache
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
-  - name: create directory for install trees
-    file: path=/var/lib/debootstrap/install state=directory
-  - name: create directory for hw profiles (deb)
-    file: path=/var/lib/edeploy/hw state=directory owner=www-data group=www-data
-    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
-  - name: create directory for hw profiles (rhel)
-    file: path=/var/lib/edeploy/hw state=directory owner=apache group=apache
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
-  - name: create directory for log (deb)
-    file: path=/var/lib/edeploy/logs state=directory owner=www-data group=www-data
-    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
-  - name: create directory for log (rhel)
-    file: path=/var/lib/edeploy/logs state=directory owner=apache group=apache
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
-  - name: create directory for health files (deb)
-    file: path=/var/lib/edeploy/health state=directory owner=www-data group=www-data
-    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
-  - name: create directory for health files (rhel)
-    file: path=/var/lib/edeploy/health state=directory owner=apache group=apache
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
+
+  - name: install eDeploy CGI scripts
+    file: >
+      src={{ item.name }}
+      dest={{ item.value }}
+      state=link
+    with_items: edeploy_cgi_scripts
+
+  - name: owner of state file
+    file: >
+      path=/etc/edeploy/state
+      owner={{ edeploy_dir_owner }}
+      group={{ edeploy_dir_group }}
+
+  - name: create edeploy directories
+    file: >
+      path={{ item }}
+      state=directory
+      owner={{ edeploy_dir_owner }}
+      group={{ edeploy_dir_group }}
+    with_items: edeploy_directories
+
   - name: link install trees location for web server
-    file: src=/var/lib/debootstrap/install dest=/var/www/install state=link
-  - name: fix cmdb permissions (deb)
-    file: path={{ item }} owner=www-data group=www-data
+    file: >
+      src=/var/lib/debootstrap/install
+      dest=/var/www/install
+      state=link
+
+  - name: fix cmdb permissions
+    file: >
+      path={{ item }}
+      owner={{ edeploy_dir_owner }}
+      group={{ edeploy_dir_group }}
     with_fileglob: /etc/edeploy/*.cmdb
-    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
-  - name: fix cmdb permissions (rhel)
-    file: path={{ item }} owner=apache group=apache
-    with_fileglob: /etc/edeploy/*.cmdb
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
+
   - name: create rsync conf file
-    copy: src=rsyncd.conf dest=/etc/rsyncd.conf
+    copy: >
+      src=rsyncd.conf
+      dest=/etc/rsyncd.conf
+
   - name: enable rsync daemon
-    lineinfile: dest=/etc/default/rsync regexp=RSYNC_ENABLE= line="RSYNC_ENABLE=true" state=present
+    lineinfile: >
+      dest=/etc/default/rsync
+      regexp=RSYNC_ENABLE=
+      line="RSYNC_ENABLE=true"
+      state=present
     notify: start rsync daemon
-    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+    when: ansible_os_family == 'Debian'
+
   - name: install eDeploy profile in pxemngr
-    template: src=edeploy.prof dest=/var/lib/tftpboot/pxelinux.cfg/profiles/edeploy.prof mode=0644
+    template: >
+      src=edeploy.prof
+      dest=/var/lib/tftpboot/pxelinux.cfg/profiles/edeploy.prof
+      mode=0644
     notify: sync bootnames
     when: pxemngr
+
   - name: enable edeploy site in apache (rhel)
-    copy: src=edeploy-httpd.conf dest=/etc/httpd/conf.d/edeploy.conf
+    copy: >
+      src=edeploy-httpd.conf
+      dest=/etc/httpd/conf.d/edeploy.conf
     notify: enable edeploy site (rhel)
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
+    when: ansible_os_family == 'RedHat'
+
   - name: install eDeploy AHC profile in pxemngr
-    template: src=health-check.prof dest=/var/lib/tftpboot/pxelinux.cfg/profiles/health-check.prof mode=0644
+    template: >
+      src=health-check.prof
+      dest=/var/lib/tftpboot/pxelinux.cfg/profiles/health-check.prof
+      mode=0644
     notify: sync bootnames
     when: pxemngr
+
   - name: add tmpfile configuration (rhel 7+)
-    template: src=tmpfiles-edeploy.conf dest=/etc/tmpfiles.d/edeploy.conf mode=0644
-    when: (ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat') and ansible_lsb.major_release|int >= 7
+    template: >
+      src=tmpfiles-edeploy.conf
+      dest=/etc/tmpfiles.d/edeploy.conf
+      mode=0644
+    when: ansible_os_family == 'RedHat' and "{{ ansible_distribution_version | version_compare('7', '>=') }}"
   handlers:
     - name: sync bootnames
       command: pxemngr syncbootnames

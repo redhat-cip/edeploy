@@ -1,0 +1,6 @@
+#!/bin/bash
+set -e
+
+/usr/share/openstack-dashboard/manage.py compress
+
+exit 0

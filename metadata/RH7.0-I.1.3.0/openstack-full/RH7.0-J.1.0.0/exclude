@@ -39,7 +39,6 @@
 /etc/nova/api-paste.ini
 /etc/nova/nova.conf
 /etc/ntp.conf
-/etc/openstack-dashboard/local_settings
 /etc/openvswitch/.conf.db.~lock~
 /etc/openvswitch/conf.db
 /etc/openvswitch/system-id.conf

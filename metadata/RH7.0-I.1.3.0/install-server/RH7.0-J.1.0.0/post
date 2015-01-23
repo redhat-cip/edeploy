@@ -2,6 +2,5 @@
 set -e
 
 systemctl daemon-reload
-/usr/share/openstack-dashboard/manage.py compress
 
 exit 0

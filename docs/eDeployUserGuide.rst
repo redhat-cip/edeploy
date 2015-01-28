@@ -725,12 +725,16 @@ To get an USB bootable setup, you need :
    to 'Defining the boot configuration' for complete description) shall
    be defined at build time while PXE booting can do it dynamically
 
--  If a DHCP server exists you can get an automatic network address used 
+-  If a DHCP server exists you can get an automatic network address used
    during the deployment only
 
 -  If no DHCP server exists, use the IP= command to put a static address
    to one of your interface to contact the edeploy server like :
-   IP=eth0:192.168.1.254/24,other=none
+   IP=eth0:192.168.1.254/24,other:none
+
+-  It's also possible to ask to bind an interface to a specific vlan adding the
+   '@' character followed by the VLAN id:
+   IP=eth0:192.168.1.254/24@101,other:none
 
 The USB bootstrap is built by using the 'img' role available in eDeploy.
 All required parameters shall be provided during the built process. A

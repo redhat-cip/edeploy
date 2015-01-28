@@ -563,7 +563,7 @@ while true; do
                         fi
                         dhclient -d -pf /var/run/dhclient-$iface.pid $iface >> /$iface.log 2>&1 &
                         count=$DHCP_GRACE_TIME
-                        while [ $count -gt 0 ] && ! ifconfig $iface|grep -q 'inet addr'; do
+                        while [ $count -gt 0 ] && ! ip addr show $iface|grep -q 'inet'; do
                             sleep 1
                             count=$(($count - 1))
                         done

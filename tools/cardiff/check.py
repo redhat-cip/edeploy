@@ -71,7 +71,7 @@ def ahci(global_params, systems, unique_id):
 
 
 def ipmi(global_params, systems, unique_id):
-    sets = search_item(systems, unique_id, "ipmi", ".*")
+    sets = search_item(systems, unique_id, "ipmi", "(?!(.*Temp$|.*RPM$)).*", ['mac-address', 'ip-address'])
     groups = compare_sets.compare(sets)
     compare_sets.print_groups(global_params, groups, "IPMI SDR")
     return groups

@@ -50,7 +50,7 @@ def physical_hpa_disks(global_params, systems, unique_id):
 
 
 def physical_megaraid_disks(global_params, systems, unique_id):
-    sets = search_item(systems, unique_id, "pdisk", "disk(\d+)", ['Wwn', 'SasAddress'])
+    sets = search_item(systems, unique_id, "pdisk", "disk(\d+)", ['Wwn', 'SasAddress', 'DriveTemperature'])
     groups = compare_sets.compare(sets)
     compare_sets.print_groups(global_params, groups, "Physical Disks (Megaraid Controllers)")
     return groups
@@ -236,7 +236,7 @@ def hpa(global_params, systems, unique_id):
 
 
 def megaraid(global_params, systems, unique_id):
-    sets = search_item(systems, unique_id, "megaraid", "(.*)", ['SerialNo', 'SasAddress', 'ControllerTemperature', 'VendorSpecific'])
+    sets = search_item(systems, unique_id, "megaraid", "(.*)", ['SerialNo', 'SasAddress', 'ControllerTemperature', 'VendorSpecific', 'RocTemperature'])
     groups = compare_sets.compare(sets)
     compare_sets.print_groups(global_params, groups, "Megaraid Controller")
     return groups

@@ -1,0 +1,21 @@
+---
+# THE FOLLOWING VARIABLES WILL BE APPLIED ON A REDHAT BASED SYSTEM
+#
+edeploy_needed_packages:
+  - httpd
+  - python-ipaddr
+  - python-pip
+  - git
+  - rsync
+  - unzip
+  - gcc
+  - glibc.i686
+  - glibc-static
+  - qemu-img
+  - patch
+
+edeploy_dir_owner: apache
+edeploy_dir_group: apache
+edeploy_lock_file: /var/run/edeploy/edeploy.lock
+edeploy_cgi_script_path: /var/www/cgi-bin/upload.py
+edeploy_health_cgi_script_path: /var/www/cgi-bin/upload-health.py

@@ -395,6 +395,12 @@ if /configure; then
             # Ask pxemngr to boot locally on the next PXE boot
             if [ -n "$PXEMNGR_URL" ]; then
                 curl -s ${PXEMNGR_URL}localboot/
+                EXIT_CODE="$?"
+                if [ "$EXIT_CODE" != "0" ]; then
+                    log "PXEMNGR: Curl failed ($EXIT_CODE) asking a localboot at ${PXEMNGR_URL}"
+                else
+                    log "PXEMNGR: Server will reboot locally"
+                fi
             fi
 
             umount $d/run

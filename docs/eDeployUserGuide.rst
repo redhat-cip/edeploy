@@ -143,7 +143,7 @@ chef. eDeploy only aims at providing a bootable operating system with
 all the required packages installed and the low-level setup done.
 
 Once the configuration of the server is done, eDeploy will extract on
-its local disk an operating system, defined by the matching role, downloaded from an image server by using RSYNC or HTTP connexion. 
+its local disk an operating system, defined by the matching role, downloaded from an image server by using RSYNC or HTTP connexion.
 
 .. image:: images/image02.jpg
    :scale: 125%
@@ -725,12 +725,16 @@ To get an USB bootable setup, you need :
    to 'Defining the boot configuration' for complete description) shall
    be defined at build time while PXE booting can do it dynamically
 
--  If a DHCP server exists you can get an automatic network address used 
+-  If a DHCP server exists you can get an automatic network address used
    during the deployment only
 
 -  If no DHCP server exists, use the IP= command to put a static address
    to one of your interface to contact the edeploy server like :
-   IP=eth0:192.168.1.254/24,other=none
+   IP=eth0:192.168.1.254/24,other:none
+
+-  It's also possible to ask to bind an interface to a specific vlan adding the
+   '@' character followed by the VLAN id:
+   IP=eth0:192.168.1.254/24@101,other:none
 
 The USB bootstrap is built by using the 'img' role available in eDeploy.
 All required parameters shall be provided during the built process. A
@@ -751,7 +755,7 @@ If no PXE boot is available on the infrastructure, it is possible to use
 an USB based solution to start the eDeploy deployment tool on the server
 to be installed.
 
-**Note**: This solution is not scalable and could be difficult to setup. 
+**Note**: This solution is not scalable and could be difficult to setup.
 If multiple hosts shall be deploied, a single USB key shall be used
 generating a sequential deploiement (1 server at a time).
 
@@ -1043,7 +1047,7 @@ It is mandatory that `/var/lib/debootstrap/install` directory is
 available over an HTTP access so eDeploy client can retrieve the images.
 Operating system images shall be available via
 http://HSERV:HPORT/install url.
- 
+
 Creating Hardware profiles and assign them to roles
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1064,7 +1068,7 @@ ma tch all the rules written in this file. The default 'vm-debian.spec'
 file looks like this :
 
 .. code:: bash
-   
+
    [
     ('disk', '$disk', 'size', 'gt(4)'),
     ('network', '$eth', 'ipv4', 'network(192.168.122.0/24)'),
@@ -1312,18 +1316,18 @@ They respect the same filesystem as the operating system. (ie.
 Installation scenario:
 
 1. Server sends hw.py to eDeploy and get back a configure script
- 
+
 2. Server runs the configure script
 
 -  create partition table
 -  create filesystem
 -  create `/post_rysnc/{etc/sysconfig/network,boot/grub,etc/fstab}`
- 
+
 3. Server syncs with eDeploy to retrieve the OS tree that matches its
 role
 
 4. `/post_rsync` files overwrite the OS tree configuration files
- 
+
 5. Bootloader is reinstalled
 
 6. Server is rebooted
@@ -1556,7 +1560,7 @@ All the other variables, ip,netmask,gateway were only described in the
 CMDB and were assigned by the eDeploy server at the hardware matching
 time.
 
- 
+
 Setup the state file
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -1566,7 +1570,7 @@ and the number of time it will provision them.
 The file itself is an array of tuple. Each tuple represent the profile
 eDeploy can provision and the number of time it is allowed to provision
 it.
- 
+
 For example ('vm-debian', '3') means eDeploy can provision three VMs
 with the profile 'vm-debian'.  Another example would be ('vm-centos',
 '*'). which means eDeploy can provision an unlimited number of VMs with
@@ -1960,7 +1964,7 @@ this
 administrator needs to make sure that running application won't break
 (incompatibility, etc…) when a server is downgraded. This is not eDeploy
 responsibility to take care of that sort of issues
- 
+
 Developing on eDeploy
 =====================
 
@@ -2123,7 +2127,7 @@ slot      Raw disk slot's id                        ('disk', '1I:1:1', 'slot', '
 disk      Detect disks Sample output
 size      Size of the disk                          ('disk', 'sda', 'size', '899')              Medium
 vendor    Vendor of the disk                        ('disk', 'sda', 'vendor', 'HP')             Medium
-model     Model of the disk                         ('disk', 'sda', 'model', 'LOGICAL VOLUME')  High 
+model     Model of the disk                         ('disk', 'sda', 'model', 'LOGICAL VOLUME')  High
 rev       Firmware revision of the disk             ('disk', 'sda', 'rev', '3.42')              Medium
 WCE       Write Cache Enabled                       ('disk', 'sda', 'WCE', '1')                 Low
 RCD       Read Cache Disabled                       ('disk', 'sda', 'RCD, '1')                  Low
@@ -2147,10 +2151,10 @@ vendor      Vendor name                    ('system', 'product', 'vendor', 'HP')
 \* : if provided by the hardware manufacturer
 
 ==========  ================================  =======================================  ==============
-ipmi        Detect IPMI interfaces            Sample output                            Discrim. Level 
+ipmi        Detect IPMI interfaces            Sample output                            Discrim. Level
 ==========  ================================  =======================================  ==============
-ipmi        The IPMI channel number           ('system', 'ipmi', 'channel', 2)         Low 
-ipmi-fake   Fake IPMI interface for testing   ('system', 'ipmi-fake', 'channel', '0')  Low 
+ipmi        The IPMI channel number           ('system', 'ipmi', 'channel', 2)         Low
+ipmi-fake   Fake IPMI interface for testing   ('system', 'ipmi-fake', 'channel', '0')  Low
 ==========  ================================  =======================================  ==============
 
 Firmware
@@ -2161,7 +2165,7 @@ host. These information are not always provided by the hardware
 manufacturer.
 
 =========  =========================  ===================================================  ===============
-bios       Detect BIOS informations   Sample output                                        Discrim. Level 
+bios       Detect BIOS informations   Sample output                                        Discrim. Level
 =========  =========================  ===================================================  ===============
 version    Version of the BIOS        ('firmware', 'bios', 'version', 'G1ET73WW (2.09 )')  Medium
 date       Date of the BIOS release   ('firmware', 'bios', 'date', '10/19/2012')           Medium
@@ -2174,12 +2178,12 @@ Network
 ================  ==================================  =========================================================================  ===========
 network           NIC informations                    sample output                                                              Discrim. Level
 ================  ==================================  =========================================================================  ===========
-serial            Mac address                         ('network', 'eth0', 'serial', 'd8:9d:67:1b:07:e4')                         Unique 
-vendor            NIC's vendor                        ('network', 'eth0', 'vendor', 'Broadcom Corporation')                      Low 
+serial            Mac address                         ('network', 'eth0', 'serial', 'd8:9d:67:1b:07:e4')                         Unique
+vendor            NIC's vendor                        ('network', 'eth0', 'vendor', 'Broadcom Corporation')                      Low
 product           NIC's description                   ('network', 'eth0', 'product', 'NetXtreme BCM5719 Gigabit Ethernet PCIe')  Medium
 size              Link capability in bits/sec         ('network', 'eth0', 'size', '1000000000')                                  Low
 ipv4              IPv4 address                        ('network', 'eth0', 'ipv4', '10.66.6.136')                                 High
-ipv4-netmask      IPv4 netmask                        ('network', 'eth0', 'ipv4-netmask', '255.255.255.0')                       Low 
+ipv4-netmask      IPv4 netmask                        ('network', 'eth0', 'ipv4-netmask', '255.255.255.0')                       Low
 ipv4-cidr         IPv4 cidr                           ('network', 'eth0', 'ipv4-cidr', '24')                                     Low
 ipv4-network      IPv4 network address                ('network', 'eth0', 'ipv4-network', '10.66.6.0')                           Medium
 link              Physical Link Status                ('network', 'eth0', 'link', 'yes')                                         Medium
@@ -2204,7 +2208,7 @@ cores           CPU's number of cores            ('cpu', 'physical_0', 'cores', 
 enabled_cores   CPU's number of enabled cores    ('cpu', 'physical_0',' enabled_cores', '2')                                    Medium
 threads         CPU's number of threads          ('cpu', 'physical_0', 'threads', '4')                                          Medium
 product         CPU's identification string      ('cpu', 'physical_0', 'product', 'Intel(R) Core(TM) i5-3320M CPU @ 2.60GHz')   High
-vendor          CPU's vendor                     ('cpu', 'physical_0', 'vendor', 'Intel Corp.')                                 Low 
+vendor          CPU's vendor                     ('cpu', 'physical_0', 'vendor', 'Intel Corp.')                                 Low
 frequency       CPU's internal frequency in Hz   ('cpu', 'physical_0', 'frequency', '1200000000')                               Low
 clock           CPU's clock in Hz                ('cpu', 'physical_0', 'clock', '100000000')                                    Low
 ==============  ===============================  =============================================================================  ==============
@@ -2231,11 +2235,11 @@ memory       Detect Memory informations                 Sample output           
 ===========  =========================================  ========================================================================================  ==============
 total        Amount of memory on the host (in Bytes)    ('memory', 'total', 'size', '17179869184')                                                High
 size         Bank size (in Bytes)                       ('memory', 'bank:0', 'size', '4294967296')                                                Medium
-clock        Memory clock speed (in Hz)                 ('memory', 'bank:0', 'clock', '667000000')                                                Low 
+clock        Memory clock speed (in Hz)                 ('memory', 'bank:0', 'clock', '667000000')                                                Low
 description  Memory's description                       ('memory', 'bank:0', 'description', 'FB-DIMM DDR2 FB-DIMM Synchronous 667 MHz (1.5 ns)')  Medium
 vendor       Memory's vendor                            ('memory', 'bank:0', 'vendor', 'Nanya Technology')                                        Medium
 serial       Memory's serial number                     ('memory', 'bank:0', 'serial', 'C7590943')                                                Unique\*
-slot         Physical Slot of this Bank                 ('memory', 'bank:0', 'slot', 'DIMM1')                                                     High 
+slot         Physical Slot of this Bank                 ('memory', 'bank:0', 'slot', 'DIMM1')                                                     High
 banks        Number of memory banks                     ('memory', 'banks', 'count', 8)                                                           Medium
 ===========  =========================================  ========================================================================================  ==============
 
@@ -2248,7 +2252,7 @@ Per card
 ^^^^^^^^
 
 ============ ==============================  ===========================================================  =========================
-infiniband   Detect Infiniband informations  sample output                                                Discrim. Level 
+infiniband   Detect Infiniband informations  sample output                                                Discrim. Level
 ============ ==============================  ===========================================================  =========================
 card_type    IB card's type                  ('infiniband', 'card0', 'card_type', 'mlx4_0')               Medium
 device_type  IB card's device type           ('infiniband', 'card0', 'device_type', 'MT4099')             Medium
@@ -2263,13 +2267,13 @@ Per port
 ^^^^^^^^
 
 ===============  ==============================  ==================================================================  ===============
-infiniband       Detect Infiniband informations  sample output                                                       Discrim. Level 
+infiniband       Detect Infiniband informations  sample output                                                       Discrim. Level
 ===============  ==============================  ==================================================================  ===============
 state            Interface state                 ('infiniband', 'card0_port1', 'state', 'Down')                      High
 physical_state   Physical state of the link      ('infiniband', 'card0_port1', 'physical_state', 'Down')             High
 rate             Speed in Gbit/sec               ('infiniband', 'card0_port1', 'rate', '40')                         High
-base_lid                                         ('infiniband', 'card0_port1', 'base_lid', '0'                       Low 
-lmc                                              ('infiniband', 'card0_port1', 'lmc', '0')                           Low 
-sm_lid                                           ('infiniband', 'card0_port1', 'sm_lid', '0')                        Low 
+base_lid                                         ('infiniband', 'card0_port1', 'base_lid', '0'                       Low
+lmc                                              ('infiniband', 'card0_port1', 'lmc', '0')                           Low
+sm_lid                                           ('infiniband', 'card0_port1', 'sm_lid', '0')                        Low
 port_guid                                        ('infiniband', 'card0_port1', 'port_guid', '0x0002c90300ea7181')    Unique
 ===============  ==============================  ==================================================================  ===============

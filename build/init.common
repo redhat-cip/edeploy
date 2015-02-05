@@ -503,7 +503,7 @@ get_network_configuration() {
     other="dhcp"
     for entry in $IP; do
         iface_name=$(echo $entry | cut -d ":" -f 1)
-        iface_config=$(echo $entry | cut -d ":" -f 2)
+        iface_config=$(echo $entry | cut -d ":" -f 2-)
         if [ "$iface_name" = "$searched_iface" ] || [ "$iface_name" = "all" ]; then
             echo -n $iface_config
             return
@@ -554,6 +554,14 @@ while true; do
             lldptool set-lldp -i $iface adminstatus=rxtx &>/dev/null
             # Let's run all the dhclients in parallel
             config=$(get_network_configuration $iface)
+            # Check if $config contains vlan parameters
+            if [[ ${config} =~ .@. ]]; then
+                vlan=$(echo ${config} | cut -d@ -f 2)
+                config=$(echo ${config} | cut -d@ -f 1)
+                vlan_iface=${iface}.${vlan}
+                ip link add link ${iface} name ${vlan_iface} type vlan id ${vlan}
+                iface=${vlan_iface}
+            fi
             case "$config" in
                 "dhcp")
                     DHCP_IFACES_COUNT=$(($DHCP_IFACES_COUNT + 1))
@@ -563,7 +571,7 @@ while true; do
                         fi
                         dhclient -d -pf /var/run/dhclient-$iface.pid $iface >> /$iface.log 2>&1 &
                         count=$DHCP_GRACE_TIME
-                        while [ $count -gt 0 ] && ! ifconfig $iface|grep -q 'inet addr'; do
+                        while [ $count -gt 0 ] && ! ip addr show $iface|grep -q 'inet'; do
                             sleep 1
                             count=$(($count - 1))
                         done

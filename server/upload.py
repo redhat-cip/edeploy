@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2013-2014 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2013-2015 eNovance SAS <licensing@enovance.com>
 #
 # Author: Frederic Lepied <frederic.lepied@enovance.com>
 #
@@ -329,6 +329,10 @@ def inject_facts(vars, basedir='/post_rsync'):
         f.write('---\\n')
         for key in vars:
             f.write('%s: %s\\n' % (key, vars[key]))
+
+def network_config(cfg):
+    with open('/network.yaml', 'w') as f:
+        f.write('network_config:\\n' + cfg)
 
 var = ''')
 

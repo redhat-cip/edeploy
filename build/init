@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (C) 2013-2014 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2013-2015 eNovance SAS <licensing@enovance.com>
 #
 # Author: Frederic Lepied <frederic.lepied@enovance.com>
 #
@@ -255,6 +255,11 @@ if /configure; then
         sed -i "s/ROLE=.*/ROLE=${ROLE}/" $d/var/lib/edeploy/conf
         sed -i "s/Role .*/Role ${ROLE}/" $d/etc/motd
         log "OS installation completed"
+
+        if [ -r /network.yaml ]; then
+            log "Calling os-net-config"
+            os-net-config -r $d -v -c /network.yaml || give_up "Unable to configure network using os-net-config"
+        fi
 
         log "Installing post_rsync files"
         rsync -avHP $p/* $d/

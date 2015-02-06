@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (C) 2013-2014 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2013-2015 eNovance SAS <licensing@enovance.com>
 #
 # Author: Frederic Lepied <frederic.lepied@enovance.com>
 #
@@ -47,10 +47,10 @@ rsync -aH --delete-before --numeric-ids ${src}/ ${dir}/
 
 common_setup
 
-PACKAGES="sdparm gzip xfsprogs mcelog smartmontools python-pip"
+PACKAGES="sdparm gzip xfsprogs mcelog smartmontools python-pip python-greenlet git"
 case "$DIST" in
     $supported_debian_dists | $supported_ubuntu_dists)
-        PACKAGES="$PACKAGES libc6-i386 lshw"
+        PACKAGES="$PACKAGES libc6-i386 lshw python-yaml"
     ;;
     $supported_centos_dists | $supported_redhat_dists)
         add_epel_repository $DIST
@@ -60,7 +60,7 @@ case "$DIST" in
             do_chroot $dir scl enable python27 'easy_install netaddr pexpect'
             remove_scn_repository
         else
-            PACKAGES="$PACKAGES lshw"
+            PACKAGES="$PACKAGES lshw PyYAML"
         fi
     ;;
 esac
@@ -76,8 +76,12 @@ case "$DIST" in
 esac
 
 install_packages $dir $PACKAGES
+
 do_chroot $dir pip install pbr==0.10.2
 do_chroot $dir pip install hardware
+
+do_chroot $dir pip install 'git+https://github.com/fredericlepied/os-net-config.git@rootdir#egg=os-net-config'
+
 clear_packages_cache $dir
 
 install_ib_if_needed $ORIG $dir

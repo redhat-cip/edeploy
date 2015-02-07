@@ -35,6 +35,7 @@
 /etc/resolv.conf
 /etc/sensu/
 /etc/services
+/etc/ssl/certs/puppetdb.pem
 /etc/ssh/ssh_host_dsa_key
 /etc/ssh/ssh_host_dsa_key.pub
 /etc/ssh/ssh_host_ecdsa_key

@@ -1,7 +1,4 @@
 #!/bin/bash
 set -e
 
-groupadd -g 800 messagebus
-useradd -u 800 -g messagebus -d /var/run/dbus -s /bin/false messagebus
-
 exit 0

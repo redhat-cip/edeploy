@@ -1,6 +1,22 @@
 #!/bin/bash
 set -e
 
+groupadd -g 806 manila
+useradd -u 806 -g manila -d /var/lib/manila -s /sbin/nologin manila
+mkdir /var/lib/manila
+
+groupadd -g 807 ironic
+useradd -u 807 -g ironic -d /var/lib/ironic -s /sbin/nologin ironic
+mkdir /var/lib/ironic
+
+groupadd -g 808 zaqar
+useradd -u 808 -g zaqar -d /var/lib/zaqar -s /sbin/nologin zaqar
+mkdir /var/lib/zaqar
+
+groupadd -g 809 sahara
+useradd -u 809 -g sahara -d /var/lib/sahara -s /sbin/nologin sahara
+mkdir /var/lib/sahara
+
 systemctl daemon-reload
 /usr/share/openstack-dashboard/manage.py compress
 

@@ -295,7 +295,7 @@ from hardware import ipmi
 
 def run(cmd):
     sys.stderr.write('+ ' + cmd + '\\n')
-    status, output = commands.getstatusoutput(cmd)
+    status, output = commands.getstatusoutput(cmd + ' </dev/null')
     sys.stderr.write(output + '\\n')
     if status != 0:
         sys.stderr.write("Command '%s' failed\\n" % cmd)

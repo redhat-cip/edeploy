@@ -178,9 +178,16 @@ else
     PID="$!"
 
     log_n "Awaiting eDeploy server :"
+    MAX_LOOPS=120
+    LOOPS=0
     while [ ! -z "$(pidof curl)" ]; do
         log_n "."
         sleep 1
+        LOOPS=$(($LOOPS + 1))
+        if [ "$LOOPS" -eq "$MAX_LOOPS" ]; then
+            pkill -9 curl
+            give_up "Unable to get a configuration from ${SERV}"
+        fi
     done
     log "done"
 

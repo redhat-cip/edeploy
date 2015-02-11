@@ -58,7 +58,7 @@ deb $repository precise-updates multiverse
 EOF
 fi
 
-PACKAGES="sdparm gzip sysbench mcelog smartmontools"
+PACKAGES="sdparm gzip sysbench mcelog smartmontools python-pip python-netaddr python-ipaddr"
 case "$DIST" in
     $supported_centos_dists | $supported_redhat_dists)
         add_epel_repository $DIST
@@ -82,6 +82,7 @@ esac
 
 update_repositories $dir
 install_packages $dir "$PACKAGES"
+do_chroot $dir pip install hardware
 clear_packages_cache $dir
 
 install_ib_if_needed $ORIG $dir

@@ -202,6 +202,10 @@ setup_bootloader() {
         IP="all:dhcp"
     fi
 
+    if [ -n "$NO_CLOUD_INIT" ]; then
+        KERNEL_OPTIONS="$KERNEL_OPTIONS NO_CLOUD_INIT=1"
+    fi
+
     mkdir $1/extlinux
     if [ "$MODE" = "health" ]; then
 COMMON_ARGS="$KERNEL_OPTIONS SERV=$SERV HSERV=$HSERV DEBUG=$DEBUG UPLOAD_LOG=${UPLOAD_LOG} ONFAILURE=$ONFAILURE ONSUCCESS=$ONSUCCESS IP=$IP"

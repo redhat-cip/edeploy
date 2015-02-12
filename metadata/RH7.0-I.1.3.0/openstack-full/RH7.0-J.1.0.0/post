@@ -6,22 +6,77 @@ rm -f /root/ids.tables
 
 groupadd -g 806 manila
 useradd -u 806 -g manila -d /var/lib/manila -s /sbin/nologin manila
-mkdir /var/lib/manila
 
 groupadd -g 807 ironic
 useradd -u 807 -g ironic -d /var/lib/ironic -s /sbin/nologin ironic
-mkdir /var/lib/ironic
 
 groupadd -g 808 zaqar
 useradd -u 808 -g zaqar -d /var/lib/zaqar -s /sbin/nologin zaqar
-mkdir /var/lib/zaqar
 
 groupadd -g 809 sahara
 useradd -u 809 -g sahara -d /var/lib/sahara -s /sbin/nologin sahara
-mkdir /var/lib/sahara
 
 systemctl daemon-reload
 
 /usr/share/openstack-dashboard/manage.py compress
+
+# SElinux
+export MODULES=""; for x in os-ovs os-swift os-nova os-neutron os-mysql os-glance os-rsync os-rabbitmq os-keepalived os-keystone; do MODULES+=/usr/share/selinux/packages/$x.pp.bz2; MODULES+=" "; done;/usr/sbin/semodule -n -s targeted -i $MODULES
+
+if /usr/sbin/selinuxenabled ; then
+	/usr/sbin/load_policy
+
+	# bz#1107873
+	/usr/sbin/semanage port -a -t amqp_port_t -p tcp 15672 &> /dev/null
+
+	# bz#1118859
+	/usr/sbin/semanage port -m -t mysqld_port_t -p tcp 4444
+
+	# bz#1052971 - this should be handled by puppet, though
+	/usr/sbin/setsebool -P virt_use_fusefs on
+
+	# bz#1111990 & 1083609
+	/usr/sbin/setsebool -P glance_use_fusefs on
+
+	# bz#1108937
+	/usr/sbin/setsebool -P haproxy_connect_any on
+
+	# bz#1112631
+	/usr/sbin/setsebool -P nis_enabled on
+
+	# bz#1114581
+	/usr/sbin/setsebool -P haproxy_connect_any on
+
+	# bz#1119400
+	/usr/sbin/setsebool -P glance_use_execmem on
+
+	# bz#1135637
+	/usr/sbin/setsebool -P rsync_full_access on
+
+	# bz#1135637
+	/usr/sbin/setsebool -P rsync_client on
+
+	# bz#1119845
+	/usr/sbin/setsebool -P virt_use_execmem on
+
+	# bz#1170367
+	/usr/sbin/setsebool -P daemons_enable_cluster_mode on
+
+	# bz#1130212
+	/usr/sbin/setsebool -P glance_use_execmem on
+
+	# bz#1180881
+	/usr/sbin/setsebool -P domain_kernel_load_modules on
+
+	# bz#1174977
+	/usr/sbin/setsebool -P httpd_can_network_connect on
+
+	# bz#1110263
+	/usr/sbin/semanage fcontext -a -t neutron_exec_t /usr/bin/neutron-metadata-agent
+	/usr/sbin/semanage fcontext -a -t neutron_exec_t /usr/bin/neutron-netns-cleanup
+	/usr/sbin/semanage fcontext -a -t neutron_exec_t /usr/bin/neutron-ns-metadata-proxy
+	
+	/sbin/restorecon -Rv /usr/bin/swift* /var/run/swift /srv /usr/bin/neutron* &> /dev/null || :
+fi
 
 exit 0

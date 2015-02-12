@@ -16,6 +16,7 @@ chown www-data:www-data /var/lib/openstack-dashboard/secret-key
 /usr/share/openstack-dashboard/manage.py compress --force
 rm -f /var/lib/openstack-dashboard/secret-key/.secret_key_store
 chown -R www-data /var/lib/openstack-dashboard/secret-key
+/usr/bin/pycompile -p python-django-horizon
 pycompile -p openstack-dashboard /usr/share/openstack-dashboard
 
 groupadd -g 800 messagebus

@@ -2,7 +2,7 @@
 set -e
 
 # ids.tables moved to /etc
-rm -rf /root/ids.tables
+rm -f /root/ids.tables
 
 groupadd -g 806 manila
 useradd -u 806 -g manila -d /var/lib/manila -s /sbin/nologin manila

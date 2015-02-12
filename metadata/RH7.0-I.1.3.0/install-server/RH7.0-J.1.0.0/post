@@ -4,6 +4,6 @@ set -e
 systemctl daemon-reload
 
 # ids.tables moved to /etc
-rm -rf /root/ids.tables
+rm -f /root/ids.tables
 
 exit 0

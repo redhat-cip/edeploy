@@ -45,7 +45,7 @@ check_variables
 set -x
 set -e
 
-rsync -aH --delete-before --numeric-ids ${src}/ ${dir}/
+rsync -aHX --delete-before --numeric-ids ${src}/ ${dir}/
 
 common_setup
 

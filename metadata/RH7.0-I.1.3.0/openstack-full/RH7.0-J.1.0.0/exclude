@@ -39,6 +39,7 @@
 /etc/nova/api-paste.ini
 /etc/nova/nova.conf
 /etc/ntp.conf
+/etc/openstack-dashboard/local_settings
 /etc/openvswitch/.conf.db.~lock~
 /etc/openvswitch/conf.db
 /etc/openvswitch/system-id.conf
@@ -78,8 +79,6 @@
 /usr/bin/clustercheck
 /usr/lib/ocf/resource.d/heartbeat/ceilometer-agent-central
 /usr/lib/systemd/system/mysql-bootstrap.service
-/usr/share/openstack-dashboard/openstack_dashboard/local/local_settings.pyc
-/usr/share/openstack-dashboard/static/dashboard/manifest.json
 /var/lib/ceilometer/
 /var/lib/ceph/
 /var/lib/cinder/
@@ -98,7 +97,6 @@
 /var/lib/mysql/
 /var/lib/neutron/
 /var/lib/nova/
-/var/lib/openstack-dashboard/
 /var/lib/openvswitch/
 /var/lib/pacemaker/
 /var/lib/puppet/client_data/

@@ -21,6 +21,7 @@ useradd -u 809 -g sahara -d /var/lib/sahara -s /sbin/nologin sahara
 mkdir /var/lib/sahara
 
 systemctl daemon-reload
+
 /usr/share/openstack-dashboard/manage.py compress
 
 exit 0

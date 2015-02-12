@@ -143,7 +143,7 @@ def main():
 
     debug('ORIG %s' % str(sys.argv))
 
-    IDS = '/root/ids.tables'
+    IDS = '/etc/ids.tables'
 
     try:
         exec(open(IDS).read())

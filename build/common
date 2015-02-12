@@ -276,8 +276,8 @@ cleanup() {
     fi
 
     # copy the ids file for later use
-    if [ -f ${dir}/root/ids.tables ]; then
-        cp ${dir}/root/ids.tables ${dir}/../ids.tables
+    if [ -f ${dir}/etc/ids.tables ]; then
+        cp ${dir}/etc/ids.tables ${dir}/../ids.tables
     fi
 
     # Verify the IDS are correct

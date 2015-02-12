@@ -55,7 +55,7 @@ ARGS_OPTS = ['-g', '--gid',
              '-u', '--uid',
              '-Z', '--selinux-user']
 
-IDS = '/root/ids.tables'
+IDS = '/etc/ids.tables'
 try:
     exec(open(IDS).read())
 except IOError:

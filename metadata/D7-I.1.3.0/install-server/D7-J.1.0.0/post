@@ -1,8 +1,6 @@
 #!/bin/bash
 set -e
 
-systemctl daemon-reload
-
 # ids.tables moved to /etc
 rm -rf /root/ids.tables
 

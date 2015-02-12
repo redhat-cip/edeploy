@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 
+# ids.tables moved to /etc
+rm -rf /root/ids.tables
+
 groupadd -g 800 messagebus
 useradd -u 800 -g messagebus -d /var/run/dbus -s /bin/false messagebus
 

@@ -307,8 +307,6 @@
 /usr/bin/clustercheck
 /usr/lib/ocf/resource.d/heartbeat/ceilometer-agent-central
 /usr/lib/ocf/resource.d/heartbeat/heat-engine
-/usr/share/openstack-dashboard/openstack_dashboard/local/local_settings.pyc
-/usr/share/openstack-dashboard/openstack_dashboard/static/dashboard/manifest.json
 /var/backups/
 /var/cache/debconf/
 /var/lib/ceilometer/
@@ -323,7 +321,6 @@
 /var/lib/haproxy/stats
 /var/lib/heartbeat/crm/
 /var/lib/heat/
-/var/lib/horizon/
 /var/lib/initramfs-tools/
 /var/lib/keystone/
 /var/lib/libvirt/qemu/capabilities.monitor.sock
@@ -336,7 +333,6 @@
 /var/lib/neutron/
 /var/lib/nova/
 /var/lib/ntp/drift
-/var/lib/openstack-dashboard/
 /var/lib/openvswitch/
 /var/lib/pacemaker/
 /var/lib/pengine/

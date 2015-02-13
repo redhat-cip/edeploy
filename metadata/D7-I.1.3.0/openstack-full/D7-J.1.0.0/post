@@ -5,18 +5,7 @@ set -e
 rm -f /root/ids.tables
 
 # Horizon
-mkdir -p /var/lib/openstack-dashboard/static/js
-mkdir -p /var/lib/openstack-dashboard/static/css
-mkdir -p /var/lib/openstack-dashboard/secret-key
-chown www-data:www-data /var/lib/openstack-dashboard/static
-chown www-data:www-data /var/lib/openstack-dashboard/static/css
-chown www-data:www-data /var/lib/openstack-dashboard/static/js
-chown www-data:www-data /var/lib/openstack-dashboard/secret-key
-# Compress the JS and CSS with python-compressor and python-lesscpy
-/usr/share/openstack-dashboard/manage.py compress --force
-rm -f /var/lib/openstack-dashboard/secret-key/.secret_key_store
-chown -R www-data /var/lib/openstack-dashboard/secret-key
-/usr/bin/pycompile -p python-django-horizon
+pycompile -p python-django-horizon
 pycompile -p openstack-dashboard /usr/share/openstack-dashboard
 
 groupadd -g 800 messagebus

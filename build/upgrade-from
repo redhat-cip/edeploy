@@ -129,7 +129,7 @@ if [ ! -d ${TDIR} ]; then
 fi
 
 echo -n "Syncing ${FDIR} to ${TDIR}..."
-rsync -aX --delete-before ${FDIR}/ ${TDIR}/
+rsync -a --delete-before ${FDIR}/ ${TDIR}/
 echo "done"
 
 common_setup

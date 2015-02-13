@@ -1,6 +1,6 @@
 # -*- shell-script -*-
 #
-# Copyright (C) 2013-2015 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2013 eNovance SAS <licensing@enovance.com>
 #
 # Author: Frederic Lepied <frederic.lepied@enovance.com>
 #
@@ -34,7 +34,7 @@ set -e
 # not nested call check
 if [ ${src} != ${dir} ]; then
     echo -n "Copying tree ${src}/ to ${dir}/ "
-    rsync -aX --delete --numeric-ids ${src}/ ${dir}/
+    rsync -a --delete --numeric-ids ${src}/ ${dir}/
     echo ": done"
 fi
 

@@ -102,7 +102,7 @@ reboot -f
 EOF
 
 scp "$SCR" "$DST":/tmp/
-rsync -e ssh -avPX --numeric-ids --delete-after --exclude-from="$EXCL" "$src/"  "$DST":/
+rsync -e ssh -avP --numeric-ids --delete-after --exclude-from="$EXCL" "$src/"  "$DST":/
 ssh "$DST" bash /tmp/$(basename $SCR)
 
 # remote-install.sh ends here

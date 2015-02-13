@@ -91,7 +91,7 @@ install_edeploy() {
     # edeploy part
 
     generate_ansible_host $t edeployservers $dir
-    rsync -avPX $ORIG/../ansible $dir/tmp/
+    rsync -avP $ORIG/../ansible $dir/tmp/
 
     case "$OS" in
         "RedHatEnterpriseServer")

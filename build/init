@@ -247,13 +247,13 @@ if /configure; then
         log "Deploying role '$ROLE' version '$VERS' on disk '$DISK' @ $(date)"
         if [ -n "$EMBEDDED" ]; then
             log "Installing OS using embedded method"
-            cat $EMBEDDED_MOUNT/embedded/${ROLE}-${VERS}.edeploy | gzip -d | tar x -C $d || give_up "Unable to decompress local role : $EMBEDDED_MOUNT/embedded/${ROLE}-${VERS}.edeploy"
+            cat $EMBEDDED_MOUNT/embedded/${ROLE}-${VERS}.edeploy | gzip -d | tar x --xattrs -C $d || give_up "Unable to decompress local role : $EMBEDDED_MOUNT/embedded/${ROLE}-${VERS}.edeploy"
         elif [ -n "$HSERV" ]; then
             log "Transferring files from http://${HSERV}:${HSERV_PORT}/${HPATH}/${VERS}/${ROLE}-${VERS}.edeploy..."
-            curl -s -S http://${HSERV}:${HSERV_PORT}/${HPATH}/${VERS}/${ROLE}-${VERS}.edeploy | gzip -d | tar x -C $d || give_up "Unable to download http://${HSERV}:${HSERV_PORT}/${HPATH}/${VERS}/${ROLE}-${VERS}.edeploy"
+            curl -s -S http://${HSERV}:${HSERV_PORT}/${HPATH}/${VERS}/${ROLE}-${VERS}.edeploy | gzip -d | tar x --xattrs -C $d || give_up "Unable to download http://${HSERV}:${HSERV_PORT}/${HPATH}/${VERS}/${ROLE}-${VERS}.edeploy"
         else
             log "Copying files from rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${VERS}/${ROLE}..."
-            rsync -a rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${VERS}/${ROLE}/ $d/ || give_up "Unable to rsync rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${VERS}/${ROLE}/"
+            rsync -aX rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${VERS}/${ROLE}/ $d/ || give_up "Unable to rsync rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${VERS}/${ROLE}/"
         fi
         echo "SERV=${SERV}" >> $d/var/lib/edeploy/conf
         echo "RSERV=${RSERV}" >> $d/var/lib/edeploy/conf

@@ -43,7 +43,7 @@ mkdir -p $dir
 set -x
 set -e
 
-rsync -aH --delete-before --numeric-ids ${src}/ ${dir}/
+rsync -aHX --delete-before --numeric-ids ${src}/ ${dir}/
 
 common_setup
 
@@ -89,7 +89,7 @@ clean_mount_points
 
 save_package_list $dir
 
-rsync -au --delete-excluded --delete --exclude /boot/ \
+rsync -auX --delete-excluded --delete --exclude /boot/ \
     --exclude 'initrd*' \
     --exclude 'lib/modules/*/kernel/drivers/bluetooth' \
     --exclude 'lib/modules/*/kernel/drivers/gpu/' \

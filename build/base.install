@@ -155,6 +155,13 @@ bootstrap() {
         echo 'APT::Install-Recommends "0" ;' >> "$target/etc/apt/apt.conf"
         echo 'APT::Install-Suggests "0" ;' >> "$target/etc/apt/apt.conf"
 
+        # workaround for Debian old tar package which doesn't support --xattrs
+        if [ "$dist" = wheezy ]; then
+            curl -o ${target}/tmp/tar.deb http://ftp.debian.org/debian/pool/main/t/tar/tar_1.27.1-1~bpo70+1_${ARCH:=amd64}.deb
+            do_chroot ${target} dpkg -i /tmp/tar.deb
+            rm -f ${target}/tmp/tar.deb
+        fi
+
         # We need to do some magic on gids to have stable ids for upgrades
         if [ $dist = trusty ]; then
             sed -i -e 's/netdev:x:102:/netdev:x:127:/' "${target}"/etc/group

@@ -155,7 +155,7 @@ bootstrap() {
         echo 'APT::Install-Recommends "0" ;' >> "$target/etc/apt/apt.conf"
         echo 'APT::Install-Suggests "0" ;' >> "$target/etc/apt/apt.conf"
 
-        # workaround for Debian old tar package which doesn't support --xattrs
+        # workaround for Debian old tar package which doesn't support --xattrs and --selinux
         if [ "$dist" = wheezy ]; then
             curl -o ${target}/tmp/tar.deb http://ftp.debian.org/debian/pool/main/t/tar/tar_1.27.1-1~bpo70+1_${ARCH:=amd64}.deb
             do_chroot ${target} dpkg -i /tmp/tar.deb

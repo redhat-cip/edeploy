@@ -74,6 +74,7 @@
 /proc/
 /root/
 /run/
+/srv/node/
 /sys/
 /tmp/
 /usr/bin/clustercheck
@@ -96,6 +97,7 @@
 /var/lib/mongodb/
 /var/lib/mysql/
 /var/lib/neutron/
+/var/lib/nfs/
 /var/lib/nova/
 /var/lib/openvswitch/
 /var/lib/pacemaker/

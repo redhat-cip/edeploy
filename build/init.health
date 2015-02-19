@@ -175,6 +175,7 @@ eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^HTTP_PATH=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^SESSION=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^RBENCH=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^SECTION=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^LINK_UP_TIMEOUT=")
 
 if [ -z "$RSERV" ]; then
     RSERV="$SERV"

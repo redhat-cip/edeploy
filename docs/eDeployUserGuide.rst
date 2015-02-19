@@ -832,6 +832,7 @@ UPLOAD_LOG           Boolean. Upload log file on eDeploy server
 VERBOSE              Boolean. Enable the verbose mode
 DEBUG                Boolean. Enable debug mode (start a ssh_server for further access)
 IP                   A list of network device configuration (see below for details)
+LINK_UP_TIMEOUT      Timeout to consider a network link detection completed (default is 10 seconds)
 ===================  ============================================================
 
 **Note** : The kexec option of ONSUCCESS means that after a successful

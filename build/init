@@ -63,6 +63,7 @@ eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^KEXEC_KERNEL=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^EMBEDDED=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^IP=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^UPLOAD_LOG=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^LINK_UP_TIMEOUT=")
 
 if [[ "$DEBUG" = "1" ]]; then
   log "DEBUG param deprecated, please use ONFAILURE=console"

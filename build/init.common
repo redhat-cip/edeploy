@@ -455,6 +455,11 @@ probe_kernel_modules() {
 enable_network_links() {
     nolink=$1
     retry_count=$2
+
+    if [ -z "$LINK_UP_TIMEOUT" ]; then
+        LINK_UP_TIMEOUT=10
+    fi
+
     DEVICE_LIST=
     for current_pass in `seq 1 $retry_count`; do
         log "Enabling Ethernet Links ($current_pass/$retry_count)"
@@ -490,8 +495,8 @@ enable_network_links() {
     fi
 
     # Only consider interface that have a Link ok
-    log "Waiting a few seconds to catch network link"
-    sleep 10
+    log "Waiting a $LINK_UP_TIMEOUT seconds to catch network link"
+    sleep $LINK_UP_TIMEOUT
 
     log "List of available network devices is :$DEVICE_LIST"
 }

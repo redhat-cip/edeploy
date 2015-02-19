@@ -813,27 +813,27 @@ time for the USB mode or at boot time for the PXE based deployment.
 In both scenario, options remains the same and the following list is
 exhaustive :
 
-===================  ============================================================
-Variable Name                         Role
-===================  ============================================================
-SERV                 IP address of the eDeploy server URL
-HTTP_PATH            Path to access the upload.py (HTTP_PATH/upload.py)
-HTTP_PORT            HTTP Port to contact the eDeploy server
-HSERV                IP address of the HTTP server for Compressed File transfer
-HSERV_PORT           Port to contact the HTTP server for Compressed File transfer
-HPATH                Path on the HTTP server for Compressed File transfer
-RSERV                IP address of the RSYNC server for Full Directory file transfer
-RSERV_PORT           Port to contact the RSYNC server for Full Directory file transfer
-RPATH                Path on the  RSYNC server for Full Directory file transfer
-ONSUCCESS            Action to take upon successful installation (kexec\|reboot\|halt\|console)
-ONFAILURE            Action to take upon failed installation (console\|halt)
-KEXEC_KERNEL         The version of the expect kernel to be booted with kexec
-UPLOAD_LOG           Boolean. Upload log file on eDeploy server
-VERBOSE              Boolean. Enable the verbose mode
-DEBUG                Boolean. Enable debug mode (start a ssh_server for further access)
-IP                   A list of network device configuration (see below for details)
-LINK_UP_TIMEOUT      Timeout to consider a network link detection completed (default is 10 seconds)
-===================  ============================================================
+===================  =========================================================================  =======================
+Variable Name                         Role                                                            Default value
+===================  =========================================================================  =======================
+SERV                 IP address of the eDeploy server URL                                       10.0.0.1
+HTTP_PATH            Path to access the upload.py (HTTP_PATH/upload.py)                         /cgi-bin/
+HTTP_PORT            HTTP Port to contact the eDeploy server                                    80
+HSERV                IP address of the HTTP server for Compressed File transfer                 
+HSERV_PORT           Port to contact the HTTP server for Compressed File transfer               80
+HPATH                Path on the HTTP server for Compressed File transfer                       install
+RSERV                IP address of the RSYNC server for Full Directory file transfer            
+RSERV_PORT           Port to contact the RSYNC server for Full Directory file transfer          873
+RPATH                Path on the  RSYNC server for Full Directory file transfer                 install
+ONSUCCESS            Action to take upon successful installation (kexec\|reboot\|halt\|console) reboot
+ONFAILURE            Action to take upon failed installation (console\|halt)                    halt
+KEXEC_KERNEL         The version of the expect kernel to be booted with kexec                   
+UPLOAD_LOG           Boolean. Upload log file on eDeploy server                                 1 (enabled)
+VERBOSE              Boolean. Enable the verbose mode                                           0 (disabled)
+DEBUG                Boolean. Enable debug mode (start a ssh_server for further access)         0 (disabled)
+IP                   A list of network device configuration (see below for details)             all:dhcp
+LINK_UP_TIMEOUT      Timeout to consider a network link detection completed                     10 (seconds)
+===================  =========================================================================  =======================
 
 **Note** : The kexec option of ONSUCCESS means that after a successful
 deployment of the operating system, eDeploy extract both kernel and

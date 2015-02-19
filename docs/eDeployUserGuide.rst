@@ -819,15 +819,15 @@ Variable Name                         Role                                      
 SERV                 IP address of the eDeploy server URL                                       10.0.0.1
 HTTP_PATH            Path to access the upload.py (HTTP_PATH/upload.py)                         /cgi-bin/
 HTTP_PORT            HTTP Port to contact the eDeploy server                                    80
-HSERV                IP address of the HTTP server for Compressed File transfer                 
+HSERV                IP address of the HTTP server for Compressed File transfer                 None
 HSERV_PORT           Port to contact the HTTP server for Compressed File transfer               80
 HPATH                Path on the HTTP server for Compressed File transfer                       install
-RSERV                IP address of the RSYNC server for Full Directory file transfer            
+RSERV                IP address of the RSYNC server for Full Directory file transfer            None
 RSERV_PORT           Port to contact the RSYNC server for Full Directory file transfer          873
 RPATH                Path on the  RSYNC server for Full Directory file transfer                 install
 ONSUCCESS            Action to take upon successful installation (kexec\|reboot\|halt\|console) reboot
 ONFAILURE            Action to take upon failed installation (console\|halt)                    halt
-KEXEC_KERNEL         The version of the expect kernel to be booted with kexec                   
+KEXEC_KERNEL         The version of the expect kernel to be booted with kexec                   None
 UPLOAD_LOG           Boolean. Upload log file on eDeploy server                                 1 (enabled)
 VERBOSE              Boolean. Enable the verbose mode                                           0 (disabled)
 DEBUG                Boolean. Enable debug mode (start a ssh_server for further access)         0 (disabled)

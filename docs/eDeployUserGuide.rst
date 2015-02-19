@@ -879,6 +879,14 @@ A typical configuration looks like:
       KEXEC_KERNEL=3.10.0-123.el7
 
 
+**Note**: Kernel arguments surrounded by pipes will be propagated on the installed hosts bootloader's configuration. A typical use case is to override the default linux console to use the serial lines like in the following example :
+
+::
+
+        APPEND initrd=initrd.pxe [...] | console=tty0 console=ttyS0,115200n8 |
+
+
+
 Preparing the eDeploy Server
 ----------------------------
 

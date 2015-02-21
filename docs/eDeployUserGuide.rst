@@ -1079,17 +1079,17 @@ file looks like this :
 .. code:: bash
 
    [
-    ('disk', '$disk', 'size', 'gt(4)'),
+    ('disk', '$disk', 'size', 'and(gt(4), lt(12))'),
     ('network', '$eth', 'ipv4', 'network(192.168.122.0/24)'),
-    ('network', '$eth', 'serial', '$mac=regexp(^28:d2:)'),
+    ('network', '$eth', 'serial', '$mac=not(regexp(^28:d2:))'),
    ]
 
 To match the 'vm-debian' profile, a hardware system must match the
 following criterias :
 
--  have a hard drive bigger than 4GB
+-  have a hard drive bigger than 4GB and smaller than 12GB
 -  have one network interface on the 192.168.122.0/24 IPV4 network
--  have a MAC address starting by 28:d2:
+-  have a MAC address not starting by 28:d2:
 
 The more discriminant criterias are, the more accurate the matching is.
 For example, the most discriminant criteria is the serial number of a
@@ -1106,6 +1106,8 @@ helper functions.
    equal)
 -  in() : the item to match shall be in a specified set
 -  regexp() : match a regular expression
+-  or(), and(), not(): boolean functions. or() and and() take 2
+   parameters and not() one parameter.
 
    
 

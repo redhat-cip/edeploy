@@ -22,8 +22,7 @@
       - /var/lib/edeploy/logs
       - /var/lib/edeploy/health
     - pip_modules:
-      - { name: pbr, value: 0.10.2 }
-      - { name: hardware, value: 0.9 }
+      - { name: hardware, value: 0.10 }
 
   user: root
 

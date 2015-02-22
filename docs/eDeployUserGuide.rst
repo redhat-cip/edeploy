@@ -1071,9 +1071,9 @@ Spec file
 
 Specs file are describing hardware profiles. They describe - in its own
 DSL - the requirements a hardware needs to meet to be tied to a specific
-r ole. Specs file works in an all or nothing fashion. To be tied to a
+role. Specs file works in an all or nothing fashion. To be tied to a
 specific profile, the server to be provisioned hardware profile must
-ma tch all the rules written in this file. The default 'vm-debian.spec'
+match all the rules written in this file. The default 'vm-debian.spec'
 file looks like this :
 
 .. code:: bash
@@ -1349,6 +1349,41 @@ What to put inside: every configuration file that is hardware related
 What not to put inside: every configuration file that is software
 related. Configuration files that should be managed by a configuration
 management tools.
+
+Function helpers for configure scripts
+''''''''''''''''''''''''''''''''''''''
+
+Here are the helper functions that can be used in configure scripts:
+
+:config(name):
+    create a config file that will automatically be created in `/post_rsync`.
+    You can use the following optional arguments to change the behaviour of
+    the function:
+
+    :fmod:
+        change the default mode of 0644 for the created file.
+
+    :mode:
+        change the default 'w' mode. Can be something like 'a' for appending.
+
+    :uid:
+        change the default uid from 0.
+
+    :gid:
+        change the default gid from 0.
+
+:inject_facts(vars):
+   inject puppet facts from the `vars` variable. This will allow to
+   use the variables into puppet manifests. The optional `prefix`
+   variable changes the `hw_` prefix is put in front of the fact names
+   to avoid conflicts with standard facts.
+
+:run(cmd):
+   run a command on the system.
+
+:set_role(role, version, disk):
+   set the eDeploy role and version to download and pass by the way the
+   disk where to install the bootloader.
 
 Using the Configuration Management Database (CMDB)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

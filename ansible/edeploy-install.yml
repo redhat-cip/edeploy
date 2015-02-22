@@ -22,7 +22,7 @@
       - /var/lib/edeploy/logs
       - /var/lib/edeploy/health
     - pip_modules:
-      - { name: hardware, value: 0.10 }
+      - { name: hardware, value: '0.10' }
 
   user: root
 

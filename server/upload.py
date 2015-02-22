@@ -321,14 +321,14 @@ def config(name, mode='w', basedir='/post_rsync', fmod=0644, uid=0, gid=0):
     os.fchown(f.fileno(), uid, gid)
     return f
 
-def inject_facts(vars, basedir='/post_rsync'):
+def inject_facts(vars, basedir='/post_rsync', prefix='hw_'):
     dir_ = os.path.join(basedir, 'etc', 'facter', 'facts.d')
     if not os.path.exists(dir_):
         os.makedirs(dir_)
     with open(os.path.join(dir_, 'edeploy.yaml'), 'w') as f:
         f.write('---\\n')
         for key in vars:
-            f.write('%s: %s\\n' % (key, vars[key]))
+            f.write('%s%s: %s\\n' % (prefix, key, vars[key]))
 
 var = ''')
 

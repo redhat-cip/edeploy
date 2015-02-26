@@ -1113,9 +1113,9 @@ This is a list of typical usage of helpers :
 
 .. code:: bash
 
- ('network', '$nic0', 'serial', 'in("52:54:i00:d6:85:55", "52:54:00:a5:d3:93", "52:54:00:6e:93:b9"')
+ ('network', '$nic0', 'serial', 'in("52:54:00:d6:85:55", "52:54:00:a5:d3:93", "52:54:00:6e:93:b9"')
 
- ('network', '$nic0', 'serial', '$$mac-nic0=in("52:54:i00:d6:85:55", "52:54:00:a5:d3:93", "52:54:00:6e:93:b9"')
+ ('network', '$nic0', 'serial', '$$mac-nic0=in("52:54:00:d6:85:55", "52:54:00:a5:d3:93", "52:54:00:6e:93:b9"')
 
  ('network', '$nic0', 'serial', '$mac-nic0=not(regexp(^28:d2:))')
 

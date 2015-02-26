@@ -1109,7 +1109,24 @@ helper functions.
 -  or(), and(), not(): boolean functions. or() and and() take 2
    parameters and not() one parameter.
 
-   
+This is a list of typical usage of helpers :
+
+.. code:: bash
+
+ ('network', '$nic0', 'serial', 'in("52:54:i00:d6:85:55", "52:54:00:a5:d3:93", "52:54:00:6e:93:b9"')
+
+ ('network', '$nic0', 'serial', '$$mac-nic0=in("52:54:i00:d6:85:55", "52:54:00:a5:d3:93", "52:54:00:6e:93:b9"')
+
+ ('network', '$nic0', 'serial', '$mac-nic0=not(regexp(^28:d2:))')
+
+ ('network', '$nic0', 'ipv4', 'network(192.168.1.0/24)')
+
+ ('disk', '$bootdisk', 'size', 'and(gt(20), lt(50)))'
+
+ ('disk', '$bootdisk', 'size', '$size=le(20)')
+
+ ('disk', '$disk', 'size', 'in(10, 20, 30)')
+
 
 eDeploy also provides a place holder feature. In order to be reused
 during the configuration process, one can use the values sent by the

@@ -682,6 +682,7 @@ set_path() {
 }
 
 start_mcelog(){
+    touch /mcelog
     mcelog --ignorenodev --filter --daemon --logfile /mcelog
 }
 

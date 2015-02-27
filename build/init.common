@@ -416,7 +416,7 @@ probe_virtio_devices() {
 
 probe_pci_devices() {
     step "Probing PCI devices"
-    BLACK_LIST="snd_hda_intel mgag200"
+    BLACK_LIST="snd_hda_intel mgag200 cirrus"
     for module in $(get_pci_modules|sort -u); do
         echo "$BLACK_LIST" | grep -qw "$module" && log "Skipping $module" && continue
         log_n "Loading $module "
@@ -495,7 +495,7 @@ enable_network_links() {
     fi
 
     # Only consider interface that have a Link ok
-    log "Waiting a $LINK_UP_TIMEOUT seconds to catch network link"
+    log "Waiting $LINK_UP_TIMEOUT seconds to catch network link"
     sleep $LINK_UP_TIMEOUT
 
     log "List of available network devices is :$DEVICE_LIST"
@@ -682,6 +682,7 @@ set_path() {
 }
 
 start_mcelog(){
+    touch /mcelog
     mcelog --ignorenodev --filter --daemon --logfile /mcelog
 }
 

@@ -420,6 +420,12 @@ clean_tmp_dir() {
     target=$1
     rm -rf ${target}/var/tmp/* ${target}/tmp/*
     clear_packages_cache $target
+    case "$dist" in
+        $supported_centos_dists|$supported_redhat_dists)
+            rm -f ${target}/var/cache/yum/*/packages/*rpm
+        ;;
+    esac
+
 }
 
 install_edeploy_bin() {

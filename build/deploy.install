@@ -117,10 +117,12 @@ install_pxe() {
         "Debian"|"Ubuntu")
             install_packages_disabled $dir dnsmasq syslinux-common
             cp -a $dir/usr/lib/syslinux/*pxelinux.0 $dir/var/lib/tftpboot/
+            cp -a $dir/usr/lib/syslinux/chain.c32 $dir/var/lib/tftpboot/
             ;;
         "CentOS"|"RedHatEnterpriseServer")
             install_packages_disabled $dir dnsmasq syslinux
             cp -a $dir/usr/share/syslinux/*pxelinux.0 $dir/var/lib/tftpboot/
+            cp -a $dir/usr/share/syslinux/chain.c32 $dir/var/lib/tftpboot/
             ;;
     esac
 }

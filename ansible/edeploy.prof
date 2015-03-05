@@ -6,6 +6,13 @@ timeout 0
 LABEL localboot
 localboot -1
 
+LABEL localboot1
+localboot 0
+
+LABEL localboot2
+COM32 chain.c32
+APPEND hd0
+
 LABEL eDeploy
 KERNEL vmlinuz
 APPEND initrd=initrd.pxe SERV={{ ansible_default_ipv4["address"] }} HSERV={{ ansible_default_ipv4["address"] }} UPLOAD_LOG=1 ONSUCCESS=halt ONFAILURE=console IP=all:dhcp pci=bfsort

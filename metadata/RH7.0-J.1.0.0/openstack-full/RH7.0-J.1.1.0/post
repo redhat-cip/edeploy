@@ -1,0 +1,7 @@
+#!/bin/bash
+set -e
+
+groupadd -g 860 ssd
+useradd -u 860 -g ssd -d / -s /sbin/nologin ssd
+
+exit 0

@@ -1,0 +1,6 @@
+#!/bin/bash
+set -e
+
+systemctl daemon-reload
+
+exit 0

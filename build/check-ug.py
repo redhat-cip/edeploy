@@ -173,6 +173,7 @@ def query_ids_table(desc):
 
 
 def validate_etc_passwd(real):
+    ret = 0
     if real['typ'] == 'useradd':
         try:
             pwd.getpwnam(real['name'])
@@ -185,14 +186,18 @@ def validate_etc_passwd(real):
                 "ids.tables (%s)" % (real['name'],
                                      pwd.getpwnam(real['name']).pw_uid,
                                      real['uid']), level='warning')
+            ret += 1
         if str(pwd.getpwnam(real['name']).pw_gid) != str(real['gid']):
             log("GID for user %s (%s) does not correspond to the one in "
                 "ids.tables (%s)" % (real['name'],
                                      pwd.getpwnam(real['name']).pw_gid,
                                      real['gid']), level='warning')
+            ret += 1
+    return ret
 
 
 def validate_etc_group(real):
+    ret = 0
     if real['typ'] == 'groupadd':
         try:
             grp.getgrnam(real['name'])
@@ -205,9 +210,14 @@ def validate_etc_group(real):
                 "ids.tables (%s)" % (real['name'],
                                      grp.getgrnam(real['name']).gr_gid,
                                      real['gid']), level='warning')
+            ret += 1
+    return ret
 
 
 if __name__ == "__main__":
+    import sys
+
+    ret = 0
     log("Start check-ug ...")
     rpms = get_rpm_list()
     log("Found %s RPMs" % len(rpms))
@@ -217,6 +227,6 @@ if __name__ == "__main__":
         for command in commands:
             desc = parse_command(rpm, command)
             real = query_ids_table(desc)
-            validate_etc_passwd(real)
-            validate_etc_group(real)
-    log("check-ug done. If you do not see any warning above then this is OK.")
+            ret += validate_etc_passwd(real)
+            ret += validate_etc_group(real)
+    sys.exit(ret)

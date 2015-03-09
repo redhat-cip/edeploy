@@ -4,6 +4,15 @@ export DEBIAN_FRONTEND=noninteractive
 
 . $ORIG/repositories
 
+fake_shadow_utils() {
+    for cmd in useradd groupadd; do
+        if [ ! -f ${dir}/usr/sbin/${cmd}.real ]; then
+            mv ${dir}/usr/sbin/${cmd} ${target}/usr/sbin/${cmd}.real
+        fi
+        do_chroot ${dir} ln -sf /usr/sbin/mngids.py /usr/sbin/${cmd}
+    done
+}
+
 # A clever way to find the differences between two bash arrays
 array_diff() {
     awk 'BEGIN{RS=ORS=" "}
@@ -221,6 +230,10 @@ update_system() {
             fatal_error "$(package_tool) isn't supported in update_system()"
         ;;
     esac
+    # fix needed symlinks if missing
+    if [ ! -L ${dir}/usr/sbin/useradd ]; then
+        fake_shadow_utils
+    fi
 }
 
 upgrade_system() {

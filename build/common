@@ -283,6 +283,14 @@ cleanup() {
     # Verify the IDS are correct
     [ -f "${dir}/usr/sbin/check-ug.py" ] && do_chroot ${dir} /usr/sbin/check-ug.py
 
+    # Generate metadatas
+    # The generate_metadatas scripts only supports RPM systems now.
+    if [ "$(package_type)" = "rpm" ]; then
+        $ORIG/generate_metadatas.py ${dir} &>/dev/null
+        chmod +x pre post
+        mv $ORIG/pre $ORIG/post ${dir}/var/lib/edeploy/${version}
+    fi
+
     # the wrong systemctl is copied in initrd files so regenerate them
     if [ -f ${dir}/usr/bin/systemctl ]; then
         for f in $(ls ${dir}/boot/vmlinuz-*); do

@@ -288,7 +288,7 @@ cleanup() {
     if [ "$(package_type)" = "rpm" ]; then
         $ORIG/generate_metadatas.py ${dir} &>/dev/null
         chmod +x pre post
-        mv $ORIG/pre $ORIG/post ${dir}/var/lib/edeploy/${version}
+        mv pre post ${dir}/var/lib/edeploy/${version}
     fi
 
     # the wrong systemctl is copied in initrd files so regenerate them

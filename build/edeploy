@@ -40,6 +40,7 @@ function update_metadata() {
     if [ ! -d ${EDEPLOY_DIR} ]; then
         mkdir -p ${EDEPLOY_DIR}
     fi
+    rsync -aX rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${TARGET}/${ROLE}${EDEPLOY_DIR}/${ROLE_TO_UPDATE}/{pre,post} ${EDEPLOY_DIR}/${ROLE_TO_UPDATE}/ || :
     rsync -aX rsync://${RSERV}:${RSERV_PORT}/metadata/${VERS}/${ROLE}/${TARGET}/ ${EDEPLOY_DIR}/${ROLE_TO_UPDATE}/
 }
 

@@ -94,3 +94,4 @@
 /var/www/cloud-init/
 /var/www/install/
 lost+found
+/usr/bin/upgrade.sh

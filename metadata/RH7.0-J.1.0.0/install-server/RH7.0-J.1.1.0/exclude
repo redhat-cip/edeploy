@@ -56,6 +56,7 @@
 /run/
 /sys/
 /usr/bin/configure.sh
+/usr/bin/upgrade.sh
 /usr/bin/edeploy-nodes.sh
 /usr/bin/extract.py
 /usr/bin/generate.py

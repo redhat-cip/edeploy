@@ -25,6 +25,7 @@ This will generate 'pre' and 'post' files.
 """
 
 
+import re
 import subprocess
 import sys
 
@@ -54,6 +55,8 @@ def has_scriptlet(pkg, dir_):
 
 
 def gen_scriptlet(comment, cmd):
+    filtered_cmd = re.sub(r'((?:/bin)?systemctl\s+stop.*)', r'echo \1',
+                          cmd, flags=re.M)
     scriptlet_format = '''# %s
 (
 # put the scriptlet in upgrade mode by passing 2 (package count is 2
@@ -64,14 +67,11 @@ set 2
 )
 
 '''
-    return scriptlet_format % (comment, cmd)
+    return scriptlet_format % (comment, filtered_cmd)
 
 
 def gen_scripts(pkgs, dir_):
     header = '''#!/bin/sh
-
-# abort on error
-set -e
 
 # echo commands
 set -x
@@ -108,7 +108,7 @@ set -x
                     print('POST', pkg, postinst)
     if ldconfig:
         post = ldconfig_header + post
-    return header + pre, header + post
+    return header + '', header + pre + post
 
 
 def main():

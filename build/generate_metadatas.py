@@ -55,8 +55,10 @@ def has_scriptlet(pkg, dir_):
 
 
 def gen_scriptlet(comment, cmd):
-    filtered_cmd = re.sub(r'((?:/bin)?systemctl\s+stop.*)', r'echo \1',
-                          cmd, flags=re.M)
+    filtered_cmd = re.sub(
+        r'((/bin/)?systemctl\s+(stop|(try-)?restart|reload).*|'
+        r'(/sbin/)?service\s+([^\s]+)\s+(stop|restart|condrestart))',
+        r'echo \1', cmd, flags=re.M)
     scriptlet_format = '''# %s
 (
 # put the scriptlet in upgrade mode by passing 2 (package count is 2

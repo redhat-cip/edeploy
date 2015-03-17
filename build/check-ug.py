@@ -180,19 +180,19 @@ def validate_etc_passwd(real):
         except KeyError:
             log("Unable to find user %s in /etc/passwd" % real['name'],
                 level='warning')
-            return
+            return 1
         if str(pwd.getpwnam(real['name']).pw_uid) != str(real['uid']):
             log("UID for user %s (%s) does not correspond to the one in "
                 "ids.tables (%s)" % (real['name'],
                                      pwd.getpwnam(real['name']).pw_uid,
                                      real['uid']), level='warning')
-            ret += 1
+            ret = 1
         if str(pwd.getpwnam(real['name']).pw_gid) != str(real['gid']):
             log("GID for user %s (%s) does not correspond to the one in "
                 "ids.tables (%s)" % (real['name'],
                                      pwd.getpwnam(real['name']).pw_gid,
                                      real['gid']), level='warning')
-            ret += 1
+            ret = 1
     return ret
 
 
@@ -204,13 +204,13 @@ def validate_etc_group(real):
         except KeyError:
             log("Unable to find group %s in /etc/group" % real['name'],
                 level='warning')
-            return
+            return 1
         if str(grp.getgrnam(real['name']).gr_gid) != str(real['gid']):
             log("GID for group %s (%s) does not correspond to the one in "
                 "ids.tables (%s)" % (real['name'],
                                      grp.getgrnam(real['name']).gr_gid,
                                      real['gid']), level='warning')
-            ret += 1
+            ret = 1
     return ret
 
 
@@ -229,4 +229,5 @@ if __name__ == "__main__":
             real = query_ids_table(desc)
             ret += validate_etc_passwd(real)
             ret += validate_etc_group(real)
-    sys.exit(ret)
+    if ret != 0:
+        sys.exit(1)

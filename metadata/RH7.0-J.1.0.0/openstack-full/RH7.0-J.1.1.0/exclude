@@ -102,14 +102,7 @@
 /var/lib/nova/
 /var/lib/openvswitch/
 /var/lib/pacemaker/
-/var/lib/puppet/client_data/
-/var/lib/puppet/client_yaml/
-/var/lib/puppet/clientbucket
-/var/lib/puppet/concat/
-/var/lib/puppet/facts.d/
-/var/lib/puppet/lib/
-/var/lib/puppet/ssl/
-/var/lib/puppet/state/
+/var/lib/puppet/
 /var/lib/rabbitmq/
 /var/lib/swift/
 /var/lib/trove/

@@ -35,7 +35,6 @@
 /etc/networks
 /etc/nologin
 /etc/ntp.conf
-/etc/puppet/puppet.conf
 /etc/rc.local
 /etc/rc.local.REAL
 /etc/resolv.conf
@@ -89,14 +88,6 @@
 /var/lib/pxemngr/
 /var/lib/puppet/
 /var/lib/puppetdb/
-/var/lib/puppet/client_data/
-/var/lib/puppet/client_yaml/
-/var/lib/puppet/clientbucket
-/var/lib/puppet/concat/
-/var/lib/puppet/facts.d/
-/var/lib/puppet/lib/
-/var/lib/puppet/ssl/
-/var/lib/puppet/state/
 /var/lib/rabbitmq/
 /var/lib/tftpboot/
 /var/lib/ucf

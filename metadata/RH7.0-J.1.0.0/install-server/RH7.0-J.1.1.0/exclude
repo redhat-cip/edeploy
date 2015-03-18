@@ -1,9 +1,6 @@
 /boot/grub2/
 /dev/
-/etc/httpd/conf.d/puppetboard
-/etc/httpd/conf.d/puppetmaster.conf
-/etc/httpd/conf.d/puppetboard
-/etc/httpd/conf.d/puppetmaster
+/etc/httpd/conf.d/
 /etc/config-tools/
 /etc/dnsmasq.d/
 /etc/edeploy/
@@ -63,6 +60,7 @@
 /usr/bin/health-check.sh
 /usr/bin/merge.py
 /usr/bin/verify-servers.sh
+/usr/bin/upgrade.sh
 /tmp/
 /usr/share/elasticsearch/
 /usr/share/ansible/
@@ -95,4 +93,3 @@
 /var/www/cloud-init/
 /var/www/install/
 lost+found
-/usr/bin/upgrade.sh

@@ -1,9 +1,7 @@
 /boot/grub/
 /dev/
-/etc/apache2/site-available/puppetboard
-/etc/apache2/site-available/puppetmaster
-/etc/apache2/site-enabled/puppetboard
-/etc/apache2/site-enabled/puppetmaster
+/etc/apache2/site-available/
+/etc/apache2/site-enabled/
 /etc/config-tools/
 /etc/dnsmasq.d/
 /etc/edeploy/
@@ -74,6 +72,7 @@
 /usr/bin/health-check.sh
 /usr/bin/merge.py
 /usr/bin/verify-servers.sh
+/usr/bin/upgrade.sh
 /var/backups/
 /var/cache/debconf/
 /var/cache/jenkins/
@@ -113,4 +112,3 @@
 /var/www/cloud-init/
 /var/www/install/
 lost+found
-/usr/bin/upgrade.sh

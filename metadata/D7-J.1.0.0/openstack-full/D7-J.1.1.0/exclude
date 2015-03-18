@@ -62,7 +62,8 @@
 /etc/openvswitch/conf.db
 /etc/openvswitch/system-id.conf
 /etc/passwd
-/etc/puppet/puppet.conf
+/etc/puppet/
+/etc/puppetdb/
 /etc/rabbitmq/rabbitmq-env.conf
 /etc/rabbitmq/rabbitmq.config
 /etc/rc.local

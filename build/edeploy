@@ -40,8 +40,8 @@ function update_metadata() {
     if [ ! -d ${EDEPLOY_DIR} ]; then
         mkdir -p ${EDEPLOY_DIR}
     fi
-    rsync -aX rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${TARGET}/${ROLE}${EDEPLOY_DIR}/${ROLE_TO_UPDATE}/{pre,post} ${EDEPLOY_DIR}/${ROLE_TO_UPDATE}/ || :
-    rsync -aX rsync://${RSERV}:${RSERV_PORT}/metadata/${VERS}/${ROLE}/${TARGET}/ ${EDEPLOY_DIR}/${ROLE_TO_UPDATE}/
+    rsync -a rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${TARGET}/${ROLE}${EDEPLOY_DIR}/${ROLE_TO_UPDATE}/{pre,post} ${EDEPLOY_DIR}/${ROLE_TO_UPDATE}/ || :
+    rsync -a rsync://${RSERV}:${RSERV_PORT}/metadata/${VERS}/${ROLE}/${TARGET}/ ${EDEPLOY_DIR}/${ROLE_TO_UPDATE}/
 }
 
 function upgrade() {
@@ -74,8 +74,8 @@ function upgrade() {
 
     # If we run a test upgrade, let's just show what the rsync would have change on the server
     if [ "$TEST_UPGRADE" = "1" ]; then
-        rsync --dry-run -aviX --numeric-ids --delete-after --exclude-from=exclude rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${TARGET}/${ROLE}/ /
-        rsync --dry-run -aviX --numeric-ids --ignore-existing --include-from=add_only rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${TARGET}/${ROLE}/ /
+        rsync --dry-run -avi --numeric-ids --delete-after --exclude-from=exclude rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${TARGET}/${ROLE}/ /
+        rsync --dry-run -avi --numeric-ids --ignore-existing --include-from=add_only rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${TARGET}/${ROLE}/ /
         return 0
     fi
 
@@ -83,8 +83,8 @@ function upgrade() {
         ./pre
     fi
 
-    rsync -avX --numeric-ids --delete-after --exclude-from=exclude rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${TARGET}/${ROLE}/ / > ${EDEPLOY_DIR}/rsync_${VERS}_${TARGET}.out
-    rsync -avX --numeric-ids --ignore-existing --include-from=add_only rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${TARGET}/${ROLE}/ / >> ${EDEPLOY_DIR}/rsync_${VERS}_${TARGET}.out
+    rsync -av --numeric-ids --delete-after --exclude-from=exclude rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${TARGET}/${ROLE}/ / > ${EDEPLOY_DIR}/rsync_${VERS}_${TARGET}.out
+    rsync -av --numeric-ids --ignore-existing --include-from=add_only rsync://${RSERV}:${RSERV_PORT}/${RPATH}/${TARGET}/${ROLE}/ / >> ${EDEPLOY_DIR}/rsync_${VERS}_${TARGET}.out
 
     if [ -x post ]; then
         # suspend abort on error to get the exit code
@@ -94,7 +94,7 @@ function upgrade() {
         RET=$?
 
         set -e
-        
+
         # 0 or 100 are the only normal exit codes
         if [ $RET -ne 100 -a $RET -ne 0 ]; then
             exit $RET
@@ -103,6 +103,10 @@ function upgrade() {
         RET=0
     fi
 
+    # If SElinux is enabled, set file security contexts after the upgrade with the new file_contexts.
+    if [ -x /usr/sbin/selinuxenabled ] && /usr/sbin/selinuxenabled; then
+      setfiles -r / /etc/selinux/targeted/contexts/files/file_contexts /
+    fi
 
     echo -e "\nVersion ${TARGET}\n" > /etc/motd
     echo -e "VERS=${TARGET}\nROLE=${ROLE}\nRSERV=${RSERV}\nRSERV_PORT=${RSERV_PORT}\nRPATH=${RPATH}\n" > ${EDEPLOY_DIR}/conf

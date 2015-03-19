@@ -1,7 +1,6 @@
 /boot/grub/
 /dev/
-/etc/apache2/site-available/
-/etc/apache2/site-enabled/
+/etc/apache2
 /etc/config-tools/
 /etc/dnsmasq.d/
 /etc/edeploy/

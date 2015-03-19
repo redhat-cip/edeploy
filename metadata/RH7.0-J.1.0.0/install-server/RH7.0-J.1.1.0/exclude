@@ -1,7 +1,6 @@
 /boot/grub2/
 /dev/
-/etc/httpd/conf.d/
-/etc/httpd/conf/ports.conf
+/etc/httpd/
 /etc/config-tools/
 /etc/dnsmasq.d/
 /etc/edeploy/

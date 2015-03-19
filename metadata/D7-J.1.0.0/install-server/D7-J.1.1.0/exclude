@@ -84,6 +84,7 @@
 /var/lib/logrotate/status
 /var/lib/ntp/drift
 /var/lib/pengine/
+/var/lib/pgsql/
 /var/lib/pxemngr/
 /var/lib/puppet/
 /var/lib/puppetdb/

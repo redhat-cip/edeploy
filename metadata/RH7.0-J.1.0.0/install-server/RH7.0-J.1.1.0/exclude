@@ -70,6 +70,7 @@
 /var/lib/edeploy/
 /var/lib/elasticsearch/
 /var/lib/jenkins/
+/var/lib/pgsql/
 /var/lib/pxemngr/
 /var/lib/puppet/
 /var/lib/puppetdb/

@@ -162,12 +162,12 @@ cp -p init.health ${DST}/init
 # Yes, it's crap.
 case "$DIST" in
     $supported_centos_dists | $supported_redhat_dists)
-	if [ $CODENAME_MAJOR = 6 ]; then
+        if [ $CODENAME_MAJOR = 6 ]; then
             if [ -x ${ORIG}/sources/lshw ]; then
-		cp -f ${ORIG}/sources/lshw ${DST}/usr/sbin
+                cp -f ${ORIG}/sources/lshw ${DST}/usr/sbin
             fi
-	fi
-    ;;
+        fi
+        ;;
 esac
 
 if [ -r ${DST}/etc/init.d/ssh ]; then

@@ -185,7 +185,7 @@ bootstrap() {
     # the commands with mngids.py
     cp -p ${ORIG}/mngids.py ${target}/usr/sbin/
     if [ -f ${target}/usr/sbin/useradd ]; then
-	fake_shadow_utils
+        fake_shadow_utils
     fi
     cp ${dir}/../ids.tables ${dir}/etc/
 
@@ -325,22 +325,22 @@ install_hp_raid_cli_tool() {
         do_chroot $target dpkg -i /tmp/$package_name
         rm -f $target/tmp/$package_name
     elif [ "$(package_type)" = "rpm" ]; then
-	if [ "$dist" = fedora ]; then
+        if [ "$dist" = fedora ]; then
             install_packages $target "python-pexpect"
-	else
+        else
             install_packages $target "pexpect"
-	fi
+        fi
         if [ ! -f "$target/usr/sbin/hpacucli" ]; then
             install_packages $target \
                 http://downloads.linux.hp.com/SDR/downloads/ServicePackforProLiant/2013.02.0/hp/swpackages/hpacucli-9.40-12.0.x86_64.rpm
         fi
         do_chroot $dir rpm --import http://downloads.linux.hp.com/SDR/hpPublicKey1024.pub
         do_chroot $dir rpm --import http://downloads.linux.hp.com/SDR/hpPublicKey2048.pub
-	if [ "$dist" = fedora ]; then
-	    CODENAME_SPP=7
-	else
-	    CODENAME_SPP=$CODENAME_MAJOR.$CODENAME_MINOR
-	fi
+        if [ "$dist" = fedora ]; then
+            CODENAME_SPP=7
+        else
+            CODENAME_SPP=$CODENAME_MAJOR.$CODENAME_MINOR
+        fi
         cat > $dir/etc/yum.repos.d/spp.repo <<EOF
 [spp]
 name=Service Pack for ProLiant
@@ -399,7 +399,7 @@ set_firstboot() {
     target=$1
     mkdir -p ${target}/etc/first-boot.d
     if [ -f ${target}/etc/rc.local ]; then
-	[ -f ${target}/etc/rc.local.REAL ] || cp -p ${target}/etc/rc.local ${target}/etc/rc.local.REAL
+        [ -f ${target}/etc/rc.local.REAL ] || cp -p ${target}/etc/rc.local ${target}/etc/rc.local.REAL
     fi
     cat > ${target}/etc/rc.local <<EOF
 #!/bin/bash

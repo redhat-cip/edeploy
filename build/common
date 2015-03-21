@@ -262,44 +262,44 @@ cleanup() {
         esac
     fi
 
-    # clear package cache before removing the pkg manager
-    clear_packages_cache $dir
-
-    # Let's disable apt-get and yum for normal usage
-    if [ -z "$KEEP_PKGMNGR" -a -x ${dir}/usr/sbin/edeploy ]; then
-        do_chroot ${dir} /usr/sbin/edeploy deactivate-pkgmngr
-    fi
-
-    # Remove policy for invoke-rc.d (this has side effects on puppet for exemple)
-    if [ -f ${dir}/usr/sbin/policy-rc.d ]; then
-        mv ${dir}/usr/sbin/policy-rc.d ${dir}/usr/sbin/policy-rc.d.moved
-    fi
-
-    # copy the ids file for later use
-    if [ -f ${dir}/etc/ids.tables ]; then
-        cp ${dir}/etc/ids.tables ${dir}/../ids.tables
-    fi
-
-    # Verify the IDS are correct
-    [ -f "${dir}/usr/sbin/check-ug.py" ] && do_chroot ${dir} /usr/sbin/check-ug.py
-
-    # Generate metadatas
-    # The generate_metadatas scripts only supports RPM systems now.
-    if [ "$(package_type)" = "rpm" ]; then
-        $ORIG/generate_metadatas.py ${dir} &>/dev/null
-        chmod +x pre post
-        mv pre post ${dir}/var/lib/edeploy/${version}
-    fi
-
-    # the wrong systemctl is copied in initrd files so regenerate them
-    if [ -f ${dir}/usr/bin/systemctl ]; then
-        for f in $(ls ${dir}/boot/vmlinuz-*); do
-            k=${f#${dir}/boot/vmlinuz-}
-            do_chroot ${dir} mkinitrd --force /boot/initramfs-$k.img $k
-        done
-    fi
-
     if [ "$ret" = "0" ]; then
+        # clear package cache before removing the pkg manager
+        clear_packages_cache $dir
+    
+        # Let's disable apt-get and yum for normal usage
+        if [ -z "$KEEP_PKGMNGR" -a -x ${dir}/usr/sbin/edeploy ]; then
+            do_chroot ${dir} /usr/sbin/edeploy deactivate-pkgmngr
+        fi
+    
+        # Remove policy for invoke-rc.d (this has side effects on puppet for exemple)
+        if [ -f ${dir}/usr/sbin/policy-rc.d ]; then
+            mv ${dir}/usr/sbin/policy-rc.d ${dir}/usr/sbin/policy-rc.d.moved
+        fi
+    
+        # copy the ids file for later use
+        if [ -f ${dir}/etc/ids.tables ]; then
+            cp ${dir}/etc/ids.tables ${dir}/../ids.tables
+        fi
+    
+        # Verify the IDS are correct
+        [ -f "${dir}/usr/sbin/check-ug.py" ] && do_chroot ${dir} /usr/sbin/check-ug.py
+    
+        # Generate metadatas
+        # The generate_metadatas scripts only supports RPM systems now.
+        if [ "$(package_type)" = "rpm" ]; then
+            $ORIG/generate_metadatas.py ${dir} &>/dev/null
+            chmod +x pre post
+            mv pre post ${dir}/var/lib/edeploy/${version}
+        fi
+    
+        # the wrong systemctl is copied in initrd files so regenerate them
+        if [ -f ${dir}/usr/bin/systemctl ]; then
+            for f in $(ls ${dir}/boot/vmlinuz-*); do
+                k=${f#${dir}/boot/vmlinuz-}
+                do_chroot ${dir} mkinitrd --force /boot/initramfs-$k.img $k
+            done
+        fi
+
         # store role information at the end for nested calls
         echo -e "\nRole ${ROLE}\nVersion ${version}\n" > ${dir}/etc/motd
 
@@ -350,9 +350,7 @@ cleanup() {
         fi
     else
         clean_mount_points
-    fi
 
-    if [ "$ret" != "0" ]; then
         echo "###########"
         echo "END OF TRAP"
         echo "###########"

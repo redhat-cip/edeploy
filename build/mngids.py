@@ -151,7 +151,10 @@ def main():
         pass
     parse(open('/etc/passwd').read(), uids)
     parse(open('/etc/group').read(), gids, True)
-    parse_cmdline(sys.argv, uids, gids)
+    try:
+        parse_cmdline(sys.argv, uids, gids)
+    except KeyError:
+        sys.argv[0] = sys.argv[0] + '.real'
     #
     debug('REWRITTEN %s' % str(sys.argv))
     ret = subprocess.call(sys.argv)

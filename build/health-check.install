@@ -58,7 +58,7 @@ deb $repository precise-updates multiverse
 EOF
 fi
 
-PACKAGES="sdparm gzip sysbench mcelog smartmontools python-pip python-netaddr python-ipaddr"
+PACKAGES="sdparm gzip sysbench mcelog smartmontools python-pip python-netaddr python-ipaddr gcc"
 case "$DIST" in
     $supported_centos_dists | $supported_redhat_dists)
         add_epel_repository $DIST
@@ -86,6 +86,11 @@ do_chroot $dir pip install hardware
 clear_packages_cache $dir
 
 install_ib_if_needed $ORIG $dir
+
+cp sources/timings.c ${dir}/tmp
+do_chroot ${dir} gcc -Os /tmp/timings.c -o /usr/sbin/ddr-timings-$(uname -m)
+rm ${dir}/tmp/timings.c
+remove_packages ${dir} gcc
 
 #Starting here, we don't need the mount points anymore
 clean_mount_points
@@ -157,13 +162,13 @@ cp -p init.health ${DST}/init
 # Yes, it's crap.
 case "$DIST" in
     $supported_centos_dists | $supported_redhat_dists)
-        if [ -x ${ORIG}/sources/lshw ]; then
-            cp -f ${ORIG}/sources/lshw ${DST}/usr/sbin
-        fi
+	if [ $CODENAME_MAJOR = 6 ]; then
+            if [ -x ${ORIG}/sources/lshw ]; then
+		cp -f ${ORIG}/sources/lshw ${DST}/usr/sbin
+            fi
+	fi
     ;;
 esac
-
-gcc -static -Os sources/timings.c -o ${DST}/usr/sbin/ddr-timings-$(uname -m)
 
 if [ -r ${DST}/etc/init.d/ssh ]; then
     # If the ssh initscript features some upstart stuff, it needs to be disabled

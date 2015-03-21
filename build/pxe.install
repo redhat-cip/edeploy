@@ -47,7 +47,7 @@ rsync -aHX --delete-before --numeric-ids ${src}/ ${dir}/
 
 common_setup
 
-PACKAGES="sdparm gzip xfsprogs mcelog smartmontools python-pip"
+PACKAGES="sdparm gzip xfsprogs mcelog smartmontools python-pip gcc"
 case "$DIST" in
     $supported_debian_dists | $supported_ubuntu_dists)
         PACKAGES="$PACKAGES libc6-i386 lshw"
@@ -83,6 +83,11 @@ clear_packages_cache $dir
 install_ib_if_needed $ORIG $dir
 
 echo -e "\nRole ${ROLE}\nVersion ${vers}\n" > ${dir}/etc/motd
+
+cp sources/timings.c ${dir}/tmp
+do_chroot ${dir} gcc -Os /tmp/timings.c -o /usr/sbin/ddr-timings-$(uname -m)
+rm ${dir}/tmp/timings.c
+remove_packages ${dir} gcc
 
 #Starting here, we don't need the mount points anymore
 clean_mount_points
@@ -153,8 +158,6 @@ rsync -auX --delete-excluded --delete --exclude /boot/ \
 rm -rf ${dir}
 
 cp -p init init.common $DEPS ${DST}/
-
-gcc -static -Os sources/timings.c -o ${DST}/usr/sbin/ddr-timings-$(uname -m)
 
 get_extlinux extlinux
 cp extlinux/mbr.bin ${DST}/

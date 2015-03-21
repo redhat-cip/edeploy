@@ -96,7 +96,7 @@ EOF
             # Saving already installed packages
             packages_before=($(do_chroot ${chroot} dpkg --get-selections | sed '/install$/s///'))
         ;;
-        "CentOS"|"RedHatEnterpriseServer")
+        "CentOS"|"RedHatEnterpriseServer"|"Fedora")
             do_chroot ${chroot} mv /sbin/chkconfig /sbin/chkconfig.save
             cat >> ${chroot}/sbin/chkconfig << EOF
 #!/bin/bash
@@ -149,7 +149,7 @@ EOF
                 disable_upstart_service ${chroot} ${pkg}
             done
         ;;
-        "CentOS"|"RedHatEnterpriseServer")
+        "CentOS"|"RedHatEnterpriseServer"|"Fedora")
             do_chroot ${chroot} mv /sbin/chkconfig.save /sbin/chkconfig
 
             # systemd support starts from 7

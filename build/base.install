@@ -27,9 +27,9 @@ ORIG=$(cd $(dirname $0); pwd)
 . $ORIG/common
 
 init_redhat_chroot() {
-    local target=$1
-    local release_rpm_url=$2
-    local dist=$3
+    local target="$1"
+    local release_rpm_url="$2"
+    local dist="$3"
     local rpm_repository="$REPOSITORY"
     local next_repository=""
 
@@ -45,7 +45,7 @@ init_redhat_chroot() {
 
     if [ ! -f "${target}/etc/redhat-release" ]; then
         rpm --initdb --root="$target"
-        rpm -ivh --root "$target" "$release_rpm_url"
+        rpm -ivh --root "$target" $release_rpm_url
     fi
     if [ ! -d ${target}/etc/yum.repos.d ]; then
         mkdir -p ${target}/etc/yum.repos.d
@@ -108,7 +108,7 @@ init_redhat_chroot() {
 # get them from the file system before having bootstrapped as it
 # is not created yet, we need to fake them
 fake_setup() {
-    export CODENAME_MAJOR=$(sed -E 's/[A-Z]+([^.]+)\..*/\1/' <<< $version)
+    export CODENAME_MAJOR=$(sed -E 's/[A-Z]+([^.-]+)[.-].*/\1/' <<< $version)
     export CODENAME_MINOR=$(sed -E 's/[^.]+\.([^.-]+).*/\1/' <<< $version)
 }
 
@@ -166,8 +166,8 @@ bootstrap() {
                 check_binary rpm
 
                 case $dist in
-                    centos|redhat)
-                        init_redhat_chroot $target $repository $dist
+                    centos|redhat|fedora)
+                        init_redhat_chroot "$target" "$repository" "$dist"
                         ;;
                     *)
                         fatal_error "Unsupported RPM+YUM based distro: ${DIST}"
@@ -184,7 +184,9 @@ bootstrap() {
     # Control the ids created by useradd and groupadd by wrapping
     # the commands with mngids.py
     cp -p ${ORIG}/mngids.py ${target}/usr/sbin/
-    fake_shadow_utils
+    if [ -f ${target}/usr/sbin/useradd ]; then
+	fake_shadow_utils
+    fi
     cp ${dir}/../ids.tables ${dir}/etc/
 
     clean_mount_points
@@ -323,17 +325,26 @@ install_hp_raid_cli_tool() {
         do_chroot $target dpkg -i /tmp/$package_name
         rm -f $target/tmp/$package_name
     elif [ "$(package_type)" = "rpm" ]; then
-        install_packages $target "pexpect"
+	if [ "$dist" = fedora ]; then
+            install_packages $target "python-pexpect"
+	else
+            install_packages $target "pexpect"
+	fi
         if [ ! -f "$target/usr/sbin/hpacucli" ]; then
             install_packages $target \
                 http://downloads.linux.hp.com/SDR/downloads/ServicePackforProLiant/2013.02.0/hp/swpackages/hpacucli-9.40-12.0.x86_64.rpm
         fi
         do_chroot $dir rpm --import http://downloads.linux.hp.com/SDR/hpPublicKey1024.pub
         do_chroot $dir rpm --import http://downloads.linux.hp.com/SDR/hpPublicKey2048.pub
+	if [ "$dist" = fedora ]; then
+	    CODENAME_SPP=7
+	else
+	    CODENAME_SPP=$CODENAME_MAJOR.$CODENAME_MINOR
+	fi
         cat > $dir/etc/yum.repos.d/spp.repo <<EOF
 [spp]
 name=Service Pack for ProLiant
-baseurl=http://downloads.linux.hp.com/repo/spp/rhel/$CODENAME_MAJOR.$CODENAME_MINOR/x86_64/current
+baseurl=http://downloads.linux.hp.com/repo/spp/rhel/$CODENAME_SPP/x86_64/current
 enabled=1
 gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/GPG-KEY-ServicePackforProLiant
@@ -387,7 +398,9 @@ EOF
 set_firstboot() {
     target=$1
     mkdir -p ${target}/etc/first-boot.d
-    [ -f ${target}/etc/rc.local.REAL ] || cp -p ${target}/etc/rc.local ${target}/etc/rc.local.REAL
+    if [ -f ${target}/etc/rc.local ]; then
+	[ -f ${target}/etc/rc.local.REAL ] || cp -p ${target}/etc/rc.local ${target}/etc/rc.local.REAL
+    fi
     cat > ${target}/etc/rc.local <<EOF
 #!/bin/bash
 

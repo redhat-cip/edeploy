@@ -65,8 +65,8 @@ install_edeploy() {
         "Debian"|"Ubuntu")
             install_packages $dir python-apt
             ;;
-        "CentOS"|"RedHatEnterpriseServer")
-            install_packages $dir python-ecdsa
+        "CentOS"|"RedHatEnterpriseServer"|"Fedora")
+            install_packages $dir python-ecdsa httpd
             ;;
     esac
     remove_epel_repository $DIST
@@ -84,6 +84,7 @@ install_edeploy() {
     cd pxemngr/ansible
     # do not start apache in the chroot
     sed -e 's@service apache2 restart@/bin/true@' < pxemngr-install.yml > pxemngr-install2.yml
+    mkdir $dir/var/lib/pxemngr/
     chroot $dir bash -c "cd /srv/pxemngr/ansible; ansible-playbook -c local -i /tmp/hosts pxemngr-install2.yml"
     rm -f $dir/srv/pxemngr/ansible/pxemngr-install2.yml
     popd
@@ -119,7 +120,7 @@ install_pxe() {
             cp -a $dir/usr/lib/syslinux/*pxelinux.0 $dir/var/lib/tftpboot/
             cp -a $dir/usr/lib/syslinux/chain.c32 $dir/var/lib/tftpboot/
             ;;
-        "CentOS"|"RedHatEnterpriseServer")
+        "CentOS"|"RedHatEnterpriseServer"|"Fedora")
             install_packages_disabled $dir dnsmasq syslinux
             cp -a $dir/usr/share/syslinux/*pxelinux.0 $dir/var/lib/tftpboot/
             cp -a $dir/usr/share/syslinux/chain.c32 $dir/var/lib/tftpboot/

@@ -29,7 +29,7 @@ add_main_repository() {
 
     check_usage $# 1 "add_main_repository <dist>"
 
-    if [ -n "$REPOSITORY" -a "$dist" != redhat ]; then
+    if [ -n "$REPOSITORY" -a "$dist" != redhat -a "$dist" != fedora ]; then
         echo "$REPOSITORY"
         return
     fi
@@ -59,24 +59,33 @@ add_main_repository() {
             esac
             ;;
         $supported_redhat_dists)
+	    if [ "$dist" = fedora -a -z "$REPOSITORY" ]; then
+		REPOSITORY=http://download.fedoraproject.org/pub/fedora/linux/releases/$CODENAME_MAJOR/Everything/x86_64/os/
+	    fi
+            if [ -n "$ISO_PATH" ]; then
+                # We use the target variable here since we shall provide the path from the chroot, not from the host
+                local base="${target}/repo/Packages"
+            else
+                local base="${REPOSITORY}/Packages"
+            fi
             case "$CODENAME_MAJOR" in
-                7)
-                    local releaserpm=redhat-release-server-7.0-1.el7.x86_64.rpm
-                    ;;
                 6)
                     local releaserpm=redhat-release-server-6Server-6.5.0.1.el6.x86_64.rpm
                     ;;
+                7)
+                    local releaserpm=redhat-release-server-7.0-1.el7.x86_64.rpm
+                    ;;
+		2*)
+		    local FEDORA_VERSION=$(wget -O- -q $REPOSITORY/Packages/f/|fgrep fedora-release-$CODENAME_MAJOR|sed -e 's/.*fedora-release-\([0-9-]*\).*/\1/')
+		    echo "$base/f/fedora-release-${FEDORA_VERSION}.noarch.rpm $base/f/fedora-repos-${FEDORA_VERSION}.noarch.rpm"
+		    return 0
+		    ;;
                 *)
                     echo "Unsupported RHEL release"
                     return 1
                     ;;
             esac
-            if [ -n "$ISO_PATH" ]; then
-                # We use the target variable here since we shall provide the path from the chroot, not from the host
-                echo "${target}/repo/Packages/$releaserpm"
-            else
-                echo "${REPOSITORY}/Packages/$releaserpm"
-            fi
+	    echo "$base/$releaserpm"
             return 0
             ;;
         *)
@@ -92,13 +101,16 @@ add_epel_repository() {
 
     case "$dist" in
         $supported_centos_dists|$supported_redhat_dists)
-            if [ "$CODENAME_MAJOR" = 6 ]; then
-                EPEL_RELEASE=6-8
-                install_packages $dir https://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-$EPEL_RELEASE.noarch.rpm
-            else
-                EPEL_RELEASE=7-5
-                install_packages $dir https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-$EPEL_RELEASE.noarch.rpm
-            fi
+            case "$CODENAME_MAJOR" in
+		6)
+                    EPEL_RELEASE=6-8
+                    install_packages $dir https://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-$EPEL_RELEASE.noarch.rpm
+		    ;;
+		7)
+                    EPEL_RELEASE=7-5
+                    install_packages $dir https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-$EPEL_RELEASE.noarch.rpm
+		    ;;
+	    esac
             ;;
     esac
 }
@@ -110,7 +122,11 @@ remove_epel_repository() {
 
     case "$dist" in
         $supported_centos_dists|$supported_redhat_dists)
-            remove_packages $dir epel-release-$EPEL_RELEASE
+            case "$CODENAME_MAJOR" in
+		6|7)
+		    remove_packages $dir epel-release-$EPEL_RELEASE
+		    ;;
+	    esac
             ;;
         *)
             ;;

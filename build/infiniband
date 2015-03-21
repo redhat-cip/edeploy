@@ -75,7 +75,10 @@ EOF
         chmod +x ${dir}/sbin/sysctl_perf_tuning
     ;;
     "rpm")
-        PACKAGES="ibutils infiniband-diags ibacm libibcommon libibmad libibumad libibverbs libmlx4 libmthca rdma srptools"
+	if [ "$DIST" != fedora ]; then
+	    IBACM=ibacm
+	fi
+        PACKAGES="ibutils infiniband-diags $IBACM libibcommon libibmad libibumad libibverbs libmlx4 libmthca rdma srptools"
     ;;
     *)
         fatal_error "$package_type is not supported in Infiniband configuration"

@@ -207,7 +207,7 @@ remove_packages() {
     local packages=$@
     case "$(package_tool)" in
         apt)
-            do_chroot $chroot apt-get remove $packages
+            do_chroot $chroot apt-get remove -y $packages
         ;;
         yum)
             do_chroot $chroot yum remove $packages --assumeyes

@@ -50,7 +50,7 @@ common_setup
 PACKAGES="sdparm gzip xfsprogs mcelog smartmontools python-pip gcc"
 case "$DIST" in
     $supported_debian_dists | $supported_ubuntu_dists)
-        PACKAGES="$PACKAGES libc6-i386 lshw"
+        PACKAGES="$PACKAGES libc6-i386 lshw libc6-dev"
     ;;
     $supported_centos_dists | $supported_redhat_dists)
         add_epel_repository $DIST
@@ -87,7 +87,7 @@ echo -e "\nRole ${ROLE}\nVersion ${vers}\n" > ${dir}/etc/motd
 cp sources/timings.c ${dir}/tmp
 do_chroot ${dir} gcc -Os /tmp/timings.c -o /usr/sbin/ddr-timings-$(uname -m)
 rm ${dir}/tmp/timings.c
-remove_packages ${dir} gcc
+remove_packages ${dir} gcc libc6-dev
 
 #Starting here, we don't need the mount points anymore
 clean_mount_points

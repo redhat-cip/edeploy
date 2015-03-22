@@ -39,9 +39,11 @@ def print_systems_groups(systems_groups):
     total_hosts = 0
     for system in systems_groups:
         total_hosts += len(system)
-    print "The %d systems can be grouped in %d groups of identical hardware" % (total_hosts, len(systems_groups))
+    print "The %d systems can be grouped in %d groups of "
+    "identical hardware" % (total_hosts, len(systems_groups))
     for system in systems_groups:
-        print "Group %d (%d Systems)" % (systems_groups.index(system), len(system))
+        print "Group %d (%d Systems)" % (
+            systems_groups.index(system), len(system))
         print "-> " + ', '.join(system)
         print
 
@@ -74,11 +76,15 @@ def print_groups(global_params, result, title):
 
     if ("output_dir" in global_params.keys()):
         if (len(result) > 1):
-            output_file = "%s/%s.diff" % (global_params["output_dir"], title.strip().replace(" ", "_"))
-            os.system("diff -ub --from-file %s > '%s'" % (groups_name, output_file))
+            output_file = "%s/%s.diff" % (global_params["output_dir"],
+                                          title.strip().replace(" ", "_"))
+            os.system("diff -ub --from-file %s > '%s'" %
+                      (groups_name, output_file))
         else:
             # If no difference exists, we can kill the def files
-            for filename in glob.glob("%s/%s*.def" % (global_params["output_dir"], title.strip().replace(" ", "_"))):
+            for filename in glob.glob("%s/%s*.def" %
+                                      (global_params["output_dir"],
+                                       title.strip().replace(" ", "_"))):
                 os.remove(filename)
 
     print "#####"*2 + "#"*len(title)
@@ -88,10 +94,11 @@ def compute_similar_hosts_list(systems_groups, new_groups):
     for group in new_groups:
         for systems_group in systems_groups:
             intersection = set.intersection(systems_group, group)
-            if (len(intersection) < len(systems_group)) and (len(intersection) > 0):
+            if (len(intersection) < len(systems_group) and
+                    len(intersection) > 0):
                 # print "%d vs %d" % (len(intersection), len(systems_group))
-                # We do have a partial match meaning we shall break the existing
-                # group in pieces
+                # We do have a partial match meaning we shall break
+                # the existing group in pieces
                 difference = set.difference(systems_group, group)
                 # The group we worked on doesn't exist anymore
                 # So let's delete it

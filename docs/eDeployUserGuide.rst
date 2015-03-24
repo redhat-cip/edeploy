@@ -1460,20 +1460,25 @@ Ranges are defined by using dashes '-'.
 The column symbol ':' separates two ranges : this syntax requires having ranges on both side of this symbol.
 If you need a single element out-of a serie, you'll have to write a single value range like '10-10'.
 
-'ip': '10.0.2.3-253' will create 250 hosts's configuration (from IP .3 to .253)
+* `'ip': '10.0.2.3-253'` will create 250 hosts's configuration (from IP .3 to .253)
 
-'hostname' : 'host001-250' will create hostname variable defined from host001 to host250.
+* `'hostname' : 'host001-250'` will create hostname variable defined from host001 to host250.
 
-'ip': '10.0.2.1-3:5-5:7-9' will avoid ip ending by .4 and .6 in the range 1-9.
+* `'ip': '10.0.2.1-3:5-5:7-9'` will avoid ip ending by .4 and .6 in the range 1-9.
 
-'ip': '10.0.2.1-5:20-15' will select ip from 1 to 5 and 20 to 15 and keep them in this order.
+* `'ip': '10.0.2.1-5:20-15'` will select ip from 1 to 5 and 20 to 15 and keep them in this order.
 
-Note that it is possible to define tuples to get a pre-defined list of variable.
+Note that it is possible to define lists `[]` to get a pre-defined list of variables. (⚠ NOTE: until some point, the use of tuples `()` was allowed but is now deprecated)
 
+* `'ip': ['10.0.2.1', '10.0.2.5', '10.0.2.8']` will select 3 ip addresses.
+
+* ⚠ `'ip': ('10.0.2.1', '10.0.2.5', '10.0.2.8')` will not be expanded but kept as-is.
+
+The following example will declare 12 hosts each with one matching mac address and role, but each host will have 3 users declared.
 .. code:: python
 
     generate({'hostname': 'os-ci-test1-12',
-          'mac': ('00:22:19:57:74:a6', # test1
+          'mac': ['00:22:19:57:74:a6', # test1
                   '00:22:19:57:86:d2', # test2
                   '00:22:19:57:79:b0', # test3
                   '00:30:48:f4:26:06', # test4
@@ -1485,8 +1490,8 @@ Note that it is possible to define tuples to get a pre-defined list of variable.
                   'd8:9d:67:1a:8f:58', # test10
                   'd8:9d:67:1a:41:7c', # test11
                   'd8:9d:67:32:12:a4', # test12
-                  ),
-          'hostname': ('openstack-full', # test1
+                  ],
+          'role': ['openstack-full', # test1
                    'openstack-full', # test2
                    'openstack-full', # test3
                    'install-server', # test4
@@ -1498,8 +1503,13 @@ Note that it is possible to define tuples to get a pre-defined list of variable.
                    'openstack-full', # test10
                    'openstack-full', # test11
                    'openstack-full', # test12
-                   ),
+                   ],
+            'users': ('Leif',
+                      'Eric',
+                      'Hagar'),
     })
+
+
 
 The deflated version of the CMDB file
 '''''''''''''''''''''''''''''''''''''
@@ -1577,7 +1587,7 @@ To insure the system that own the serial number TAG1 will be assigned to
 
 .. code:: python
 
-   generate({'tag': ('TAG1', 'TAG2', 'TAG3'),
+   generate({'tag': ['TAG1', 'TAG2', 'TAG3'],
              'ip': '192.168.122.3-5',
              'hostname': 'host1-4'})
 

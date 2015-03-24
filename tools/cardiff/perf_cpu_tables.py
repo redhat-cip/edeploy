@@ -6,7 +6,7 @@ def get_generic_cpu_perf(cpu_struct, cpu_type):
             return cpu_struct[cpu_list]
     else:
         # Unless, retry by shortening the string by one word
-        if (len(cpu_type.split()) > 1):
+        if len(cpu_type.split()) > 1:
             shorten_cpu_type = cpu_type.rsplit(' ', 1)[0]
             return get_generic_cpu_perf(cpu_struct, shorten_cpu_type)
         else:

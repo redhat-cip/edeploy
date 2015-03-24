@@ -44,7 +44,7 @@ def search_item(systems, unique_id, item, regexp, exclude_list=[],
 
 
 def physical_hpa_disks(global_params, systems, unique_id):
-    sets = search_item(systems, unique_id, "disk", "(\d+)I:(\d+):(\d+)",
+    sets = search_item(systems, unique_id, "disk", r"(\d+)I:(\d+):(\d+)",
                        ['current_temperature_(c)',
                         'maximum_temperature_(c)',
                         'serial_number'])
@@ -55,7 +55,7 @@ def physical_hpa_disks(global_params, systems, unique_id):
 
 
 def physical_megaraid_disks(global_params, systems, unique_id):
-    sets = search_item(systems, unique_id, "pdisk", "disk(\d+)",
+    sets = search_item(systems, unique_id, "pdisk", r"disk(\d+)",
                        ['Wwn', 'SasAddress', 'DriveTemperature'])
     groups = compare_sets.compare(sets)
     compare_sets.print_groups(global_params, groups,
@@ -64,7 +64,7 @@ def physical_megaraid_disks(global_params, systems, unique_id):
 
 
 def logical_disks(global_params, systems, unique_id):
-    sets = search_item(systems, unique_id, "disk", "[a-z]d(\S+)",
+    sets = search_item(systems, unique_id, "disk", r"[a-z]d(\S+)",
                        ['simultaneous', 'standalone', 'id', 'serial_number',
                         'SMART/'], [],
                        ['when_failed', 'vendor', 'product', 'health'])
@@ -74,7 +74,7 @@ def logical_disks(global_params, systems, unique_id):
 
 
 def ahci(global_params, systems, unique_id):
-    sets = search_item(systems, unique_id, "ahci", ".*")
+    sets = search_item(systems, unique_id, "ahci", r".*")
     groups = compare_sets.compare(sets)
     compare_sets.print_groups(global_params, groups, "AHCI Controller")
     return groups
@@ -98,7 +98,7 @@ def compute_deviance_percentage(item, df):
 
 
 def print_detail(detail_options, details, df, matched_category):
-    if ((utils.print_level & utils.Levels.DETAIL) != utils.Levels.DETAIL):
+    if (utils.print_level & utils.Levels.DETAIL) != utils.Levels.DETAIL:
         return
     if len(df.loc[details]) > 0:
         print
@@ -110,28 +110,28 @@ def print_detail(detail_options, details, df, matched_category):
 
 def prepare_detail(detail_options, group_number, category, item, details,
                    matched_category_to_save):
-    if ((utils.print_level & utils.Levels.DETAIL) != utils.Levels.DETAIL):
+    if (utils.print_level & utils.Levels.DETAIL) != utils.Levels.DETAIL:
         return
 
     matched_group = ''
     matched_category = ''
     matched_item = ''
 
-    if (detail_options['group'] == str(group_number)):
+    if detail_options['group'] == str(group_number):
             matched_group = str(group_number)
-    elif (re.search(detail_options['group'], str(group_number)) is not None):
+    elif re.search(detail_options['group'], str(group_number)) is not None:
             matched_group = re.search(detail_options['group'],
                                       str(group_number)).group()
 
-    if (detail_options['category'] in category):
+    if detail_options['category'] in category:
         matched_category = category
-    elif (re.search(detail_options['category'], category) is not None):
+    elif re.search(detail_options['category'], category) is not None:
         matched_category = re.search(detail_options['category'],
                                      category).group()
 
-    if (detail_options['item'] in item):
+    if detail_options['item'] in item:
         matched_item = item
-    elif (re.search(detail_options['item'], item) is not None):
+    elif re.search(detail_options['item'], item) is not None:
         matched_item = re.search(detail_options['item'], item).group()
 
     if (len(matched_group) > 0 and len(matched_category) > 0 and
@@ -146,7 +146,7 @@ def prepare_detail(detail_options, group_number, category, item, details,
 def network_perf(systems, unique_id, group_number, detail_options,
                  rampup_value=0, current_dir=""):
     have_net_data = False
-    sets = search_item(systems, unique_id, "network", "(.*)", [], [])
+    sets = search_item(systems, unique_id, "network", r"(.*)", [], [])
     modes = ['bandwidth', 'requests_per_sec']
     for mode in modes:
         results = {}
@@ -155,7 +155,7 @@ def network_perf(systems, unique_id, group_number, detail_options,
             series = []
             global_perf = 0.0
             for perf in sets[system]:
-                if (perf[1] == mode):
+                if perf[1] == mode:
                     if not perf[1] in net:
                         net.append(perf[1])
                     global_perf = global_perf + float(perf[3])
@@ -200,7 +200,7 @@ def network_perf(systems, unique_id, group_number, detail_options,
 def logical_disks_perf(systems, unique_id, group_number, detail_options,
                        rampup_value=0, current_dir=""):
     have_disk_data = False
-    sets = search_item(systems, unique_id, "disk", "[a-z]d(\S+)", [],
+    sets = search_item(systems, unique_id, "disk", r"[a-z]d(\S+)", [],
                        ['simultaneous', 'standalone'])
     modes = []
 
@@ -219,7 +219,7 @@ def logical_disks_perf(systems, unique_id, group_number, detail_options,
             disks = []
             series = []
             for perf in sets[system]:
-                if (perf[2] == mode):
+                if perf[2] == mode:
                     if not perf[1] in disks:
                         disks.append(perf[1])
                     series.append(int(perf[3]))
@@ -355,7 +355,7 @@ def print_perf(tolerance_min, tolerance_max, item, df, mode, title,
         utils.write_gnuplot_file(current_dir + "/sum.plot", rampup_value,
                                  sum_group)
 
-    if (variance_tolerance > tolerance_max):
+    if variance_tolerance > tolerance_max:
         utils.do_print(mode, utils.Levels.ERROR,
                        "%-12s : Group's variance is too important : %7.2f%% "
                        "of %7.2f whereas limit is set to %3.2f%%", title,
@@ -373,8 +373,8 @@ def print_perf(tolerance_min, tolerance_max, item, df, mode, title,
             else:
                 mean_host = df[host].mean()
             # If the variance is very low, don't try to find the black sheep
-            if (variance_tolerance > tolerance_min):
-                if (mean_host > max_group):
+            if variance_tolerance > tolerance_min:
+                if mean_host > max_group:
                     curious_performance = True
                     utils.do_print(
                         mode, utils.Levels.WARNING,
@@ -386,7 +386,7 @@ def print_perf(tolerance_min, tolerance_max, item, df, mode, title,
                         curious.append(host)
                         if host in consistent:
                             consistent.remove(host)
-                elif (mean_host < min_group):
+                elif mean_host < min_group:
                     curious_performance = True
                     utils.do_print(
                         mode, utils.Levels.WARNING,
@@ -448,7 +448,7 @@ def print_summary(mode, array, array_name, unit, df, item_value=None):
                     if min_cpu_perf == 0:
                         perf_status = ": " + ORANGE + "NO PERF ENTRY IN DB" + \
                                       WHITE + " for " + item_value
-                    elif (mean >= min_cpu_perf):
+                    elif mean >= min_cpu_perf:
                         perf_status = ": " + GREEN + "PERF OK" + WHITE
                     else:
                         perf_status = ": " + RED + "PERF FAIL" + WHITE + \
@@ -490,11 +490,11 @@ def cpu_perf(systems, unique_id, group_number, detail_options,
             series = []
             found_data = False
             for perf in sets[system]:
-                if (perf[2] == mode):
+                if perf[2] == mode:
                     # We shall split individual cpu benchmarking from
                     # the global one
-                    if ("_" in perf[1]):
-                        if (not perf[1] in cpu):
+                    if "_" in perf[1]:
+                        if not perf[1] in cpu:
                             cpu.append(perf[1])
                         series.append(float(perf[3]))
                         found_data = True
@@ -587,12 +587,12 @@ def memory_perf(systems, unique_id, group_number, detail_options,
             threaded_perf[system] = 0
             forked_perf[system] = 0
             for perf in sets[system]:
-                if (mode in perf[2]):
+                if mode in perf[2]:
                     # We shall split individual cpu benchmarking from
                     # the global one
                     if ("logical_" in perf[1] and
                             ("bandwidth_%s" % mode) in perf[2]):
-                        if (not perf[1] in memory):
+                        if not perf[1] in memory:
                             memory.append(perf[1])
                         series.append(float(perf[3]))
                     elif ("threaded_bandwidth_%s" % mode) in perf[2]:
@@ -644,7 +644,7 @@ def memory_perf(systems, unique_id, group_number, detail_options,
         for bench_type in ["threaded", "forked"]:
             efficiency = {}
             have_forked_or_threaded = False
-            if ("threaded" in bench_type):
+            if "threaded" in bench_type:
                 mode_text = "Thread effi."
             else:
                 mode_text = "Forked Effi."
@@ -654,7 +654,7 @@ def memory_perf(systems, unique_id, group_number, detail_options,
                 if (host_perf > 0 and threaded_perf[system] > 0 and
                         forked_perf[system] > 0):
                     have_forked_or_threaded = True
-                    if ("threaded" in bench_type):
+                    if "threaded" in bench_type:
                         host_efficiency_full_load.append(
                             threaded_perf[system] / host_perf * 100)
                     else:

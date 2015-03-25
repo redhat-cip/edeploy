@@ -402,8 +402,20 @@ if /configure; then
         if [ $ret -eq 0 ]; then
             # Ask pxemngr to boot locally on the next PXE boot
             if [ -n "$PXEMNGR_URL" ]; then
+                log "Asking pxemngr to boot locally on next boot: ${PXEMNGR_URL}localboot/"
                 curl -s ${PXEMNGR_URL}localboot/
                 EXIT_CODE="$?"
+                # Try again passing the mac address
+                if [ "$EXIT_CODE" != "0" ]; then
+                    for mac in $(ip a|grep link/ether|awk '{print $2;}'); do
+                        log "Asking pxemngr to boot locally using a mac on next boot: ${PXEMNGR_URL}localboot/$mac/"
+                        curl -s ${PXEMNGR_URL}localboot/$mac/
+                        EXIT_CODE="$?"
+                        if [ "$EXIT_CODE" != "0" ]; then
+                            break
+                        fi
+                    done
+                fi
                 if [ "$EXIT_CODE" != "0" ]; then
                     log "PXEMNGR: Curl failed ($EXIT_CODE) asking a localboot at ${PXEMNGR_URL}"
                 else

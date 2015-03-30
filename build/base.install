@@ -336,6 +336,7 @@ install_hp_raid_cli_tool() {
         fi
         do_chroot $dir rpm --import http://downloads.linux.hp.com/SDR/hpPublicKey1024.pub
         do_chroot $dir rpm --import http://downloads.linux.hp.com/SDR/hpPublicKey2048.pub
+        do_chroot $dir rpm --import http://downloads.linux.hp.com/SDR/hpPublicKey2048_key1.pub
         if [ "$dist" = fedora ]; then
             CODENAME_SPP=7
         else

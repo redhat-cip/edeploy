@@ -60,7 +60,7 @@ case "$DIST" in
             do_chroot $dir scl enable python27 'easy_install netaddr pexpect'
             remove_scn_repository
         else
-            install_packages $dir python-setuptools python-devel
+            install_packages $dir python-setuptools python-devel gcc-c++
             do_chroot $dir easy_install netaddr pexpect
             PACKAGES="$PACKAGES http://pkgs.repoforge.org/lshw/lshw-2.17-1.el7.rf.x86_64.rpm"
         fi

@@ -76,7 +76,8 @@ case "$DIST" in
         fi
     ;;
     $supported_debian_dists | $supported_ubuntu_dists)
-        PACKAGES="$PACKAGES python-netaddr netperf python-psutil python-numpy fio lshw libc6-dev python-dev g++"
+        do_chroot $dir pip install -U numpy
+        PACKAGES="$PACKAGES python-netaddr netperf python-psutil fio lshw libc6-dev python-dev g++"
     ;;
 esac
 

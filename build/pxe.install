@@ -50,7 +50,7 @@ common_setup
 PACKAGES="sdparm gzip xfsprogs mcelog smartmontools python-pip gcc"
 case "$DIST" in
     $supported_debian_dists | $supported_ubuntu_dists)
-        PACKAGES="$PACKAGES libc6-i386 lshw libc6-dev python-dev"
+        PACKAGES="$PACKAGES libc6-i386 lshw libc6-dev python-dev g++"
     ;;
     $supported_centos_dists | $supported_redhat_dists)
         add_epel_repository $DIST

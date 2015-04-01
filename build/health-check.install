@@ -76,9 +76,9 @@ case "$DIST" in
         fi
     ;;
     $supported_debian_dists | $supported_ubuntu_dists)
-        install_packages $dir "python-pip gcc g++ subversion"
+        install_packages $dir "python-pip gcc g++ subversion python-dev"
         do_chroot $dir pip install -U numpy
-        PACKAGES="$PACKAGES python-netaddr netperf python-psutil fio lshw libc6-dev python-dev g++"
+        PACKAGES="$PACKAGES python-netaddr netperf python-psutil fio lshw libc6-dev"
     ;;
 esac
 

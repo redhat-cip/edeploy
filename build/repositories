@@ -50,7 +50,7 @@ add_main_repository() {
                     return 0
                     ;;
                 7)
-                    echo "http://mirror.centos.org/centos/7/os/x86_64/Packages/centos-release-7-0.1406.el7.centos.2.3.x86_64.rpm"
+                    echo "http://mirror.centos.org/centos/7/os/x86_64/Packages/centos-release-7-1.1503.el7.centos.2.8.x86_64.rpm"
                     return 0
                     ;;
                 *)

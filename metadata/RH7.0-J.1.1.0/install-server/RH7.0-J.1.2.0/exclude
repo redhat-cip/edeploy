@@ -43,6 +43,7 @@
 /etc/sysconfig/network
 /etc/sysconfig/network-scripts/
 /etc/sysconfig/network-scripts/ifcfg-eth0
+/etc/tempest/
 /etc/td-agent/
 /etc/udev/rules.d/
 /home/jenkins/

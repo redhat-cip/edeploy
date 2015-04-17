@@ -1,4 +1,5 @@
 /boot/grub2/
+/bin/redis-notifications.sh
 /dev/
 /etc/adjtime
 /etc/httpd/

@@ -68,6 +68,8 @@
 /etc/sysconfig/network-scripts/
 /etc/sysconfig/network-scripts/ifcfg-eth0
 /etc/sysctl.conf
+/etc/systemd/system/mariadb.service.d/
+/etc/systemd/system/mysql-bootstrap.service.d/
 /etc/udev/rules.d/
 /etc/xinetd.conf
 /etc/xinetd.d/mysqlchk

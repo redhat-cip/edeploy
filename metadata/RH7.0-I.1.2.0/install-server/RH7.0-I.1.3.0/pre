@@ -16,10 +16,14 @@ chown -R rabbitmq:rabbitmq /var/log/rabbitmq
 useradd -u 26 -g postgres -d /var/lib/postgresql -s /bin/bash postgres
 useradd -u 996 -g polkitd -d / -s /sbin/nologin polkitd
 useradd -u 32 -g rpc -d /var/lib/rpcbind -s /sbin/nologin rpc
-/etc/init.d/elasticsearch-fluentd stop
+if [[ -x /etc/init.d/elasticsearch-fluentd ]] ; then
+  /etc/init.d/elasticsearch-fluentd stop
+fi
 usermod -u 802 elasticsearch
 groupmod -g 802 elasticsearch
-/etc/init.d/elasticsearch-fluentd start
+if [[ -x /etc/init.d/elasticsearch-fluentd ]] ; then
+  /etc/init.d/elasticsearch-fluentd start
+fi
 mkdir /var/log/postgresql
 mkdir /var/run/postgresql
 chown postgres:postgres /var/run/postgresql

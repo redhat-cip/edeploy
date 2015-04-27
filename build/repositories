@@ -73,7 +73,14 @@ add_main_repository() {
                     local releaserpm=redhat-release-server-6Server-6.5.0.1.el6.x86_64.rpm
                     ;;
                 7)
-                    local releaserpm=redhat-release-server-7.0-1.el7.x86_64.rpm
+                    case $base in
+                        /*)
+                            local releaserpm=$(ls $base/|fgrep redhat-release-server|sed -n -e 's@.*>\(redhat-release-server-.*\.rpm\)<.*@\1@p')
+                            ;;
+                        *)
+                            local releaserpm=$(wget -O- -q $base/|fgrep redhat-release-server|sed -n -e 's@.*>\(redhat-release-server-.*\.rpm\)<.*@\1@p')
+                            ;;
+                        esac
                     ;;
                 2*)
                     local FEDORA_VERSION=$(wget -O- -q $REPOSITORY/Packages/f/|fgrep fedora-release-$CODENAME_MAJOR|sed -e 's/.*fedora-release-\([0-9-]*\).*/\1/')

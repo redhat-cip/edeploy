@@ -114,11 +114,13 @@ fake_setup() {
 
 bootstrap() {
     local target=$1
-    local repository=$(add_main_repository $dist)
-
     rm -rf $target
 
     mount_fs
+
+    # need to be called after mount to get info from the iso
+    local repository=$(add_main_repository $dist)
+
     # Use debootstrap for debian based distribution
     if [ "$(package_type)" = "deb" ]; then
         check_binary debootstrap

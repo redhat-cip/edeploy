@@ -75,7 +75,7 @@ add_main_repository() {
                 7)
                     case $base in
                         /*)
-                            local releaserpm=$(ls $base/|fgrep redhat-release-server|sed -n -e 's@.*>\(redhat-release-server-.*\.rpm\)<.*@\1@p')
+                            local releaserpm=$(ls $base/|fgrep redhat-release-server)
                             ;;
                         *)
                             local releaserpm=$(wget -O- -q $base/|fgrep redhat-release-server|sed -n -e 's@.*>\(redhat-release-server-.*\.rpm\)<.*@\1@p')

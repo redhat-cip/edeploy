@@ -23,7 +23,7 @@ install-www:
 	mkdir -p $(ANSIBLE_DIR) && chmod 755 $(ANSIBLE_DIR)
 	if [ -f $(ETC_DIR)/edeploy.conf ]; then cp -f $(ETC_DIR)/edeploy.conf $(ETC_DIR)/edeploy.conf.backup; fi
 	install -m 644 server/edeploy.conf $(ETC_DIR)/
-	install -m 755 server/upload.py $(WWW_DIR)/
+	install -m 755 server/upload.py server/upload-health.py $(WWW_DIR)/
 	install -m 644 config/*.specs $(WWW_CONFIG_DIR)/
 	install -m 644 config/*.configure $(WWW_CONFIG_DIR)/
 	install -m 755 ansible/library/edeploy $(ANSIBLE_DIR)/

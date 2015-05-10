@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2013-2014 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2013-2015 eNovance SAS <licensing@enovance.com>
 #
 # Author: Erwan Velu <erwan.velu@enovance.com>
 #
@@ -35,83 +35,12 @@ import cgi
 import cgitb
 import json
 import os
-import pprint
-import re
 import sys
 import time
 
 from hardware import matcher
 
-
-def log(msg):
-    'Error Logging.'
-    sys.stderr.write('eDeploy: ' + msg + '\n')
-
-
-def save_hw(items, name, hwdir):
-    'Save hw items for inspection on the server.'
-    try:
-        filename = os.path.join(hwdir, name + '.hw')
-        pprint.pprint(items, stream=open(filename, 'w'))
-    except Exception, xcpt:
-        log("exception while saving hw file: %s" % str(xcpt))
-
-
-def generate_filename_and_macs(items):
-    '''Generate a file name for a hardware using DMI information
-    (product name and version) then if the DMI serial number is
-    available we use it unless we lookup the first mac address.
-    As a result, we do have a filename like :
-
-    <dmi_product_name>-<dmi_product_version>-{dmi_serial_num|mac_address}'''
-
-    # Duplicate items as it will be modified by match_* functions
-    hw_items = list(items)
-    sysvars = {}
-    sysvars['sysname'] = ''
-
-    matcher.match_spec(('system', 'product', 'name', '$sysprodname'),
-                       hw_items, sysvars)
-    if 'sysprodname' in sysvars:
-        sysvars['sysname'] = re.sub(r'\W+', '', sysvars['sysprodname']) + '-'
-
-    matcher.match_spec(('system', 'product', 'vendor', '$sysprodvendor'),
-                       hw_items, sysvars)
-    if 'sysprodvendor' in sysvars:
-        sysvars['sysname'] += re.sub(r'\W+', '', sysvars['sysprodvendor']) + \
-            '-'
-
-    matcher.match_spec(('system', 'product', 'serial', '$sysserial'),
-                       hw_items, sysvars)
-    # Let's use any existing DMI serial number or take the first mac address
-    if 'sysserial' in sysvars:
-        sysvars['sysname'] += re.sub(r'\W+', '', sysvars['sysserial']) + '-'
-
-    # we always need to have the mac addresses for pxemngr
-    if matcher.match_multiple(hw_items,
-                              ('network', '$eth', 'serial', '$serial'),
-                              sysvars):
-        if 'sysserial' not in sysvars:
-            sysvars['sysname'] += sysvars['serial'][0].replace(':', '-')
-    else:
-        log('unable to detect network macs')
-
-    return sysvars
-
-
-def fatal_error(error):
-    '''Report a shell script with the error message and log
-    the message on stderr.'''
-    print('''#!/bin/sh
-
-cat <<EOF
-%s
-EOF
-
-exit 1
-''' % error)
-    sys.stderr.write('%s\n' % error)
-    sys.exit(1)
+import upload
 
 
 def main():
@@ -127,7 +56,12 @@ def main():
         except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
             return default
 
-    cfg_dir = os.path.normpath(config_get('SERVER', 'HEALTHDIR', os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'health'))) + '/'
+    cfg_dir = os.path.normpath(config_get(
+        'SERVER',
+        'HEALTHDIR',
+        os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                     '..',
+                     'health'))) + '/'
 
     # parse hw file given in argument or passed to cgi script
     if len(sys.argv) == 3 and sys.argv[1] == '-f':
@@ -138,7 +72,7 @@ def main():
         form = cgi.FieldStorage()
 
         if 'file' not in form:
-            fatal_error('No file passed to the CGI')
+            upload.fatal_error('No file passed to the CGI')
 
         fileitem = form['file']
         hw_file = fileitem.file
@@ -146,7 +80,7 @@ def main():
     try:
         json_hw_items = json.loads(hw_file.read(-1))
     except Exception, excpt:
-        fatal_error("'Invalid hardware file: %s'" % str(excpt))
+        upload.fatal_error("'Invalid hardware file: %s'" % str(excpt))
 
     def encode(elt):
         'Encode unicode strings as strings else return the object'
@@ -159,12 +93,12 @@ def main():
     for info in json_hw_items:
         hw_items.append(tuple(map(encode, info)))
 
-    filename_and_macs = generate_filename_and_macs(hw_items)
+    filename_and_macs = matcher.generate_filename_and_macs(hw_items)
     dirname = time.strftime("%Y_%m_%d-%Hh%M", time.localtime())
 
     if form.getvalue('session'):
-        dest_dir = cfg_dir + os.path.basename(form.getvalue('session')) + \
-                '/' + dirname
+        dest_dir = (cfg_dir + os.path.basename(form.getvalue('session')) +
+                    '/' + dirname)
     else:
         dest_dir = cfg_dir + '/' + dirname
 
@@ -172,10 +106,14 @@ def main():
         if not os.path.isdir(dest_dir):
             os.makedirs(dest_dir)
     except OSError, e:
-        fatal_error("Cannot create %s directory (%s)" % (dest_dir, e.errno))
+        upload.fatal_error("Cannot create %s directory (%s)" %
+                           (dest_dir, e.errno))
 
-    save_hw(hw_items, filename_and_macs['sysname'], dest_dir)
+    upload.save_hw(hw_items, filename_and_macs['sysname'], dest_dir)
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception, err:
+        upload.fatal_error(str(err))

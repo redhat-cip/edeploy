@@ -86,9 +86,9 @@ install_ib_if_needed $ORIG $dir
 
 echo -e "\nRole ${ROLE}\nVersion ${vers}\n" > ${dir}/etc/motd
 
-cp sources/timings.c ${dir}/tmp
-do_chroot ${dir} gcc -Os /tmp/timings.c -o /usr/sbin/ddr-timings-$(uname -m)
-rm ${dir}/tmp/timings.c
+cp sources/timings.c ${dir}/root
+do_chroot ${dir} gcc -Os /root/timings.c -o /usr/sbin/ddr-timings-$(uname -m)
+rm ${dir}/root/timings.c
 remove_packages ${dir} gcc libc6-dev
 
 #Starting here, we don't need the mount points anymore

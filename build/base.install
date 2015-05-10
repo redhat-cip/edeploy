@@ -150,9 +150,9 @@ bootstrap() {
 
         # workaround for Debian old tar package which doesn't support --xattrs and --selinux
         if [ "$dist" = wheezy ]; then
-            curl -o ${target}/tmp/tar.deb http://ftp.debian.org/debian/pool/main/t/tar/tar_1.27.1-1~bpo70+1_${ARCH:=amd64}.deb
-            do_chroot ${target} dpkg -i /tmp/tar.deb
-            rm -f ${target}/tmp/tar.deb
+            curl -o ${target}/root/tar.deb http://ftp.debian.org/debian/pool/main/t/tar/tar_1.27.1-1~bpo70+1_${ARCH:=amd64}.deb
+            do_chroot ${target} dpkg -i /root/tar.deb
+            rm -f ${target}/root/tar.deb
         fi
 
         # We need to do some magic on gids to have stable ids for upgrades
@@ -304,9 +304,10 @@ install_megacli() {
                 wget "https://github.com/enovance/edeploy-roles/blob/master/files/${MEGACLIVER}_MegaCLI_Linux.zip?raw=true" -O  $MEGACLIZIP
             fi
             if [ -r "$MEGACLIZIP" ]; then
-                unzip "${MEGACLIZIP}" "${MEGACLIVER}_MegaCLI_Linux/Linux MegaCLI ${MEGACLIVER}/MegaCli-${MEGACLIVER}-1.noarch.rpm" -d $target/tmp
-                chroot $target rpm -ivh "/tmp/${MEGACLIVER}_MegaCLI_Linux/Linux MegaCLI ${MEGACLIVER}/MegaCli-${MEGACLIVER}-1.noarch.rpm"
+                unzip "${MEGACLIZIP}" "${MEGACLIVER}_MegaCLI_Linux/Linux MegaCLI ${MEGACLIVER}/MegaCli-${MEGACLIVER}-1.noarch.rpm" -d $target/root
+                chroot $target rpm -ivh "/root/${MEGACLIVER}_MegaCLI_Linux/Linux MegaCLI ${MEGACLIVER}/MegaCli-${MEGACLIVER}-1.noarch.rpm"
                 chroot $target ln -sf /opt/MegaRAID/MegaCli/MegaCli64 /usr/sbin/megacli
+                rm -rf $target/root/${MEGACLIVER}_MegaCLI_Linux
             else
                 echo "NO MEGACLI ARCHIVE AVAILABLE: download it from www.lsi.com" 1>&2
             fi
@@ -322,10 +323,10 @@ install_hp_raid_cli_tool() {
         if [ ! -r $target/../../$package_name ]; then
             wget --no-verbose http://downloads.linux.hp.com/SDR/downloads/MCP/pool/non-free/$package_name -O $target/../../$package_name
         fi
-        cp $target/../../$package_name $target/tmp/
+        cp $target/../../$package_name $target/root/
         install_packages $target "python-pexpect"
-        do_chroot $target dpkg -i /tmp/$package_name
-        rm -f $target/tmp/$package_name
+        do_chroot $target dpkg -i /root/$package_name
+        rm -f $target/root/$package_name
     elif [ "$(package_type)" = "rpm" ]; then
         if [ "$dist" = fedora ]; then
             install_packages $target "python-pexpect"

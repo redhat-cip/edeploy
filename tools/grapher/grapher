@@ -41,7 +41,7 @@ from reports import reports, BaseReport
 
 def main():
     parser = argparse.ArgumentParser(add_help=True,
-            epilog="Example: \ngrapher -g histogram -k cpu,logical,bandwidth_1G '/tmp/*.hw'")
+            epilog="Example: \ngrapher -g histogram -k cpu,logical,bandwidth_1G '*.hw'")
     parser.add_argument('-g', '--graph', type=str,
                         metavar='(%s)' % '|'.join(models.keys()),
                         help='Generate a specific graph,'

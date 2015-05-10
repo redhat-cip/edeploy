@@ -27,7 +27,7 @@ its configuration.
 
 On the to be configured host, it is usually called like that:
 
-$ curl -i -F name=test -F file=@/tmp/hw.lst http://localhost/cgi-bin/upload.py
+$ curl -i -F name=test -F file=@/hw.lst http://localhost/cgi-bin/upload.py
 '''
 
 import atexit

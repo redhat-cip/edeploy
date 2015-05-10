@@ -1020,7 +1020,7 @@ def non_interactive_mode(filename, title):
 
 if __name__ == '__main__':
 
-    HP.start_log('/var/tmp/health-server.log', logging.INFO)
+    HP.start_log('/var/log/health-server.log', logging.INFO)
     input_file = ""
     title = ""
     startup_date = time.strftime("%Y_%m_%d-%Hh%M", time.localtime())

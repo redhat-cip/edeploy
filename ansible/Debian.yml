@@ -5,6 +5,8 @@ edeploy_needed_packages:
   - apache2
   - python-ipaddr
   - python-pip
+  - python-dev
+  - g++
   - git
   - rsync
 

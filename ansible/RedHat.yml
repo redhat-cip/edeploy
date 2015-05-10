@@ -5,10 +5,12 @@ edeploy_needed_packages:
   - httpd
   - python-ipaddr
   - python-pip
+  - python-devel
   - git
   - rsync
   - unzip
   - gcc
+  - gcc-c++
   - glibc.i686
   - glibc-static
   - qemu-img

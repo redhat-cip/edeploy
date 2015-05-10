@@ -21,8 +21,6 @@
       - /var/lib/edeploy/hw
       - /var/lib/edeploy/logs
       - /var/lib/edeploy/health
-    - pip_modules:
-      - { name: hardware, value: '0.12' }
 
   user: root
 
@@ -46,10 +44,7 @@
     when: ansible_os_family == 'RedHat'
 
   - name: install python modules
-    pip: >
-      name={{ item.name }}
-      version={{ item.value }}
-    with_items: pip_modules
+    pip: name=hardware
 
   - name: extract eDeploy git repo
     git: >

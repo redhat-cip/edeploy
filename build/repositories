@@ -46,17 +46,19 @@ add_main_repository() {
         $supported_centos_dists)
             case "$CODENAME_MAJOR" in
                 6)
-                    echo "http://mirror.centos.org/centos/6.5/os/x86_64/Packages/centos-release-6-5.el6.centos.11.1.x86_64.rpm"
-                    return 0
+                    local base=http://mirror.centos.org/centos/6/os/x86_64/Packages/
+                    local releaserpm=$(wget -O- -q $base/|fgrep centos-release|sed -n -e 's@.*>\(centos-release-.*\.rpm\)<.*@\1@p')
                     ;;
                 7)
-                    echo "http://mirror.centos.org/centos/7/os/x86_64/Packages/centos-release-7-1.1503.el7.centos.2.8.x86_64.rpm"
-                    return 0
+                    local base=http://mirror.centos.org/centos/7/os/x86_64/Packages/
+                    local releaserpm=$(wget -O- -q $base/|fgrep centos-release|sed -n -e 's@.*>\(centos-release-.*\.rpm\)<.*@\1@p')
                     ;;
                 *)
                     return 1
                     ;;
             esac
+            echo "$base/$releaserpm"
+            return 0
             ;;
         $supported_redhat_dists)
             if [ "$dist" = fedora -a -z "$REPOSITORY" ]; then

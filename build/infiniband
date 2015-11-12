@@ -28,7 +28,7 @@ ORIG=$(cd $(dirname $0); pwd)
 
 # sdpnetstat is not in Ubuntu Trusty yet.
 if [ "$RELEASE" = "trusty" ]; then
-    wget --no-verbose 'https://cs.stanford.edu/pub/mirrors/ubuntu/ubuntu/pool/universe/s/sdpnetstat/sdpnetstat_1.60-1ubuntu2_amd64.deb' -O ${dir}/root/sdpnetstat_1.60-1ubuntu2_amd64.deb
+    wget --no-verbose 'https://cs.stanford.edu/pub/mirrors/ubuntu/ubuntu/pool/universe/s/sdpnetstat/sdpnetstat_1.60-1_amd64.deb' -O ${dir}/root/sdpnetstat_1.60-1ubuntu2_amd64.deb
     do_chroot $dir dpkg -i /root/sdpnetstat_1.60-1ubuntu2_amd64.deb
     do_chroot $dir rm /root/sdpnetstat_1.60-1ubuntu2_amd64.deb
 fi

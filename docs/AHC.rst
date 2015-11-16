@@ -291,7 +291,7 @@ The output file is featuring the complete description of the host in addition of
 
 Analyzing the results
 ---------------------
-The cardiff tool is part of the eDeploy repository and manage to analyze a series of result files. 
+The cardiff tool is part of the `hardware <https://github.com/redhat-cip/hardware>`_ and manage to analyze a series of result files.
 
 Selecting files to analyze
 ``````````````````````````

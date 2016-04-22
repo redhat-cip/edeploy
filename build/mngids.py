@@ -134,6 +134,9 @@ def parse_cmdline(args, uids, gids, first=100, last=999, last_user=29999):
 
     args[0] = args[0] + '.real'
 
+    # The -U option is making conflicts with --gid we provide
+    if '-U' in args:
+        args.remove('-U')
     return args
 
 

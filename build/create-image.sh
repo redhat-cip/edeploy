@@ -134,6 +134,7 @@ fi
 IMAGE_FORMAT=${IMAGE_FORMAT:-qcow2}
 COMPRESSED=${COMPRESSED:-no}
 ROOT_FS_SIZE=${ROOT_FS_SIZE:-auto}
+ROOT_FS=${ROOT_FS:-ext4}
 NETWORK_CONFIG=${NETWORK_CONFIG:-auto}
 
 if [ "$COMPRESSED" = "yes" ]; then
@@ -162,7 +163,7 @@ check_binary chroot
 check_binary kpartx
 check_binary qemu-img
 check_binary losetup
-check_binary mkfs.ext4
+check_binary mkfs.${ROOT_FS}
 check_binary rsync
 check_binary gunzip
 check_binary tail
@@ -201,7 +202,7 @@ parted -s "$DISK" mklabel msdos
 parted -s "$DISK" mkpart primary ext2 32k '100%'
 parted "$DISK" set 1 boot on
 
-# Format the partition as ext4
+# Format the partition as per ${ROOT_FS} type
 
 PART=/dev/mapper/$(kpartx -av $DISK|cut -f3 -d' ')
 TRY=5
@@ -210,7 +211,7 @@ while [ $TRY -gt 0 -a ! -b $PART ]; do
     TRY=$(($TRY - 1))
 done
 
-mkfs.ext4 "$PART"
+mkfs.${ROOT_FS} "$PART"
 MDIR=$(mktemp -d)
 DEV=$(losetup --show --find "$PART")
 mount "$DEV" "$MDIR"
@@ -296,7 +297,7 @@ EOF
     sed -i -e 's/msdos5/msdos1/g' $MDIR/boot/grub$V/grub.cfg
 
     # add / to fstab
-    echo "UUID=$UUID / ext4 errors=remount-ro 0 1" >> $MDIR/etc/fstab
+    echo "UUID=$UUID / ${ROOT_FS} errors=remount-ro 0 1" >> $MDIR/etc/fstab
 else
     # Grub1 doesn't have /usr/sbin/grub-mkconfig, failback on extlinux for booting
     if [ ! -x extlinux/extlinux ] || [ ! -f extlinux/menu.c32 ] || [ ! -f extlinux/libutil.c32 ]; then

@@ -334,7 +334,7 @@ cleanup() {
                 if [ ! -f "$VIRTUALIZED" ]; then
                     echo "VIRTUALIZED images requested but the pointed file ($VIRTUALIZED) doesn't exists"
                 else
-                    ${ORIG}/create-image.sh $dir ${INST}/${ROLE}-${version}.img $VIRTUALIZED || ret=1
+                    ${ORIG}/create-image.sh -R $dir ${INST}/${ROLE}-${version}.img $VIRTUALIZED || ret=1
                     (cd ${INST}; md5sum ${ROLE}-${version}.img > ${ROLE}-${version}.img.md5) || ret=1
                 fi
             fi

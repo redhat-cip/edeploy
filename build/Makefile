@@ -82,6 +82,11 @@ $(INST)/deploy.done: deploy.install $(INST)/base.done
 	./deploy.install $(INST)/base $(INST)/deploy $(VERS)
 	touch $(INST)/deploy.done
 
+ceph-builders: $(INST)/ceph-builders.done
+$(INST)/ceph-builders.done: ceph-builders.install $(INST)/base.done
+	./ceph-builders.install $(INST)/base $(INST)/ceph-builders $(VERS)
+	touch $(INST)/ceph-builders.done
+
 health-test: health-check
 	cd ../tests/tftpboot/; ln -sf $(INST)/base/boot/vmlinuz* vmlinuz; ln -sf $(INST)/health.pxe initrd;
 	cd ../tests; ./run_kvm.sh $(TOP) health

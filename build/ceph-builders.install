@@ -244,10 +244,23 @@ install_deps() {
 }
 
 
+setup_ulimit() {
+    ulimit_file=$dir/etc/security/limits.d/20-nproc.conf
+    cat > $ulimit_file << EOF
+# Default limit for number of user's processes to prevent
+# accidental fork bombs.
+# See rhbz #432903 for reasoning.
+
+*          soft    nproc     16000
+root       soft    nproc     unlimited
+EOF
+}
+
 # invalidate root password
 #do_chroot ${dir} usermod -L root
 
 configure_cloudinit
 add_packages
 install_deps
+setup_ulimit
 clear_packages_cache

@@ -32,7 +32,8 @@ configure_cloudinit () {
 
     mkdir -p ${dir}/etc/cloud/cloud.cfg.d
     rm -f ${dir}/etc/cloud/cloud.cfg
-
+    groups=unexpected
+    distro=unexpected
     case "$OS" in
 	"Debian")
 	    local repository=$(add_main_repository $DIST)
@@ -41,12 +42,18 @@ deb $repository ${RELEASE}-backports main contrib non-free
 EOF
             update_repositories $dir
             install_packages ${dir} "cloud-init cloud-utils cloud-initramfs-growroot"
+            distro=debian
+            groups="[adm, systemd-journal]"
 	    ;;
         "Ubuntu")
             update_repositories $dir
             install_packages ${dir} "cloud-init cloud-utils cloud-initramfs-growroot"
+            distro=ubuntu
+            groups="[adm]"
 	    ;;
 	"RedHatEnterpriseServer")
+            distro=rhel
+            groups="[wheel, adm, systemd-journal]"
             if [ $CODENAME_MAJOR = 6 ]; then
                 # cloud-init is in Red Hat Common for RHEL Server (v.6)
                 add_rhn_channel rhel-x86_64-server-rh-common-6
@@ -64,9 +71,11 @@ EOF
             fi
 	    ;;
 	"CentOS")
-	    add_epel_repository $DIST
-	    install_packages $dir "cloud-init cloud-utils cloud-utils-growpart"
-	    remove_epel_repository $DIST
+            distro="rhel"
+            groups="[wheel, adm, systemd-journal]"
+            add_epel_repository $DIST
+            install_packages $dir "cloud-init cloud-utils cloud-utils-growpart"
+            remove_epel_repository $DIST
 	    ;;
 	*)
 	    fatal_error "OS ($OS) or Release ($RELEASE) not supported"
@@ -130,11 +139,11 @@ system_info:
   default_user:
     name: admin
     lock_passwd: false
-    gecos: Fedora Cloud User
-    groups: [wheel, adm, systemd-journal]
+    gecos: $distro Cloud User
+    groups: $groups
     sudo: ["ALL=(ALL) NOPASSWD:ALL"]
     shell: /bin/bash
-  distro: fedora
+  distro: $distro
   paths:
     cloud_dir: /var/lib/cloud
     templates_dir: /etc/cloud/templates

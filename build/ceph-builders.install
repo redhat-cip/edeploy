@@ -236,9 +236,14 @@ case "$DIST" in
         PACKAGES="$PACKAGES java-1.7.0-openjdk createrepo rpmdevtools" 
     ;;
     $supported_debian_dists | $supported_ubuntu_dists)
-        PACKAGES="$PACKAGES fakeroot fakeroot-ng debhelper reprepro dchroot devscripts pbuilder pkg-config openjdk-7-jre"
+        PACKAGES="$PACKAGES fakeroot fakeroot-ng debhelper reprepro dchroot devscripts pbuilder pkg-config"
         PACKAGES="$PACKAGES python-dev python-pip python-virtualenv libyaml-dev doxygen ditaa ant libmysqlclient-dev"
         PACKAGES="$PACKAGES libevent-dev libffi-dev"
+        if [ "$DIST" = "xenial" ]; then
+            PACKAGES="$PACKAGES openjdk-8-jre"
+        else
+            PACKAGES="$PACKAGES openjdk-7-jre"
+        fi
     ;;
 esac
 

@@ -203,12 +203,19 @@ install_base_packages() {
     cp -f /etc/resolv.conf "$target/etc/"
     local packages=""
     local cross_distro_packages="acpid bash curl dmidecode kbd lvm2 openssh-server parted pciutils rsync rsyslog sudo wget ntpdate logrotate ethtool hdparm iptables tcpdump ipmitool lldpad"
-    local deb_packages="grub-pc ifenslave ifupdown isc-dhcp-client kexec-tools locales lsb-release lshw man netbase netcat-openbsd net-tools vim cron dnsutils kdump-tools"
+    local deb_packages="grub-pc ifenslave ifupdown isc-dhcp-client kexec-tools locales lsb-release lshw man netbase netcat-openbsd net-tools vim cron dnsutils"
     local repository=$(add_main_repository $dist)
     add_megacli_repository $dist $target
     case $dist in
         $supported_ubuntu_dists)
-            packages="$cross_distro_packages grub2 iputils-ping linux-firmware linux-firmware-nonfree linux-headers-generic-lts-trusty linux-image-generic-lts-trusty $deb_packages linux-crashdump"
+            packages="$cross_distro_packages grub2 iputils-ping linux-firmware linux-headers-generic-lts-$dist linux-image-generic-lts-$dist $deb_packages"
+            if [ "$dist" != "xenial" ]; then
+                packages="$packages linux-firmware-nonfree linux-crashdump kdump-tools"
+            else
+                #Workaround setupconf which try to find ckbcomp in /bin instead /usr/bin
+                do_chroot $target ln -sf /usr/bin/ckbcomp /bin/ckbcomp
+            fi
+
             echo "deb $repository $dist main universe multiverse" > ${target}/etc/apt/sources.list
             echo "deb $repository $dist-updates main universe multiverse" >> ${target}/etc/apt/sources.list
             echo "deb http://security.ubuntu.com/ubuntu $dist-security main universe multiverse" >> ${target}/etc/apt/sources.list
@@ -272,6 +279,11 @@ add_megacli_repository() {
         $supported_debian_dists)
             wget -O - http://hwraid.le-vert.net/debian/hwraid.le-vert.net.gpg.key | do_chroot $target apt-key add -
             echo "deb http://hwraid.le-vert.net/debian ${dist} main" > $target/etc/apt/sources.list.d/hwraid.list
+            ;;
+        # they don't support Xenial yet
+        xenial)
+            wget -O - http://hwraid.le-vert.net/ubuntu/hwraid.le-vert.net.gpg.key | do_chroot $target apt-key add -
+            echo "deb http://hwraid.le-vert.net/ubuntu wily main" > $target/etc/apt/sources.list.d/hwraid.list
             ;;
         # they don't support Trusty yet
         trusty)

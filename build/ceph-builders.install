@@ -251,7 +251,22 @@ install_packages $dir "$PACKAGES"
 }
 
 
-install_deps() {
+install_edeploy_packages() {
+EDEPLOY_PACKAGES="kpartx pigz unzip debootstrap sed curl parted rsync gzip coreutils"
+
+case "$DIST" in
+    $supported_centos_dists | $supported_redhat_dists)
+       EDEPLOY_PACKAGES="qemu-img"
+    ;;
+    $supported_debian_dists | $supported_ubuntu_dists)
+       EDEPLOY_PACKAGES="qemu-utils"
+    ;;
+esac
+
+install_packages $dir "$EDEPLOY_PACKAGES"
+}
+
+install_ceph_deps() {
 	do_chroot $dir git clone https://github.com/ceph/ceph.git
 	do_chroot $dir bash -c "cd ceph; ./install-deps.sh"
 	do_chroot $dir rm -rf /ceph
@@ -275,6 +290,7 @@ EOF
 
 configure_cloudinit
 add_packages
-install_deps
+install_ceph_deps
+install_edeploy_packages
 setup_ulimit
 clear_packages_cache

@@ -263,6 +263,11 @@ case "$DIST" in
     ;;
 esac
 
+# We can install python-openstackclient  on xenial to ease the image uploading
+if [ "$DIST" = "xenial" ]; then
+	EDEPLOY_PACKAGES="$EDEPLOY_PACKAGES python-openstackclient"
+fi
+
 install_packages $dir $EDEPLOY_PACKAGES
 }
 

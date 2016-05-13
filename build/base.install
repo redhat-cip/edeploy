@@ -132,6 +132,17 @@ bootstrap() {
                 scripts="gutsy"
                 ;;
         esac
+        DEBOOT_VERSION=$((`debootstrap --version |sed -E 's/debootstrap .*([0-9]+).*/\1/'` * 1000000))
+        DEBOOT_MAJOR=$((`debootstrap --version |sed -E 's/debootstrap .*\.([0-9]+)\..*/\1/'` * 1000))
+        DEBOOT_MINOR=$(debootstrap --version |sed -E 's/debootstrap .*\.([0-9]+)\S.*/\1/')
+        DEBOOT_GEN=$(( $DEBOOT_VERSION + $DEBOOT_MAJOR + $DEBOOT_MINOR ))
+
+        # When running on version 1.0.78 or greater, debootstrap want to create /dev/ entries
+        # So we delete them before to avoid a failure of deboostrap
+        if [ "$DEBOOT_GEN" -gt 1000077 ]; then
+            rm -rf $target/dev/{null,zero,full,random,urandom,tty,pts,ptmx,fd,stdin,stdout,stderr}
+        fi
+
         if [ ! -e  /usr/share/debootstrap/scripts/${dist} ]; then
             cd /usr/share/debootstrap/scripts
             ln -s $scripts $dist

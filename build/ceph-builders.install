@@ -252,7 +252,7 @@ install_packages $dir "$PACKAGES"
 
 
 install_edeploy_packages() {
-EDEPLOY_PACKAGES="kpartx pigz unzip debootstrap sed curl parted rsync gzip coreutils"
+EDEPLOY_PACKAGES="kpartx pigz unzip debootstrap sed curl parted rsync gzip coreutils yum"
 
 case "$DIST" in
     $supported_centos_dists | $supported_redhat_dists)

@@ -236,6 +236,12 @@ install_base_packages() {
             echo "deb $repository $dist non-free" > ${target}/etc/apt/sources.list.d/nonfree.list
             echo "deb http://security.debian.org/ $dist/updates main" >  ${target}/etc/apt/sources.list.d/updates.list
             echo "deb $repository $dist-updates main" >> ${target}/etc/apt/sources.list.d/updates.list
+
+            # Only wheezy have lldpad FIXME in common too
+            if [ "$dist" != "wheezy" ]; then
+               packages=$(echo $packages |sed -e 's/ lldpad//g')
+            fi
+
             ;;
         $supported_centos_dists|$supported_redhat_dists)
             if [ "$CODENAME_MAJOR" = '6' ]; then

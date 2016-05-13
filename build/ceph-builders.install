@@ -256,14 +256,14 @@ EDEPLOY_PACKAGES="kpartx pigz unzip debootstrap sed curl parted rsync gzip coreu
 
 case "$DIST" in
     $supported_centos_dists | $supported_redhat_dists)
-       EDEPLOY_PACKAGES="qemu-img"
+       EDEPLOY_PACKAGES="$EDEPLOY_PACKAGES qemu-img"
     ;;
     $supported_debian_dists | $supported_ubuntu_dists)
-       EDEPLOY_PACKAGES="qemu-utils"
+       EDEPLOY_PACKAGES="$EDEPLOY_PACKAGES qemu-utils"
     ;;
 esac
 
-install_packages $dir "$EDEPLOY_PACKAGES"
+install_packages $dir $EDEPLOY_PACKAGES
 }
 
 install_ceph_deps() {

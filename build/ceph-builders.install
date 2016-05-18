@@ -41,13 +41,13 @@ configure_cloudinit () {
 deb $repository ${RELEASE}-backports main contrib non-free
 EOF
             update_repositories $dir
-            install_packages ${dir} "cloud-init cloud-utils cloud-initramfs-growroot"
+            install_packages ${dir} "cloud-init cloud-utils cloud-initramfs-growroot python-apt"
             distro=debian
             groups="[adm, systemd-journal]"
 	    ;;
         "Ubuntu")
             update_repositories $dir
-            install_packages ${dir} "cloud-init cloud-utils cloud-initramfs-growroot"
+            install_packages ${dir} "cloud-init cloud-utils cloud-initramfs-growroot python-apt"
             distro=ubuntu
             groups="[adm]"
 	    ;;

@@ -33,6 +33,9 @@ if [ "$NETWORK_CONFIG" = "auto" ]; then
 auto lo
 iface lo inet loopback
 
+auto eth0
+iface eth0 inet dhcp
+
 source /etc/network/interfaces.d/*.cfg
 EOF
         fi

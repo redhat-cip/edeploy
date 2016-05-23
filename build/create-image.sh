@@ -210,7 +210,8 @@ while [ $TRY -gt 0 -a ! -b $PART ]; do
     TRY=$(($TRY - 1))
 done
 
-mkfs.${ROOT_FS} "$PART"
+rsync -aX --delete-before --exclude=shm /dev/ ${DIR}/dev/
+do_chroot "$DIR" mkfs.${ROOT_FS} "$PART"
 MDIR=$(mktemp -d)
 DEV=$(losetup --show --find "$PART")
 mount "$DEV" "$MDIR"
@@ -287,7 +288,7 @@ EOF
         echo "GRUB_CMDLINE_LINUX_DEFAULT=\"console=ttyS0\"" > $MDIR/etc/default/grub
     fi
 
-    do_chroot "$MDIR" grub$V-install --modules="ext2 part_msdos" --no-floppy "$DISK"
+    do_chroot "$MDIR" grub$V-install --modules="ext2 part_msdos xfs" --no-floppy "$DISK"
 
     do_chroot "$MDIR" grub$V-mkconfig -o /boot/grub$V/grub.cfg || :
 

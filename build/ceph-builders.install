@@ -290,6 +290,12 @@ root       soft    nproc     unlimited
 EOF
 }
 
+# Removing useless files like documentation etc..
+stripe_image() {
+    do_chroot $dir rm -rf /usr/share/{doc,man,backgrounds}/*
+    do_chroot $dir rm -rf /usr/man/*
+}
+
 # invalidate root password
 #do_chroot ${dir} usermod -L root
 
@@ -298,4 +304,5 @@ add_packages
 install_ceph_deps
 install_edeploy_packages
 setup_ulimit
+stripe_image
 clear_packages_cache

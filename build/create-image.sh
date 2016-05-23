@@ -32,12 +32,28 @@ if [ "$NETWORK_CONFIG" = "auto" ]; then
 # interfaces(5) file used by ifup(8) and ifdown(8)
 auto lo
 iface lo inet loopback
+EOF
 
-auto eth0
-iface eth0 inet dhcp
-
+# Some distro needs a static network configuraiton
+# Some needs to rely on cloudinit
+# So let's adjust it based on the distro name
+            distro=$(do_chroot $MDIR lsb_release -sc)
+            case $distro in
+                xenial)
+                    cat >> "$MDIR"/etc/network/interfaces <<EOF
 source /etc/network/interfaces.d/*.cfg
 EOF
+                ;;
+                wheezy|jessie|trusty)
+                    cat >> "$MDIR"/etc/network/interfaces <<EOF
+auto eth0
+iface eth0 inet dhcp
+EOF
+                ;;
+                *)
+                echo "Unknown distro : '$distro'"
+                ;;
+            esac
         fi
     else
         cat > "$MDIR"/etc/sysconfig/network-scripts/ifcfg-eth0 <<EOF

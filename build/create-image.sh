@@ -316,7 +316,7 @@ EOF
     sed -i -e 's/msdos5/msdos1/g' $MDIR/boot/grub$V/grub.cfg
 
     # add / to fstab
-    FS_OPTIONS="errors=remount-ro"
+    FS_OPTIONS="errors=remount-ro,nobarrier,noatime,nodiratime"
     case $ROOT_FS in
         xfs)
             FS_OPTIONS="$FS_OPTIONS,inode64"

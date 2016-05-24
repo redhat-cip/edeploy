@@ -316,7 +316,13 @@ EOF
     sed -i -e 's/msdos5/msdos1/g' $MDIR/boot/grub$V/grub.cfg
 
     # add / to fstab
-    echo "UUID=$UUID / ${ROOT_FS} errors=remount-ro 0 1" >> $MDIR/etc/fstab
+    FS_OPTIONS="errors=remount-ro"
+    case $ROOT_FS in
+        xfs)
+            FS_OPTIONS="$FS_OPTIONS,inode64"
+        ;;
+    esac
+    echo "UUID=$UUID / ${ROOT_FS} $FS_OPTIONS 0 1" >> $MDIR/etc/fstab
 else
     # Grub1 doesn't have /usr/sbin/grub-mkconfig, failback on extlinux for booting
     if [ ! -x extlinux/extlinux ] || [ ! -f extlinux/menu.c32 ] || [ ! -f extlinux/libutil.c32 ]; then

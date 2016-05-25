@@ -296,6 +296,16 @@ stripe_image() {
     do_chroot $dir rm -rf /usr/man/*
 }
 
+disable_selinux() {
+    case "$DIST" in
+        $supported_centos_dists | $supported_redhat_dists)
+            # We don't need selinux on our build image
+            # So let's disable it
+            sed -i 's/SELINUX=.*/SELINUX=disabled/' ${dir}/etc/selinux/config
+        ;;
+    esac
+}
+
 # invalidate root password
 #do_chroot ${dir} usermod -L root
 
@@ -304,5 +314,6 @@ add_packages
 install_ceph_deps
 install_edeploy_packages
 setup_ulimit
+disable_selinux
 stripe_image
 clear_packages_cache

@@ -306,6 +306,22 @@ disable_selinux() {
     esac
 }
 
+fix_trusty_kernel() {
+   if [ "$DIST" != "trusty" ]; then
+	return
+   fi
+   # Trusty kernel is missing a patch for our xfs rootfs
+   # https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1560142
+   cat > $dir/root/remove_new_kernel.sh << EOF
+dpkg -r \$(dpkg -l |grep linux-image- | grep "3.13"| grep -v 83 |awk '{print $2}' |tr '\n' ' ')
+EOF
+   do_chroot $dir bash /root/remove_new_kernel.sh
+   curl -o ${dir}/root/kernel.deb http://kernel.ubuntu.com/~jsalisbury/lp1560142/linux-image-3.13.0-83-generic_3.13.0-83.127~lp1560142_amd64.deb
+   curl -o ${dir}/root/kernel-extra.deb http://kernel.ubuntu.com/~jsalisbury/lp1560142/linux-image-extra-3.13.0-83-generic_3.13.0-83.127~lp1560142_amd64.deb
+   do_chroot ${dir} dpkg -i /root/kernel.deb /root/kernel-extra.deb
+   rm -f ${dir}/root/kernel*.deb
+}
+
 # invalidate root password
 #do_chroot ${dir} usermod -L root
 
@@ -315,5 +331,6 @@ install_ceph_deps
 install_edeploy_packages
 setup_ulimit
 disable_selinux
+fix_trusty_kernel
 stripe_image
 clear_packages_cache

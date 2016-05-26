@@ -132,6 +132,17 @@ bootstrap() {
                 scripts="gutsy"
                 ;;
         esac
+        DEBOOT_VERSION=$((`debootstrap --version |sed -E 's/debootstrap .*([0-9]+).*/\1/'` * 1000000))
+        DEBOOT_MAJOR=$((`debootstrap --version |sed -E 's/debootstrap .*\.([0-9]+)\..*/\1/'` * 1000))
+        DEBOOT_MINOR=$(debootstrap --version |sed -E 's/debootstrap .*\.([0-9]+)\S.*/\1/')
+        DEBOOT_GEN=$(( $DEBOOT_VERSION + $DEBOOT_MAJOR + $DEBOOT_MINOR ))
+
+        # When running on version 1.0.78 or greater, debootstrap want to create /dev/ entries
+        # So we delete them before to avoid a failure of deboostrap
+        if [ "$DEBOOT_GEN" -gt 1000077 ]; then
+            rm -rf $target/dev/{null,zero,full,random,urandom,tty,pts,ptmx,fd,stdin,stdout,stderr}
+        fi
+
         if [ ! -e  /usr/share/debootstrap/scripts/${dist} ]; then
             cd /usr/share/debootstrap/scripts
             ln -s $scripts $dist
@@ -203,12 +214,19 @@ install_base_packages() {
     cp -f /etc/resolv.conf "$target/etc/"
     local packages=""
     local cross_distro_packages="acpid bash curl dmidecode kbd lvm2 openssh-server parted pciutils rsync rsyslog sudo wget ntpdate logrotate ethtool hdparm iptables tcpdump ipmitool lldpad"
-    local deb_packages="grub-pc ifenslave ifupdown isc-dhcp-client kexec-tools locales lsb-release lshw man netbase netcat-openbsd net-tools vim cron dnsutils kdump-tools"
+    local deb_packages="grub-pc ifenslave ifupdown isc-dhcp-client kexec-tools locales lsb-release lshw man netbase netcat-openbsd net-tools vim cron dnsutils udev"
     local repository=$(add_main_repository $dist)
     add_megacli_repository $dist $target
     case $dist in
         $supported_ubuntu_dists)
-            packages="$cross_distro_packages grub2 iputils-ping linux-firmware linux-firmware-nonfree linux-headers-generic-lts-trusty linux-image-generic-lts-trusty $deb_packages linux-crashdump"
+            packages="$cross_distro_packages grub2 iputils-ping linux-firmware linux-headers-generic-lts-$dist linux-image-generic-lts-$dist $deb_packages"
+            if [ "$dist" != "xenial" ]; then
+                packages="$packages linux-firmware-nonfree linux-crashdump kdump-tools"
+            else
+                #Workaround setupconf which try to find ckbcomp in /bin instead /usr/bin
+                do_chroot $target ln -sf /usr/bin/ckbcomp /bin/ckbcomp
+            fi
+
             echo "deb $repository $dist main universe multiverse" > ${target}/etc/apt/sources.list
             echo "deb $repository $dist-updates main universe multiverse" >> ${target}/etc/apt/sources.list
             echo "deb http://security.ubuntu.com/ubuntu $dist-security main universe multiverse" >> ${target}/etc/apt/sources.list
@@ -218,6 +236,12 @@ install_base_packages() {
             echo "deb $repository $dist non-free" > ${target}/etc/apt/sources.list.d/nonfree.list
             echo "deb http://security.debian.org/ $dist/updates main" >  ${target}/etc/apt/sources.list.d/updates.list
             echo "deb $repository $dist-updates main" >> ${target}/etc/apt/sources.list.d/updates.list
+
+            # Only wheezy have lldpad FIXME in common too
+            if [ "$dist" != "wheezy" ]; then
+               packages=$(echo $packages |sed -e 's/ lldpad//g')
+            fi
+
             ;;
         $supported_centos_dists|$supported_redhat_dists)
             if [ "$CODENAME_MAJOR" = '6' ]; then
@@ -273,6 +297,11 @@ add_megacli_repository() {
             wget -O - http://hwraid.le-vert.net/debian/hwraid.le-vert.net.gpg.key | do_chroot $target apt-key add -
             echo "deb http://hwraid.le-vert.net/debian ${dist} main" > $target/etc/apt/sources.list.d/hwraid.list
             ;;
+        # they don't support Xenial yet
+        xenial)
+            wget -O - http://hwraid.le-vert.net/ubuntu/hwraid.le-vert.net.gpg.key | do_chroot $target apt-key add -
+            echo "deb http://hwraid.le-vert.net/ubuntu wily main" > $target/etc/apt/sources.list.d/hwraid.list
+            ;;
         # they don't support Trusty yet
         trusty)
             wget -O - http://hwraid.le-vert.net/ubuntu/hwraid.le-vert.net.gpg.key | do_chroot $target apt-key add -
@@ -321,7 +350,7 @@ install_hp_raid_cli_tool() {
     if [ "$(package_type)" = "deb" ]; then
         local package_name=hpacucli_9.40.1-1._amd64.deb
         if [ ! -r $target/../../$package_name ]; then
-            wget --no-verbose http://downloads.linux.hp.com/SDR/downloads/MCP/pool/non-free/$package_name -O $target/../../$package_name
+            wget --no-verbose http://downloads.linux.hpe.com/SDR/downloads/MCP/pool/non-free/$package_name -O $target/../../$package_name
         fi
         cp $target/../../$package_name $target/root/
         install_packages $target "python-pexpect"
@@ -335,11 +364,11 @@ install_hp_raid_cli_tool() {
         fi
         if [ ! -f "$target/usr/sbin/hpacucli" ]; then
             install_packages $target \
-                http://downloads.linux.hp.com/SDR/downloads/ServicePackforProLiant/2013.02.0/hp/swpackages/hpacucli-9.40-12.0.x86_64.rpm
+                http://downloads.linux.hpe.com/SDR/downloads/ServicePackforProLiant/2013.02.0/hp/swpackages/hpacucli-9.40-12.0.x86_64.rpm
         fi
-        do_chroot $dir rpm --import http://downloads.linux.hp.com/SDR/hpPublicKey1024.pub
-        do_chroot $dir rpm --import http://downloads.linux.hp.com/SDR/hpPublicKey2048.pub
-        do_chroot $dir rpm --import http://downloads.linux.hp.com/SDR/hpPublicKey2048_key1.pub
+        do_chroot $dir rpm --import http://downloads.linux.hpe.com/SDR/hpPublicKey1024.pub
+        do_chroot $dir rpm --import http://downloads.linux.hpe.com/SDR/hpPublicKey2048.pub
+        do_chroot $dir rpm --import http://downloads.linux.hpe.com/SDR/hpPublicKey2048_key1.pub
         if [ "$dist" = fedora ]; then
             CODENAME_SPP=7
         else
@@ -348,7 +377,7 @@ install_hp_raid_cli_tool() {
         cat > $dir/etc/yum.repos.d/spp.repo <<EOF
 [spp]
 name=Service Pack for ProLiant
-baseurl=http://downloads.linux.hp.com/repo/spp/rhel/$CODENAME_SPP/x86_64/current
+baseurl=http://downloads.linux.hpe.com/repo/spp/rhel/$CODENAME_SPP/x86_64/current
 enabled=1
 gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/GPG-KEY-ServicePackforProLiant

@@ -1,0 +1,336 @@
+#!/bin/bash
+#
+# Copyright (C) 2013-2014 eNovance SAS <licensing@enovance.com>
+#
+# Author: Emilien Macchi <emilien.macchi@enovance.com>
+#         Gonéri Le Bouder <goneri.lebouder@enovance.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+src="$1"
+dir="$2"
+version="$3"
+
+ROLE=ceph-builders
+
+ORIG=$(cd $(dirname $0); pwd)
+
+. ${ORIG}/functions
+
+
+configure_cloudinit () {
+
+    mkdir -p ${dir}/etc/cloud/cloud.cfg.d
+    rm -f ${dir}/etc/cloud/cloud.cfg
+    groups=unexpected
+    distro=unexpected
+    case "$OS" in
+	"Debian")
+	    local repository=$(add_main_repository $DIST)
+	    cat > ${dir}/etc/apt/sources.list.d/$RELEASE-backport.list <<EOF
+deb $repository ${RELEASE}-backports main contrib non-free
+EOF
+            update_repositories $dir
+            install_packages ${dir} "cloud-init cloud-utils cloud-initramfs-growroot python-apt"
+            distro=debian
+            groups="[adm, systemd-journal]"
+	    ;;
+        "Ubuntu")
+            update_repositories $dir
+            install_packages ${dir} "cloud-init cloud-utils cloud-initramfs-growroot python-apt"
+            distro=ubuntu
+            groups="[adm]"
+	    ;;
+	"RedHatEnterpriseServer")
+            distro=rhel
+            groups="[wheel, adm, systemd-journal]"
+            if [ $CODENAME_MAJOR = 6 ]; then
+                # cloud-init is in Red Hat Common for RHEL Server (v.6)
+                add_rhn_channel rhel-x86_64-server-rh-common-6
+                install_packages $dir "cloud-init"
+            else
+                # cloud-init is now in EPEL but some dependencies in CDN
+	        add_epel_repository $DIST
+                # Attach to the pool "Red Hat Enterprise Linux OpenStack Platform (Physical)"
+                attach_pool_rh_cdn $dir $RHN_CDN_POOL_ID
+                # Red Hat OpenStack 6
+                 add_rh_cdn_repo $dir rhel-7-server-openstack-6.0-rpms
+                update_repositories $dir
+                install_packages $dir "cloud-init cloud-utils cloud-utils-growpart"
+	        remove_epel_repository $DIST
+            fi
+	    ;;
+	"CentOS")
+            distro="rhel"
+            groups="[wheel, adm, systemd-journal]"
+            add_epel_repository $DIST
+            install_packages $dir "cloud-init cloud-utils cloud-utils-growpart"
+            remove_epel_repository $DIST
+	    ;;
+	*)
+	    fatal_error "OS ($OS) or Release ($RELEASE) not supported"
+	    ;;
+    esac
+
+    cat > ${dir}/etc/cloud/cloud.cfg <<EOF
+users:
+ - default
+
+disable_root: 1
+ssh_pwauth: true
+
+locale_configfile: /etc/sysconfig/i18n
+mount_default_fields: [~, ~, 'auto', 'defaults,nofail', '0', '2']
+resize_rootfs_tmp: /dev
+ssh_deletekeys:   0
+ssh_genkeytypes:  ~
+syslog_fix_perms: ~
+manage_etc_hosts: true
+
+cloud_init_modules:
+ - migrator
+ - bootcmd
+ - write-files
+ - growpart
+ - resizefs
+ - set_hostname
+ - update_hostname
+ - update_etc_hosts
+ - rsyslog
+ - users-groups
+ - ssh
+
+cloud_config_modules:
+ - mounts
+ - locale
+ - set-passwords
+ - yum-add-repo
+ - package-update-upgrade-install
+ - timezone
+ - puppet
+ - chef
+ - salt-minion
+ - mcollective
+ - disable-ec2-metadata
+ - runcmd
+
+cloud_final_modules:
+ - rightscale_userdata
+ - scripts-per-once
+ - scripts-per-boot
+ - scripts-per-instance
+ - scripts-user
+ - ssh-authkey-fingerprints
+ - keys-to-console
+ - phone-home
+ - final-message
+
+system_info:
+  default_user:
+    name: admin
+    lock_passwd: false
+    gecos: $distro Cloud User
+    groups: $groups
+    sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+    shell: /bin/bash
+  distro: $distro
+  paths:
+    cloud_dir: /var/lib/cloud
+    templates_dir: /etc/cloud/templates
+  ssh_svcname: sshd
+
+# vim:syntax=yaml
+EOF
+
+    cat > ${dir}/etc/cloud/cloud.cfg.d/90_sources.cfg << EOF
+datasource_list: [ NoCloud, Ec2, OpenStack, ConfigDrive, None ]
+EOF
+
+    cat > ${dir}//etc/cloud/cloud.cfg.d/05_logging.cfg << EOF
+## This yaml formated config file handles setting
+## logger information.  The values that are necessary to be set
+## are seen at the bottom.  The top '_log' are only used to remove
+## redundency in a syslog and fallback-to-file case.
+##
+## The 'log_cfgs' entry defines a list of logger configs
+## Each entry in the list is tried, and the first one that
+## works is used.  If a log_cfg list entry is an array, it will
+## be joined with '\n'.
+_log:
+ - &log_base |
+   [loggers]
+   keys=root,cloudinit
+   
+   [handlers]
+   keys=consoleHandler,cloudLogHandler
+   
+   [formatters]
+   keys=simpleFormatter,arg0Formatter
+   
+   [logger_root]
+   level=DEBUG
+   handlers=consoleHandler,cloudLogHandler
+   
+   [logger_cloudinit]
+   level=DEBUG
+   qualname=cloudinit
+   handlers=
+   propagate=1
+   
+   [handler_consoleHandler]
+   class=StreamHandler
+   level=WARNING
+   formatter=arg0Formatter
+   args=(sys.stderr,)
+   
+   [formatter_arg0Formatter]
+   format=%(asctime)s - %(filename)s[%(levelname)s]: %(message)s
+   
+   [formatter_simpleFormatter]
+   format=[CLOUDINIT] %(filename)s[%(levelname)s]: %(message)s
+ - &log_file |
+   [handler_cloudLogHandler]
+   class=FileHandler
+   level=DEBUG
+   formatter=arg0Formatter
+   args=('/var/log/cloud-init.log',)
+ - &log_syslog |
+   [handler_cloudLogHandler]
+   class=handlers.SysLogHandler
+   level=DEBUG
+   formatter=simpleFormatter
+   args=("/dev/log", handlers.SysLogHandler.LOG_USER)
+
+log_cfgs:
+# These will be joined into a string that defines the configuration
+ - [ *log_base, *log_syslog ]
+# These will be joined into a string that defines the configuration
+ - [ *log_base, *log_file ]
+# A file path can also be used
+# - /etc/log.conf
+
+# this tells cloud-init to redirect its stdout and stderr to
+# 'tee -a /var/log/cloud-init-output.log' so the user can see output
+# there without needing to look on the console.
+output: {all: '| tee -a /var/log/cloud-init-output.log'}
+EOF
+
+}
+
+add_packages() {
+PACKAGES="git screen ccache jq"
+case "$DIST" in
+    $supported_centos_dists | $supported_redhat_dists)
+	#We add epel and let it enabled intentionnaly
+        add_epel_repository $DIST
+        PACKAGES="$PACKAGES java-1.7.0-openjdk createrepo rpmdevtools" 
+    ;;
+    $supported_debian_dists | $supported_ubuntu_dists)
+        PACKAGES="$PACKAGES fakeroot fakeroot-ng debhelper reprepro dchroot devscripts pbuilder pkg-config"
+        PACKAGES="$PACKAGES python-dev python-pip python-virtualenv libyaml-dev doxygen ditaa ant libmysqlclient-dev"
+        PACKAGES="$PACKAGES libevent-dev libffi-dev"
+        if [ "$DIST" = "xenial" ]; then
+            PACKAGES="$PACKAGES openjdk-8-jre"
+        else
+            PACKAGES="$PACKAGES openjdk-7-jre"
+        fi
+    ;;
+esac
+
+install_packages $dir "$PACKAGES"
+}
+
+
+install_edeploy_packages() {
+EDEPLOY_PACKAGES="kpartx pigz unzip debootstrap sed curl parted rsync gzip coreutils yum"
+
+case "$DIST" in
+    $supported_centos_dists | $supported_redhat_dists)
+       EDEPLOY_PACKAGES="$EDEPLOY_PACKAGES qemu-img"
+    ;;
+    $supported_debian_dists | $supported_ubuntu_dists)
+       EDEPLOY_PACKAGES="$EDEPLOY_PACKAGES qemu-utils"
+    ;;
+esac
+
+# We can install python-openstackclient  on xenial to ease the image uploading
+if [ "$DIST" = "xenial" ]; then
+	EDEPLOY_PACKAGES="$EDEPLOY_PACKAGES python-openstackclient"
+fi
+
+install_packages $dir $EDEPLOY_PACKAGES
+}
+
+install_ceph_deps() {
+	do_chroot $dir git clone https://github.com/ceph/ceph.git
+	do_chroot $dir bash -c "cd ceph; ./install-deps.sh"
+	do_chroot $dir rm -rf /ceph
+}
+
+
+setup_ulimit() {
+    ulimit_file=$dir/etc/security/limits.d/20-nproc.conf
+    cat > $ulimit_file << EOF
+# Default limit for number of user's processes to prevent
+# accidental fork bombs.
+# See rhbz #432903 for reasoning.
+
+*          soft    nproc     16000
+root       soft    nproc     unlimited
+EOF
+}
+
+# Removing useless files like documentation etc..
+stripe_image() {
+    do_chroot $dir rm -rf /usr/share/{doc,man,backgrounds}/*
+    do_chroot $dir rm -rf /usr/man/*
+}
+
+disable_selinux() {
+    case "$DIST" in
+        $supported_centos_dists | $supported_redhat_dists)
+            # We don't need selinux on our build image
+            # So let's disable it
+            sed -i 's/SELINUX=.*/SELINUX=disabled/' ${dir}/etc/selinux/config
+        ;;
+    esac
+}
+
+fix_trusty_kernel() {
+   if [ "$DIST" != "trusty" ]; then
+	return
+   fi
+   # Trusty kernel is missing a patch for our xfs rootfs
+   # https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1560142
+   cat > $dir/root/remove_new_kernel.sh << EOF
+dpkg -r \$(dpkg -l |grep linux-image- | grep "3.13"| grep -v 83 |awk '{print $2}' |tr '\n' ' ')
+EOF
+   do_chroot $dir bash /root/remove_new_kernel.sh
+   curl -o ${dir}/root/kernel.deb http://kernel.ubuntu.com/~jsalisbury/lp1560142/linux-image-3.13.0-83-generic_3.13.0-83.127~lp1560142_amd64.deb
+   curl -o ${dir}/root/kernel-extra.deb http://kernel.ubuntu.com/~jsalisbury/lp1560142/linux-image-extra-3.13.0-83-generic_3.13.0-83.127~lp1560142_amd64.deb
+   do_chroot ${dir} dpkg -i /root/kernel.deb /root/kernel-extra.deb
+   rm -f ${dir}/root/kernel*.deb
+}
+
+# invalidate root password
+#do_chroot ${dir} usermod -L root
+
+configure_cloudinit
+add_packages
+install_ceph_deps
+install_edeploy_packages
+setup_ulimit
+disable_selinux
+fix_trusty_kernel
+stripe_image
+clear_packages_cache

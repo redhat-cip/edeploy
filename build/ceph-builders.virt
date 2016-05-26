@@ -1,0 +1,10 @@
+# Size of the root filesystem in MB
+ROOT_FS_SIZE=9000
+
+# Output format
+IMAGE_FORMAT=qcow2
+
+# Network Configuration
+NETWORK_CONFIG=auto
+
+ROOT_FS=xfs

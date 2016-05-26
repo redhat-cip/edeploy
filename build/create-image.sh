@@ -32,10 +32,28 @@ if [ "$NETWORK_CONFIG" = "auto" ]; then
 # interfaces(5) file used by ifup(8) and ifdown(8)
 auto lo
 iface lo inet loopback
+EOF
 
+# Some distro needs a static network configuraiton
+# Some needs to rely on cloudinit
+# So let's adjust it based on the distro name
+            distro=$(do_chroot $MDIR lsb_release -sc)
+            case $distro in
+                xenial)
+                    cat >> "$MDIR"/etc/network/interfaces <<EOF
+source /etc/network/interfaces.d/*.cfg
+EOF
+                ;;
+                wheezy|jessie|trusty)
+                    cat >> "$MDIR"/etc/network/interfaces <<EOF
 auto eth0
 iface eth0 inet dhcp
 EOF
+                ;;
+                *)
+                echo "Unknown distro : '$distro'"
+                ;;
+            esac
         fi
     else
         cat > "$MDIR"/etc/sysconfig/network-scripts/ifcfg-eth0 <<EOF
@@ -134,6 +152,7 @@ fi
 IMAGE_FORMAT=${IMAGE_FORMAT:-qcow2}
 COMPRESSED=${COMPRESSED:-no}
 ROOT_FS_SIZE=${ROOT_FS_SIZE:-auto}
+ROOT_FS=${ROOT_FS:-ext4}
 NETWORK_CONFIG=${NETWORK_CONFIG:-auto}
 
 if [ "$COMPRESSED" = "yes" ]; then
@@ -162,7 +181,7 @@ check_binary chroot
 check_binary kpartx
 check_binary qemu-img
 check_binary losetup
-check_binary mkfs.ext4
+check_binary mkfs.${ROOT_FS}
 check_binary rsync
 check_binary gunzip
 check_binary tail
@@ -201,7 +220,7 @@ parted -s "$DISK" mklabel msdos
 parted -s "$DISK" mkpart primary ext2 32k '100%'
 parted "$DISK" set 1 boot on
 
-# Format the partition as ext4
+# Format the partition as per ${ROOT_FS} type
 
 PART=/dev/mapper/$(kpartx -av $DISK|cut -f3 -d' ')
 TRY=5
@@ -210,7 +229,8 @@ while [ $TRY -gt 0 -a ! -b $PART ]; do
     TRY=$(($TRY - 1))
 done
 
-mkfs.ext4 "$PART"
+rsync -aX --delete-before --exclude=shm /dev/ ${DIR}/dev/
+do_chroot "$DIR" mkfs.${ROOT_FS} "$PART"
 MDIR=$(mktemp -d)
 DEV=$(losetup --show --find "$PART")
 mount "$DEV" "$MDIR"
@@ -287,7 +307,7 @@ EOF
         echo "GRUB_CMDLINE_LINUX_DEFAULT=\"console=ttyS0\"" > $MDIR/etc/default/grub
     fi
 
-    do_chroot "$MDIR" grub$V-install --modules="ext2 part_msdos" --no-floppy "$DISK"
+    do_chroot "$MDIR" grub$V-install --modules="ext2 part_msdos xfs" --no-floppy "$DISK"
 
     do_chroot "$MDIR" grub$V-mkconfig -o /boot/grub$V/grub.cfg || :
 
@@ -296,7 +316,13 @@ EOF
     sed -i -e 's/msdos5/msdos1/g' $MDIR/boot/grub$V/grub.cfg
 
     # add / to fstab
-    echo "UUID=$UUID / ext4 errors=remount-ro 0 1" >> $MDIR/etc/fstab
+    FS_OPTIONS="errors=remount-ro,nobarrier,noatime,nodiratime"
+    case $ROOT_FS in
+        xfs)
+            FS_OPTIONS="$FS_OPTIONS,inode64"
+        ;;
+    esac
+    echo "UUID=$UUID / ${ROOT_FS} $FS_OPTIONS 0 1" >> $MDIR/etc/fstab
 else
     # Grub1 doesn't have /usr/sbin/grub-mkconfig, failback on extlinux for booting
     if [ ! -x extlinux/extlinux ] || [ ! -f extlinux/menu.c32 ] || [ ! -f extlinux/libutil.c32 ]; then

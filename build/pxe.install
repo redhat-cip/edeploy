@@ -47,10 +47,10 @@ rsync -aHX --delete-before --numeric-ids ${src}/ ${dir}/
 
 common_setup
 
-PACKAGES="sdparm gzip xfsprogs mcelog smartmontools python-pip gcc"
+PACKAGES="sdparm gzip xfsprogs mcelog smartmontools python-pip gcc python-pandas"
 case "$DIST" in
     $supported_debian_dists | $supported_ubuntu_dists)
-        PACKAGES="$PACKAGES libc6-i386 lshw libc6-dev python-dev g++"
+        PACKAGES="$PACKAGES libc6-i386 lshw libc6-dev python-dev g++ python-setuptools python-testrepository"
     ;;
     $supported_centos_dists | $supported_redhat_dists)
         add_epel_repository $DIST

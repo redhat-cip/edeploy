@@ -287,6 +287,7 @@ if /configure; then
             ORIGINAL_BOOT_ARG=$BOOT_ARG
             BOOT_ARG="$BOOT_ARG ds=nocloud-net\\\;s=${METADATA_URL}"
             BOOT_ARG1="$ORIGINAL_BOOT_ARG ds=nocloud-net;s=${METADATA_URL}"
+            sed -i "s|http\:\/\/169\.254\.169\.254\:80|$METADATA_URL|g" $d/etc/cloud/cloud.cfg
         else
             BOOT_ARG1="$ORIGINAL_BOOT_ARG"
             log "No METADATA_URL variable found, no cloud-init configuration done"

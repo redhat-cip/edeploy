@@ -149,6 +149,19 @@ system_info:
     templates_dir: /etc/cloud/templates
   ssh_svcname: sshd
 
+datasource:
+  Ec2:
+    # timeout: the timeout value for a request at metadata service
+    timeout : 50
+    # The length in seconds to wait before giving up on the metadata
+    # service.  The actual total wait could be up to
+    #   len(resolvable_metadata_urls)*timeout
+    max_wait : 120
+
+    #metadata_url: a list of URLs to check for metadata services
+    metadata_urls:
+     - http://169.254.169.254:80
+
 # vim:syntax=yaml
 EOF
 

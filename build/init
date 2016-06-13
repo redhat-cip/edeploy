@@ -174,7 +174,7 @@ elif [ -n "$DISCO" ]; then
     discoverd_request POST "${DISCO}" @/discoverd.json
 else
     step "Configuring system via server ${SERV}"
-    curl -s -S -o/configure -F section=${SECTION} -F file=@/hw.json http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py &
+    curl -s -S -o/configure -F section=${SECTION} -F "file=@/hw.json;filename=hw.json" http://${SERV}:${HTTP_PORT}/${HTTP_PATH}/upload.py &
     # Saving curl's PID
     PID="$!"
 

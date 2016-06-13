@@ -35,23 +35,23 @@ configure_cloudinit () {
     groups=unexpected
     distro=unexpected
     case "$OS" in
-	"Debian")
-	    local repository=$(add_main_repository $DIST)
-	    cat > ${dir}/etc/apt/sources.list.d/$RELEASE-backport.list <<EOF
+        "Debian")
+            local repository=$(add_main_repository $DIST)
+            cat > ${dir}/etc/apt/sources.list.d/$RELEASE-backport.list <<EOF
 deb $repository ${RELEASE}-backports main contrib non-free
 EOF
             update_repositories $dir
             install_packages ${dir} "cloud-init cloud-utils cloud-initramfs-growroot python-apt"
             distro=debian
             groups="[adm, systemd-journal]"
-	    ;;
+        ;;
         "Ubuntu")
             update_repositories $dir
             install_packages ${dir} "cloud-init cloud-utils cloud-initramfs-growroot python-apt"
             distro=ubuntu
             groups="[adm]"
-	    ;;
-	"RedHatEnterpriseServer")
+        ;;
+        "RedHatEnterpriseServer")
             distro=rhel
             groups="[wheel, adm, systemd-journal]"
             if [ $CODENAME_MAJOR = 6 ]; then
@@ -60,26 +60,26 @@ EOF
                 install_packages $dir "cloud-init"
             else
                 # cloud-init is now in EPEL but some dependencies in CDN
-	        add_epel_repository $DIST
+                add_epel_repository $DIST
                 # Attach to the pool "Red Hat Enterprise Linux OpenStack Platform (Physical)"
                 attach_pool_rh_cdn $dir $RHN_CDN_POOL_ID
                 # Red Hat OpenStack 6
-                 add_rh_cdn_repo $dir rhel-7-server-openstack-6.0-rpms
+                add_rh_cdn_repo $dir rhel-7-server-openstack-6.0-rpms
                 update_repositories $dir
                 install_packages $dir "cloud-init cloud-utils cloud-utils-growpart"
-	        remove_epel_repository $DIST
+                remove_epel_repository $DIST
             fi
-	    ;;
-	"CentOS")
+        ;;
+        "CentOS")
             distro="rhel"
             groups="[wheel, adm, systemd-journal]"
             add_epel_repository $DIST
             install_packages $dir "cloud-init cloud-utils cloud-utils-growpart"
             remove_epel_repository $DIST
-	    ;;
-	*)
-	    fatal_error "OS ($OS) or Release ($RELEASE) not supported"
-	    ;;
+        ;;
+        *)
+            fatal_error "OS ($OS) or Release ($RELEASE) not supported"
+        ;;
     esac
 
     cat > ${dir}/etc/cloud/cloud.cfg <<EOF
@@ -244,9 +244,9 @@ add_packages() {
 PACKAGES="git screen ccache jq"
 case "$DIST" in
     $supported_centos_dists | $supported_redhat_dists)
-	#We add epel and let it enabled intentionnaly
+        #We add epel and let it enabled intentionnaly
         add_epel_repository $DIST
-        PACKAGES="$PACKAGES java-1.7.0-openjdk createrepo rpmdevtools" 
+        PACKAGES="$PACKAGES java-1.7.0-openjdk createrepo rpmdevtools"
     ;;
     $supported_debian_dists | $supported_ubuntu_dists)
         PACKAGES="$PACKAGES fakeroot fakeroot-ng debhelper reprepro dchroot devscripts pbuilder pkg-config"
@@ -269,25 +269,25 @@ EDEPLOY_PACKAGES="kpartx pigz unzip debootstrap sed curl parted rsync gzip coreu
 
 case "$DIST" in
     $supported_centos_dists | $supported_redhat_dists)
-       EDEPLOY_PACKAGES="$EDEPLOY_PACKAGES qemu-img"
+        EDEPLOY_PACKAGES="$EDEPLOY_PACKAGES qemu-img"
     ;;
     $supported_debian_dists | $supported_ubuntu_dists)
-       EDEPLOY_PACKAGES="$EDEPLOY_PACKAGES qemu-utils"
+        EDEPLOY_PACKAGES="$EDEPLOY_PACKAGES qemu-utils"
     ;;
 esac
 
 # We can install python-openstackclient  on xenial to ease the image uploading
 if [ "$DIST" = "xenial" ]; then
-	EDEPLOY_PACKAGES="$EDEPLOY_PACKAGES python-openstackclient"
+    EDEPLOY_PACKAGES="$EDEPLOY_PACKAGES python-openstackclient"
 fi
 
 install_packages $dir $EDEPLOY_PACKAGES
 }
 
 install_ceph_deps() {
-	do_chroot $dir git clone https://github.com/ceph/ceph.git
-	do_chroot $dir bash -c "cd ceph; ./install-deps.sh"
-	do_chroot $dir rm -rf /ceph
+    do_chroot $dir git clone https://github.com/ceph/ceph.git
+    do_chroot $dir bash -c "cd ceph; ./install-deps.sh"
+    do_chroot $dir rm -rf /ceph
 }
 
 
@@ -320,19 +320,19 @@ disable_selinux() {
 }
 
 fix_trusty_kernel() {
-   if [ "$DIST" != "trusty" ]; then
-	return
-   fi
-   # Trusty kernel is missing a patch for our xfs rootfs
-   # https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1560142
-   cat > $dir/root/remove_new_kernel.sh << EOF
+    if [ "$DIST" != "trusty" ]; then
+        return
+    fi
+    # Trusty kernel is missing a patch for our xfs rootfs
+    # https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1560142
+    cat > $dir/root/remove_new_kernel.sh << EOF
 dpkg -r \$(dpkg -l |grep linux-image- | grep "3.13"| grep -v 83 |awk '{print $2}' |tr '\n' ' ')
 EOF
-   do_chroot $dir bash /root/remove_new_kernel.sh
-   curl -o ${dir}/root/kernel.deb http://kernel.ubuntu.com/~jsalisbury/lp1560142/linux-image-3.13.0-83-generic_3.13.0-83.127~lp1560142_amd64.deb
-   curl -o ${dir}/root/kernel-extra.deb http://kernel.ubuntu.com/~jsalisbury/lp1560142/linux-image-extra-3.13.0-83-generic_3.13.0-83.127~lp1560142_amd64.deb
-   do_chroot ${dir} dpkg -i /root/kernel.deb /root/kernel-extra.deb
-   rm -f ${dir}/root/kernel*.deb
+    do_chroot $dir bash /root/remove_new_kernel.sh
+    curl -o ${dir}/root/kernel.deb http://kernel.ubuntu.com/~jsalisbury/lp1560142/linux-image-3.13.0-83-generic_3.13.0-83.127~lp1560142_amd64.deb
+    curl -o ${dir}/root/kernel-extra.deb http://kernel.ubuntu.com/~jsalisbury/lp1560142/linux-image-extra-3.13.0-83-generic_3.13.0-83.127~lp1560142_amd64.deb
+    do_chroot ${dir} dpkg -i /root/kernel.deb /root/kernel-extra.deb
+    rm -f ${dir}/root/kernel*.deb
 }
 
 # invalidate root password

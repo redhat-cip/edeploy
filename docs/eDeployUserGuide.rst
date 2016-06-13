@@ -1389,6 +1389,11 @@ Here are the helper functions that can be used in configure scripts:
     :gid:
         change the default gid from 0.
 
+:grub_options(option):
+    Add the following `option` to the default grub configuration. This
+    is useful when a node or a role needs to be booted with a particular
+    boot option. This `option` is configured for both Grub & Kexec usage.
+
 :inject_facts(vars):
    inject puppet facts from the `vars` variable. This will allow to
    use the variables into puppet manifests. The optional `prefix`

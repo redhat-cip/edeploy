@@ -240,6 +240,8 @@ mkdir -p $p/etc/{init,network,default}
 
 log "Starting configuration of profile $PROFILE"
 
+rm -f /grub_options >/dev/null 2>&1
+
 if /configure; then
 
     . /vars
@@ -274,6 +276,11 @@ if /configure; then
         cmdline=$(cat /proc/cmdline)
         # If the cmdline have some "| xxxx |" it means that we have some arguments to keep at install time
         echo $cmdline | grep -q "|" && BOOT_ARG=$(echo $cmdline | cut -d "|" -f 2,2)
+
+        if [ -f /grub_options ]; then
+            log "Adding grub options asked by configure script : $(cat /grub_options)"
+            BOOT_ARG="$BOOT_ARG $(cat /grub_options)"
+        fi
 
         if [ -n "${METADATA_URL}" ]; then
             log "Setting up cloudinit with METADATAURL=$METADATA_URL"

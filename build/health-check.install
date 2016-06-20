@@ -70,9 +70,9 @@ case "$DIST" in
             remove_scn_repository
             PACKAGES="$PACKAGES python-psutil http://pkgs.repoforge.org/fio/fio-2.1.7-1.el6.rf.x86_64.rpm http://pkgs.repoforge.org/lshw/lshw-2.17-1.el6.rf.x86_64.rpm"
         else
-            install_packages $dir python-setuptools python-devel gcc gcc-c++
+            install_packages $dir python-setuptools python-devel gcc gcc-c++ lshw
             do_chroot $dir easy_install netaddr pexpect psutil ipaddr
-            PACKAGES="$PACKAGES http://pkgs.repoforge.org/fio/fio-2.1.7-1.el7.rf.x86_64.rpm http://pkgs.repoforge.org/lshw/lshw-2.17-1.el7.rf.x86_64.rpm"
+            PACKAGES="$PACKAGES http://pkgs.repoforge.org/fio/fio-2.1.7-1.el7.rf.x86_64.rpm"
         fi
     ;;
     $supported_debian_dists | $supported_ubuntu_dists)

@@ -833,6 +833,8 @@ VERBOSE              Boolean. Enable the verbose mode                           
 DEBUG                Boolean. Enable debug mode (start a ssh_server for further access)          0 (disabled)
 IP                   A list of network device configuration (see below for details)              all:dhcp
 LINK_UP_TIMEOUT      Timeout to consider a network link detection completed                      10 (seconds)
+OS                   Override the default role name    defined in configure (cf set_role)        None
+OS_VER               Override the default role version defined in configure (cf set_role)        None
 ===================  ==========================================================================  =======================
 
 **Note** : The kexec option of ONSUCCESS means that after a successful

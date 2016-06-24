@@ -64,6 +64,8 @@ eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^EMBEDDED=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^IP=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^UPLOAD_LOG=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^LINK_UP_TIMEOUT=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^OS=")
+eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^OS_VER=")
 
 if [[ "$DEBUG" = "1" ]]; then
   log "DEBUG param deprecated, please use ONFAILURE=console"
@@ -230,13 +232,36 @@ if [ -n "$PROFILE" ]; then
     CAN_REPORT_FAILURE=1
 fi
 
-chmod +x /configure
-
 d=/chroot
 p=/post_rsync
 
 mkdir -p $d
 mkdir -p $p/etc/{init,network,default}
+
+#Detecting Override of OS & OS_VER
+FINAL_OS=$(grep set_role /configure | awk 'BEGIN {FS="'\''";} {printf "%s", $2}')
+FINAL_OS_VERSION=$(grep set_role /configure | awk 'BEGIN {FS="'\''";} {printf "%s", $4}')
+FINAL_DEVICE=$(grep set_role /configure | awk 'BEGIN {FS="'\''";} {printf "%s", $5}')
+
+# If no FIANL_DEVICE it means the configure is broken, so nothing to do
+if [ -n "$FINAL_DEVICE" ]; then
+       if [ -n "$OS" ]; then
+               log "Using override OS=$OS"
+               FINAL_OS="$OS"
+       fi
+
+       if [ -n "$OS_VER" ]; then
+               log "Using override OS_VER=$OS_VER"
+               FINAL_OS_VERSION="$OS_VER"
+       fi
+
+       # Replace the set_role() with override
+       grep -v "^set_role(" /configure > /configure.new
+       echo "set_role('$FINAL_OS', '$FINAL_OS_VERSION' $FINAL_DEVICE" >> /configure.new
+       mv /configure.new /configure
+fi
+
+chmod +x /configure
 
 log "Starting configuration of profile $PROFILE"
 

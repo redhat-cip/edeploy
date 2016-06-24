@@ -188,6 +188,8 @@ clean_mount_points() {
         return
     fi
 
+    umount -f ${dir}/dev/shm || true
+
     # Since /dev is a copy, we shall clean it as it will be reconstructed at boot time
     rm -rf ${dir}/dev
     mkdir -p ${dir}/dev
@@ -375,6 +377,8 @@ mount_fs() {
     # Let's create a copy of the current /dev
     mkdir -p ${dir}/dev/pts
     rsync -aX --delete-before --exclude=shm /dev/ ${dir}/dev/
+    mkdir -p ${dir}/dev/shm
+    mount -t tmpfs tmpfs ${dir}/dev/shm
 
     # If we run with an ISO as loopback, we need to mount it
     if [ ! -z $ISO_PATH ]; then

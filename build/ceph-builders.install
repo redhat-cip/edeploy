@@ -228,7 +228,7 @@ EOF
 }
 
 add_packages() {
-PACKAGES="git screen ccache jq"
+PACKAGES="git screen ccache jq virtualenv"
 case "$DIST" in
     $supported_centos_dists | $supported_redhat_dists)
 	#We add epel and let it enabled intentionnaly

@@ -241,17 +241,17 @@ EOF
 }
 
 add_packages() {
-PACKAGES="git screen ccache jq virtualenv"
+PACKAGES="git screen ccache jq"
 case "$DIST" in
     $supported_centos_dists | $supported_redhat_dists)
         #We add epel and let it enabled intentionnaly
         add_epel_repository $DIST
-        PACKAGES="$PACKAGES java-1.7.0-openjdk createrepo rpmdevtools"
+        PACKAGES="$PACKAGES java-1.7.0-openjdk createrepo rpmdevtools python-virtualenv"
     ;;
     $supported_debian_dists | $supported_ubuntu_dists)
         PACKAGES="$PACKAGES fakeroot fakeroot-ng debhelper reprepro dchroot devscripts pbuilder pkg-config"
         PACKAGES="$PACKAGES python-dev python-pip python-virtualenv libyaml-dev doxygen ditaa ant libmysqlclient-dev"
-        PACKAGES="$PACKAGES libevent-dev libffi-dev"
+        PACKAGES="$PACKAGES libevent-dev libffi-dev virtualenv"
         if [ "$DIST" = "xenial" ]; then
             PACKAGES="$PACKAGES openjdk-8-jre"
         else

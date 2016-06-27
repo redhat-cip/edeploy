@@ -311,6 +311,11 @@ def set_role(role, version, disk):
                                                     disk))
         f.write("PROFILE=%s\\n" % var['edeploy-profile'])
 
+def grub_options(options):
+    f = open('/grub_options', 'w')
+    f.write(options)
+    f.close()
+
 def config(name, mode='w', basedir='/post_rsync', fmod=0644, uid=0, gid=0):
     path = basedir + name
     dir_ = '/'.join(path.split('/')[:-1])

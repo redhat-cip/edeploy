@@ -6,12 +6,12 @@ export DEBIAN_FRONTEND=noninteractive
 
 fake_shadow_utils() {
     if [ -z "$NO_MGNIDS" ]; then
-	    for cmd in useradd groupadd; do
-		if [ ! -f ${dir}/usr/sbin/${cmd}.real ]; then
-		    mv ${dir}/usr/sbin/${cmd} ${target}/usr/sbin/${cmd}.real
-		fi
-		do_chroot ${dir} ln -sf /usr/sbin/mngids.py /usr/sbin/${cmd}
-	    done
+        for cmd in useradd groupadd; do
+            if [ ! -f ${dir}/usr/sbin/${cmd}.real ]; then
+                mv ${dir}/usr/sbin/${cmd} ${target}/usr/sbin/${cmd}.real
+            fi
+            do_chroot ${dir} ln -sf /usr/sbin/mngids.py /usr/sbin/${cmd}
+        done
     fi
 }
 

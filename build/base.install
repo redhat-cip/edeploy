@@ -239,7 +239,7 @@ install_base_packages() {
 
             # Only wheezy have lldpad FIXME in common too
             if [ "$dist" != "wheezy" ]; then
-               packages=$(echo $packages |sed -e 's/ lldpad//g')
+                packages=$(echo $packages |sed -e 's/ lldpad//g')
             fi
 
             ;;

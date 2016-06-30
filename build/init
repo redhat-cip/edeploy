@@ -494,10 +494,10 @@ if /configure; then
                             cp $d/boot/initramfs*$KVER* /root/initrd.img || give_up "Kexec: Unable to copy initrd"
                         fi
 
-                        eval $(grep root=UUID= $d/boot/grub/grub.cfg|head -1|tr ' ' '\n'|grep '^root=UUID=')
+                        eval $(grep root=UUID= $d/boot/grub$V/grub.cfg|head -1|tr ' ' '\n'|grep '^root=UUID=')
                         if [ -z "$root" ]; then
                             log "Kexec: using alternative root detection"
-                            root=$(grep 'root=' $d/boot/grub/grub.cfg | grep vmlinuz | head -1 | sed -e 's/.*root=\(.*\)/\1/g' | awk '{print $1}')
+                            root=$(grep 'root=' $d/boot/grub$V/grub.cfg | grep vmlinuz | head -1 | sed -e 's/.*root=\(.*\)/\1/g' | awk '{print $1}')
                         fi
 
                         umount $d/boot

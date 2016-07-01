@@ -60,7 +60,7 @@ case "$DIST" in
             do_chroot $dir scl enable python27 'easy_install netaddr pexpect'
             remove_scn_repository
         else
-            install_packages $dir lshw python-netaddr pexpect
+            PACKAGES="$PACKAGES lshw python-netaddr pexpect"
         fi
     ;;
 esac
@@ -105,7 +105,19 @@ echo -e "\nRole ${ROLE}\nVersion ${vers}\n" > ${dir}/etc/motd
 cp sources/timings.c ${dir}/root
 do_chroot ${dir} gcc -Os /root/timings.c -o /usr/sbin/ddr-timings-$(uname -m)
 rm ${dir}/root/timings.c
-remove_packages ${dir} gcc libc6-dev
+
+PACKAGES="gcc cpp"
+case "$DIST" in
+    $supported_debian_dists | $supported_ubuntu_dists)
+        PACKAGES="$PACKAGES libc6-dev"
+    ;;
+    $supported_centos_dists | $supported_redhat_dists)
+        PACKAGES="$PACKAGES polkit polkit-pkla-compat mozjs17 setroubleshoot-server setroubleshoot-plugins"
+        PACKAGES="$PACKAGES cups-libs cups-client selinux-policy glibc-devel glibc-headers kernel-headers"
+    ;;
+esac
+
+remove_packages $dir $PACKAGES
 
 #Starting here, we don't need the mount points anymore
 clean_mount_points
@@ -113,6 +125,7 @@ clean_mount_points
 save_package_list $dir
 
 rsync -auX --delete-excluded --delete --exclude /boot/ \
+    --exclude 'etc/selinux'\
     --exclude 'initrd*' \
     --exclude 'lib/modules/*/kernel/drivers/bluetooth' \
     --exclude 'lib/modules/*/kernel/drivers/gpu/' \
@@ -127,12 +140,14 @@ rsync -auX --delete-excluded --delete --exclude /boot/ \
     --exclude 'lib/modules/*/kernel/sound' \
     --exclude 'ocfs2*.ko' \
     --exclude '*.pyc' \
+    --exclude 'usr/bin/ld.gold'\
     --exclude usr/lib/*/gconv/ \
+    --exclude usr/lib*/gconv/ \
     --exclude usr/lib/locale \
-    --exclude 'usr/lib/perl/*/auto/Encode/CN' \
-    --exclude 'usr/lib/perl/*/auto/Encode/JP' \
-    --exclude 'usr/lib/perl/*/auto/Encode/KR' \
-    --exclude 'usr/lib/perl/*/auto/Encode/TW' \
+    --exclude 'usr/lib*/perl*/*/auto/Encode/CN' \
+    --exclude 'usr/lib*/perl*/*/auto/Encode/JP' \
+    --exclude 'usr/lib*/perl*/*/auto/Encode/KR' \
+    --exclude 'usr/lib*/perl*/*/auto/Encode/TW' \
     --exclude usr/lib64/libgtk* \
     --exclude usr/lib64/graphviz \
     --exclude usr/share/anaconda \
@@ -152,10 +167,14 @@ rsync -auX --delete-excluded --delete --exclude /boot/ \
     --exclude usr/share/info \
     --exclude usr/share/kde* \
     --exclude usr/share/locale \
+    --exclude usr/share/*logos \
     --exclude usr/share/man \
     --exclude usr/share/misc \
+    --exclude usr/share/mime \
+    --exclude usr/share/mysql \
     --exclude usr/share/perl5 \
     --exclude usr/share/pixmaps \
+    --exclude usr/share/pki \
     --exclude usr/share/plymouth \
     --exclude usr/share/swig \
     --exclude usr/share/tcl* \

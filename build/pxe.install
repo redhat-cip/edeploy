@@ -47,10 +47,10 @@ rsync -aHX --delete-before --numeric-ids ${src}/ ${dir}/
 
 common_setup
 
-PACKAGES="sdparm gzip xfsprogs mcelog smartmontools python-pip gcc python-pandas"
+PACKAGES="sdparm gzip xfsprogs mcelog smartmontools gcc"
 case "$DIST" in
     $supported_debian_dists | $supported_ubuntu_dists)
-        PACKAGES="$PACKAGES libc6-i386 lshw libc6-dev python-dev g++ python-setuptools python-testrepository"
+        PACKAGES="$PACKAGES libc6-i386 lshw libc6-dev"
     ;;
     $supported_centos_dists | $supported_redhat_dists)
         add_epel_repository $DIST
@@ -60,8 +60,7 @@ case "$DIST" in
             do_chroot $dir scl enable python27 'easy_install netaddr pexpect'
             remove_scn_repository
         else
-            install_packages $dir python-setuptools python-devel gcc-c++ lshw
-            do_chroot $dir easy_install netaddr pexpect
+            install_packages $dir lshw python-netaddr pexpect
         fi
     ;;
 esac
@@ -77,8 +76,26 @@ case "$DIST" in
 esac
 
 install_packages $dir $PACKAGES
-do_chroot $dir pip install pbr==0.10.2
-do_chroot $dir pip install hardware
+
+# Installing hardware detect
+pushd ${dir};
+    git clone https://github.com/redhat-cip/hardware.git
+    mkdir -p usr/lib/python2.7/site-packages/hardware/
+    cp -a hardware/hardware/*py hardware/hardware/benchmark/ usr/lib/python2.7/site-packages/hardware/
+    echo > usr/lib/python2.7/site-packages/hardware/__init__.py
+    cat > usr/sbin/hardware-detect << EOF
+#!/usr/bin/python
+import sys
+
+from hardware.detect import main
+
+if __name__ == "__main__":
+    sys.exit(main())
+EOF
+    chmod +x usr/sbin/hardware-detect
+    rm -rf hardware
+popd
+
 clear_packages_cache $dir
 
 install_ib_if_needed $ORIG $dir

@@ -472,6 +472,17 @@ install_edeploy_bin() {
     cp ${ORIG}/base.exclude "$target/var/lib/edeploy/${version}/exclude"
 }
 
+add_missing_user() {
+    target=$1
+    case "$dist" in
+        $supported_centos_dists|$supported_redhat_dists)
+            if [ $CODENAME_MAJOR = 7 ]; then
+		do_chroot $target groupadd -f input
+	    fi
+	;;
+    esac
+}
+
 ############################
 ########## MAIN ############
 ############################
@@ -514,6 +525,7 @@ ssh_fix $dir
 filesystem_fix $dir
 network_fix $dir
 install_edeploy_bin $dir
+add_missing_user $dir
 clean_tmp_dir $dir
 
 echo -e "root\nroot"|chroot "$dir" passwd

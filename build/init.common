@@ -61,9 +61,18 @@ run_detect() {
 }
 
 get_system_info() {
-vendor=$(dmidecode -s system-manufacturer | grep -v '#' | sed 's/[^A-Za-z0-9_.]/_/g' | sed 's/__*/_/g' | sed 's/_$//' | sed 's/^_//' |  tr -d '\n')
-product=$(dmidecode -s system-product-name | grep -v '#' | sed 's/[^A-Za-z0-9_.]/_/g' | sed 's/__*/_/g' | sed 's/_$//' | sed 's/^_//' | tr -d '\n')
-serial=$(dmidecode -s system-serial-number | grep -v '#' | sed 's/[^A-Za-z0-9_.]/_/g' | sed 's/__*/_/g' | sed 's/_$//' | sed 's/^_//' | tr -d '\n')
+    vendor=$(dmidecode -s system-manufacturer | grep -v '#' | sed 's/[^A-Za-z0-9_.]/_/g' | sed 's/__*/_/g' | sed 's/_$//' | sed 's/^_//' |  tr -d '\n')
+    product=$(dmidecode -s system-product-name | grep -v '#' | sed 's/[^A-Za-z0-9_.]/_/g' | sed 's/__*/_/g' | sed 's/_$//' | sed 's/^_//' | tr -d '\n')
+    serial=$(dmidecode -s system-serial-number | grep -v '#' | sed 's/[^A-Za-z0-9_.]/_/g' | sed 's/__*/_/g' | sed 's/_$//' | sed 's/^_//' | tr -d '\n')
+    uuid=$(dmidecode -s system-uuid | grep -v '#' | sed 's/[^A-Za-z0-9_.]/_/g' | sed 's/__*/_/g' | sed 's/_$//' | sed 's/^_//' | tr -d '\n')
+    # Let's manage a quirk list of stupid serial numbers TYAN
+    # or Supermicro are known to provide dirty serial numbers
+    # In that case, let's use another serial
+    case "$serial" in
+        '0123456789' | '0000000000')
+            serial=$uuid
+        ;;
+    esac
 }
 
 show_git_rev() {

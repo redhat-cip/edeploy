@@ -344,6 +344,24 @@ install_megacli() {
     esac
 }
 
+
+install_areca_cli(){
+    local CLIVER=V1.14.7_150519
+    local CLIZIP="$ORIG/linuxcli_${CLIVER}.zip"
+    if [ ! -f "$CLIZIP" ]; then
+        wget "http://www.areca.us/support/s_linux/cli/linuxcli_$CLIVER.zip" -O $CLIZIP
+    fi
+    if [ -r "$CLIZIP" ]; then
+	unzip $CLIZIP -d $target/root
+        mv $target/root/linuxcli_$CLIVER/x86_64/cli64  $target/usr/sbin/
+        chmod +x target/usr/sbin/cli64
+        rm -rf $target/root/linuxcli_$CLIVER
+    else
+        echo "Cannot find any areca archive" 1>&2
+        exit 1
+    fi
+}
+
 install_hp_raid_cli_tool() {
     local target=$1
     # Inject HP RAID CLI tool
@@ -518,6 +536,7 @@ fake_setup
 bootstrap $dir
 common_setup
 install_base_packages $dir
+install_areca_cli $dir
 install_hp_raid_cli_tool $dir
 install_megacli $dist $dir
 set_firstboot $dir

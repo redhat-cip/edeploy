@@ -110,12 +110,14 @@ save_log() {
 }
 
 do_reboot() {
+    save_log
     upload_log
     umount -a
     reboot -f
 }
 
 do_halt() {
+    save_log
     umount -a
     upload_log
     sync
@@ -314,8 +316,6 @@ report_failure() {
 
 give_up() {
     log "$@"
-    save_log
-    upload_log
     report_failure
 
     case "$ONFAILURE" in

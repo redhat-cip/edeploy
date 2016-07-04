@@ -460,7 +460,6 @@ if /configure; then
             umount $d/sys
             umount $d/dev
             umount $d/proc
-            save_log
             log "Syncing data to disk in progress ..."
             sync
             log "Data syncing done."
@@ -500,9 +499,6 @@ if /configure; then
                             root=$(grep 'root=' $d/boot/grub$V/grub.cfg | grep vmlinuz | head -1 | sed -e 's/.*root=\(.*\)/\1/g' | awk '{print $1}')
                         fi
 
-                        umount $d/boot
-                        umount $d
-
                         # Adding console= parameters taken from bootstrap cmdline if none already defined
                         echo $BOOT_ARG | grep -qw "console=" || for console in $(grep -oh "console=\w*" /proc/cmdline); do
                             log "Adding $console boot argument as defined in bootstrap cmdline"
@@ -511,15 +507,22 @@ if /configure; then
 
                         if [ -z "$root" ]; then
                             give_up "Kexec: Cannot be executed as no root device found"
+                            umount $d/boot
+                            umount $d
                             sleep 5
                         else
                             log "Kexec: Starting with append=root=${root}${BOOT_ARG}"
+                            save_log
+                            umount $d/boot
+                            umount $d
                             upload_log
                             kexec -l /root/vmlinuz --initrd=/root/initrd.img --append="root=${root}${BOOT_ARG}"
                             kexec -e
                         fi
                     else
                         give_up "ONSUCCESS=kexec but no kexec found !"
+                        umount $d/boot
+                        umount $d
                     fi
                     ;;
                 "reboot")

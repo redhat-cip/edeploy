@@ -377,9 +377,9 @@ mount_virtual_fs() {
 
         mkdir /dev/pts
         mount -t devpts -o noexec,nosuid,gid=5,mode=0620 devpts /dev/pts || true
-        mount -t tmpfs -o "nosuid,size=20%,mode=0755" tmpfs /run
     )
 
+    mount -t tmpfs -o "nosuid,size=20%,mode=0755" tmpfs /run
     # compatibility symlink for the pre-oneiric locations
     if [ ! -d /run/initramfs ]; then
         mkdir /run/initramfs

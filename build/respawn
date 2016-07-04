@@ -45,7 +45,8 @@ exit 1
 }
 
 do_log "Initializing respawning"
-kill_process udevd systemd-udevd dhclient lldpad
+lldpad -k
+kill_process udevd systemd-udevd dhclient
 umount_dir "/chroot"
 umount_dir "/run"
 umount_dir "/sys"

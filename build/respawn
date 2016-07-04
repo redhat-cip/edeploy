@@ -46,12 +46,11 @@ exit 1
 
 do_log "Initializing respawning"
 lldpad -k
-kill_process udevd systemd-udevd dhclient
+kill_process udevd systemd-udevd dhclient tail
 umount_dir "/chroot"
 umount_dir "/run"
 umount_dir "/sys"
 umount_dir "/proc"
 clean_temp_files
-kill_process tail
 do_log "Starting init"
 LC_ALL=C exec /init NOCONSOLE=true

@@ -137,7 +137,9 @@ do_halt() {
 do_console() {
     upload_log
     start_ssh_server
-    exec /bin/bash -i
+    if [ -z "$NOCONSOLE" ]; then
+        exec /bin/bash -i
+    fi
 }
 
 step() {

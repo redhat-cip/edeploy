@@ -55,6 +55,7 @@ uname -a
 step "Spawing new shell on tty2"
 openvt /bin/bash
 
+eval $(echo $@ | tr ' ' "\n" | egrep "^NOCONSOLE=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^DEBUG=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^VERBOSE=")
 eval $(cat /proc/cmdline | tr ' ' "\n" | egrep "^ONSUCCESS=")

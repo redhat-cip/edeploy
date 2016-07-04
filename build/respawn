@@ -54,4 +54,4 @@ umount_dir "/proc"
 clean_temp_files
 kill_process tail
 do_log "Starting init"
-LC_ALL=C exec /init
+LC_ALL=C exec /init NOCONSOLE=true

@@ -467,7 +467,7 @@ if /configure; then
             case "$ONSUCCESS" in
                 "kexec")
                     log "Booting with kexec as required by ONSUCCESS"
-                    if type -p kexec; then
+                    if type -p kexec &>/dev/null; then
                         KVER=""
                         NB_KERNELS=$(find $d/boot/ -name "vmlinuz*" -type f | wc -l)
                         log "Kexec: found $NB_KERNELS kernel(s)"

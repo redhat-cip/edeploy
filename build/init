@@ -468,11 +468,10 @@ if /configure; then
                 "kexec")
                     log "Booting with kexec as required by ONSUCCESS"
                     if type -p kexec; then
-                        log_n "Trying kexec..."
                         KVER=""
                         NB_KERNELS=$(find $d/boot/ -name "vmlinuz*" -type f | wc -l)
+                        log "Kexec: found $NB_KERNELS kernel(s)"
                         if [ "$NB_KERNELS" -gt 1 ]; then
-                            log "."
                             log "Kexec: Multiple kernels found :"
                             KERNEL_LIST=$(find $d/boot/ -name "vmlinuz*" -type f  | sed -e "s/.*vmlinuz-\(.*\)/\1/g")
                             log "$KERNEL_LIST"

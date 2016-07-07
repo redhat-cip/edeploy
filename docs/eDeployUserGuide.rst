@@ -1106,6 +1106,7 @@ helper functions.
 -  network() : the network interface shall be in the  specified network
 -  gt(), ge(), lt(), le() : greater than (or equal), lower than (or
    equal)
+-  range(x,y): value is between 'x' and 'y' both included (x<=value<= y)
 -  in() : the item to match shall be in a specified set
 -  regexp() : match a regular expression
 -  or(), and(), not(): boolean functions. or() and and() take 2
@@ -1124,6 +1125,8 @@ This is a list of typical usage of helpers :
  ('network', '$nic0', 'ipv4', 'network(192.168.1.0/24)')
 
  ('disk', '$bootdisk', 'size', 'and(gt(20), lt(50)))'
+
+ ('disk', '$bootdisk', 'size', 'range(20, 50)'
 
  ('disk', '$bootdisk', 'size', '$size=le(20)')
 

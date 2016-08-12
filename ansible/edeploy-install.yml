@@ -2,6 +2,7 @@
 - hosts: edeployservers
 
   vars:
+    - cloud-init: false
     - pxemngr: false
     - edeploy_config_path: /etc/edeploy
     - edeploy_config_file: /etc/edeploy.conf
@@ -97,6 +98,15 @@
       value=http://{{ ansible_default_ipv4["address"] }}:83/
       mode=0644
     when: pxemngr
+
+  - name: set cloud-init url
+    ini_file: >
+      dest=/etc/edeploy.conf
+      section=SERVER
+      option=METADATAURL
+      value=http://{{ ansible_default_ipv4["address"] }}/cloud-init
+      mode=0644
+    when: cloud-init
 
   - name: install eDeploy CGI scripts
     file: >

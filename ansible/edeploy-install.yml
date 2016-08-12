@@ -71,7 +71,7 @@
   - name: copy config files
     cp: >
       src=/srv/edeploy/config/*
-      dest=/etc/edeploy
+      dest={{edeploy_config_path}}
 
   - name: enable pxemngr support in CGI config
     ini_file: >
@@ -92,7 +92,7 @@
 
   - name: set pxemngr URL in CGI config
     ini_file: >
-      dest=/etc/edeploy.conf
+      dest={{ edeploy_config_file }}
       section=SERVER
       option=PXEMNGRURL
       value=http://{{ ansible_default_ipv4["address"] }}:83/
@@ -101,7 +101,7 @@
 
   - name: set cloud-init url
     ini_file: >
-      dest=/etc/edeploy.conf
+      dest={{ edeploy_config_file }}
       section=SERVER
       option=METADATAURL
       value=http://{{ ansible_default_ipv4["address"] }}/cloud-init
@@ -117,7 +117,7 @@
 
   - name: owner of state file
     file: >
-      path=/etc/edeploy/state
+      path={{edeploy_config_path}}/state
       owner={{ edeploy_dir_owner }}
       group={{ edeploy_dir_group }}
 

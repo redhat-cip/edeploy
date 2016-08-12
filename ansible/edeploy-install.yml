@@ -23,6 +23,7 @@
       - /var/lib/edeploy/health
 
   user: root
+  sudo: yes
 
   tasks:
 

@@ -135,12 +135,16 @@
       dest=/var/www/install
       state=link
 
+  - name: get cmdb files
+    shell: find "{{ edeploy_config_path }}" -type f -name \*.cmdb
+    register: edeploy_cmdb_files
+
   - name: fix cmdb permissions
     file: >
       path={{ item }}
       owner={{ edeploy_dir_owner }}
       group={{ edeploy_dir_group }}
-    with_fileglob: /etc/edeploy/*.cmdb
+    with_items: edeploy_cmdb_files.stdout_lines
 
   - name: create rsync conf file
     copy: >

@@ -94,7 +94,7 @@
       dest=/etc/edeploy.conf
       section=SERVER
       option=PXEMNGRURL
-      value=http://{{ ansible_default_ipv4["address"] }}/
+      value=http://{{ ansible_default_ipv4["address"] }}:83/
       mode=0644
     when: pxemngr
 

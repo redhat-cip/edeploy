@@ -29,18 +29,11 @@
   - name: include OS specific variables
     include_vars: "{{ ansible_os_family }}.yml"
 
-  - name: ensure needed packages for eDeploy are installed (apt)
-    apt: >
+  - name: ensure needed packages for eDeploy are installed
+    package: >
       pkg={{ item }}
       state=present
-    with_items: edeploy_needed_packages
-    when: ansible_os_family == 'Debian'
-
-  - name: ensure needed packages for eDeploy are installed (yum)
-    yum: >
-      pkg={{ item }}
-      state=present
-    with_items: edeploy_needed_packages
+    with_items: "{{ edeploy_needed_packages }}"
     when: ansible_os_family == 'RedHat'
 
   - name: install python modules
@@ -48,7 +41,7 @@
 
   - name: extract eDeploy git repo
     git: >
-      repo=https://github.com/enovance/edeploy.git
+      repo=https://github.com/redhat-cip/edeploy.git
       dest=/srv/edeploy force=no
 
   - name: create eDeploy config dir
@@ -86,7 +79,7 @@
       section=SERVER
       option={{ item.name }}
       value={{ item.value }}
-    with_items: cgi_config
+    with_items: "{{ cgi_config }}"
 
   - name: set pxemngr URL in CGI config
     ini_file: >
@@ -102,7 +95,7 @@
       src={{ item.name }}
       dest={{ item.value }}
       state=link
-    with_items: edeploy_cgi_scripts
+    with_items: "{{ edeploy_cgi_scripts }}"
 
   - name: owner of state file
     file: >
@@ -116,7 +109,7 @@
       state=directory
       owner={{ edeploy_dir_owner }}
       group={{ edeploy_dir_group }}
-    with_items: edeploy_directories
+    with_items: "{{ edeploy_directories }}"
 
   - name: link install trees location for web server
     file: >

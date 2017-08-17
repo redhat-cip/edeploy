@@ -1,8 +1,8 @@
 eDeploy
 =======
 
-.. image:: https://travis-ci.org/enovance/edeploy.svg?branch=master
-    :target: https://travis-ci.org/enovance/edeploy
+.. image:: https://travis-ci.org/redhat-cip/edeploy.svg?branch=master
+    :target: https://travis-ci.org/redhat-cip/edeploy
 
 .. contents::
 

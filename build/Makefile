@@ -21,10 +21,10 @@
 MAKEFILE_DIR=$(shell pwd)
 SDIR=/root/edeploy
 TOP=/var/lib/debootstrap
-DVER=D7
-VERSION:=1.12.0
+DVER=F26
+VERSION:=1.13.0
 VERS=$(DVER)-$(VERSION)
-DIST=wheezy
+DIST=fedora
 
 IMG=initrd.pxe
 HEALTH_IMG=health.pxe

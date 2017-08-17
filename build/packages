@@ -64,7 +64,11 @@ package_tool() {
             echo "apt"
         ;;
         $supported_centos_dists|$supported_redhat_dists)
-            echo "yum"
+            if [ "$DISTRO" = fedora ]; then
+                echo "dnf"
+            else
+                echo "yum"
+            fi
         ;;
         *)
             fatal_error "$DISTRO isn't supported in package_tool()"
@@ -170,8 +174,8 @@ install_packages() {
         apt)
             do_chroot $chroot apt-get install $INSTALL_OPTIONS -y --force-yes $packages
         ;;
-        yum)
-            do_chroot $chroot yum $INSTALL_OPTIONS install -y $packages
+        yum|dnf)
+            do_chroot $chroot $(package_tool) $INSTALL_OPTIONS install -y $packages
             # YUM does not fail when a package in the list is not available.
             # That means we have to detect that all packages of our list are
             # really installed.
@@ -182,7 +186,7 @@ install_packages() {
                 # it through rpm -q
                 package_name=$(basename $pkg)
                 package_stripname="${package_name%.rpm}"
-                do_chroot $dir rpm -q $package_stripname &>/dev/null || PKG_MISSING="$PKG_MISSING $package_stripname"
+                do_chroot $dir rpm -q $package_stripname &>/dev/null || do_chroot $dir rpm -q --whatprovides $package_stripname &>/dev/null || PKG_MISSING="$PKG_MISSING $package_stripname"
             done
             if [ -n "${PKG_MISSING}" ];then
                 fatal_error "The following packages are missing: ${PKG_MISSING}"
@@ -211,8 +215,8 @@ remove_packages() {
         apt)
             do_chroot $chroot apt-get remove -y $packages
         ;;
-        yum)
-            do_chroot $chroot yum remove $packages --assumeyes
+        yum|dnf)
+            do_chroot $chroot $(package_tool) remove $packages --assumeyes
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in install_packages()"
@@ -222,11 +226,8 @@ remove_packages() {
 
 update_system() {
     case "$(package_tool)" in
-        apt)
-            do_chroot ${dir} apt-get upgrade -y
-        ;;
-        yum)
-            do_chroot ${dir} yum update -y
+        apt|yum|dnf)
+            do_chroot ${dir} $(package_tool) upgrade -y
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in update_system()"
@@ -243,10 +244,10 @@ upgrade_system() {
         apt)
             do_chroot ${dir} apt-get dist-upgrade -y
         ;;
-        yum)
+        yum|dnf)
             # didn't really found something equivalent
             # Let's do a yum update so
-            do_chroot ${dir} yum update -y
+            do_chroot ${dir} $(package_tool) update -y
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in update_system()"
@@ -259,8 +260,8 @@ clear_packages_cache() {
         apt)
             do_chroot ${dir} apt-get clean
         ;;
-        yum)
-            do_chroot ${dir} yum clean all
+        yum|dnf)
+            do_chroot ${dir} $(package_tool) clean all
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in clear_packages_cache()"
@@ -277,7 +278,7 @@ is_package_installed() {
             do_chroot $CHROOT dpkg -l $PACKAGE &>/dev/null
             return $?
         ;;
-        yum)
+        yum|dnf)
             do_chroot $CHROOT rpm -qi $PACKAGE &>/dev/null
             return $?
         ;;
@@ -293,7 +294,7 @@ rebuild_db_with_local() {
     case "$(package_tool)" in
         apt)
         ;;
-        yum)
+        yum|dnf)
             rpm --root=$CHROOT --rebuilddb
         ;;
         *)
@@ -308,7 +309,7 @@ rebuild_db() {
     case "$(package_tool)" in
         apt)
         ;;
-        yum)
+        yum|dnf)
             do_chroot $CHROOT rpm --rebuilddb
         ;;
         *)

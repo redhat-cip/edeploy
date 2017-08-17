@@ -60,7 +60,7 @@ case "$DIST" in
             do_chroot $dir scl enable python27 'easy_install netaddr pexpect'
             remove_scn_repository
         else
-            PACKAGES="$PACKAGES lshw python-netaddr pexpect"
+            PACKAGES="$PACKAGES lshw python-netaddr pexpect redhat-rpm-config"
         fi
     ;;
 esac
@@ -119,10 +119,10 @@ esac
 
 remove_packages $dir $PACKAGES
 
+save_package_list $dir
+
 #Starting here, we don't need the mount points anymore
 clean_mount_points
-
-save_package_list $dir
 
 rsync -auX --delete-excluded --delete --exclude /boot/ \
     --exclude 'etc/selinux'\

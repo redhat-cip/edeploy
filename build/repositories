@@ -314,8 +314,8 @@ update_repositories() {
         apt)
             do_chroot $dir apt-get update
         ;;
-        yum)
-            do_chroot $dir yum check-update || true
+        yum|dnf)
+            do_chroot $dir $(package_tool) check-update || true
         ;;
         *)
             fatal_error "$(package_tool) isn't supported in update_repositories()"
@@ -331,7 +331,7 @@ disable_repository() {
     case "$(package_tool)" in
         apt)
         ;;
-        yum)
+        yum|dnf)
             do_chroot $dir yum-config-manager --disable $repository
         ;;
         *)

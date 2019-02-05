@@ -44,8 +44,8 @@ def is_included(dict1, dict2):
 def get_disks_name(hw__, without_bootable=False):
     disks = []
     for entry in hw__:
-        if (entry[0] == 'disk' and entry[2] == 'size'):
             if without_bootable and is_booted_storage_device(entry[1]):
+        if (entry[0] == 'disk' and entry[1] != 'hpa' and entry[2] == 'size'):
                 sys.stderr.write("Skipping disk %s in destructive mode, "
                                  "this is the booted device !\n" % entry[1])
             elif 'I:' in entry[1]:

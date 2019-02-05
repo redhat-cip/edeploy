@@ -9,6 +9,8 @@ edeploy_needed_packages:
   - g++
   - git
   - rsync
+  - python-numpy
+  - python-pandas
 
 edeploy_dir_owner: www-data
 edeploy_dir_group: www-data

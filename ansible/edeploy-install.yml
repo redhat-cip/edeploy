@@ -2,6 +2,7 @@
 - hosts: edeployservers
 
   vars:
+    - cloud-init: false
     - pxemngr: false
     - edeploy_config_path: /etc/edeploy
     - edeploy_config_file: /etc/edeploy.conf
@@ -23,6 +24,7 @@
       - /var/lib/edeploy/health
 
   user: root
+  sudo: yes
 
   tasks:
 
@@ -62,7 +64,7 @@
   - name: copy config files
     cp: >
       src=/srv/edeploy/config/*
-      dest=/etc/edeploy
+      dest={{edeploy_config_path}}
 
   - name: enable pxemngr support in CGI config
     ini_file: >
@@ -83,12 +85,21 @@
 
   - name: set pxemngr URL in CGI config
     ini_file: >
-      dest=/etc/edeploy.conf
+      dest={{ edeploy_config_file }}
       section=SERVER
       option=PXEMNGRURL
-      value=http://{{ ansible_default_ipv4["address"] }}/
+      value=http://{{ ansible_default_ipv4["address"] }}:83/
       mode=0644
     when: pxemngr
+
+  - name: set cloud-init url
+    ini_file: >
+      dest={{ edeploy_config_file }}
+      section=SERVER
+      option=METADATAURL
+      value=http://{{ ansible_default_ipv4["address"] }}/cloud-init
+      mode=0644
+    when: cloud-init
 
   - name: install eDeploy CGI scripts
     file: >
@@ -99,7 +110,7 @@
 
   - name: owner of state file
     file: >
-      path=/etc/edeploy/state
+      path={{edeploy_config_path}}/state
       owner={{ edeploy_dir_owner }}
       group={{ edeploy_dir_group }}
 
@@ -117,12 +128,16 @@
       dest=/var/www/install
       state=link
 
+  - name: get cmdb files
+    shell: find "{{ edeploy_config_path }}" -type f -name \*.cmdb
+    register: edeploy_cmdb_files
+
   - name: fix cmdb permissions
     file: >
       path={{ item }}
       owner={{ edeploy_dir_owner }}
       group={{ edeploy_dir_group }}
-    with_fileglob: /etc/edeploy/*.cmdb
+    with_items: edeploy_cmdb_files.stdout_lines
 
   - name: create rsync conf file
     copy: >

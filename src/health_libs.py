@@ -385,38 +385,38 @@ def run_fio(hw_, disks_list, mode, io_size, time, rampup_time):
             # 16:21:42 2013
             current_disk = re.search('MYJOB-(.*): \(groupid', line).group(1)
             continue
-        if ("read : io=" in line) or ("write: io=" in line):
-            # read : io=169756KB, bw=16947KB/s, iops=4230, runt= 10017msec
+        if ("read: IOPS=" in line) or ("write: IOPS=" in line):
+            # read: IOPS=225, BW=225MiB/s (236MB/s)(255MiB/1133msec)\n'
             if (len(disks_list) > 1):
                 mode_str = "simultaneous_%s_%s" % (mode, io_size)
             else:
                 mode_str = "standalone_%s_%s" % (mode, io_size)
 
             try:
-                perf = re.search('bw=(.*?B/s),', line).group(1)
+                perf = re.search('BW=(.*?B/s)', line).group(1)
             except Exception:
                 sys.stderr.write('Failed at detecting '
                                  'bwps pattern with %s\n' % line)
             else:
                 multiply = 1
                 divide = 1
-                if "MB/s" in perf:
-                    multiply = 1024
-                elif "KB/s" in perf:
+                if "MiB/s" in perf:
+                    multiply = 1000
+                elif "KiB/s" in perf:
                     multiply = 1
                 elif "B/s" in perf:
-                    divide = 1024
+                    divide = 1000
                 try:
                     iperf = perf.replace(
-                        'KB/s', '').replace('MB/s', '').replace('B/s', '')
+                        'KiB/s', '').replace('MiB/s', '').replace('B/s', '')
                 except Exception:
                     True
-                hw_.append(('disk', current_disk, mode_str + '_KBps',
+                hw_.append(('disk', current_disk, mode_str + '_KiBps',
                             str(int(float(float(iperf) * multiply / divide)))))
 
             try:
                 hw_.append(('disk', current_disk, mode_str + '_IOps',
-                            re.search('iops=(.*),', line).group(1).strip(' ')))
+                            re.search('IOPS=(.*),', line).group(1).strip(' ')))
             except Exception:
                 sys.stderr.write('Failed at detecting iops '
                                  'pattern with %s\n' % line)

@@ -44,10 +44,10 @@ def is_included(dict1, dict2):
 def get_disks_name(hw__, without_bootable=False):
     disks = []
     for entry in hw__:
-            if without_bootable and is_booted_storage_device(entry[1]):
         if (entry[0] == 'disk' and entry[1] != 'hpa' and entry[2] == 'size'):
+            if without_bootable and is_mounted_storage_device(entry[1]):
                 sys.stderr.write("Skipping disk %s in destructive mode, "
-                                 "this is the booted device !\n" % entry[1])
+                                 "this is a mounted device !\n" % entry[1])
             elif 'I:' in entry[1]:
                 if DEBUG:
                     sys.stderr.write("Ignoring HP hidden disk %s\n" % entry[1])
@@ -223,17 +223,15 @@ def get_output_filename(hw_):
     return sysname + ".hw"
 
 
-def is_booted_storage_device(disk):
-    cmdline = "grep -w /ahcexport /proc/mounts | cut -d ' ' -f 1 "
-    "| sed -e 's/[0-9]*//g'"
+def is_mounted_storage_device(disk):
     if '/dev/' not in disk:
         disk = '/dev/%s' % disk
+    cmdline = 'lsblk {} -n --fs -o MOUNTPOINT |grep -q "/"'.format(disk)
     grep_cmd = subprocess.Popen(cmdline,
                                 shell=True, stdout=subprocess.PIPE)
-    for booted_disk in grep_cmd.stdout:
-        booted_disk = booted_disk.rstrip('\n').strip()
-        if booted_disk == disk:
-            return True
+    grep_cmd.communicate()
+    if grep_cmd.returncode == 0:
+        return True
     return False
 
 
@@ -271,9 +269,9 @@ def storage_perf(hw_, allow_destructive, running_time=10):
                      ' %s mode for %d seconds\n' % (
                          len(disks), mode, total_runtime))
     for disk in disks:
-        is_booted_storage_device(disk)
+        is_mounted_storage_device(disk)
         if allow_destructive:
-            if is_booted_storage_device(disk):
+            if is_mounted_storage_device(disk):
                 sys.stderr.write("Skipping disk %s in destructive mode,"
                                  " this is the booted device !" % disk)
             else:

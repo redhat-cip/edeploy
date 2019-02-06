@@ -45,12 +45,12 @@ def get_disks_name(hw__, without_bootable=False):
     disks = []
     for entry in hw__:
         if (entry[0] == 'disk' and entry[1] != 'hpa' and entry[2] == 'size'):
-            if without_bootable and is_mounted_storage_device(entry[1]):
-                sys.stderr.write("Skipping disk %s in destructive mode, "
-                                 "this is a mounted device !\n" % entry[1])
-            elif 'I:' in entry[1]:
+            if 'I:' in entry[1]:
                 if DEBUG:
                     sys.stderr.write("Ignoring HP hidden disk %s\n" % entry[1])
+            elif without_bootable and is_mounted_storage_device(entry[1]):
+                sys.stderr.write("Skipping disk %s in destructive mode, "
+                                 "this is a mounted device !\n" % entry[1])
             else:
                 disks.append(entry[1])
     return disks

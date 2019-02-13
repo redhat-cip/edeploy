@@ -102,7 +102,7 @@ def cpu_perf(hw_, testing_time=10, burn_test=False):
             sys.stderr.write('CPU Performance: %d logical '
                              'CPU to test (ETA: %d seconds)\n'
                              % (int(physical),
-                                (int(physical) + 1) * testing_time))
+                                int(physical) * testing_time + 2 * testing_time))
             for cpu_nb in get_one_cpu_per_socket(hw_):
                 get_bogomips(hw_, cpu_nb)
                 get_cache_size(hw_, cpu_nb)
@@ -112,6 +112,7 @@ def cpu_perf(hw_, testing_time=10, burn_test=False):
                          ' CPU to test (ETA: %d seconds)\n' % (
                              int(result), testing_time))
 
+    HL.run_sysbench_cpu_numa(hw_, testing_time)
     HL.run_sysbench_cpu(hw_, testing_time, int(result))
 
 

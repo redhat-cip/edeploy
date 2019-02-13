@@ -87,6 +87,75 @@ def run_sysbench_cpu(hw_, max_time, cpu_count, processor_num=-1):
                             'loops_per_sec', str(int(perf) / max_time)))
 
 
+class CPUWorker(threading.Thread):
+    def __init__(self, queue):
+        threading.Thread.__init__(self)
+        self.queue = queue
+
+    def run(self):
+        # print("%d items in queue" % self.queue.qsize())
+        numa_node = self.queue.get()
+        node = numa_node["node"]
+        max_time = numa_node["max_time"]
+        cpu_mask = numa_node["cpu_mask"]
+        cpu_count = numa_node["cpu_count"]
+        hw_ = numa_node['hw']
+        try:
+            _cmd = "taskset {} sysbench --max-time={} --max-requests=10000000 --num-threads={} --test=cpu --cpu-max-prime=15000 run".format(
+                cpu_mask, max_time, cpu_count)
+            # pprint.pprint("Numa node {}: {} for {} | cpu_mask:{} | {}".format(
+            #    node, block_size, max_time, cpu_mask, _cmd))
+            sysbench_cmd = subprocess.Popen(
+                _cmd, shell=True, stdout=subprocess.PIPE)
+
+            for line in sysbench_cmd.stdout:
+                if "total number of events" in line.decode():
+                    title, perf = line.decode().rstrip('\n').replace(' ', '').split(':')
+                    hw_.append(('numa', 'node_{}'.format(node), 'loops_per_sec',
+                                str(int(perf) / max_time)))
+
+        finally:
+            sysbench_cmd.terminate()
+            sysbench_cmd.kill()
+            self.queue.task_done()
+
+
+def run_sysbench_cpu_numa(hw_, max_time):
+    numa_count = int(get_value(hw_, 'numa', 'nodes', 'count'))
+    queue = Queue(maxsize=numa_count)
+    workers = []
+
+    for x in range(numa_count):
+        worker = CPUWorker(queue)
+        worker.daemon = True
+        worker.start()
+        workers.append(worker)
+
+    for x in range(numa_count):
+        sys.stderr.write("Benchmarking CPU from numa domain {} for {} seconds ({} threads)\n".format(
+            x, max_time, get_value(hw_, 'numa', 'node_{}'.format(x), 'cpu_count')))
+
+    for x in range(numa_count):
+        queue.put({'node': x,
+                   'nb_node': numa_count,
+                   'max_time': max_time,
+                   'cpu_mask': get_value(hw_, 'numa', 'node_{}'.format(x), 'cpu_mask'),
+                   'cpu_count': get_value(hw_, 'numa', 'node_{}'.format(x), 'cpu_count'),
+                   'hw': hw_,
+                   })
+    queue.join()
+
+    for worker in workers:
+        worker.join()
+
+    nodes_perf = 0
+    for x in range(numa_count):
+        node_perf = int(get_value(hw_, 'numa', 'node_{}'.format(x),
+                                  "loops_per_sec"))
+        nodes_perf = nodes_perf + node_perf
+    hw_.append(('numa', 'nodes', "loops_per_sec", nodes_perf))
+
+
 def get_available_memory():
     try:
         return psutil.virtual_memory().total

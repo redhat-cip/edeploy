@@ -27,6 +27,7 @@ from commands import getstatusoutput as cmd
 import threading
 from sets import Set
 import os
+from Queue import Queue
 
 
 def is_in_network(left, right):
@@ -84,6 +85,75 @@ def run_sysbench_cpu(hw_, max_time, cpu_count, processor_num=-1):
             else:
                 hw_.append(('cpu', 'logical_%d' % processor_num,
                             'loops_per_sec', str(int(perf) / max_time)))
+
+
+class CPUWorker(threading.Thread):
+    def __init__(self, queue):
+        threading.Thread.__init__(self)
+        self.queue = queue
+
+    def run(self):
+        # print("%d items in queue" % self.queue.qsize())
+        numa_node = self.queue.get()
+        node = numa_node["node"]
+        max_time = numa_node["max_time"]
+        cpu_mask = numa_node["cpu_mask"]
+        cpu_count = numa_node["cpu_count"]
+        hw_ = numa_node['hw']
+        try:
+            _cmd = "taskset {} sysbench --max-time={} --max-requests=10000000 --num-threads={} --test=cpu --cpu-max-prime=15000 run".format(
+                cpu_mask, max_time, cpu_count)
+            # pprint.pprint("Numa node {}: {} for {} | cpu_mask:{} | {}".format(
+            #    node, block_size, max_time, cpu_mask, _cmd))
+            sysbench_cmd = subprocess.Popen(
+                _cmd, shell=True, stdout=subprocess.PIPE)
+
+            for line in sysbench_cmd.stdout:
+                if "total number of events" in line.decode():
+                    title, perf = line.decode().rstrip('\n').replace(' ', '').split(':')
+                    hw_.append(('numa', 'node_{}'.format(node), 'loops_per_sec',
+                                str(int(perf) / max_time)))
+
+        finally:
+            sysbench_cmd.terminate()
+            sysbench_cmd.kill()
+            self.queue.task_done()
+
+
+def run_sysbench_cpu_numa(hw_, max_time):
+    numa_count = int(get_value(hw_, 'numa', 'nodes', 'count'))
+    queue = Queue(maxsize=numa_count)
+    workers = []
+
+    for x in range(numa_count):
+        worker = CPUWorker(queue)
+        worker.daemon = True
+        worker.start()
+        workers.append(worker)
+
+    for x in range(numa_count):
+        sys.stderr.write("Benchmarking CPU from numa domain {} for {} seconds ({} threads)\n".format(
+            x, max_time, get_value(hw_, 'numa', 'node_{}'.format(x), 'cpu_count')))
+
+    for x in range(numa_count):
+        queue.put({'node': x,
+                   'nb_node': numa_count,
+                   'max_time': max_time,
+                   'cpu_mask': get_value(hw_, 'numa', 'node_{}'.format(x), 'cpu_mask'),
+                   'cpu_count': get_value(hw_, 'numa', 'node_{}'.format(x), 'cpu_count'),
+                   'hw': hw_,
+                   })
+    queue.join()
+
+    for worker in workers:
+        worker.join()
+
+    nodes_perf = 0
+    for x in range(numa_count):
+        node_perf = int(get_value(hw_, 'numa', 'node_{}'.format(x),
+                                  "loops_per_sec"))
+        nodes_perf = nodes_perf + node_perf
+    hw_.append(('numa', 'nodes', "loops_per_sec", nodes_perf))
 
 
 def get_available_memory():
@@ -221,6 +291,77 @@ def run_sysbench_memory(message):
         run_sysbench_memory_forked(message.hw, message.running_time, message.block_size, message.cpu_instances)
     else:
         run_sysbench_memory_threaded(message.hw, message.running_time, message.block_size, message.cpu_instances)
+class MemoryWorker(threading.Thread):
+    def __init__(self, queue):
+        threading.Thread.__init__(self)
+        self.queue = queue
+
+    def run(self):
+        # print("%d items in queue" % self.queue.qsize())
+        numa_node = self.queue.get()
+        node = numa_node["node"]
+        max_time = numa_node["max_time"]
+        block_size = numa_node["block_size"]
+        cpu_mask = numa_node["cpu_mask"]
+        cpu_count = numa_node["cpu_count"]
+        hw_ = numa_node['hw']
+        try:
+            _cmd = "taskset {} sysbench --max-time={} --max-requests=1000000000 --num-threads={} --test=memory --memory-block-size={} --memory-total-size=1P run".format(
+                cpu_mask, max_time, cpu_count, block_size)
+            # pprint.pprint("Numa node {}: {} for {} | cpu_mask:{} | {}".format(
+            #    node, block_size, max_time, cpu_mask, _cmd))
+            sysbench_cmd = subprocess.Popen(
+                _cmd, shell=True, stdout=subprocess.PIPE)
+
+            for line in sysbench_cmd.stdout:
+                if "transferred" in line:
+                    title, right = line.rstrip(
+                        '\n').replace(' ', '').split('(')
+                    perf, useless = right.split('.')
+                    hw_.append(('numa', "node_{}".format(node),
+                                "bandwidth_{}".format(block_size), perf))
+
+        finally:
+            sysbench_cmd.terminate()
+            sysbench_cmd.kill()
+            self.queue.task_done()
+
+
+def run_sysbench_memory_numa(hw_, max_time, block_size):
+    numa_count = int(get_value(hw_, 'numa', 'nodes', 'count'))
+    queue = Queue(maxsize=numa_count)
+    workers = []
+
+    for x in range(numa_count):
+        worker = MemoryWorker(queue)
+        worker.daemon = True
+        worker.start()
+        workers.append(worker)
+
+    for x in range(numa_count):
+        sys.stderr.write("Benchmarking memory @{} from numa domain {} for {} seconds ({} threads)\n".format(
+            block_size, x, max_time, get_value(hw_, 'numa', 'node_{}'.format(x), 'cpu_count')))
+
+    for x in range(numa_count):
+        queue.put({'node': x,
+                   'nb_node': numa_count,
+                   'max_time': max_time,
+                   'block_size': block_size,
+                   'cpu_mask': get_value(hw_, 'numa', 'node_{}'.format(x), 'cpu_mask'),
+                   'cpu_count': get_value(hw_, 'numa', 'node_{}'.format(x), 'cpu_count'),
+                   'hw': hw_,
+                   })
+    queue.join()
+
+    for worker in workers:
+        worker.join()
+
+    nodes_perf = 0
+    for x in range(numa_count):
+        node_perf = int(get_value(hw_, 'numa', 'node_{}'.format(x),
+                                  "bandwidth_{}".format(block_size)))
+        nodes_perf = nodes_perf + node_perf
+    hw_.append(('numa', 'nodes', "bandwidth_{}".format(block_size), nodes_perf))
 
 
 def run_sysbench_memory_threaded(hw_, max_time, block_size, cpu_count, processor_num=-1):
@@ -248,8 +389,7 @@ def run_sysbench_memory_threaded(hw_, max_time, block_size, cpu_count, processor
                          % (block_size, processor_num, max_time, cpu_count))
         taskset = 'taskset %s' % hex(1 << processor_num)
 
-    _cmd = '%s sysbench --max-time=%d --max-requests=100000000 ' \
-           '--num-threads=%d --test=memory --memory-block-size=%s run'
+    _cmd = '%s sysbench --max-time=%d --max-requests=100000000 --num-threads=%d --test=memory --memory-block-size=%s --memory-total-size=1P run'
     sysbench_cmd = subprocess.Popen(_cmd % (taskset, max_time,
                                             cpu_count, block_size),
                                     shell=True, stdout=subprocess.PIPE)
@@ -278,8 +418,7 @@ def run_sysbench_memory_forked(hw_, max_time, block_size, cpu_count):
                      % (block_size, max_time, cpu_count))
     sysbench_cmd = '('
     for cpu in range(cpu_count):
-        _cmd = 'sysbench --max-time=%d --max-requests=100000000 ' \
-               '--num-threads=1 --test=memory --memory-block-size=%s run &'
+        _cmd = 'sysbench --max-time=%d --max-requests=100000000 --num-threads=1 --test=memory --memory-block-size=%s --memory-total-size=1P run &'
         sysbench_cmd += _cmd % (max_time, block_size)
 
     sysbench_cmd.rstrip('&')

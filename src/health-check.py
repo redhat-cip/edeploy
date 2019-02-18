@@ -102,7 +102,7 @@ def cpu_perf(hw_, testing_time=10, burn_test=False):
             sys.stderr.write('CPU Performance: %d logical '
                              'CPU to test (ETA: %d seconds)\n'
                              % (int(physical),
-                                (int(physical) + 1) * testing_time))
+                                int(physical) * testing_time + 2 * testing_time))
             for cpu_nb in get_one_cpu_per_socket(hw_):
                 get_bogomips(hw_, cpu_nb)
                 get_cache_size(hw_, cpu_nb)
@@ -112,6 +112,7 @@ def cpu_perf(hw_, testing_time=10, burn_test=False):
                          ' CPU to test (ETA: %d seconds)\n' % (
                              int(result), testing_time))
 
+    HL.run_sysbench_cpu_numa(hw_, testing_time)
     HL.run_sysbench_cpu(hw_, testing_time, int(result))
 
 
@@ -183,7 +184,7 @@ def mem_perf(hw_, testing_time=5):
     physical = HL.get_value(hw_, 'cpu', 'physical', 'number')
     if physical is not None:
         eta = int(physical) * len(block_size_list) * testing_time
-        eta += 2 * (all_cpu_testing_time * len(block_size_list))
+        eta += 3 * (all_cpu_testing_time * len(block_size_list))
         sys.stderr.write('Memory Performance: %d logical CPU'
                          ' to test (ETA: %d seconds)\n'
                          % (int(physical), int(eta)))
@@ -195,7 +196,10 @@ def mem_perf(hw_, testing_time=5):
         #  if only a single logical cpu is present
         if (int(result) > 1):
             for block_size in block_size_list:
-                HL.run_sysbench_memory_threaded(hw_, all_cpu_testing_time, block_size, int(result))
+                HL.run_sysbench_memory_threaded(
+                    hw_, all_cpu_testing_time, block_size, int(result))
+                HL.run_sysbench_memory_numa(
+                    hw_, all_cpu_testing_time, block_size)
 
             for block_size in block_size_list:
                 HL.run_sysbench_memory_forked(hw_, all_cpu_testing_time, block_size, int(result))
